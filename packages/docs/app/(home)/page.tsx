@@ -26,9 +26,8 @@ export default function HomePage() {
         />
       </div>
       <Description>
-        A CSS-in-JS solution tailored for Next.js that seamlessly combines the
-        expressive power of styled-components syntax with efficient build-time
-        extraction of CSS using Next.js's built-in CSS configuration.
+        🦀 Zero-runtime CSS-in-JS powered by Rust. Write styled-components
+        syntax, get build-time CSS extraction and full RSC compatibility
       </Description>
       <LinkArea>
         <PrimaryLink href={"/docs/getting-started"}>
