@@ -28,6 +28,8 @@ catalogs:
     "@types/react": 19.1.2
     "@types/react-dom": 19.1.2
     "@types/webpack": 5.28.5
+    "@typescript-eslint/rule-tester": 8.23.0
+    "@typescript-eslint/utils": 8.23.0
     "@vitejs/plugin-react": 4.4.1
     autoprefixer: 10.4.21
     benchmark: 2.1.4
