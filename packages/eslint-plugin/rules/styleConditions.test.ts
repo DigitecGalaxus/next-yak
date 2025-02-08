@@ -1,7 +1,7 @@
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as vitest from "vitest";
-import { yakStyleConditions } from "./styleConditions.js";
+import { styleConditions } from "./styleConditions.js";
 
 RuleTester.afterAll = vitest.afterAll;
 RuleTester.it = vitest.it;
@@ -10,7 +10,7 @@ RuleTester.describe = vitest.describe;
 
 const ruleTester = new RuleTester({ languageOptions: { parser: tsParser } });
 
-ruleTester.run("yak-style-conditions", yakStyleConditions, {
+ruleTester.run("yak-style-conditions", styleConditions, {
   valid: [
     {
       // Valid because it's a runtime value from props

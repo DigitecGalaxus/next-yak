@@ -1,8 +1,9 @@
 import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
-import { createRule, type ImportedNames, isStyledOrCssTag } from "../utils.js";
+import { createRule } from "../utils.js";
+import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
-export const yakEnforceSemicolons = createRule({
-  name: "yak-enforce-semicolons",
+export const enforceSemicolons = createRule({
+  name: "enforce-semicolons",
   meta: {
     type: "problem",
     docs: {
@@ -18,26 +19,9 @@ export const yakEnforceSemicolons = createRule({
   },
   defaultOptions: [],
   create: (context) => {
-    /** track the importad names for css and styled from next-yak */
-    const importedNames: ImportedNames = {};
+    const { importedNames, ImportDeclaration } = importsNextYak();
     return {
-      ImportDeclaration(node: TSESTree.ImportDeclaration) {
-        if (node.source.value === "next-yak") {
-          node.specifiers.forEach((specifier) => {
-            if (
-              specifier.type === AST_NODE_TYPES.ImportSpecifier &&
-              specifier.imported.type === AST_NODE_TYPES.Identifier
-            ) {
-              if (specifier.imported.name === "styled") {
-                importedNames.styled = specifier.local.name;
-              } else if (specifier.imported.name === "css") {
-                importedNames.css = specifier.local.name;
-              }
-            }
-          });
-        }
-      },
-      /** All return statements in styled/css literals */
+      ImportDeclaration,
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
         if (
           importedNames.styled === undefined &&

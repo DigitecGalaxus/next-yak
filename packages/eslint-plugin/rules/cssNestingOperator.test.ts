@@ -1,7 +1,7 @@
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as vitest from "vitest";
-import { yakCssNestingOperator } from "./cssNestingOperator.js";
+import { cssNestingOperator } from "./cssNestingOperator.js";
 
 RuleTester.afterAll = vitest.afterAll;
 RuleTester.it = vitest.it;
@@ -23,7 +23,7 @@ const getErrorWithSuggestionsCode = (options: { code: string }) =>
     },
   ] as const;
 
-ruleTester.run("yak-css-nesting-operator", yakCssNestingOperator, {
+ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   valid: [
     {
       code: `import { styled } from "next-yak";

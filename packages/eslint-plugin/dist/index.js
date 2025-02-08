@@ -5,20 +5,42 @@ import fs from "node:fs";
 import { AST_NODE_TYPES as AST_NODE_TYPES2 } from "@typescript-eslint/utils";
 
 // utils.ts
-import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
+import { ESLintUtils } from "@typescript-eslint/utils";
 var createRule = ESLintUtils.RuleCreator(
   (name) => `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/${name}.md`
 );
+
+// rules/utils.ts
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+var importsNextYak = () => {
+  const importedNames = {};
+  return {
+    importedNames,
+    ImportDeclaration(node) {
+      if (node.source.value === "next-yak") {
+        node.specifiers.forEach((specifier) => {
+          if (specifier.type === AST_NODE_TYPES.ImportSpecifier && specifier.imported.type === AST_NODE_TYPES.Identifier) {
+            if (specifier.imported.name === "styled") {
+              importedNames.styled = specifier.local.name;
+            } else if (specifier.imported.name === "css") {
+              importedNames.css = specifier.local.name;
+            }
+          }
+        });
+      }
+    }
+  };
+};
 function isStyledOrCssTag(node, importedNames) {
   if (node.type !== AST_NODE_TYPES.TaggedTemplateExpression) {
     return false;
   }
   const { tag } = node;
   if (tag.type === AST_NODE_TYPES.Identifier && (tag.name === importedNames.styled || tag.name === importedNames.css)) {
-    return true;
+    return "css";
   }
   if (tag.type === AST_NODE_TYPES.MemberExpression) {
-    return tag.object.type === AST_NODE_TYPES.Identifier && tag.object.name === importedNames.styled;
+    return tag.object.type === AST_NODE_TYPES.Identifier && tag.object.name === importedNames.styled ? "styled" : false;
   }
   if (tag.type === AST_NODE_TYPES.CallExpression) {
     if (tag.callee.type === AST_NODE_TYPES.MemberExpression) {
@@ -27,21 +49,21 @@ function isStyledOrCssTag(node, importedNames) {
         const memberExpression = callee.property.parent;
         if (memberExpression.object.type === AST_NODE_TYPES.CallExpression) {
           const callExpression = memberExpression.object;
-          return callExpression.callee.type === AST_NODE_TYPES.Identifier && callExpression.callee.name === importedNames.styled;
+          return callExpression.callee.type === AST_NODE_TYPES.Identifier && callExpression.callee.name === importedNames.styled ? "styled" : false;
         } else if (memberExpression.object.type === AST_NODE_TYPES.MemberExpression) {
           const memberExpressionObject = memberExpression.object;
-          return memberExpressionObject.object.type === AST_NODE_TYPES.Identifier && memberExpressionObject.object.name === importedNames.styled;
+          return memberExpressionObject.object.type === AST_NODE_TYPES.Identifier && memberExpressionObject.object.name === importedNames.styled ? "styled" : false;
         }
       }
     }
-    return tag.callee.type === AST_NODE_TYPES.Identifier && tag.callee.name === importedNames.styled;
+    return tag.callee.type === AST_NODE_TYPES.Identifier && tag.callee.name === importedNames.styled ? "styled" : false;
   }
   return false;
 }
 
 // rules/cssNestingOperator.ts
-var yakCssNestingOperator = createRule({
-  name: "yak-css-nesting-operator",
+var cssNestingOperator = createRule({
+  name: "css-nesting-operator",
   meta: {
     type: "problem",
     docs: {
@@ -56,23 +78,14 @@ var yakCssNestingOperator = createRule({
   },
   defaultOptions: [],
   create: (context) => {
-    const importedNames = {};
+    const { importedNames, ImportDeclaration } = importsNextYak();
     return {
-      ImportDeclaration(node) {
-        if (node.source.value === "next-yak") {
-          node.specifiers.forEach((specifier) => {
-            if (specifier.type === AST_NODE_TYPES2.ImportSpecifier && specifier.imported.type === AST_NODE_TYPES2.Identifier) {
-              if (specifier.imported.name === "styled") {
-                importedNames.styled = specifier.local.name;
-              } else if (specifier.imported.name === "css") {
-                importedNames.css = specifier.local.name;
-              }
-            }
-          });
-        }
-      },
+      ImportDeclaration,
       /** All return statements in styled/css literals */
       TaggedTemplateExpression(node) {
+        if (importedNames.styled === void 0 && importedNames.css === void 0) {
+          return;
+        }
         const templateLiteral = node.quasi;
         if (!templateLiteral || templateLiteral.type !== AST_NODE_TYPES2.TemplateLiteral || // No next-yak imports
         importedNames.styled === void 0 && importedNames.css === void 0 || // Not a styled or css tag
@@ -241,8 +254,8 @@ function mapRegexMatchToLoc(sourceCode, regexMatch, matchText) {
 
 // rules/enforceSemicolon.ts
 import { AST_NODE_TYPES as AST_NODE_TYPES3 } from "@typescript-eslint/utils";
-var yakEnforceSemicolons = createRule({
-  name: "yak-enforce-semicolons",
+var enforceSemicolons = createRule({
+  name: "enforce-semicolons",
   meta: {
     type: "problem",
     docs: {
@@ -256,22 +269,9 @@ var yakEnforceSemicolons = createRule({
   },
   defaultOptions: [],
   create: (context) => {
-    const importedNames = {};
+    const { importedNames, ImportDeclaration } = importsNextYak();
     return {
-      ImportDeclaration(node) {
-        if (node.source.value === "next-yak") {
-          node.specifiers.forEach((specifier) => {
-            if (specifier.type === AST_NODE_TYPES3.ImportSpecifier && specifier.imported.type === AST_NODE_TYPES3.Identifier) {
-              if (specifier.imported.name === "styled") {
-                importedNames.styled = specifier.local.name;
-              } else if (specifier.imported.name === "css") {
-                importedNames.css = specifier.local.name;
-              }
-            }
-          });
-        }
-      },
-      /** All return statements in styled/css literals */
+      ImportDeclaration,
       TaggedTemplateExpression(node) {
         if (importedNames.styled === void 0 && importedNames.css === void 0) {
           return;
@@ -323,8 +323,8 @@ function getQuasiValue(quasi) {
 
 // rules/styleConditions.ts
 import { AST_NODE_TYPES as AST_NODE_TYPES4 } from "@typescript-eslint/utils";
-var yakStyleConditions = createRule({
-  name: "yak-style-conditions",
+var styleConditions = createRule({
+  name: "style-conditions",
   meta: {
     type: "suggestion",
     docs: {
@@ -340,24 +340,14 @@ var yakStyleConditions = createRule({
   },
   defaultOptions: [],
   create: (context) => {
-    const importedNames = {};
+    const { importedNames, ImportDeclaration } = importsNextYak();
     return {
-      ImportDeclaration(node) {
-        if (node.source.value === "next-yak") {
-          node.specifiers.forEach((specifier) => {
-            if (specifier.type === AST_NODE_TYPES4.ImportSpecifier && specifier.imported.type === AST_NODE_TYPES4.Identifier) {
-              if (specifier.imported.name === "styled") {
-                importedNames.styled = specifier.local.name;
-              } else if (specifier.imported.name === "css") {
-                importedNames.css = specifier.local.name;
-              }
-            }
-          });
-        }
-      },
-      /** All template literals */
+      ImportDeclaration,
       TaggedTemplateExpression(node) {
-        if (!node.parent || isStyledOrCssTag2(node, importedNames) !== "css") {
+        if (importedNames.styled === void 0 && importedNames.css === void 0) {
+          return;
+        }
+        if (!node.parent || isStyledOrCssTag(node, importedNames) !== "css") {
           return;
         }
         const { tag, needle } = findClosestStyledOrCssTag(
@@ -408,7 +398,7 @@ function findClosestStyledOrCssTag(node, importedNames) {
     if (current.type === AST_NODE_TYPES4.ArrowFunctionExpression) {
       params = current.params;
     } else {
-      const type = isStyledOrCssTag2(current, importedNames);
+      const type = isStyledOrCssTag(current, importedNames);
       if (type && current.type === AST_NODE_TYPES4.TaggedTemplateExpression) {
         return { tag: current, needle, params, type };
       }
@@ -419,22 +409,6 @@ function findClosestStyledOrCssTag(node, importedNames) {
     current = current.parent;
   }
   return { tag: void 0, needle, type: void 0, params };
-}
-function isStyledOrCssTag2(node, importedNames) {
-  if (node.type !== AST_NODE_TYPES4.TaggedTemplateExpression) {
-    return false;
-  }
-  const { tag } = node;
-  if (tag.type === AST_NODE_TYPES4.Identifier && (tag.name === importedNames.styled || tag.name === importedNames.css)) {
-    return "css";
-  }
-  if (tag.type === AST_NODE_TYPES4.MemberExpression) {
-    return tag.object.type === AST_NODE_TYPES4.Identifier && tag.object.name === importedNames.styled ? "styled" : false;
-  }
-  if (tag.type === AST_NODE_TYPES4.CallExpression) {
-    return tag.callee.type === AST_NODE_TYPES4.Identifier && tag.callee.name === importedNames.styled ? "styled" : false;
-  }
-  return false;
 }
 function isCssLiteral(node, importedNames) {
   return node.type === AST_NODE_TYPES4.TaggedTemplateExpression && node.tag.type === AST_NODE_TYPES4.Identifier && node.tag.name === importedNames.css;
@@ -532,9 +506,9 @@ var plugin = {
   },
   configs: {},
   rules: {
-    "css-nesting-operator": yakCssNestingOperator,
-    "enforce-semicolon": yakEnforceSemicolons,
-    "style-conditions": yakStyleConditions
+    "css-nesting-operator": cssNestingOperator,
+    "enforce-semicolon": enforceSemicolons,
+    "style-conditions": styleConditions
   },
   processors: {}
 };

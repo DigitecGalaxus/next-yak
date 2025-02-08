@@ -1,9 +1,10 @@
 import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
 import type { RuleFixer } from "@typescript-eslint/utils/ts-eslint";
-import { createRule, type ImportedNames, isStyledOrCssTag } from "../utils.js";
+import { createRule } from "../utils.js";
+import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
-export const yakCssNestingOperator = createRule({
-  name: "yak-css-nesting-operator",
+export const cssNestingOperator = createRule({
+  name: "css-nesting-operator",
   meta: {
     type: "problem",
     docs: {
@@ -20,28 +21,19 @@ export const yakCssNestingOperator = createRule({
   },
   defaultOptions: [],
   create: (context) => {
-    /** track the imported names for css and styled from next-yak */
-    const importedNames: ImportedNames = {};
+    const { importedNames, ImportDeclaration } = importsNextYak();
     return {
-      ImportDeclaration(node: TSESTree.ImportDeclaration) {
-        if (node.source.value === "next-yak") {
-          node.specifiers.forEach((specifier) => {
-            if (
-              specifier.type === AST_NODE_TYPES.ImportSpecifier &&
-              specifier.imported.type === AST_NODE_TYPES.Identifier
-            ) {
-              if (specifier.imported.name === "styled") {
-                importedNames.styled = specifier.local.name;
-              } else if (specifier.imported.name === "css") {
-                importedNames.css = specifier.local.name;
-              }
-            }
-          });
-        }
-      },
+      ImportDeclaration,
       /** All return statements in styled/css literals */
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
-        const templateLiteral = node.quasi as TSESTree.TemplateLiteral;
+        if (
+          importedNames.styled === undefined &&
+          importedNames.css === undefined
+        ) {
+          return;
+        }
+
+        const templateLiteral = node.quasi;
 
         if (
           !templateLiteral ||

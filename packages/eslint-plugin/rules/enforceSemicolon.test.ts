@@ -1,7 +1,7 @@
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as vitest from "vitest";
-import { yakEnforceSemicolons } from "./enforceSemicolon.js";
+import { enforceSemicolons } from "./enforceSemicolon.js";
 
 RuleTester.afterAll = vitest.afterAll;
 RuleTester.it = vitest.it;
@@ -10,7 +10,7 @@ RuleTester.describe = vitest.describe;
 
 const ruleTester = new RuleTester({ languageOptions: { parser: tsParser } });
 
-ruleTester.run("yak-enforce-semicolons", yakEnforceSemicolons, {
+ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
   valid: [
     {
       // Single selector expression

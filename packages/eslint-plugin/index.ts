@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import { yakCssNestingOperator } from "./rules/cssNestingOperator.js";
-import { yakEnforceSemicolons } from "./rules/enforceSemicolon.js";
-import { yakStyleConditions } from "./rules/styleConditions.js";
+import { cssNestingOperator } from "./rules/cssNestingOperator.js";
+import { enforceSemicolons } from "./rules/enforceSemicolon.js";
+import { styleConditions } from "./rules/styleConditions.js";
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url), "utf8"),
@@ -14,9 +14,9 @@ const plugin = {
   },
   configs: {},
   rules: {
-    "css-nesting-operator": yakCssNestingOperator,
-    "enforce-semicolon": yakEnforceSemicolons,
-    "style-conditions": yakStyleConditions,
+    "css-nesting-operator": cssNestingOperator,
+    "enforce-semicolon": enforceSemicolons,
+    "style-conditions": styleConditions,
   },
   processors: {},
 };
