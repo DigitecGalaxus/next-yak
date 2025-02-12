@@ -1,5 +1,11 @@
 # next-yak
 
+## 4.1.1
+
+### Patch Changes
+
+- 79bb695: Fix dead-lock inside webpack caused by css-loader cache
+
 ## 4.1.0
 
 ### Minor Changes
