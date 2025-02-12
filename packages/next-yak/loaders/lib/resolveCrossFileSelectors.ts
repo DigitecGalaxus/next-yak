@@ -11,8 +11,25 @@ const yakCssImportRegex =
 
 const compilationCache = new WeakMap<
   Compilation,
-  Map<string, Promise<ParsedFile>>
+  {
+    parsedFiles: Map<string, ParsedFile>;
+  }
 >();
+
+const getCompilationCache = (loader: LoaderContext<{}>) => {
+  const compilation = loader._compilation;
+  if (!compilation) {
+    throw new Error("Webpack compilation object not available");
+  }
+  let cache = compilationCache.get(compilation);
+  if (!cache) {
+    cache = {
+      parsedFiles: new Map(),
+    };
+    compilationCache.set(compilation, cache);
+  }
+  return cache;
+};
 
 /**
  * Resolves cross-file selectors in css files
@@ -58,29 +75,20 @@ export async function resolveCrossFileConstant(
 
   try {
     // Resolve all imports concurrently
-    const exportCache = new Map<string, Promise<ResolvedExport>>();
     const resolvedValues = await Promise.all(
-      matches.map(({ moduleSpecifier, specifier, encodedArguments }) => {
-        // The cache prevents resolving the same specifier multiple times
-        // e.g.:
-        // const a = css`
-        //   color: ${colors.primary};
-        //   border-color: ${colors.primary};
-        // `;
-        const resolvedFromCache = exportCache.get(encodedArguments);
-        const resolvedValue =
-          resolvedFromCache ||
-          parseModule(loader, moduleSpecifier, pathContext).then(
-            (parsedModule) =>
-              resolveModuleSpecifierRecursively(
-                loader,
-                parsedModule,
-                specifier,
-              ),
-          );
-        if (!resolvedFromCache) {
-          exportCache.set(encodedArguments, resolvedValue);
-        }
+      matches.map(async ({ moduleSpecifier, specifier }) => {
+        const parsedModule = await parseModule(
+          loader,
+          moduleSpecifier,
+          pathContext,
+        );
+
+        const resolvedValue = await resolveModuleSpecifierRecursively(
+          loader,
+          parsedModule,
+          specifier,
+        );
+
         return resolvedValue;
       }),
     );
@@ -141,6 +149,24 @@ export async function resolveCrossFileConstant(
 }
 
 /**
+ * Resolves a module by wrapping loader.resolve in a promise
+ */
+export async function resolveModule(
+  loader: LoaderContext<{}>,
+  moduleSpecifier: string,
+  context: string,
+): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    loader.resolve(context, moduleSpecifier, (err, result) => {
+      if (err) return reject(err);
+      if (!result)
+        return reject(new Error(`Could not resolve ${moduleSpecifier}`));
+      resolve(result);
+    });
+  });
+}
+
+/**
  * Resolves a module specifier to a parsed file
  *
  * e.g.:
@@ -154,36 +180,24 @@ async function parseModule(
   moduleSpecifier: string,
   context: string,
 ): Promise<ParsedFile> {
-  const compilation = loader._compilation;
-  if (!compilation) {
-    throw new Error("Webpack compilation object not available");
-  }
-  let cache = compilationCache.get(compilation);
-  if (!cache) {
-    cache = new Map();
-    compilationCache.set(compilation, cache);
-  }
+  const cache = getCompilationCache(loader).parsedFiles;
+
   // The cache key is valid for the entire project so it can be reused
   // for different source files
-  const cacheKey = path.resolve(context, moduleSpecifier);
-  let filePromise = cache.get(cacheKey);
-  if (!filePromise) {
-    filePromise = (async () => {
-      const resolved = await new Promise<string>((resolve, reject) => {
-        loader.resolve(context, moduleSpecifier, (err, result) => {
-          if (err) return reject(err);
-          if (!result)
-            return reject(new Error(`Could not resolve ${moduleSpecifier}`));
-          resolve(result);
-        });
-      });
-      return parseFile(loader, resolved);
-    })();
-    cache.set(cacheKey, filePromise);
+  const resolvedModule = await resolveModule(loader, moduleSpecifier, context);
+
+  let parsedFile = cache.get(resolvedModule);
+  if (!parsedFile) {
+    parsedFile = await parseFile(loader, resolvedModule);
+
+    // We cache the parsed file to avoid re-parsing it.
+    // It's ok, that initial parallel requests to the same file will parse it multiple times.
+    // This avoid deadlocks do to the fact that we load multiple modules in the chain for cross file references.
+    cache.set(resolvedModule, parsedFile);
   }
   // on file change, invalidate the cache
-  loader.addDependency((await filePromise).filePath);
-  return filePromise;
+  loader.addDependency(parsedFile.filePath);
+  return parsedFile;
 }
 
 async function parseFile(

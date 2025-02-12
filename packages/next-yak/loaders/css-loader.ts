@@ -12,7 +12,7 @@ import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 export default async function cssExtractLoader(
   this: LoaderContext<YakConfigOptions>,
   // Instead of the source code, we receive the extracted css
-  // from the ts-loader transformation
+  // from the yak-swc transformation
   _code: string,
   sourceMap: string | undefined,
 ): Promise<string | void> {

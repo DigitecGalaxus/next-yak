@@ -60,9 +60,7 @@
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/css-loader": {
-      "require": "./dist/loaders/css-loader.cjs"
-    }
+    "./loaders/css-loader":  "./dist/loaders/css-loader.js"
   },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
