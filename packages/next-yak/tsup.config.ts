@@ -95,10 +95,9 @@ export default defineConfig([
   // loaders
   {
     entryPoints: [
-      "loaders/ts-loader.ts",
       "loaders/css-loader.ts",
     ],
-    format: ["cjs"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,
