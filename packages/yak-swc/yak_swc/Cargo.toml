@@ -21,8 +21,8 @@ rustc-hash = "2.1.0"
 divan = "0.1.17"
 regex = "1.10.3"
 swc = "14.0.0"
-swc_ecma_transforms_testing = "5.0.0"
-swc_ecma_parser = "5.0.0"
+swc_ecma_transforms_testing = "10.0.0"
+swc_ecma_parser = "9.0.0"
 testing = "5.0.0"
 
 [[bench]]
