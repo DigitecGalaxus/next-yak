@@ -23,6 +23,7 @@
 
 | next-yak         | Next.js         | react            | swc_core         | 
 |------------------|-----------------|------------------|------------------|
+| 5.x              | >= 15.2         | 19.x             | 14.0.1           |
 | 4.x              | >= 15.0.4       | 19.x             | 5.0.1            |
 | 3.x              | 15.x            | 18.x / 19.x      | 3.0.2            |
 | 2.x              | 14.x            | 18.x / 19.x      | 0.279.0          |
@@ -30,8 +31,8 @@
 ## Installation
 
 ```bash
-# For Next.js >= 15.0.4
-npm install next-yak@4
+# For Next.js >= 15.2
+npm install next-yak@5
 
 # For Next.js 14.x 
 npm install next-yak@2
