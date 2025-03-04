@@ -1,13 +1,5 @@
 # yak-swc
 
-
-## 5.0.0 (2025-02-27)
-
-
-### ⚠ BREAKING CHANGES
-
-* **swc:** Update to swc_core 16.0.0 (compatible with @swc/core@1.11.1)
-
 ## 4.1.0
 
 ### Minor Changes
