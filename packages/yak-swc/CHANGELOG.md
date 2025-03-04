@@ -6,7 +6,7 @@
 
 ### ⚠ BREAKING CHANGES
 
-* **swc:** Update to swc_core 14.0.1 (compatible with @swc/core@1.10.18)
+* **swc:** Update to swc_core 16.0.0 (compatible with @swc/core@1.11.1)
 
 ## 4.1.0
 

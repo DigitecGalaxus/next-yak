@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 lazy_static = "1.4.0"
 serde = "1.0.217"
 serde_json = "1.0.134"
-swc_core = { version = "14.0.1", features = ["ecma_plugin_transform"] }
+swc_core = { version = "16.0.0", features = ["ecma_plugin_transform"] }
 css_in_js_parser = { path = "../css_in_js_parser" }
 relative_posix_path = { path = "../relative_posix_path" }
 itertools = "0.13.0"
