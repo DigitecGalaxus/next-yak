@@ -31,8 +31,8 @@
 ## Installation
 
 ```bash
-# For Next.js >= 15.2
-npm install next-yak@5
+# For Next.js >= 15.2.1
+npm install next-yak
 
 # For Next.js 14.x 
 npm install next-yak@2
