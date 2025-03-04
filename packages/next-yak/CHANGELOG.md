@@ -1,5 +1,16 @@
 # next-yak
 
+## 5.0.0
+
+### Major Changes
+
+- 0a1e402: Add compatibility with Next.js 15.2.1
+
+### Patch Changes
+
+- Updated dependencies [2df6a31]
+  - yak-swc@5.0.0
+
 ## 4.1.1
 
 ### Patch Changes
