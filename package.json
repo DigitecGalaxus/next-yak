@@ -16,7 +16,8 @@
     "test": "pnpm run build && pnpm --filter=next-yak --filter=cross-file-tests --filter=next-yak-example run \"/test($|:types)/\"",
     "test:watch": "pnpm --filter=next-yak run test:watch",
     "test:snapshots": "pnpm --filter=next-yak --filter=cross-file-tests --filter=yak-swc run test:snapshots",
-    "watch": "pnpm run --filter=next-yak watch"
+    "watch": "pnpm run --filter=next-yak watch",
+    "release": "pnpm run --filter=next-yak build && pnpm run --filter=yak-swc build && changeset publish"
   },
   "engines": {
     "node": ">=20",
