@@ -1,10 +1,10 @@
 use swc_core::{
-  common::{Span, SyntaxContext, DUMMY_SP},
   atoms::atom,
+  common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Id, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement, TaggedTpl,
+    PropOrSpread, SpreadElement,
   },
   plugin::errors::HANDLER,
 };
@@ -25,7 +25,7 @@ impl CSSProp {
     &self,
     opening_element: &mut JSXOpeningElement,
     merge_ident: &Ident,
-    yak_imports: &YakImports
+    yak_imports: &YakImports,
   ) {
     // Get the css prop attribute to examine its content
     if let Some(css_attr_index) = opening_element.attrs.iter().position(|attr| {
@@ -45,7 +45,9 @@ impl CSSProp {
               if let Callee::Expr(callee) = &call_expr.callee {
                 if let Expr::Ident(ident) = &**callee {
                   // Check if the function is the atoms function (considering possible renames)
-                  if yak_imports.get_yak_library_name_for_ident(&ident.to_id()) == Some(atom!("atoms")) {
+                  if yak_imports.get_yak_library_name_for_ident(&ident.to_id())
+                    == Some(atom!("atoms"))
+                  {
                     // Transform using a specialized transform for atoms
                     self.transform_with_atoms(opening_element, merge_ident);
                     return;
@@ -212,7 +214,7 @@ impl CSSProp {
                 ctxt: SyntaxContext::empty(),
                 type_args: None,
               })))
-            },
+            }
             _ => Err(TransformError::InvalidCSSAttribute(container.span)),
           },
           _ => Err(TransformError::InvalidCSSAttribute(span)),
@@ -265,7 +267,7 @@ impl CSSProp {
                 ctxt: SyntaxContext::empty(),
                 type_args: None,
               })))
-            },
+            }
             _ => Err(TransformError::InvalidCSSAttribute(container.span)),
           },
           _ => Err(TransformError::InvalidCSSAttribute(span)),
