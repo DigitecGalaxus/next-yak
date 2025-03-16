@@ -552,6 +552,25 @@ const Component = () => {
 
 It's meant for simple styling requirements, where you don't have to think about a name for a specialized component.
 
+### Using atoms with the css prop
+
+The `css` prop also fully supports the `atoms` function, allowing you to use utility classes directly and conditionally:
+
+```jsx title="my-component-with-atoms.tsx"
+import { atoms } from 'next-yak';
+
+const Component = () => {
+  const isDefault = true;
+  return <div css={atoms("flex p-4 bg-blue-500",
+      isDefault ? "text-white" : "text-gray-500",
+      "rounded")}>
+    Hello there!
+  </div>
+}
+```
+
+Both `css` template literals and `atoms` can be used interchangeably in the css prop, as they're designed to be compatible with each other.
+
 ### TypeScript
 
 To use it with the correct types just add the following line to the top of the file
