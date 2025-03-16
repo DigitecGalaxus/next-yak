@@ -19,7 +19,7 @@ impl CSSProp {
   /// and inserts it into the correct position.
   /// If the css prop has relevant props, they are removed and transformed into a merge call.
   ///
-  /// e.g.
+  /// For css template literals:
   /// ```jsx
   /// <div css={css("divClassName")} />
   /// ```
@@ -27,18 +27,29 @@ impl CSSProp {
   /// ```jsx
   /// <div {...css("divClassName")({})} />
   /// ```
-  /// and
+  ///
+  /// For atoms function:
   /// ```jsx
-  /// <div css={css("divClassName")} style={{color: red}} className="myClassName" />
+  /// <div css={atoms("m-8 p-6","flex","self-center")} />
+  /// ```
+  /// becomes
+  /// ```jsx
+  /// <div {...{className: atoms("m-8 p-6","flex","self-center")}} />
+  /// ```
+  ///
+  /// And with relevant props:
+  /// ```jsx
+  /// <div css={atoms("m-8 p-6")} style={{color: red}} className="myClassName" />
   /// ```
   /// becomes
   /// ```jsx
   /// <div {...__yak_mergeCssProp(
-  ///   css("divClassName")({}),
   ///   {
   ///     style: {color: red},
   ///     className: "myClassName"
-  ///   })} />
+  ///   },
+  ///   {className: atoms("m-8 p-6")}
+  /// )} />
   /// ```
   pub fn transform(&self, opening_element: &mut JSXOpeningElement, merge_ident: &Ident) {
     let result: Result<_, TransformError> = (|| {
@@ -46,7 +57,7 @@ impl CSSProp {
 
       let (merge_call, insert_index) = if self.relevant_props_indices.is_empty() {
         (
-          Self::extract_css_expr(&value, opening_element.span)?,
+          Self::transform_css_expr(&value, opening_element.span)?,
           self.index,
         )
       } else {
@@ -60,7 +71,7 @@ impl CSSProp {
           })
           .collect();
         let mapped_props = Self::map_props(&removed_attrs)?;
-        let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
+        let css_expr = Self::transform_css_expr(&value, opening_element.span)?;
         (
           Self::create_merge_call(&mapped_props, css_expr, merge_ident),
           opening_element.attrs.len(),
@@ -82,10 +93,10 @@ impl CSSProp {
     }
   }
 
-  /// Extracts the CSS expression from a JSX attribute or spread element.
-  /// Returns the expression wrapped in a function call with an empty object argument.
-  /// e.g. `css\`color: red\`` becomes `css\`color: red\`({})`
-  fn extract_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
+  /// Extracts the CSS expression from a JSX attribute or spread element and transforms it appropriately.
+  /// For css tagged template literals: `css\`color: red\`` becomes `css\`color: red\`({})`
+  /// For atoms function calls: `atoms("m-8 p-6")` becomes `{className: atoms("m-8 p-6")}`
+  fn transform_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
     match attr {
       JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
         .value
@@ -93,19 +104,40 @@ impl CSSProp {
         .ok_or(TransformError::InvalidCSSAttribute(span))
         .and_then(|value| match value {
           JSXAttrValue::JSXExprContainer(container) => match &container.expr {
-            JSXExpr::Expr(expr) => Ok(Box::new(Expr::Call(CallExpr {
-              span: DUMMY_SP,
-              callee: Callee::Expr(expr.clone()),
-              args: vec![ExprOrSpread {
-                spread: None,
-                expr: Box::new(Expr::Object(ObjectLit {
-                  span: DUMMY_SP,
-                  props: vec![],
-                })),
-              }],
-              ctxt: SyntaxContext::empty(),
-              type_args: None,
-            }))),
+            JSXExpr::Expr(expr) => {
+              // Check if it's an atoms function call
+              if let Expr::Call(call_expr) = &**expr {
+                if let Callee::Expr(callee) = &call_expr.callee {
+                  if let Expr::Ident(ident) = &**callee {
+                    // If it's an atoms function call, handle it differently
+                    if ident.sym.as_ref() == "atoms" {
+                      return Ok(Box::new(Expr::Object(ObjectLit {
+                        span: DUMMY_SP,
+                        props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                          key: PropName::Ident("className".into()),
+                          value: expr.clone(),
+                        })))],
+                      })));
+                    }
+                  }
+                }
+              }
+
+              // For css tagged templates or other expressions, wrap in a call with empty object
+              Ok(Box::new(Expr::Call(CallExpr {
+                span: DUMMY_SP,
+                callee: Callee::Expr(expr.clone()),
+                args: vec![ExprOrSpread {
+                  spread: None,
+                  expr: Box::new(Expr::Object(ObjectLit {
+                    span: DUMMY_SP,
+                    props: vec![],
+                  })),
+                }],
+                ctxt: SyntaxContext::empty(),
+                type_args: None,
+              })))
+            },
             _ => Err(TransformError::InvalidCSSAttribute(container.span)),
           },
           _ => Err(TransformError::InvalidCSSAttribute(span)),
@@ -244,13 +276,13 @@ impl TransformError {
   fn message(&self) -> &'static str {
     match self {
             TransformError::InvalidCSSAttribute(_) =>
-                "Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression. \
-                Example: css={css`color: red;`}",
+                "Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression or atoms function call. \
+                Example: css={css`color: red;`} or css={atoms(\"m-8 p-6\",\"flex\")}",
 
             TransformError::UnsupportedSpreadElement(_) =>
                 "Spread elements are not supported in the 'css' prop. \
-                    Instead, use a css template literals for your styles. \
-                    Example: css={css`color: red;`}",
+                    Instead, use a css template literals or atoms function for your styles. \
+                    Example: css={css`color: red;`} or css={atoms(\"m-8 p-6\")}",
 
             TransformError::InvalidJSXAttribute(_) =>
                 "Invalid JSX attribute detected. Ensure all attributes have valid names and values. \
@@ -265,7 +297,7 @@ impl TransformError {
 
             TransformError::UnsupportedAttributeValue(_) =>
                 "Unsupported attribute value type. Use string literals for className, \
-                template literals for css prop, and object literals for style prop.",
+                template literals for css prop, object literals for style prop, or atoms function for utility classes.",
         }
   }
 }
