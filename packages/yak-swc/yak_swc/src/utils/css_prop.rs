@@ -2,9 +2,9 @@ use swc_core::{
   common::{Span, SyntaxContext, DUMMY_SP},
   atoms::atom,
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    CallExpr, Callee, Expr, ExprOrSpread, Id, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement,
+    PropOrSpread, SpreadElement, TaggedTpl,
   },
   plugin::errors::HANDLER,
 };
@@ -132,7 +132,7 @@ impl CSSProp {
   /// ```
   /// becomes
   /// ```jsx
-  /// <div {...{className: atoms("m-8 p-6","flex","self-center")}} />
+  /// <div {...atoms("m-8 p-6","flex","self-center")()} />
   /// ```
   ///
   /// And with relevant props:
@@ -146,7 +146,7 @@ impl CSSProp {
   ///     style: {color: red},
   ///     className: "myClassName"
   ///   },
-  ///   {className: atoms("m-8 p-6")}
+  ///   atoms("m-8 p-6")()
   /// )} />
   /// ```
   pub fn transform_with_atoms(&self, opening_element: &mut JSXOpeningElement, merge_ident: &Ident) {
@@ -191,8 +191,9 @@ impl CSSProp {
     }
   }
 
-  /// Transforms an atoms function call to an object with className property
-  /// e.g. atoms("m-8 p-6") becomes {className: atoms("m-8 p-6")}
+  /// Transforms an atoms function call to its invoked result
+  /// The atoms function returns a function that when called returns {className: value}
+  /// e.g. atoms("m-8 p-6") becomes atoms("m-8 p-6")()
   fn transform_atoms_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
     match attr {
       JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
@@ -202,13 +203,14 @@ impl CSSProp {
         .and_then(|value| match value {
           JSXAttrValue::JSXExprContainer(container) => match &container.expr {
             JSXExpr::Expr(expr) => {
-              // For atoms function calls, transform to {className: atoms(...)}
-              Ok(Box::new(Expr::Object(ObjectLit {
+              // For atoms function calls, transform to atoms(...)()
+              // This calls the function returned by atoms which gives us {className: value}
+              Ok(Box::new(Expr::Call(CallExpr {
                 span: DUMMY_SP,
-                props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                  key: PropName::Ident("className".into()),
-                  value: expr.clone(),
-                })))],
+                callee: Callee::Expr(expr.clone()),
+                args: vec![],
+                ctxt: SyntaxContext::empty(),
+                type_args: None,
               })))
             },
             _ => Err(TransformError::InvalidCSSAttribute(container.span)),
@@ -237,12 +239,12 @@ impl CSSProp {
                   if let Expr::Ident(ident) = &**callee {
                     // If it looks like an atoms function call based on the name, handle it differently
                     if ident.sym.as_ref() == "atoms" {
-                      return Ok(Box::new(Expr::Object(ObjectLit {
+                      return Ok(Box::new(Expr::Call(CallExpr {
                         span: DUMMY_SP,
-                        props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                          key: PropName::Ident("className".into()),
-                          value: expr.clone(),
-                        })))],
+                        callee: Callee::Expr(expr.clone()),
+                        args: vec![],
+                        ctxt: SyntaxContext::empty(),
+                        type_args: None,
                       })));
                     }
                   }
