@@ -39,7 +39,7 @@ Before you begin
 Clone the repository
 
 ```bash
-git clone https://github.com/jantimon/next-yak.git
+git clone https://github.com/DigitecGalaxus/next-yak.git
 cd next-yak
 ```
 
