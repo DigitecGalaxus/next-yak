@@ -189,11 +189,6 @@ type ElementType =
   | "h4"
   | "h5"
   | "h6"
-  | "p"
-  | "strong"
-  | "small"
-  | "span"
-  | "div";
  
 const HtmlTag = <T extends ElementType>({
   tag: Tag,
@@ -203,11 +198,13 @@ const HtmlTag = <T extends ElementType>({
   children?: React.ReactNode;
 } & React.JSX.IntrinsicElements[T]) => <Tag {...(props as any)} />;
 ```
- 
-You can style this component just like any other component: 
+
+You can then pass one of predefined tags of `ElementType` as a prop and style it like any other component:
 ```tsx
-const Pink = styled(HtmlTag)`
-  color: pink;
+<Title tag="h1">Heading 1</Title>
+ 
+const Title = styled(HtmlTag)`
+  font-weight: bold;
 `;
 ```
  
