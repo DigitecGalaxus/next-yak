@@ -24,8 +24,8 @@ Supported
 Missing
 - Object syntax
 - Dynamic usage of the css prop
+- `as` prop – You can replace it with a [type-safe alternative](#property-as-does-not-exist)
 - `.withConfig`
-- Special handling for the `as` prop
 - CreateGlobalStyle - You can just import any global styles in your files directly
 - As of next.js 15, the server components theme provider is not supported. We are working on a solution for this.
 
@@ -176,6 +176,39 @@ const LocalButton = styled(Button).attrs<Partial<ButtonProps>>(() => ({
   color: red;
 `;
 ```
+
+## Property 'as' does not exist
+ 
+`next-yak` does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
+ 
+```tsx
+type ElementType =
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+ 
+const HtmlTag = <T extends ElementType>({
+  tag: Tag,
+  ...props
+}: {
+  tag: T;
+  children?: React.ReactNode;
+} & React.JSX.IntrinsicElements[T]) => <Tag {...(props as any)} />;
+```
+
+You can then pass one of predefined tags of `ElementType` as a prop and style it like any other component:
+```tsx
+<Title tag="h1">Heading 1</Title>
+ 
+const Title = styled(HtmlTag)`
+  font-weight: bold;
+`;
+```
+ 
+This approach is preferred over the `as` prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
 
 ## Change some more things
 
