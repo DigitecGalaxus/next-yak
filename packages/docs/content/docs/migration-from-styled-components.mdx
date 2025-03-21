@@ -179,7 +179,7 @@ const LocalButton = styled(Button).attrs<Partial<ButtonProps>>(() => ({
 
 ## Property 'as' does not exist
  
-`next-yak` does not support the `as` prop. Instead, it offers a type-safe alternative that lets you render dynamic HTML tags safely. You can create a reusable component that only allows a specific set of HTML tags. This prevents rendering invalid elements and improves type safety:
+`next-yak` does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
  
 ```tsx
 type ElementType =
@@ -211,7 +211,7 @@ const Pink = styled(HtmlTag)`
 `;
 ```
  
-This approach is preferred over the as prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
+This approach is preferred over the `as` prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
 
 ## Change some more things
 
