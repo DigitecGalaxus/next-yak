@@ -1,31 +1,9 @@
-import { CSSProperties } from "react";
 import type { YakTheme } from "./index.d.ts";
 
 export const yakComponentSymbol = Symbol("yak");
 
 export type ComponentStyles<TProps> = (props: TProps) => {
   className: string;
-  style?: {
-    [key: string]: string;
-  };
-};
-
-/**
- * Convenience type to specify the CSS prop type.
- * This type is used to allow the css prop on components.
- *
- * @example
- * ```tsx
- * const ComponentThatTakesCssProp = (p: CSSProp) =>
- *   <div {...p}>anything</div>;
- * ```
- */
-export type CSSProp = {
-  /** This prop is transformed during compilation and doesn't exist at runtime. */
-  css?: ComponentStyles<Record<keyof any, never>>;
-  /** The css prop will return the name of the class and automatically merged with an existing class */
-  className?: string;
-  /** The css prop will return the style object and automatically merged with an existing style */
   style?: {
     [key: string]: string;
   };
