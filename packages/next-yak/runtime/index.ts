@@ -28,6 +28,6 @@ export { useTheme, YakThemeProvider } from "next-yak/context";
 export type { YakTheme } from "./context/index.d.ts";
 
 export { atoms } from "./atoms.js";
-export { css, type CSSProp } from "./mocks/cssLiteral.js";
+export { css } from "./mocks/cssLiteral.js";
 export { keyframes } from "./mocks/keyframes.js";
 export { styled } from "./mocks/styled.js";
