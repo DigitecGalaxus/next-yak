@@ -81,11 +81,7 @@ type YakComponent<
   T,
   TAttrsIn extends object = {},
   TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
-> = React.FunctionComponent<
-  T & {
-    css?: ComponentStyles<Record<keyof any, never>>;
-  }
-> & {
+> = React.FunctionComponent<T> & {
   [yakComponentSymbol]: [
     React.FunctionComponent<T>,
     AttrsFunction<T, TAttrsIn, TAttrsOut>,
