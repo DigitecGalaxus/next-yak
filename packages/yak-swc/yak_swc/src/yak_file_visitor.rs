@@ -59,28 +59,27 @@ impl VisitMut for YakFileVisitor {
     // This is necessary as the mixin is also imported at runtime and a string would be
     // interpreted as a class name
     if let Expr::TaggedTpl(n) = expr {
-      if let Some(name) = self
+      if let Some("css") = self
         .yak_imports
-        .as_mut()
+        .as_ref()
         .unwrap()
         .get_yak_library_function_name(n)
+        .as_deref()
       {
-        if name == atom!("css") {
-          *expr = ObjectLit {
-            span: n.span,
-            props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-              key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
-              value: Box::new(Expr::Tpl(Tpl {
-                span: n.span,
-                exprs: n.tpl.exprs.clone(),
-                quasis: n.tpl.quasis.clone(),
-              })),
-            })))]
-            .into_iter()
-            .collect(),
-          }
-          .into();
+        *expr = ObjectLit {
+          span: n.span,
+          props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+            key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
+            value: Box::new(Expr::Tpl(Tpl {
+              span: n.span,
+              exprs: n.tpl.exprs.clone(),
+              quasis: n.tpl.quasis.clone(),
+            })),
+          })))]
+          .into_iter()
+          .collect(),
         }
+        .into();
       }
     }
   }
