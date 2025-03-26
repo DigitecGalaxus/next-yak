@@ -2,6 +2,7 @@ use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
 use serde::Deserialize;
+use std::ops::Deref;
 use std::path::Path;
 use std::vec;
 use swc_core::atoms::atom;
@@ -757,24 +758,24 @@ where
   /// Visit tagged template literals
   /// This is where the css-in-js expressions are
   fn visit_mut_tagged_tpl(&mut self, n: &mut TaggedTpl) {
-    let yak_library_function_name = self
+    let Some(yak_library_function_name) = self
       .yak_library_imports
-      .as_mut()
+      .as_ref()
       .unwrap()
-      .get_yak_library_function_name(n);
-    if yak_library_function_name.is_none() {
+      .get_yak_library_function_name(n)
+    else {
       n.visit_mut_children_with(self);
       return;
-    }
+    };
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
 
-    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.as_deref() {
+    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      Some("styled") if is_top_level => Box::new(TransformStyled::new()),
+      "styled" if is_top_level => Box::new(TransformStyled::new()),
       // Keyframes transform works only on top level
-      Some("keyframes") if is_top_level => Box::new(TransformKeyframes::new(
+      "keyframes" if is_top_level => Box::new(TransformKeyframes::new(
         self
           .variable_name_selector_mapping
           .get(&current_variable_id)
@@ -786,12 +787,12 @@ where
           }),
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
-      Some("css") if is_top_level => Box::new(TransformCssMixin::new(
+      "css" if is_top_level => Box::new(TransformCssMixin::new(
         self.current_exported,
         self.inside_element_with_css_attribute,
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
-      Some("css") => Box::new(TransformNestedCss::new(self.current_condition.clone())),
+      "css" => Box::new(TransformNestedCss::new(self.current_condition.clone())),
       _ => {
         if !is_top_level {
           HANDLER.with(|handler| {
