@@ -85,58 +85,59 @@ impl VisitMut for YakFileVisitor {
   }
 
   fn visit_mut_tagged_tpl(&mut self, n: &mut TaggedTpl) {
-    if let Some(name) = self
+    let Some(name) = self
       .yak_imports
-      .as_mut()
+      .as_ref()
       .unwrap()
       .get_yak_library_function_name(n)
-    {
-      // Right now only css template literals are allowed
-      if name != atom!("css") {
-        HANDLER.with(|handler| {
-          handler
-            .struct_span_err(
-              n.span,
-              "Only css template literals are allowed inside .yak files",
-            )
-            .emit();
-        });
-        return;
-      }
-
-      if self.is_inside_css_tpl {
-        HANDLER.with(|handler| {
-          handler
-            .struct_span_err(
-              n.span,
-              "Nested css template literals are not allowed inside .yak files",
-            )
-            .emit();
-        });
-        return;
-      }
-
-      let before_is_inside_css_tpl = self.is_inside_css_tpl;
-      self.is_inside_css_tpl = true;
-
-      for expr in &n.tpl.exprs {
-        if self.is_invalid_expr(expr) {
-          HANDLER.with(|handler| {
-            handler
-              .struct_span_err(
-                expr.span(),
-                "Function expressions are not allowed in css template literals inside .yak files",
-              )
-              .emit();
-          });
-        }
-      }
-
-      n.tpl.exprs.visit_mut_with(self);
-      self.is_inside_css_tpl = before_is_inside_css_tpl;
-    } else {
+    else {
       // Ignore unknown template literals
+      return;
+    };
+
+    // Right now only css template literals are allowed
+    if name != atom!("css") {
+      HANDLER.with(|handler| {
+        handler
+          .struct_span_err(
+            n.span,
+            "Only css template literals are allowed inside .yak files",
+          )
+          .emit();
+      });
+      return;
     }
+
+    if self.is_inside_css_tpl {
+      HANDLER.with(|handler| {
+        handler
+          .struct_span_err(
+            n.span,
+            "Nested css template literals are not allowed inside .yak files",
+          )
+          .emit();
+      });
+      return;
+    }
+
+    let before_is_inside_css_tpl = self.is_inside_css_tpl;
+    self.is_inside_css_tpl = true;
+
+    for expr in &n.tpl.exprs {
+      if self.is_invalid_expr(expr) {
+        HANDLER.with(|handler| {
+          handler
+            .struct_span_err(
+              expr.span(),
+              "Function expressions are not allowed in css template literals inside .yak files",
+            )
+            .emit();
+        });
+      }
+    }
+
+    n.tpl.exprs.visit_mut_with(self);
+    self.is_inside_css_tpl = before_is_inside_css_tpl;
   }
 }
 
