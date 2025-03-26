@@ -14,7 +14,7 @@ translate(0, -88px) rotate(var(--ym7uBBu1));
 }
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.Card, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.Card__$active), {
     "style": {
-        "--ym7uBBu": __yak_unitPostFix(({ index })=>index * 30, "deg"),
-        "--ym7uBBu1": __yak_unitPostFix(({ index })=>-index * 30, "deg")
+        "--ym7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ index })=>index * 30, "deg"),
+        "--ym7uBBu1": /*#__PURE__*/ __yak_unitPostFix(({ index })=>-index * 30, "deg")
     }
 });

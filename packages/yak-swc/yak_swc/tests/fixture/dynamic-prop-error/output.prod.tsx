@@ -10,6 +10,6 @@ export const FlexContainer = /*YAK Extracted CSS:
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, {
     "style": {
         "--ym7uBBu": getZIndex(),
-        "--ym7uBBu1": __yak_unitPostFix(spacing[40].toString(), "px")
+        "--ym7uBBu1": /*#__PURE__*/ __yak_unitPostFix(spacing[40].toString(), "px")
     }
 });

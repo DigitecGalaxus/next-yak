@@ -17,14 +17,14 @@ export const FlexContainer = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, ({ $bottom })=>/*#__PURE__*/ css(__styleYak.FlexContainer__, {
         "style": {
-            "--ym7uBBu5": __yak_unitPostFix($bottom * 20, "%")
+            "--ym7uBBu5": /*#__PURE__*/ __yak_unitPostFix($bottom * 20, "%")
         }
     }), {
     "style": {
         "--ym7uBBu": ({ $align })=>$align || 'stretch',
         "--ym7uBBu1": ({ $direction })=>$direction || 'row',
         "--ym7uBBu2": ({ $justify })=>$justify || 'flex-start',
-        "--ym7uBBu3": __yak_unitPostFix(({ $marginBottom })=>$marginBottom || '0', "px"),
-        "--ym7uBBu4": __yak_unitPostFix(({ $top })=>$top * 20, "%")
+        "--ym7uBBu3": /*#__PURE__*/ __yak_unitPostFix(({ $marginBottom })=>$marginBottom || '0', "px"),
+        "--ym7uBBu4": /*#__PURE__*/ __yak_unitPostFix(({ $top })=>$top * 20, "%")
     }
 });

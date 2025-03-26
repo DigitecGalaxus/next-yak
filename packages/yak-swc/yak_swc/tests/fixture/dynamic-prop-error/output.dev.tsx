@@ -9,7 +9,7 @@ export const FlexContainer = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, {
     "style": {
-        "--FlexContainer__margin-bottom_m7uBBu": __yak_unitPostFix(spacing[40].toString(), "px"),
+        "--FlexContainer__margin-bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(spacing[40].toString(), "px"),
         "--FlexContainer__z-index_m7uBBu": getZIndex()
     }
 });

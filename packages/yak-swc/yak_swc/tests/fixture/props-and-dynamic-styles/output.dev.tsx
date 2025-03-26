@@ -17,14 +17,14 @@ export const FlexContainer = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, ({ $bottom })=>/*#__PURE__*/ css(__styleYak.FlexContainer__, {
         "style": {
-            "--FlexContainer__bottom_m7uBBu": __yak_unitPostFix($bottom * 20, "%")
+            "--FlexContainer__bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix($bottom * 20, "%")
         }
     }), {
     "style": {
         "--FlexContainer__align-items_m7uBBu": ({ $align })=>$align || 'stretch',
         "--FlexContainer__flex-direction_m7uBBu": ({ $direction })=>$direction || 'row',
         "--FlexContainer__justify-content_m7uBBu": ({ $justify })=>$justify || 'flex-start',
-        "--FlexContainer__margin-bottom_m7uBBu": __yak_unitPostFix(({ $marginBottom })=>$marginBottom || '0', "px"),
-        "--FlexContainer__top_m7uBBu": __yak_unitPostFix(({ $top })=>$top * 20, "%")
+        "--FlexContainer__margin-bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $marginBottom })=>$marginBottom || '0', "px"),
+        "--FlexContainer__top_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $top })=>$top * 20, "%")
     }
 });

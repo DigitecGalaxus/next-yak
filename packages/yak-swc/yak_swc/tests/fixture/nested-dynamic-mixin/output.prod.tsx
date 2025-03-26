@@ -21,6 +21,6 @@ const ContainerFluid = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ __yak.__yak_div(__styleYak.ContainerFluid, ({ $isApp, $pageHeaderHeight })=>$isApp ? /*#__PURE__*/ css(__styleYak.ContainerFluid__$isApp) : /*#__PURE__*/ css(__styleYak.ContainerFluid__not_$isApp), {
     "style": {
-        "--ym7uBBu": __yak_unitPostFix(({ $pageHeaderHeight })=>$pageHeaderHeight, "px")
+        "--ym7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $pageHeaderHeight })=>$pageHeaderHeight, "px")
     }
 });
