@@ -2,7 +2,7 @@
 // this is only a type check file and should not be executed
 
 import { css, styled } from "next-yak";
-import { CSSProperties } from "react";
+import { ComponentProps, CSSProperties } from "react";
 
 declare module "next-yak" {
   export interface YakTheme {
@@ -28,21 +28,25 @@ const NestedComponentWithCssProp = () => (
   </div>
 );
 
-const ComponentThatTakesCssProp = (p: { className?: string }) => (
-  <div {...p}>anything</div>
-);
+const ComponentThatTakesCssProp = (p: {
+  className?: string;
+  style?: ComponentProps<"div">["style"];
+}) => <div {...p}>anything</div>;
 
-const ComponentThatTakesCssProp2 = (p: { className?: string | string[] }) => (
-  <div {...(p as any)}>anything</div>
-);
+const ComponentThatTakesCssProp2 = (p: {
+  className?: string | string[];
+  style?: {};
+}) => <div {...(p as any)}>anything</div>;
 
-const ComponentThatTakesCssProp3 = (p: { className: string }) => (
-  <div {...p}>anything</div>
-);
+const ComponentThatTakesCssProp3 = (p: {
+  className: string;
+  style?: Record<string, unknown>;
+}) => <div {...p}>anything</div>;
 
-const ComponentThatTakesCssProp4 = (p: { className?: unknown }) => (
-  <div {...(p as any)}>anything</div>
-);
+const ComponentThatTakesCssProp4 = (p: {
+  className?: unknown;
+  style?: unknown;
+}) => <div {...(p as any)}>anything</div>;
 
 const ComponentWithCssPropAsProp = () => {
   return (
