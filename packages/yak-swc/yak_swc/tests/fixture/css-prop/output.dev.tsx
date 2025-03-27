@@ -55,7 +55,9 @@ const Text = /*YAK Extracted CSS:
 .Text {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ __yak.__yak_p(__styleYak.Text);
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_p(__styleYak.Text), {
+    "displayName": "Text"
+});
 const StyledComponentWithCSSProp = ()=><Text {.../*YAK Extracted CSS:
 .StyledComponentWithCSSProp {
   color: red;

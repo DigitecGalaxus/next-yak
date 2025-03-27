@@ -9,9 +9,11 @@ const ThemedComponent = /*YAK Extracted CSS:
   padding: 20px;
   border-radius: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.ThemedComponent, {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ThemedComponent, {
     "style": {
         "--ThemedComponent__background-color_m7uBBu": (props)=>props.theme.background,
         "--ThemedComponent__color_m7uBBu": (props)=>props.theme.text
     }
+}), {
+    "displayName": "ThemedComponent"
 });

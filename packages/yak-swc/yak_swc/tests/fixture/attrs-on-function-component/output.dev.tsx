@@ -4,6 +4,8 @@ export const Button = /*YAK Extracted CSS:
 .Button {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ styled("button").attrs({
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled("button").attrs({
     type: "button"
-})(__styleYak.Button);
+})(__styleYak.Button), {
+    "displayName": "Button"
+});

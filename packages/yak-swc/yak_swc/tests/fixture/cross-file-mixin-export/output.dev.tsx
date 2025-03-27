@@ -34,7 +34,9 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button, ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css(__styleYak.Button__));
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button, ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css(__styleYak.Button__)), {
+    "displayName": "Button"
+});
 export const aspectRatios = {
     base: /*YAK EXPORTED MIXIN:aspectRatios:base
 padding-top: 100%;

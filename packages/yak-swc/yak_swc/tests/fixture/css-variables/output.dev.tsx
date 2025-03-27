@@ -14,11 +14,15 @@ export const ThemedButton = /*YAK Extracted CSS:
     background-color: var(--secondary-color);
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton);
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton), {
+    "displayName": "ThemedButton"
+});
 export const ThemeProvider = /*YAK Extracted CSS:
 .ThemeProvider {
   --primary-color: #007bff;
   --secondary-color: #6c757d;
   --font-size-base: 16px;
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.ThemeProvider);
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ThemeProvider), {
+    "displayName": "ThemeProvider"
+});
