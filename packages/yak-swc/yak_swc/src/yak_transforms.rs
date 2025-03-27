@@ -32,12 +32,7 @@ pub trait YakTransform {
   /// Create a CSS Scope\
   /// This CSS Scope will surround the entire CSS for this literal\
   /// e.g. const myMixin = css`...` -> .myMixin { ... }
-  fn create_css_state(
-    &mut self,
-    naming_convention: &mut NamingConvention,
-    declaration_name: &ScopedVariableReference,
-    previous_parser_state: Option<ParserState>,
-  ) -> ParserState;
+  fn create_css_state(&self, previous_parser_state: Option<ParserState>) -> ParserState;
   /// Transform the expression\
   /// This is where the TypeScript AST for the expression is finally transformed
   fn transform_expression(
@@ -58,40 +53,34 @@ pub trait YakTransform {
 /// Transform for nested css mixins
 /// e.g. const Button = `${({$active}) => $active && css`...`}`
 pub struct TransformNestedCss {
-  /// Current condition which is used to determine if the mixin should be applied
-  pub condition: Vec<String>,
   /// ClassName of the mixin
-  class_name: Option<String>,
+  class_name: String,
 }
 
 impl TransformNestedCss {
-  pub fn new(condition: Vec<String>) -> TransformNestedCss {
-    TransformNestedCss {
-      condition,
-      class_name: None,
-    }
+  /// `condition` is the condition which is used to determine if the mixin should be applied
+  pub fn new(
+    naming_convention: &mut NamingConvention,
+    declaration_name: &ScopedVariableReference,
+    condition: Vec<String>,
+  ) -> TransformNestedCss {
+    let condition_concatenated = condition.as_slice().join("-and-");
+    let class_name = naming_convention.generate_unique_name(&format!(
+      "{}__{}",
+      declaration_name.to_readable_string(),
+      condition_concatenated
+    ));
+    TransformNestedCss { class_name }
   }
 }
 
 impl YakTransform for TransformNestedCss {
-  fn create_css_state(
-    &mut self,
-    naming_convention: &mut NamingConvention,
-    declaration_name: &ScopedVariableReference,
-    previous_parser_state: Option<ParserState>,
-  ) -> ParserState {
-    let condition = self.condition.join("-and-");
-    let css_identifier = naming_convention.generate_unique_name(&format!(
-      "{}__{}",
-      declaration_name.to_readable_string(),
-      condition
-    ));
-    self.class_name = Some(css_identifier.clone());
+  fn create_css_state(&self, previous_parser_state: Option<ParserState>) -> ParserState {
     // It is safe to unwrap here because the previous_parser_state is always set for a nested css
     let mut parser_state = previous_parser_state.clone().unwrap();
     // The first scope is the class name which gets attached to the element
     parser_state.current_scopes[0] = CssScope {
-      name: format!(".{}", css_identifier),
+      name: format!(".{}", self.class_name),
       scope_type: ScopeType::Selector,
     };
     parser_state
@@ -112,7 +101,7 @@ impl YakTransform for TransformNestedCss {
         Expr::Member(MemberExpr {
           span: DUMMY_SP,
           obj: Box::new(Expr::Ident(css_module_identifier.clone())),
-          prop: create_member_prop_from_string(self.class_name.clone().unwrap()),
+          prop: create_member_prop_from_string(&self.class_name),
         })
         .into(),
       );
@@ -150,40 +139,38 @@ impl YakTransform for TransformNestedCss {
 /// e.g. const myMixin = css`...`
 pub struct TransformCssMixin {
   /// ClassName of the mixin
-  export_name: Option<ScopedVariableReference>,
+  export_name: ScopedVariableReference,
   is_exported: bool,
   is_within_jsx_attribute: bool,
-  generated_class_name: Option<String>,
+  generated_class_name: String,
 }
 
 impl TransformCssMixin {
-  pub fn new(is_exported: bool, is_within_jsx_attribute: bool) -> TransformCssMixin {
+  pub fn new(
+    naming_convention: &mut NamingConvention,
+    declaration_name: ScopedVariableReference,
+    is_exported: bool,
+    is_within_jsx_attribute: bool,
+  ) -> TransformCssMixin {
+    let generated_class_name =
+      naming_convention.generate_unique_name_for_variable(&declaration_name);
     TransformCssMixin {
-      export_name: None,
+      export_name: declaration_name,
       is_exported,
       is_within_jsx_attribute,
-      generated_class_name: None,
+      generated_class_name,
     }
   }
 }
 
 impl YakTransform for TransformCssMixin {
-  fn create_css_state(
-    &mut self,
-    naming_convention: &mut NamingConvention,
-    declaration_name: &ScopedVariableReference,
-    _previous_parser_state: Option<ParserState>,
-  ) -> ParserState {
-    self.export_name = Some(declaration_name.clone());
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
-    let generated_class_name =
-      naming_convention.generate_unique_name_for_variable(declaration_name);
     // TODO: Remove the unused scope once nested mixins work again
     parser_state.current_scopes = vec![CssScope {
-      name: format!(".{}", generated_class_name),
+      name: format!(".{}", self.generated_class_name),
       scope_type: ScopeType::AtRule,
     }];
-    self.generated_class_name = Some(generated_class_name);
     parser_state
   }
 
@@ -228,7 +215,7 @@ impl YakTransform for TransformCssMixin {
         Expr::Member(MemberExpr {
           span: DUMMY_SP,
           obj: Box::new(Expr::Ident(css_module_identifier.clone())),
-          prop: create_member_prop_from_string(self.generated_class_name.clone().unwrap()),
+          prop: create_member_prop_from_string(&self.generated_class_name),
         })
         .into(),
       );
@@ -238,8 +225,6 @@ impl YakTransform for TransformCssMixin {
         "YAK EXPORTED MIXIN:{}",
         self
           .export_name
-          .as_ref()
-          .unwrap()
           .parts
           .iter()
           .map(|atom| encode_percent(atom.as_str()))
@@ -272,7 +257,7 @@ impl YakTransform for TransformCssMixin {
 
   fn get_css_reference_name(&self) -> Option<String> {
     if self.is_within_jsx_attribute {
-      return Some(self.generated_class_name.clone().unwrap());
+      return Some(self.generated_class_name.clone());
     }
     None
   }
@@ -282,12 +267,14 @@ impl YakTransform for TransformCssMixin {
 /// e.g. const Wrapper = styled.div`...`
 pub struct TransformStyled {
   /// root class name of the styled component
-  class_name: Option<String>,
+  class_name: String,
+  declaration_name: ScopedVariableReference,
 }
 
 impl TransformStyled {
-  pub fn new() -> TransformStyled {
-    TransformStyled { class_name: None }
+  pub fn new(naming_convention: &mut NamingConvention, declaration_name: ScopedVariableReference) -> TransformStyled {
+    let class_name = naming_convention.generate_unique_name_for_variable(&declaration_name);
+    TransformStyled { class_name, declaration_name }
   }
 }
 
@@ -359,17 +346,10 @@ fn transform_styled_usages(expression: Box<Expr>, yak_imports: &mut YakImports) 
 }
 
 impl YakTransform for TransformStyled {
-  fn create_css_state(
-    &mut self,
-    naming_convention: &mut NamingConvention,
-    declaration_name: &ScopedVariableReference,
-    _previous_parser_state: Option<ParserState>,
-  ) -> ParserState {
-    let css_identifier = naming_convention.generate_unique_name_for_variable(declaration_name);
-    self.class_name = Some(css_identifier.clone());
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!(".{}", css_identifier),
+      name: format!(".{}", self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -390,7 +370,7 @@ impl YakTransform for TransformStyled {
         Expr::Member(MemberExpr {
           span: DUMMY_SP,
           obj: Box::new(Expr::Ident(css_module_identifier.clone())),
-          prop: create_member_prop_from_string(self.class_name.clone().unwrap()),
+          prop: create_member_prop_from_string(&self.class_name),
         })
         .into(),
       );
@@ -423,7 +403,7 @@ impl YakTransform for TransformStyled {
 
   /// Get the selector for the specific styled component to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(format!(".{}", self.class_name.clone().unwrap()))
+    Some(format!(".{}", self.class_name))
   }
 }
 
@@ -431,34 +411,20 @@ impl YakTransform for TransformStyled {
 /// e.g. const fadeIn = keyframes`...`
 pub struct TransformKeyframes {
   /// Animation Name
-  animation_name: Option<String>,
+  animation_name: String,
 }
 
 impl TransformKeyframes {
-  pub fn new(animation_name: String) -> TransformKeyframes {
-    TransformKeyframes {
-      animation_name: Some(animation_name),
-    }
+  pub fn with_animation_name(animation_name: String) -> TransformKeyframes {
+    TransformKeyframes { animation_name }
   }
 }
 
 impl YakTransform for TransformKeyframes {
-  fn create_css_state(
-    &mut self,
-    naming_convention: &mut NamingConvention,
-    declaration_name: &ScopedVariableReference,
-    _previous_parser_state: Option<ParserState>,
-  ) -> ParserState {
-    let css_identifier = if self.animation_name.is_none() {
-      let new_identifier = naming_convention.generate_unique_name_for_variable(declaration_name);
-      self.animation_name = Some(new_identifier.clone());
-      new_identifier
-    } else {
-      self.animation_name.clone().unwrap()
-    };
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!("@keyframes {}", css_identifier),
+      name: format!("@keyframes {}", self.animation_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -479,7 +445,7 @@ impl YakTransform for TransformKeyframes {
         Expr::Member(MemberExpr {
           span: DUMMY_SP,
           obj: Box::new(Expr::Ident(css_module_identifier.clone())),
-          prop: create_member_prop_from_string(self.animation_name.clone().unwrap()),
+          prop: create_member_prop_from_string(&self.animation_name),
         })
         .into(),
       );
@@ -510,6 +476,6 @@ impl YakTransform for TransformKeyframes {
 
   /// Get the selector for the keyframe to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(self.animation_name.clone().unwrap())
+    Some(self.animation_name.clone())
   }
 }
