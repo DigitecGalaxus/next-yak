@@ -152,7 +152,7 @@ where
     self.current_variable_name.clone().unwrap_or_else(|| {
       ScopedVariableReference::new(
         Id::from((atom!("yak"), SyntaxContext::empty())),
-        vec![atom!("yak")],
+        [atom!("yak")].into(),
       )
     })
   }
@@ -602,7 +602,7 @@ where
         let previous_variable_name = self.current_variable_name.clone();
         self.current_variable_name = Some(ScopedVariableReference::new(
           id.to_id(),
-          vec![id.sym.clone()],
+          [id.sym.clone()].into(),
         ));
         decl.init.visit_mut_with(self);
         self.current_variable_name = previous_variable_name;
@@ -635,11 +635,12 @@ where
           };
 
           if let Some(part) = new_part {
-            let mut new_parts = current_variable_name.parts.clone();
+            let mut new_parts = Vec::with_capacity(current_variable_name.parts.len() + 1);
+            new_parts.extend_from_slice(&current_variable_name.parts);
             new_parts.push(part);
             self.current_variable_name = Some(ScopedVariableReference::new(
               current_variable_name.id.clone(),
-              new_parts,
+              new_parts.into_boxed_slice(),
             ));
             prop.visit_mut_with(self);
             self.current_variable_name = Some(current_variable_name.clone());

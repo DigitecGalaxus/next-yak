@@ -106,13 +106,13 @@ pub fn extract_ident_and_parts(expr: &Expr) -> Option<ScopedVariableReference> {
         let (base_ident, member_chain) = member_parts;
         Some(ScopedVariableReference::new(
           base_ident.to_id(),
-          member_chain,
+          member_chain.into_boxed_slice(),
         ))
       },
     ),
     Expr::Ident(ident) => Some(ScopedVariableReference::new(
       ident.to_id(),
-      vec![ident.sym.clone()],
+      [ident.sym.clone()].into(),
     )),
     _ => None,
   }
