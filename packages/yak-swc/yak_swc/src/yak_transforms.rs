@@ -8,7 +8,7 @@ use crate::utils::encode_module_import::encode_percent;
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
-use swc_core::common::{Span, SyntaxContext, DUMMY_SP};
+use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
 use swc_core::plugin::errors::HANDLER;
 
@@ -269,12 +269,83 @@ pub struct TransformStyled {
   /// root class name of the styled component
   class_name: String,
   declaration_name: ScopedVariableReference,
+  assign_display_name: bool,
 }
 
 impl TransformStyled {
-  pub fn new(naming_convention: &mut NamingConvention, declaration_name: ScopedVariableReference) -> TransformStyled {
+  pub fn new(
+    naming_convention: &mut NamingConvention,
+    declaration_name: ScopedVariableReference,
+    assign_display_name: bool,
+  ) -> TransformStyled {
     let class_name = naming_convention.generate_unique_name_for_variable(&declaration_name);
-    TransformStyled { class_name, declaration_name }
+    TransformStyled {
+      class_name,
+      declaration_name,
+      assign_display_name,
+    }
+  }
+
+  /// Wraps the supplied expression in
+  /// `globalThis.Object.assign(expr, { displayName: "declaration_name" })`. This improves the
+  /// display of components in React DevTools.
+  fn assign_display_name(&mut self, mut expr: Box<Expr>) -> Box<Expr> {
+    // `globalThis.Object.assign`
+    let global_this_object_assign = Callee::Expr(Box::new(Expr::Member(MemberExpr {
+      span: DUMMY_SP,
+      obj: Box::new(Expr::Member(MemberExpr {
+        span: DUMMY_SP,
+        obj: Box::new(Expr::Ident(Ident {
+          span: DUMMY_SP,
+          ctxt: SyntaxContext::empty(),
+          sym: "globalThis".into(),
+          optional: false,
+        })),
+        prop: MemberProp::Ident(IdentName {
+          span: DUMMY_SP,
+          sym: "Object".into(),
+        }),
+      })),
+      prop: MemberProp::Ident(IdentName {
+        span: DUMMY_SP,
+        sym: "assign".into(),
+      }),
+    })));
+
+    // `{ displayName: "declaration_name" }`
+    let display_name_props = Box::new(Expr::Object(ObjectLit {
+      span: DUMMY_SP,
+      props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+        key: PropName::Str(Str {
+          span: DUMMY_SP,
+          value: "displayName".into(),
+          raw: None,
+        }),
+        value: Box::new(Expr::Lit(Lit::Str(Str {
+          span: DUMMY_SP,
+          value: self.declaration_name.last_part().as_str().into(),
+          raw: None,
+        }))),
+      })))],
+    }));
+
+    // The inner styled component expression needs to be prefixed with `/*#__PURE__*/`.
+    // We instead annotate the outermost AST node with the original span so that the extracted CSS
+    // can be attached to it instead.
+    let original_span = expr.span();
+    expr.set_span(PURE_SP);
+
+    // `globalThis.Object.assign(/*#__PURE__*/(expr), { displayName: "declaration_name" })`
+    Box::new(Expr::Call(CallExpr {
+      span: original_span,
+      ctxt: SyntaxContext::empty(),
+      callee: global_this_object_assign,
+      args: vec![
+        ExprOrSpread::from(expr),
+        ExprOrSpread::from(display_name_props),
+      ],
+      type_args: None,
+    }))
   }
 }
 
@@ -386,18 +457,26 @@ impl YakTransform for TransformStyled {
       );
     }
     let tag_expression = transform_styled_usages(expression.tag.clone(), yak_imports);
+    let result_expr = Box::new(Expr::Call(CallExpr {
+      span: expression.span,
+      ctxt: SyntaxContext::empty(),
+      callee: Callee::Expr(tag_expression),
+      args: arguments,
+      type_args: None,
+    }));
+
+    let result_expr = if self.assign_display_name {
+      self.assign_display_name(result_expr)
+    } else {
+      result_expr
+    };
+
     YakTransformResult {
       css: YakCss {
         comment_prefix: Some("YAK Extracted CSS:".to_string()),
         declarations: declarations.to_vec(),
       },
-      expression: (Box::new(Expr::Call(CallExpr {
-        span: expression.span,
-        ctxt: SyntaxContext::empty(),
-        callee: Callee::Expr(tag_expression),
-        args: arguments,
-        type_args: None,
-      }))),
+      expression: result_expr,
     }
   }
 

@@ -47,6 +47,11 @@ impl ScopedVariableReference {
       .collect::<Vec<&str>>()
       .join(".")
   }
+
+  pub fn last_part(&self) -> &Atom {
+    // `parts` should never be empty
+    self.parts.last().unwrap_or(&self.id.0)
+  }
 }
 
 impl VariableVisitor {
