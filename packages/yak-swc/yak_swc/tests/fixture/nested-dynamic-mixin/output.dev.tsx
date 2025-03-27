@@ -19,8 +19,10 @@ const ContainerFluid = /*YAK Extracted CSS:
 .ContainerFluid {
   margin-top: var(--ContainerFluid__margin-top_m7uBBu);
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.ContainerFluid, ({ $isApp, $pageHeaderHeight })=>$isApp ? /*#__PURE__*/ css(__styleYak.ContainerFluid__$isApp) : /*#__PURE__*/ css(__styleYak.ContainerFluid__not_$isApp), {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ContainerFluid, ({ $isApp, $pageHeaderHeight })=>$isApp ? /*#__PURE__*/ css(__styleYak.ContainerFluid__$isApp) : /*#__PURE__*/ css(__styleYak.ContainerFluid__not_$isApp), {
     "style": {
         "--ContainerFluid__margin-top_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $pageHeaderHeight })=>$pageHeaderHeight, "px")
     }
+}), {
+    "displayName": "ContainerFluid"
 });

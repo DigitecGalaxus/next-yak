@@ -15,4 +15,6 @@ export const Button = /*YAK Extracted CSS:
     color: blue;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+    "displayName": "Button"
+});

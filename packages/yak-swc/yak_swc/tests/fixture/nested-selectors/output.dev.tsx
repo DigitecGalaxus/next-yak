@@ -30,4 +30,6 @@ export const Card = /*YAK Extracted CSS:
     }
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.Card);
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.Card), {
+    "displayName": "Card"
+});

@@ -29,7 +29,7 @@ export const ThemedButton = /*YAK Extracted CSS:
 .ThemedButton__ {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.ThemedButton__$active, {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.ThemedButton__$active, {
         "style": {
             "--ThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
@@ -39,6 +39,8 @@ export const ThemedButton = /*YAK Extracted CSS:
     "style": {
         "--ThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "ThemedButton"
 });
 export const CustomThemedButton = /*YAK Extracted CSS:
 .CustomThemedButton {
@@ -58,7 +60,7 @@ export const CustomThemedButton = /*YAK Extracted CSS:
 .CustomThemedButton__ {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.CustomThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.CustomThemedButton__$active, {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.CustomThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.CustomThemedButton__$active, {
         "style": {
             "--CustomThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
@@ -68,4 +70,6 @@ export const CustomThemedButton = /*YAK Extracted CSS:
     "style": {
         "--CustomThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "CustomThemedButton"
 });
