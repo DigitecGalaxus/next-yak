@@ -60,6 +60,20 @@ pub struct Config {
   pub base_path: String,
   /// Prefix for the generated css identifier
   pub prefix: Option<String>,
+  /// Experimental configuration settings
+  pub experiments: Option<Experiments>,
+}
+
+/// Experimental plugin configuration settings
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct Experiments {
+  /// Improves react DevTools experience by setting displayName
+  /// on the component to match the original component name.
+  /// Disabled by default.
+  #[serde(default)]
+  pub display_names: bool,
 }
 
 pub struct TransformVisitor<GenericComments>
@@ -104,6 +118,8 @@ where
   css_module_identifier: Option<Ident>,
   /// Flag to check if we are inside a css attribute
   inside_element_with_css_attribute: bool,
+  /// Indicates whether `displayName` should be assigned on the component wrappers.
+  display_names: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -115,6 +131,7 @@ where
     filename: impl AsRef<str>,
     dev_mode: bool,
     prefix: Option<String>,
+    display_names: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -131,6 +148,7 @@ where
       inside_element_with_css_attribute: false,
       filename: filename.as_ref().into(),
       comments,
+      display_names: dev_mode && display_names,
     }
   }
 
@@ -773,7 +791,11 @@ where
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      "styled" if is_top_level => Box::new(TransformStyled::new(&mut self.naming_convention, current_variable_id.clone())),
+      "styled" if is_top_level => Box::new(TransformStyled::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
+        self.display_names,
+      )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -995,6 +1017,9 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     deterministic_path,
     config.dev_mode,
     config.prefix,
+    config
+      .experiments
+      .map_or(Default::default(), |e| e.display_names),
   )))
 }
 
@@ -1034,6 +1059,7 @@ mod tests {
           "path/input.tsx",
           true,
           None,
+          true,
         ))
       },
       &input,
@@ -1059,6 +1085,33 @@ mod tests {
           "path/input.tsx",
           false,
           None,
+          false,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.prod.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_prod_display_names_ignored(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          false,
+          None,
+          true,
         ))
       },
       &input,
