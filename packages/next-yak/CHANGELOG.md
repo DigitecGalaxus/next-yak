@@ -1,5 +1,13 @@
 # next-yak
 
+## 5.0.1
+
+### Patch Changes
+
+- Updated dependencies [d461cf5]
+- Updated dependencies [b3e4fec]
+  - yak-swc@5.0.1
+
 ## 5.0.0
 
 ### Major Changes

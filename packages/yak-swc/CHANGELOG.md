@@ -1,5 +1,12 @@
 # yak-swc
 
+## 5.0.1
+
+### Patch Changes
+
+- d461cf5: Mark `__yak_unitPostFix` as pure (generated code)
+- b3e4fec: Minor refactoring of visitors
+
 ## 5.0.0
 
 ### Major Changes
