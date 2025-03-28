@@ -32,11 +32,10 @@ pub enum ImportKind {
 /// - The kind gives a hint how the import can be used - to provide an error message if the import is not supported
 pub fn encode_module_import(
   module_path: &str,
-  import_chain: Vec<Atom>,
+  import_chain: Box<[Atom]>,
   kind: ImportKind,
 ) -> String {
-  let encoded_chain = import_chain
-    .into_iter()
+  let encoded_chain = IntoIterator::into_iter(import_chain)
     .map(|part| encode_percent(&part))
     .collect::<Vec<String>>()
     .join(":");
@@ -66,11 +65,12 @@ mod tests {
   fn test_encode_module_import() {
     let selector = encode_module_import(
       "./styles/media",
-      vec![
+      [
         Atom::from("breakpoints"),
         Atom::from("<xs"),
         Atom::from("min"),
-      ],
+      ]
+      .into(),
       ImportKind::Selector,
     );
     assert_eq!(
@@ -83,7 +83,7 @@ mod tests {
   fn test_encode_module_import_single_item_chain() {
     let selector = encode_module_import(
       "./styles/media",
-      vec![Atom::from("breakpoints")],
+      [Atom::from("breakpoints")].into(),
       ImportKind::Selector,
     );
     assert_eq!(
@@ -96,7 +96,7 @@ mod tests {
   fn test_encode_module_import_special_characters() {
     let selector = encode_module_import(
       "./styles/media",
-      vec![Atom::from("breakpoints"), Atom::from("xs")],
+      [Atom::from("breakpoints"), Atom::from("xs")].into(),
       ImportKind::Selector,
     );
     assert_eq!(
@@ -109,7 +109,7 @@ mod tests {
   fn test_encode_module_import_special_characters_encoded() {
     let selector = encode_module_import(
       "./styles/media",
-      vec![Atom::from("breakpoints"), Atom::from("<:\">")],
+      [Atom::from("breakpoints"), Atom::from("<:\">")].into(),
       ImportKind::Selector,
     );
     assert_eq!(

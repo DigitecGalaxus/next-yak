@@ -28,6 +28,12 @@ export type YakConfigOptions = {
           filter?: (path: string) => boolean;
           type: "all" | "ts" | "css" | "css resolved";
         };
+
+    /**
+     * Assign `displayName` to components for a better developer experience
+     * when using React Developer Tools. Default: false
+     */
+    displayNames?: boolean;
   };
 };
 
@@ -42,6 +48,9 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       devMode: process.env.NODE_ENV !== "production",
       basePath: currentDir,
       prefix: yakOptions.prefix,
+      experiments: {
+        displayNames: yakOptions.experiments?.displayNames,
+      },
     },
   ]);
 

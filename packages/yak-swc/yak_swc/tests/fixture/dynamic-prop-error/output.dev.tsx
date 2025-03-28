@@ -7,9 +7,11 @@ export const FlexContainer = /*YAK Extracted CSS:
   z-index: var(--FlexContainer__z-index_m7uBBu);
   margin-bottom: var(--FlexContainer__margin-bottom_m7uBBu);
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, {
     "style": {
         "--FlexContainer__margin-bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(spacing[40].toString(), "px"),
         "--FlexContainer__z-index_m7uBBu": getZIndex()
     }
+}), {
+    "displayName": "FlexContainer"
 });

@@ -15,7 +15,7 @@ export const FlexContainer = /*YAK Extracted CSS:
 .FlexContainer__ {
   bottom: var(--FlexContainer__bottom_m7uBBu);
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, ({ $bottom })=>/*#__PURE__*/ css(__styleYak.FlexContainer__, {
+*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, ({ $bottom })=>/*#__PURE__*/ css(__styleYak.FlexContainer__, {
         "style": {
             "--FlexContainer__bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix($bottom * 20, "%")
         }
@@ -27,4 +27,6 @@ export const FlexContainer = /*YAK Extracted CSS:
         "--FlexContainer__margin-bottom_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $marginBottom })=>$marginBottom || '0', "px"),
         "--FlexContainer__top_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $top })=>$top * 20, "%")
     }
+}), {
+    "displayName": "FlexContainer"
 });

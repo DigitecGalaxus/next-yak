@@ -32,10 +32,11 @@ pub struct ScopedVariableReference {
   /// The parts of the variable reference
   /// - e.g. foo.bar.baz -> [foo, bar, baz]
   /// - e.g. foo -> [foo]
-  pub parts: Vec<Atom>,
+  pub parts: Box<[Atom]>,
 }
 impl ScopedVariableReference {
-  pub fn new(id: Id, parts: Vec<Atom>) -> Self {
+  pub fn new(id: Id, parts: Box<[Atom]>) -> Self {
+    debug_assert!(!parts.is_empty());
     Self { id, parts }
   }
   pub fn to_readable_string(&self) -> String {
@@ -45,6 +46,11 @@ impl ScopedVariableReference {
       .map(|atom| atom.as_str())
       .collect::<Vec<&str>>()
       .join(".")
+  }
+
+  pub fn last_part(&self) -> &Atom {
+    // `parts` should never be empty
+    self.parts.last().unwrap_or(&self.id.0)
   }
 }
 
@@ -218,7 +224,7 @@ mod tests {
       &visitor
         .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("duration"), SyntaxContext::from_u32(0))),
-          vec![],
+          ["duration".into()].into(),
         ))
         .unwrap(),
     );
@@ -249,7 +255,7 @@ mod tests {
       &visitor
         .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("obj"), SyntaxContext::from_u32(0))),
-          vec![atom!("obj"), atom!("prop1"), atom!("nestedProp")],
+          [atom!("obj"), atom!("prop1"), atom!("nestedProp")].into(),
         ))
         .unwrap(),
     );
@@ -259,7 +265,7 @@ mod tests {
     // Test accessing an array element
     let array_elem = &visitor.get_const_value(&ScopedVariableReference::new(
       Id::from((Atom::from("obj"), SyntaxContext::from_u32(0))),
-      vec![atom!("obj"), atom!("prop2"), atom!("1")],
+      [atom!("obj"), atom!("prop2"), atom!("1")].into(),
     ));
     let array_value = get_expr_value(array_elem.as_ref().unwrap());
     assert_eq!(array_value, Some("2".to_string()));
