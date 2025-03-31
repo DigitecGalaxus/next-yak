@@ -11,6 +11,6 @@ export const FancyIconButton = /*YAK Extracted CSS:
     color: #f0f;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled(IconButton)(__styleYak.FancyIconButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(IconButton)(__styleYak.FancyIconButton), {
     "displayName": "FancyIconButton"
 });

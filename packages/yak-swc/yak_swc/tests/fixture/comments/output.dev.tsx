@@ -7,6 +7,6 @@ export const Button = /*YAK Extracted CSS:
   color: green;
   background: red;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
     "displayName": "Button"
 });

@@ -9,7 +9,7 @@ const BaseButton = /*YAK Extracted CSS:
   font-size: 16px;
   cursor: pointer;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.BaseButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.BaseButton), {
     "displayName": "BaseButton"
 });
 export const PrimaryButton = /*YAK Extracted CSS:
@@ -20,7 +20,7 @@ export const PrimaryButton = /*YAK Extracted CSS:
     background-color: #0056b3;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled(BaseButton)(__styleYak.PrimaryButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(BaseButton)(__styleYak.PrimaryButton), {
     "displayName": "PrimaryButton"
 });
 export const SecondaryButton = /*YAK Extracted CSS:
@@ -31,6 +31,6 @@ export const SecondaryButton = /*YAK Extracted CSS:
     background-color: #545b62;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled(BaseButton)(__styleYak.SecondaryButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(BaseButton)(__styleYak.SecondaryButton), {
     "displayName": "SecondaryButton"
 });

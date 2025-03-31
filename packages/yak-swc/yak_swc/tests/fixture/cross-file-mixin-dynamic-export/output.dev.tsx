@@ -52,6 +52,6 @@ export const Button = /*YAK Extracted CSS:
     color: red;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button, ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css(__styleYak.Button__, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak["Button__-and-$active"])), ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.Button__$active), ({ $active })=>$active && /*#__PURE__*/ css(__styleYak["Button__$active-01"])), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button, ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css(__styleYak.Button__, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak["Button__-and-$active"])), ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.Button__$active), ({ $active })=>$active && /*#__PURE__*/ css(__styleYak["Button__$active-01"])), {
     "displayName": "Button"
 });

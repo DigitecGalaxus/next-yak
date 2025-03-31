@@ -12,7 +12,7 @@ export const FadeInText = /*YAK Extracted CSS:
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_p(__styleYak.FadeInText, ({ $reverse })=>$reverse ? /*#__PURE__*/ css(__styleYak.FadeInText__$reverse) : /*#__PURE__*/ css(__styleYak.FadeInText__not_$reverse)), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p(__styleYak.FadeInText, ({ $reverse })=>$reverse ? /*#__PURE__*/ css(__styleYak.FadeInText__$reverse) : /*#__PURE__*/ css(__styleYak.FadeInText__not_$reverse)), {
     "displayName": "FadeInText"
 });
 const animations = {
@@ -64,6 +64,6 @@ export const FancyButton = /*YAK Extracted CSS:
     animation: slides_200 1s ease-in-out, animations_fadeOut 1s ease-in;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.FancyButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.FancyButton), {
     "displayName": "FancyButton"
 });

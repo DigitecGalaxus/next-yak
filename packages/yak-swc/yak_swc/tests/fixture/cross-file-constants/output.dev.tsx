@@ -15,6 +15,6 @@ export const Button = /*YAK Extracted CSS:
   background-color: --yak-css-import: url("./colorDefinitions:colors:light:full%20opacity",mixin);
   height: --yak-css-import: url("./sizeDefinitions:sizes:0",mixin);
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
     "displayName": "Button"
 });

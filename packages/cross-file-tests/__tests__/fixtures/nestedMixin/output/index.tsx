@@ -7,9 +7,13 @@ export var Button = /*YAK Extracted CSS:
 .Button {
   --yak-css-import: url("./mixin:buttonMixin",mixin);
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+    "displayName": "Button"
+});
 export var PrimaryButton = /*YAK Extracted CSS:
 .PrimaryButton {
   --yak-css-import: url("./helper/anotherMixin:primaryButtonMixin",mixin);
 }
-*/ /*#__PURE__*/ styled(Button)(__styleYak.PrimaryButton);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Button)(__styleYak.PrimaryButton), {
+    "displayName": "PrimaryButton"
+});

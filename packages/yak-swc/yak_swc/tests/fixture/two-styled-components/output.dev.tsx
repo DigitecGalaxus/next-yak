@@ -5,27 +5,27 @@ export const Button = /*YAK Extracted CSS:
 .Button {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
     "displayName": "Button"
 });
 export const FancyButton = /*YAK Extracted CSS:
 .FancyButton {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled(Button)(__styleYak.FancyButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Button)(__styleYak.FancyButton), {
     "displayName": "FancyButton"
 });
 export const Button2 = /*YAK Extracted CSS:
 .Button2 {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button2), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button2), {
     "displayName": "Button2"
 });
 export const Button3 = /*YAK Extracted CSS:
 .Button3 {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ styled("button")(__styleYak.Button3), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("button")(__styleYak.Button3), {
     "displayName": "Button3"
 });

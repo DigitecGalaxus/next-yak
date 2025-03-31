@@ -9,5 +9,7 @@ var ListItem = /*YAK Extracted CSS:
     --yak-css-import: url("./mixin:lastChildMixin",mixin);
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_li(__styleYak.ListItem);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li(__styleYak.ListItem), {
+    "displayName": "ListItem"
+});
 export default ListItem;

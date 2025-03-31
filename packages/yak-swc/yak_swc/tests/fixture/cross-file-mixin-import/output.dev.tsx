@@ -11,14 +11,14 @@ export const Button = /*YAK Extracted CSS:
 .Button {
   --yak-css-import: url("./fonts:fonts:h1",mixin);
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
     "displayName": "Button"
 });
 export const Button2 = /*YAK Extracted CSS:
 .Button2 {
   --yak-css-import: url("./fonts:fonts:h1",mixin);
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button2), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button2), {
     "displayName": "Button2"
 });
 export const Button3 = /*YAK Extracted CSS:
@@ -26,7 +26,7 @@ export const Button3 = /*YAK Extracted CSS:
   --yak-css-import: url("./fonts:fonts:h1",mixin);
   color: green;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button3), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button3), {
     "displayName": "Button3"
 });
 export const Button4 = /*YAK Extracted CSS:
@@ -35,7 +35,7 @@ export const Button4 = /*YAK Extracted CSS:
 --yak-css-import: url("./fonts:fonts:underline",mixin);
   color: green;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button4), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button4), {
     "displayName": "Button4"
 });
 export const Button5 = /*YAK Extracted CSS:
@@ -44,7 +44,7 @@ export const Button5 = /*YAK Extracted CSS:
   --yak-css-import: url("./fancy:fancy:mixins:specialEffect",mixin);
   color: green;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button5), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button5), {
     "displayName": "Button5"
 });
 export const Button6 = /*YAK Extracted CSS:
@@ -56,7 +56,7 @@ export const Button6 = /*YAK Extracted CSS:
 ;
   color: green;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button6), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button6), {
     "displayName": "Button6"
 });
 export const Button7 = /*YAK Extracted CSS:
@@ -68,6 +68,6 @@ export const Button7 = /*YAK Extracted CSS:
 ;
   color: green;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button7), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button7), {
     "displayName": "Button7"
 });

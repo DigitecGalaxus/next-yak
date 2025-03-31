@@ -7,10 +7,14 @@ export var Headline = /*YAK Extracted CSS:
   color: red;
   --yak-css-import: url("./typography.yak:typography:h1",mixin);
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Headline);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Headline), {
+    "displayName": "Headline"
+});
 export var Button = /*YAK Extracted CSS:
 .Button {
   color: red;
   --yak-css-import: url("./typography.yak:typography:h3",mixin);
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+    "displayName": "Button"
+});

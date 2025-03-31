@@ -7,4 +7,6 @@ export var Button = /*YAK Extracted CSS:
   color: --yak-css-import: url("./constants:colors:primary",mixin);
   background-color: --yak-css-import: url("./constants:colors:secondary",mixin);
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+    "displayName": "Button"
+});

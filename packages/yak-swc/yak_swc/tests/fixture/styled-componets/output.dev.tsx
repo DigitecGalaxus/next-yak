@@ -9,7 +9,7 @@ export const CustomThemedButton = /*YAK Extracted CSS:
 .CustomThemedButton {
   color: blue;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.CustomThemedButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.CustomThemedButton), {
     "displayName": "CustomThemedButton"
 });
 // Should not be transformed as it is NOT yak

@@ -14,6 +14,6 @@ export const ResponsiveGrid = /*YAK Extracted CSS:
     grid-template-columns: repeat(3, 1fr);
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ResponsiveGrid), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ResponsiveGrid), {
     "displayName": "ResponsiveGrid"
 });

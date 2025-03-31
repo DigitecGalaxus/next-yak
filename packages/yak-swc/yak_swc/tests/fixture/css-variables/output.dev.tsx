@@ -14,7 +14,7 @@ export const ThemedButton = /*YAK Extracted CSS:
     background-color: var(--secondary-color);
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton), {
     "displayName": "ThemedButton"
 });
 export const ThemeProvider = /*YAK Extracted CSS:
@@ -23,6 +23,6 @@ export const ThemeProvider = /*YAK Extracted CSS:
   --secondary-color: #6c757d;
   --font-size-base: 16px;
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ThemeProvider), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.ThemeProvider), {
     "displayName": "ThemeProvider"
 });

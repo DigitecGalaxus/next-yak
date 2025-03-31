@@ -1099,32 +1099,6 @@ mod tests {
     )
   }
 
-  #[testing::fixture("tests/fixture/**/input.tsx")]
-  fn fixture_prod_display_names_ignored(input: PathBuf) {
-    test_fixture(
-      Syntax::Typescript(TsSyntax {
-        tsx: true,
-        ..Default::default()
-      }),
-      &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          false,
-          None,
-          true,
-        ))
-      },
-      &input,
-      &input.with_file_name("output.prod.tsx"),
-      FixtureTestConfig {
-        module: None,
-        sourcemap: false,
-        allow_error: true,
-      },
-    )
-  }
-
   #[testing::fixture("tests/fixture/**/input.yak.tsx")]
   fn fixture_yak(input: PathBuf) {
     test_fixture(

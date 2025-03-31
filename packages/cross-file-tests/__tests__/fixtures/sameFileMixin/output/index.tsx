@@ -18,7 +18,7 @@ var Button = /*YAK Extracted CSS:
 .Button__$disabled-01 {
   color: gray;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button, function(param) {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button, function(param) {
     var $disabled = param.$disabled;
     return $disabled && /*#__PURE__*/ css(__styleYak.Button__$disabled);
 }, function(param) {
@@ -27,5 +27,7 @@ var Button = /*YAK Extracted CSS:
 }, function(param) {
     var $disabled = param.$disabled;
     return $disabled && /*#__PURE__*/ css(__styleYak["Button__$disabled-01"]);
+}), {
+    "displayName": "Button"
 });
 export default Button;

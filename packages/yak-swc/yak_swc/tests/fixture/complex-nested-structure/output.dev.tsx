@@ -53,6 +53,6 @@ export const ArticleCard = /*YAK Extracted CSS:
     }
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_article(__styleYak.ArticleCard), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_article(__styleYak.ArticleCard), {
     "displayName": "ArticleCard"
 });

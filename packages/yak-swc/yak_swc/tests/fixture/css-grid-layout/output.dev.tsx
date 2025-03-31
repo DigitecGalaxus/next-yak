@@ -57,6 +57,6 @@ export const GridLayout = /*YAK Extracted CSS:
     text-align: center;
   }
 }
-*/ /*#__PURE__*/ globalThis.Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.GridLayout), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div(__styleYak.GridLayout), {
     "displayName": "GridLayout"
 });

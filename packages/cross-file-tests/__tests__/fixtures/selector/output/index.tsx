@@ -11,4 +11,6 @@ export var Button = /*YAK Extracted CSS:
     margin-right: 15px;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button), {
+    "displayName": "Button"
+});

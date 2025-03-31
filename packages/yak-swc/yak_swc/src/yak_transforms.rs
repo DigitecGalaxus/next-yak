@@ -287,24 +287,17 @@ impl TransformStyled {
   }
 
   /// Wraps the supplied expression in
-  /// `globalThis.Object.assign(expr, { displayName: "declaration_name" })`. This improves the
+  /// `Object.assign(expr, { displayName: "declaration_name" })`. This improves the
   /// display of components in React DevTools.
   fn assign_display_name(&mut self, mut expr: Box<Expr>) -> Box<Expr> {
-    // `globalThis.Object.assign`
-    let global_this_object_assign = Callee::Expr(Box::new(Expr::Member(MemberExpr {
+    // `Object.assign`
+    let object_assign = Callee::Expr(Box::new(Expr::Member(MemberExpr {
       span: DUMMY_SP,
-      obj: Box::new(Expr::Member(MemberExpr {
+      obj: Box::new(Expr::Ident(Ident {
         span: DUMMY_SP,
-        obj: Box::new(Expr::Ident(Ident {
-          span: DUMMY_SP,
-          ctxt: SyntaxContext::empty(),
-          sym: "globalThis".into(),
-          optional: false,
-        })),
-        prop: MemberProp::Ident(IdentName {
-          span: DUMMY_SP,
-          sym: "Object".into(),
-        }),
+        ctxt: SyntaxContext::empty(),
+        sym: "Object".into(),
+        optional: false,
       })),
       prop: MemberProp::Ident(IdentName {
         span: DUMMY_SP,
@@ -335,11 +328,11 @@ impl TransformStyled {
     let original_span = expr.span();
     expr.set_span(PURE_SP);
 
-    // `globalThis.Object.assign(/*#__PURE__*/(expr), { displayName: "declaration_name" })`
+    // `Object.assign(/*#__PURE__*/(expr), { displayName: "declaration_name" })`
     Box::new(Expr::Call(CallExpr {
       span: original_span,
       ctxt: SyntaxContext::empty(),
-      callee: global_this_object_assign,
+      callee: object_assign,
       args: vec![
         ExprOrSpread::from(expr),
         ExprOrSpread::from(display_name_props),
