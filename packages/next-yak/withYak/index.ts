@@ -14,6 +14,12 @@ const currentDir =
 const { resolve } = createRequire(currentDir + "/index.js");
 
 export type YakConfigOptions = {
+  /**
+   * Generate code that is easier to work with during development.
+   * @defaultValue
+   * enabled, unless NODE_ENV is set to `production`
+   */
+  devMode?: boolean;
   contextPath?: string;
   /**
    * Optional prefix for generated CSS identifiers.
@@ -40,7 +46,10 @@ export type YakConfigOptions = {
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const previousConfig = nextConfig.webpack;
-  const devMode = process.env.NODE_ENV !== "production";
+  const devMode =
+    yakOptions.devMode !== undefined
+      ? yakOptions.devMode
+      : process.env.NODE_ENV !== "production";
 
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
