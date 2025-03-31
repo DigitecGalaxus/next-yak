@@ -13,8 +13,4 @@ const nextConfig = {
   // },
 };
 
-export default withYak({
-  experiments: {
-    displayNames: true,
-  }
-}, nextConfig);
+export default withYak(nextConfig);

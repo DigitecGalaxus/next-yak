@@ -60,15 +60,6 @@ pub struct Config {
   pub base_path: String,
   /// Prefix for the generated css identifier
   pub prefix: Option<String>,
-  /// Experimental configuration settings
-  pub experiments: Option<Experiments>,
-}
-
-/// Experimental plugin configuration settings
-#[derive(Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
-pub struct Experiments {
   /// Improves react DevTools experience by setting displayName
   /// on the component to match the original component name.
   /// Disabled by default.
@@ -1018,9 +1009,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     deterministic_path,
     config.dev_mode,
     config.prefix,
-    config
-      .experiments
-      .map_or(Default::default(), |e| e.display_names),
+    config.display_names,
   )))
 }
 

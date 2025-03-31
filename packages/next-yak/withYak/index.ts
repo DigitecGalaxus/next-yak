@@ -21,6 +21,11 @@ export type YakConfigOptions = {
    * or to add organization-specific prefixes.
    */
   prefix?: string;
+  /**
+   * Assign `displayName` to components for a better developer experience
+   * when using React Developer Tools. Default: match `devMode`
+   */
+  displayNames?: boolean;
   experiments?: {
     debug?:
       | boolean
@@ -28,29 +33,22 @@ export type YakConfigOptions = {
           filter?: (path: string) => boolean;
           type: "all" | "ts" | "css" | "css resolved";
         };
-
-    /**
-     * Assign `displayName` to components for a better developer experience
-     * when using React Developer Tools. Default: false
-     */
-    displayNames?: boolean;
   };
 };
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const previousConfig = nextConfig.webpack;
+  const devMode = process.env.NODE_ENV !== "production";
 
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
   nextConfig.experimental.swcPlugins.push([
     resolve("yak-swc"),
     {
-      devMode: process.env.NODE_ENV !== "production",
+      devMode,
       basePath: currentDir,
       prefix: yakOptions.prefix,
-      experiments: {
-        displayNames: yakOptions.experiments?.displayNames,
-      },
+      displayNames: yakOptions.displayNames ?? devMode,
     },
   ]);
 
