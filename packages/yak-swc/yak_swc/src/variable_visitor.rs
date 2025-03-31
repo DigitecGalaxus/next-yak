@@ -48,7 +48,7 @@ impl ScopedVariableReference {
   }
 
   pub fn last_part(&self) -> &Atom {
-    // `parts` should never be empty
+    // We don't expect `parts` to be empty in normal code
     self.parts.last().unwrap_or(&self.id.0)
   }
 }
@@ -268,5 +268,21 @@ mod tests {
     ));
     let array_value = get_expr_value(array_elem.as_ref().unwrap());
     assert_eq!(array_value, Some("2".to_string()));
+  }
+
+  #[test]
+  fn test_last_part_normal() {
+    let i = ScopedVariableReference::new(
+      Id::from((Atom::from("f"), SyntaxContext::empty())),
+      vec![atom!("g"), atom!("h")],
+    );
+    assert_eq!(i.last_part(), &atom!("h"));
+  }
+
+  #[test]
+  fn test_last_part_zero_parts() {
+    let i =
+      ScopedVariableReference::new(Id::from((Atom::from("f"), SyntaxContext::empty())), vec![]);
+    assert_eq!(i.last_part(), &atom!("f"));
   }
 }
