@@ -118,7 +118,8 @@ where
   css_module_identifier: Option<Ident>,
   /// Flag to check if we are inside a css attribute
   inside_element_with_css_attribute: bool,
-  /// Indicates whether `displayName` should be assigned on the component wrappers.
+  /// If true, additional code will be injected to provide readable `displayName` values
+  /// in React DevTools and stack traces for every yak component
   display_names: bool,
 }
 
@@ -148,7 +149,7 @@ where
       inside_element_with_css_attribute: false,
       filename: filename.as_ref().into(),
       comments,
-      display_names: dev_mode && display_names,
+      display_names: display_names,
     }
   }
 
