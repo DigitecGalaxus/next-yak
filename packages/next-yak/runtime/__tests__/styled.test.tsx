@@ -7,7 +7,16 @@ import React from "react";
 import { expect, it } from "vitest";
 import { YakThemeProvider } from "../context";
 import { css } from "../cssLiteral";
-import { styled } from "../styled";
+import { styled as styledFn } from "../styled";
+
+// This transform is usually done by the SWC plugin.
+// However this `styled.test.tsx` does not compile
+// the code before testing
+const styled = Object.assign(styledFn, {
+  div: styledFn("div"),
+  input: styledFn("input"),
+  a: styledFn("a"),
+}) as typeof styledFn;
 
 it("should render a literal element", () => {
   const Component = styled.input``;
@@ -185,7 +194,9 @@ it("should allow falsy values", () => {
 });
 
 it("should execute runtime styles recursively", () => {
-  const Component = styled.input<{ $testProp: boolean }>(
+  const Component = styled.input<{
+    $testProp: boolean;
+  }>(
     ({ $testProp }) =>
       $testProp &&
       css(

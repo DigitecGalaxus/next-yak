@@ -1,5 +1,6 @@
 import { css, styled } from "next-yak/internal";
 import { typogaphyMixin } from "./typography";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css();
 const textStyles = /*#__PURE__*/ css();
@@ -33,7 +34,9 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-*/ /*#__PURE__*/ styled.button("Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("Button___m7uBBu"));
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("Button___m7uBBu")), {
+    "displayName": "Button"
+});
 export const aspectRatios = {
     base: /*YAK EXPORTED MIXIN:aspectRatios:base
 padding-top: 100%;

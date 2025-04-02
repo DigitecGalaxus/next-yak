@@ -1,4 +1,5 @@
 import { styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const colors = {
     primary: "#007bff",
@@ -28,4 +29,4 @@ export const Button = /*YAK Extracted CSS:
     background-color: #343a40;
   }
 }
-*/ /*#__PURE__*/ styled.button("ym7uBBu");
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");

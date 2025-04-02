@@ -24,14 +24,14 @@ Thank you for your interest in contributing to next-yak! This document provides 
 Before you begin
 
 - Install [Node.js](https://nodejs.org/en) v20.x or later
-- Install [pnpm](https://pnpm.io/) v8.6.1 or later
+- Install [pnpm](https://pnpm.io/) v9.7.0 or later
 - Install [Rust](https://www.rust-lang.org/) toolchain <br />
   **⚠️ Important**<br />
   Do _not_ use brew or other package managers to install Rust, as this can lead to permission issues<br />
   Install Rust from [rust-lang.org](https://www.rust-lang.org/tools/install), following the official instructions for your platform
 - Add the Rust WebAssembly target, execute
   ```bash
-  rustup target add wasm32-wasi
+  rustup target add wasm32-wasip1
   ```
 
 ### Initial setup
@@ -39,7 +39,7 @@ Before you begin
 Clone the repository
 
 ```bash
-git clone https://github.com/jantimon/next-yak.git
+git clone https://github.com/DigitecGalaxus/next-yak.git
 cd next-yak
 ```
 
@@ -183,7 +183,7 @@ export default withYak({
 ### Rust setup issues
 
 - **Permission problems with Rust**: Make sure to install Rust from [rust-lang.org](https://www.rust-lang.org/tools/install) and not through package managers
-- **Missing wasm32-wasi target**: Run `rustup target add wasm32-wasi`
+- **Missing wasm32-wasip1 target**: Run `rustup target add wasm32-wasip1`
 - **Cargo build failures**: Ensure you have the latest stable Rust toolchain with `rustup update stable`
 
 ### Build issues

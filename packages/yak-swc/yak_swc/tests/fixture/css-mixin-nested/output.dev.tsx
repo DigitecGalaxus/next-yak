@@ -1,12 +1,13 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("buttonStyles__$active_m7uBBu", {
         "style": {
-            "--buttonStyles__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--buttonStyles__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), {
     "style": {
-        "--buttonStyles__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--buttonStyles__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
 export const ThemedButton = /*YAK Extracted CSS:
@@ -25,14 +26,16 @@ export const ThemedButton = /*YAK Extracted CSS:
 :global(.ThemedButton_m7uBBu) {
   width: var(--ThemedButton__width_m7uBBu);
 }
-*/ /*#__PURE__*/ styled.button("ThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("ThemedButton__$active_m7uBBu", {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("ThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("ThemedButton__$active_m7uBBu", {
         "style": {
-            "--ThemedButton__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--ThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), {
     "style": {
-        "--ThemedButton__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--ThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "ThemedButton"
 });
 export const CustomThemedButton = /*YAK Extracted CSS:
 :global(.CustomThemedButton_m7uBBu) {
@@ -57,12 +60,14 @@ export const CustomThemedButton = /*YAK Extracted CSS:
     width: var(--CustomThemedButton__width_m7uBBu);
   }
 }
-*/ /*#__PURE__*/ styled.button("CustomThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("CustomThemedButton__$active_m7uBBu", {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("CustomThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("CustomThemedButton__$active_m7uBBu", {
         "style": {
-            "--CustomThemedButton__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--CustomThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), {
     "style": {
-        "--CustomThemedButton__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--CustomThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "CustomThemedButton"
 });

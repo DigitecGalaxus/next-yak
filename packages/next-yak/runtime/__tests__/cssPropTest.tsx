@@ -1,7 +1,7 @@
 /** @jsxImportSource next-yak */
 // this is only a type check file and should not be executed
 
-import { css } from "next-yak";
+import { css, CSSProp, styled } from "next-yak";
 import { CSSProperties } from "react";
 
 declare module "next-yak" {
@@ -28,9 +28,7 @@ const NestedComponentWithCssProp = () => (
   </div>
 );
 
-const ComponentThatTakesCssProp = (p: {
-  css: { className: string; style?: CSSProperties };
-}) => <div {...p}>anything</div>;
+const ComponentThatTakesCssProp = (p: CSSProp) => <div {...p}>anything</div>;
 
 const ComponentWithCssPropAsProp = () => {
   return <ComponentThatTakesCssProp css={css``} />;
@@ -106,6 +104,82 @@ const ComponentWithInterpolatedCSS = () => {
       // @ts-expect-error shouldn't allow interpolated css prop
       css={(x) => css`
         padding: 20px;
+      `}
+    />
+  );
+};
+
+const Text = styled.p`
+  font-size: 20px;
+  font-weight: bold;
+  font-family: "Inter";
+`;
+
+const StyledComponentWithCSSProp = () => {
+  <div>
+    <Text
+      css={css`
+        color: red;
+      `}
+    >
+      test
+    </Text>
+  </div>;
+};
+
+const ComponentWithConditionalCSSButWithoutOwnProps = () => {
+  const x = Math.random() > 0.5;
+  return (
+    <div
+      css={css`
+        ${() =>
+          x &&
+          css`
+            padding: 20px;
+          `}
+      `}
+    />
+  );
+};
+
+const ComponentWithConditionalCSSVarsButWithoutOwnProps = () => {
+  const x = Math.random() > 0.5;
+  return (
+    <div
+      css={css`
+        padding: ${() => x && "20px"};
+      `}
+    />
+  );
+};
+
+const ComponentWithDynamicCSSShouldGenerateTypeError = () => {
+  return (
+    <div
+      // @ts-expect-error - properties not supported
+      css={css<{ $primary: boolean }>`
+        padding: ${({ $primary }) => $primary && "20px"};
+      `}
+    />
+  );
+};
+
+const dynamicMixin = css<{ $primary: boolean }>`
+  ${({ $primary }) =>
+    $primary &&
+    css`
+      font-size: 1.7rem;
+    `}
+`;
+
+const ComponentWithCSSThatUsesDynamicMixinShouldGenerateTypeError = () => {
+  return (
+    <div
+      css={css`
+        ${
+          // @ts-expect-error - properties not supported
+          dynamicMixin
+        }
       `}
     />
   );

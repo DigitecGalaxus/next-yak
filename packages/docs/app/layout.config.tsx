@@ -1,4 +1,4 @@
-import { YakLogo } from "@/components/lazyYakIcon";
+import { YakLogo } from "@/components/yakIcon";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 
 /**

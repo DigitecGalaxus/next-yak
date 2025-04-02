@@ -1,4 +1,5 @@
 import { styled, css, keyframes } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK Extracted CSS:
 :global(.ym7uBBu1) {
@@ -11,7 +12,7 @@ export const FadeInText = /*YAK Extracted CSS:
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ styled.p("ym7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("ym7uBBu1") : /*#__PURE__*/ css("ym7uBBu3"));
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("ym7uBBu1") : /*#__PURE__*/ css("ym7uBBu3"));
 const fadeIn = /*YAK Extracted CSS:
 @keyframes :global(ym7uBBu4) {
   from {

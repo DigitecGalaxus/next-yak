@@ -1,4 +1,5 @@
 import { css, styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("textColor__$active_m7uBBu"));
 const textStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("textStyles__$active_m7uBBu"));
@@ -51,4 +52,6 @@ export const Button = /*YAK Extracted CSS:
     color: red;
   }
 }
-*/ /*#__PURE__*/ styled.button("Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("Button___m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("Button__-and-$active_m7uBBu")), ({ $active })=>$active && /*#__PURE__*/ css("Button__$active_m7uBBu"), ({ $active })=>$active && /*#__PURE__*/ css("Button__$active_m7uBBu-01"));
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("Button___m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("Button__-and-$active_m7uBBu")), ({ $active })=>$active && /*#__PURE__*/ css("Button__$active_m7uBBu"), ({ $active })=>$active && /*#__PURE__*/ css("Button__$active_m7uBBu-01")), {
+    "displayName": "Button"
+});

@@ -3,108 +3,108 @@
 exports[`renders Clock component 1`] = `
 <DocumentFragment>
   <div
-    class="ClockWrapper_EiiKjd"
+    class="ClockWrapper"
   >
     <div
-      class="ClockFace_EiiKjd"
+      class="ClockFace"
     >
       <div
-        class="ClockCenter_EiiKjd"
+        class="ClockCenter"
       />
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="0"
         style="--ClockNumber__transform_EiiKjd: 0deg; --ClockNumber__transform_EiiKjd-01: 0deg;"
       >
         12
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="1"
         style="--ClockNumber__transform_EiiKjd: 30deg; --ClockNumber__transform_EiiKjd-01: -30deg;"
       >
         1
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="2"
         style="--ClockNumber__transform_EiiKjd: 60deg; --ClockNumber__transform_EiiKjd-01: -60deg;"
       >
         2
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="3"
         style="--ClockNumber__transform_EiiKjd: 90deg; --ClockNumber__transform_EiiKjd-01: -90deg;"
       >
         3
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="4"
         style="--ClockNumber__transform_EiiKjd: 120deg; --ClockNumber__transform_EiiKjd-01: -120deg;"
       >
         4
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="5"
         style="--ClockNumber__transform_EiiKjd: 150deg; --ClockNumber__transform_EiiKjd-01: -150deg;"
       >
         5
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="6"
         style="--ClockNumber__transform_EiiKjd: 180deg; --ClockNumber__transform_EiiKjd-01: -180deg;"
       >
         6
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="7"
         style="--ClockNumber__transform_EiiKjd: 210deg; --ClockNumber__transform_EiiKjd-01: -210deg;"
       >
         7
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="8"
         style="--ClockNumber__transform_EiiKjd: 240deg; --ClockNumber__transform_EiiKjd-01: -240deg;"
       >
         8
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="9"
         style="--ClockNumber__transform_EiiKjd: 270deg; --ClockNumber__transform_EiiKjd-01: -270deg;"
       >
         9
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="10"
         style="--ClockNumber__transform_EiiKjd: 300deg; --ClockNumber__transform_EiiKjd-01: -300deg;"
       >
         10
       </div>
       <div
-        class="ClockNumber_EiiKjd"
+        class="ClockNumber"
         index="11"
         style="--ClockNumber__transform_EiiKjd: 330deg; --ClockNumber__transform_EiiKjd-01: -330deg;"
       >
         11
       </div>
       <div
-        class="SecondHand_cN6khQ SecondHand__theme_highContrast_cN6khQ-01 ClockHand_cN6khQ"
+        class="SecondHand SecondHand__theme_highContrast-01 ClockHand"
         style="--ClockHand__transform_cN6khQ: 0deg;"
       />
       <div
-        class="MinuteHand_cN6khQ ClockHand_cN6khQ"
+        class="MinuteHand ClockHand"
         style="--ClockHand__transform_cN6khQ: 0deg;"
       />
       <div
-        class="HourHand_cN6khQ ClockHand_cN6khQ"
+        class="HourHand ClockHand"
         style="--ClockHand__transform_cN6khQ: 450deg;"
       />
     </div>

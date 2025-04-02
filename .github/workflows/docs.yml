@@ -4,6 +4,12 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
 on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number"
+        required: true
+        type: string
   push:
     branches:
       - main
@@ -25,24 +31,26 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
           run_install: false
-      
+
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
           cache: "pnpm"
-      
+
       - name: Install node_modules
         run: pnpm install
-      
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -50,8 +58,8 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Add wasm32-wasi target
-        run: rustup target add wasm32-wasi
+      - name: Add wasm32-wasip1 target
+        run: rustup target add wasm32-wasip1
 
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
@@ -67,15 +75,15 @@ jobs:
       - name: Link Vercel project
         run: vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
 
-      # Preview deployment (for pull requests and non-main pushes)
+      # Preview deployment (for pull requests, manual triggers, and non-main pushes)
       - name: Pull Vercel environment information (Preview)
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
       - name: Build project artifacts (Preview)
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Preview)
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }}
 
       # Production deployment (for main branch pushes)

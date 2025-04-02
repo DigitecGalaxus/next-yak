@@ -1,6 +1,6 @@
 # next-yak
 
-[Documentation](https://yak.js.org/getting-started) and [Playground](https://yak.js.org/playground), hosted at [yak.js.org](https://yak.js.org/)
+[Documentation](https://yak.js.org/docs/getting-started) and [Playground](https://yak.js.org/playground), hosted at [yak.js.org](https://yak.js.org/)
 
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
@@ -23,6 +23,7 @@
 
 | next-yak         | Next.js         | react            | swc_core         | 
 |------------------|-----------------|------------------|------------------|
+| 5.x              | >= 15.2.1       | 19.x             | 16.0.0           |
 | 4.x              | >= 15.0.4       | 19.x             | 5.0.1            |
 | 3.x              | 15.x            | 18.x / 19.x      | 3.0.2            |
 | 2.x              | 14.x            | 18.x / 19.x      | 0.279.0          |
@@ -30,8 +31,8 @@
 ## Installation
 
 ```bash
-# For Next.js >= 15.0.4
-npm install next-yak@4
+# For Next.js >= 15.2.1
+npm install next-yak
 
 # For Next.js 14.x 
 npm install next-yak@2
@@ -280,18 +281,21 @@ Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 <details>
   <summary>PRS</summary>
 
-- https://github.com/vercel/next.js/pull/51115
-- https://github.com/vercel/next.js/pull/53796
-- https://github.com/css-modules/postcss-modules-local-by-default/pull/64
-- https://github.com/css-modules/postcss-modules-local-by-default/pull/72
-- https://github.com/css-modules/postcss-modules-local-by-default/pull/78
-- https://github.com/vercel/next.js/pull/62644
-- https://github.com/vercel/next.js/pull/62639
-- https://github.com/webpack-contrib/mini-css-extract-plugin/pull/1084
-- https://github.com/vercel/next.js/pull/62733
-- https://github.com/vercel/next.js/pull/64551
-- https://github.com/vercel/next.js/pull/72622
-- https://github.com/webpack/webpack/pull/19012
+- https://github.com/vercel/next.js/pull/51115 (fix inline matchResource `!=!`)
+- https://github.com/vercel/next.js/pull/53796 (fix inline matchResource `!=!`)
+- https://github.com/css-modules/postcss-modules-local-by-default/pull/64 (fix css nesting)
+- https://github.com/css-modules/postcss-modules-local-by-default/pull/72 (fix css nesting)
+- https://github.com/css-modules/postcss-modules-local-by-default/pull/78 (add cssmodules-pure-ignore)
+- https://github.com/css-modules/postcss-modules-local-by-default/pull/85 (add cssmodules-pure-no-check)
+- https://github.com/vercel/next.js/pull/62644 (upgrades postcss-modules-local-by-default for css nesting)
+- https://github.com/webpack-contrib/mini-css-extract-plugin/pull/1084 (fix: improve esMododule exports)
+- https://github.com/vercel/next.js/pull/62639 (enable esmodule optimizations for css modules)
+- https://github.com/vercel/next.js/pull/62733 (Minify post css class names in production)
+- https://github.com/vercel/next.js/pull/64551 (fix lightningcss-loader)
+- https://github.com/vercel/next.js/pull/72622 (upgrades postcss-modules-local-by-default for keyframes)
+- https://github.com/webpack/webpack/pull/19012 (CSS Order without side effects)
+- https://github.com/swc-project/swc/issues/3934 (Browser SWC Plugin support)
+- https://github.com/parcel-bundler/lightningcss/issues/889 (add cssmodules-pure-no-check)
 
 [![nexrt-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
 

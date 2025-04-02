@@ -1,25 +1,54 @@
 ---
 title: FAQ
-# description: Next-yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
 ---
 
 ## Is next-yak production ready?
 
-`next-yak` is still experimental but we are working hard to release a stable 1.0 version
+Yes, `next-yak` is production ready.
+
+Digitec Galaxus, the biggest online retailer in Switzerland, is using `next-yak` in production with a few thousand components
+and saw a significant improvement in their CSS and web vitals performance especially on mobile devices.
 
 ## Can I use next-yak with other frameworks than next.js?
 
-Not by now - feel free to ask for adding support for your framework in our github issue tracker and we will give it a thought.
+Not at the moment.
+
+Feel free to ask for adding support for your framework in our github issue tracker and we will give it a thought.
 
 ## Can I mix/combine next-yak with other CSS-in-JS libraries?
 
-Yes, you can use next-yak with other CSS-in-JS libraries. You can use it with styled-components, emotion, or any other library that 
-adds css classes to your components.
+Yes, you can use next-yak with other CSS-in-JS libraries.
+
+You can use it with styled-components, emotion, tailwind or any other library that adds css classes to your components.
+
+```tsx title="my-component.tsx"
+import { styled, atoms } from 'next-yak';
+
+const Button = styled.button`
+  background: #BF4F74;
+  /* Use any other class */
+  :global(.my-class-from-another-library) {
+    color: white;
+  }
+  /* use tailwind classes */
+  ${atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")}
+`;
+```
+
+## I get a compile time error in my app router page
+
+At the moment, there is an issue with styles in files that use the [metadata api](https://nextjs.org/docs/app/building-your-application/optimizing/metadata) of next.js.
+
+We have an open issue for this problem and are working on a solution.
+See the [open next.js issue here](https://github.com/vercel/next.js/issues/67591)
+
+If it's not this issue, please read it carefully as it should indicate how to fix the problem.
 
 ## Can I reference a component in another component?
 
-Yes, you can reference it in the tagged template literal. 
-```jsx
+Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
+
+```jsx title="my-component.tsx"
 import { styled } from 'next-yak';
 
 const Button = styled.button`
@@ -34,20 +63,127 @@ const Nav = styled.nav`
 `;
 ```
 
-
-<Callout>
-This doesn't work for components outside of the current file, as next-yak only considers one file at a time.
-</Callout>
-
 ## Why does next-yak always generate CSS variables when the values are static references that are known at build time?
 
-It's very hard to determine if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
+It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
 and add errors if we detect that a value is static but a CSS variable is used.
 
 ## Can I use next-yak with TypeScript?
 
-Yes, of course. `next-yak` is fully type safe.
+Yes, `next-yak` is fully type safe.
 
 ## Can I contribute to next-yak?
 
-Yes, of course. We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/jantimon/next-yak)
+Yes.
+
+We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/jantimon/next-yak)
+
+## I get an error about selector that are not pure
+
+If you get an error like this:
+
+<Callout type="error">
+Error: The selector "div" is not pure. It is not allowed to use a selector that is not pure.
+</Callout>
+
+You are using the outdated version of postcss-nested, that is automatically bundled with next.js.
+
+You can update the dependency yourself by adding the package to your `package.json`:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm i postcss-nested
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm i postcss-nested
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add postcss-nested
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add postcss-nested
+```
+</Tab>
+</Tabs>
+
+and create a `postcss.config.cjs` file in your project root with the following content:
+
+```js title="postcss.config.cjs"
+module.exports = {
+  plugins: {
+    'postcss-nested': {},
+  },
+};
+```
+
+Or you can add an ampersand to the selector:
+
+```jsx title="my-component.tsx"
+import { styled } from 'next-yak';
+
+const Button = styled.button`
+  background: #BF4F74;
+  & div {
+    color: white;
+  }
+`;
+```
+
+so that the old version of postcss-nested does not complain about the selector.
+
+For further information see the [issue on next-yak](https://github.com/jantimon/next-yak/issues/221) and the open [pull request on next.js](https://github.com/vercel/next.js/pull/72622).
+
+## My styles are not applied
+
+If your styles are not applied, the first thing you should check is the transformed output of your component.
+In order to do that, you can enable the `debug` option in the `withYak` function.
+
+<Tabs items={['next.config.ts',, 'next.config.js', 'next.config.mjs']}>
+<Tab value="next.config.ts">
+```ts
+export default withYak({
+  experiments: {
+    debug: {
+      filter: (path: string) => path.includes("myPage"),
+      type: "all", // or "css" or "js"
+    },
+  },
+}nextConfig);
+```
+</Tab>
+<Tab value="next.config.js">
+```js
+module.exports = withYak({
+  experiments: {
+    debug: {
+      filter: (path: string) => path.includes("myPage"),
+      type: "all", // or "css" or "js"
+    },
+  },
+}nextConfig);
+```
+</Tab>
+<Tab value="next.config.mjs">
+```js
+export default withYak({
+  experiments: {
+    debug: {
+      filter: (path: string) => path.includes("myPage"),
+      type: "all", // or "css" or "js"
+    },
+  },
+}nextConfig);
+```
+</Tab>
+</Tabs>
+
+This will log the transformed output of your component to the console.
+
+It could be a specificity issue, a wrong selector, or a wrong usage of the library and if you don't know why your styles are not applied, feel free to [open an issue](https://github.com/jantimon/next-yak/issues/new/choose).

@@ -297,3 +297,19 @@ const SelectorMixinsShouldNotAlterType = () => {
 
   <X />;
 };
+
+const InferenceShouldWorkWithComplexTypes = () => {
+  const Title = styled<React.ComponentPropsWithRef<"strong" | "h1">>(
+    {} as any,
+  )<{
+    $primary: boolean;
+  }>`
+    ${({ $primary }) => {
+      if ($primary) {
+        return css`
+          color: red;
+        `;
+      }
+    }}
+  `;
+};

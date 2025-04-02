@@ -28,7 +28,9 @@ export default async function Page(props: {
           components={{
             ...defaultMdxComponents,
             Popup,
+            // @ts-expect-error - As long as fumadocs didn't update to react 19, this is necessary
             PopupContent,
+            // @ts-expect-error - As long as fumadocs didn't update to react 19, this is necessary
             PopupTrigger,
             Tabs,
             Tab,

@@ -2,7 +2,19 @@ import React, { FunctionComponent } from "react";
 import { render } from "@testing-library/react";
 import { beforeEach, expect, describe, it, vi } from "vitest";
 import { YakThemeProvider } from "../context";
-import { styled } from "../styled";
+import { styled as styledFn } from "../styled";
+
+// This transform is usually done by the SWC plugin.
+// However this `attrs.test.tsx` does not compile
+// the code before testing
+const styled = Object.assign(styledFn, {
+  div: styledFn("div"),
+  h1: styledFn("h1"),
+  button: styledFn("button"),
+  a: styledFn("a"),
+  p: styledFn("p"),
+  span: styledFn("span"),
+}) as typeof styledFn;
 
 beforeEach(() => {
   vi.spyOn(console, "warn");

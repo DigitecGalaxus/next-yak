@@ -1,27 +1,14 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { use, useCallback } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
-import { createHighlighterCoreSync } from "shiki";
-import cssStyled from "../lib/langs/css-styled";
-import styled from "../lib/langs/styled";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import ts from "shiki/langs/typescript.mjs";
-import css from "shiki/langs/css.mjs";
-import vitesseDark from "shiki/themes/vitesse-dark.mjs";
-import vitesseLight from "shiki/themes/vitesse-light.mjs";
 import { useRef, useState } from "react";
 import { Primitive } from "fumadocs-ui/components/tabs";
 import { useTheme } from "next-themes";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { useSearchParams } from "next/navigation";
-
-const highlighter = createHighlighterCoreSync({
-  themes: [vitesseLight, vitesseDark],
-  langs: [ts, css, cssStyled, styled],
-  engine: createJavaScriptRegexEngine(),
-});
+import { highlighterPromise } from "@/lib/shiki";
 
 export default function Editor() {
   const themeConfig = useTheme();
@@ -31,6 +18,7 @@ export default function Editor() {
   const [response, setResponse] = useState(initialResponse);
   const searchParams = useSearchParams();
   const realtime = !!searchParams.get("realtime");
+  const highlighter = use(highlighterPromise);
 
   const updateCode = useCallback(() => {
     const code = modelRefs.current.reduce((acc, model) => {

@@ -27,7 +27,7 @@ export default defineConfig([
    {
     entryPoints: ["runtime/internal.ts"],
     format: ["cjs", "esm"],
-    minify: true,
+    minify: false,
     sourcemap: true,
     dts: false,
     external: ["react", "next-yak/context"],
@@ -95,10 +95,9 @@ export default defineConfig([
   // loaders
   {
     entryPoints: [
-      "loaders/ts-loader.ts",
       "loaders/css-loader.ts",
     ],
-    format: ["cjs"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,

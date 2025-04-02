@@ -1,7 +1,0 @@
-.line.diff.remove {
-  background-color: var(--twoslash-error-bg);
-}
-
-.line.diff.add {
-  background-color: var(--twoslash-tag-annotate-bg);
-}

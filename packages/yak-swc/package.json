@@ -1,6 +1,6 @@
 {
   "name": "yak-swc",
-  "version": "4.0.0",
+  "version": "5.1.0",
   "description": "next-yak rust based swc plugin to compile styled components at build time",
   "homepage": "https://yak.js.org/",
   "repository": {
@@ -18,17 +18,21 @@
     "react",
     "typescript"
   ],
-  "main": "target/wasm32-wasi/release/yak_swc.wasm",
+  "main": "target/wasm32-wasip1/release/yak_swc.wasm",
   "scripts": {
-    "build": "cargo build --release --target=wasm32-wasi",
-    "prepublishOnly": "npm run build",
+    "build": "cargo build --release --target=wasm32-wasip1",
+    "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
+    "prettier": "cargo fmt --all",
     "test": "cargo test",
     "test:snapshots": "cd yak_swc && UPDATE=1 cargo test"
   },
   "files": [],
   "preferUnplugged": true,
   "dependencies": {
-    "@swc/counter": "0.1.3"
+    "@swc/counter": "catalog:core"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "maintainers": [
     {

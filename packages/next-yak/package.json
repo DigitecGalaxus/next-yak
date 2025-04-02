@@ -1,8 +1,9 @@
 {
   "name": "next-yak",
-  "version": "4.0.0",
+  "version": "5.1.0",
   "type": "module",
   "types": "./dist/",
+  "sideEffects": false,
   "license": "MIT",
   "description": "next-yak is a CSS-in-JS solution tailored for Next.js that seamlessly combines the expressive power of styled-components syntax with efficient build-time extraction of CSS using Next.js's built-in CSS configuration",
   "homepage": "https://yak.js.org/",
@@ -59,12 +60,10 @@
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/css-loader": {
-      "require": "./dist/loaders/css-loader.cjs"
-    }
+    "./loaders/css-loader": "./dist/loaders/css-loader.js"
   },
   "scripts": {
-    "prepublishOnly": "npm run build && npm run test && npm run test:types:code && npm run test:types:test",
+    "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
     "build": "tsup",
     "watch": "tsup --watch",
     "test": "vitest run",
@@ -75,28 +74,28 @@
     "prettier": "npx prettier --write \"./{loaders,runtime,withYak}/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
-    "@babel/core": "7.23.2",
-    "@babel/plugin-syntax-typescript": "7.22.5",
-    "yak-swc": "4.0.0"
+    "@babel/core": "catalog:core",
+    "@babel/plugin-syntax-typescript": "catalog:core",
+    "yak-swc": "5.1.0"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.1.14",
-    "@types/webpack": "5.28.5",
-    "@babel/types": "7.23.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^16.1.0",
-    "@types/jest": "29.5.5",
-    "@types/node": "20.4.5",
-    "@types/react": "19.0.1",
-    "@types/react-dom": "19.0.1",
-    "fast-glob": "3.3.2",
-    "jsdom": "^25.0.1",
-    "next": "15.0.4",
-    "react": "19.0.0",
-    "typescript": "5.5.2",
-    "vite": "5.3.4",
-    "vitest": "2.0.4",
-    "tsup": "7.2.0"
+    "@types/babel__core": "catalog:dev",
+    "@types/webpack": "catalog:dev",
+    "@babel/types": "catalog:dev",
+    "@testing-library/jest-dom": "catalog:dev",
+    "@testing-library/react": "catalog:dev",
+    "@types/jest": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "fast-glob": "catalog:dev",
+    "jsdom": "catalog:dev",
+    "next": "catalog:dev",
+    "react": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev",
+    "tsup": "catalog:dev"
   },
   "files": [
     "dist",
@@ -105,6 +104,9 @@
     "withYak",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "maintainers": [
     {
       "name": "Luca Schneider"

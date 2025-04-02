@@ -1,5 +1,5 @@
 import ReactJSXRuntime from "react/jsx-runtime";
-import type { StaticCSSProp } from "./mocks/cssLiteral.js";
+import type { ComponentStyles } from "./mocks/cssLiteral.js";
 
 const Fragment = ReactJSXRuntime.Fragment;
 const jsx = ReactJSXRuntime.jsx;
@@ -18,9 +18,9 @@ export declare namespace YakJSX {
     React.JSX.IntrinsicClassAttributes<T>;
   export type IntrinsicElements = {
     [K in keyof React.JSX.IntrinsicElements]: React.JSX.IntrinsicElements[K] & {
-      css?: StaticCSSProp;
+      css?: ComponentStyles<Record<keyof any, never>>;
     };
   };
 }
 
-export { type YakJSX as JSX, Fragment, jsx, jsxs };
+export { Fragment, jsx, jsxs, type YakJSX as JSX };

@@ -16,17 +16,17 @@ The goal of this project is to create a CSS-in-JS library that has the following
   - can be statically extracted
   - can be optimized by postcss
   - no processing during hydration
-  - can make use of 103 early hints
+  - can make use of [103 early hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/103)
 - api
   - ui colocation (mixing css and jsx)
   - familiar styled.div api
   - composable styled(Component)
   - allows conditional styles
-  - allow to use props in styles
-  - allow to use a context based theme in styles
+  - use props in styles
+  - use context based themes in styles
   - typescript support
 
-Optimizations are performed by postcss, allowing you to utilize its full potential and its plugins. 
+Optimizations are performed by postcss, allowing you to utilize its full potential and its plugins.
 This also ensures consistency in optimizations across CSS files and CSS-in-JS.
 
 ## Our Journey
@@ -54,12 +54,13 @@ If you're familiar with styled-components, next-yak enables you to use the same 
 Additionally it's really fast and has a small footprint.
 
 
-<Tabs groupId="language" items={["javascript", "typescript"]}>
-<Tab value="javascript">
-```jsx
+<Tabs groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+// @allowUMDGlobalAccess
 import { styled, css } from 'next-yak';
 
-const MyParagraph = styled.p`
+const MyParagraph = styled.p<{ $primary?: boolean }>`
   color: ${(props) => props.$primary ? "teal" : "orange"};
   ${(props) => props.$primary && css`padding: 16px;`}
   background-color: #f0f0f0;
@@ -70,12 +71,11 @@ export const MyComponent = () => {
 }
 ```
 </Tab>
-<Tab value="typescript">
-```tsx twoslash
-// @allowUMDGlobalAccess
+<Tab value="javascript">
+```jsx
 import { styled, css } from 'next-yak';
 
-const MyParagraph = styled.p<{ $primary?: boolean }>`
+const MyParagraph = styled.p`
   color: ${(props) => props.$primary ? "teal" : "orange"};
   ${(props) => props.$primary && css`padding: 16px;`}
   background-color: #f0f0f0;
@@ -114,31 +114,11 @@ export MyComponent = () => {
 
 Consider using next-yak if you value:
 
-#### Colocation 
+#### Colocation
 
 Having your styles and code together in one place.
 
-
-<Tabs groupId="language" items={["javascript", "typescript"]}>
-<Tab value="javascript">
-```jsx 
-import { styled } from 'next-yak';
-
-const MyParagraph = styled.p`
-  color: ${({$variant}) => $variant === 'primary' ? "red" : "blue"}
-`;
-
-const MyOtherComponent = styled.p``;
-
-export const MyComponent = (props) => {
-  if(props.$variant) {
-    return (<MyParagraph $variant={props.$variant}>{props.children}</MyParagraph>);
-  }
-
-  return (<MyOtherComponent>{props.children}</MyOtherComponent>);
-}
-```
-</Tab>
+<Tabs groupId="language" items={["typescript", "javascript"]}>
 <Tab value="typescript">
 ```tsx twoslash
 import { FC, ReactNode } from 'react';
@@ -151,6 +131,25 @@ const MyParagraph = styled.p<{ $variant?: 'primary' | 'secondary' }>`
 const MyOtherComponent = styled.p``;
 
 export const MyComponent: FC<{ $variant?: 'primary' | 'secondary'; children: ReactNode }> = (props) => {
+  if(props.$variant) {
+    return (<MyParagraph $variant={props.$variant}>{props.children}</MyParagraph>);
+  }
+
+  return (<MyOtherComponent>{props.children}</MyOtherComponent>);
+}
+```
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled } from 'next-yak';
+
+const MyParagraph = styled.p`
+  color: ${({$variant}) => $variant === 'primary' ? "red" : "blue"}
+`;
+
+const MyOtherComponent = styled.p``;
+
+export const MyComponent = (props) => {
   if(props.$variant) {
     return (<MyParagraph $variant={props.$variant}>{props.children}</MyParagraph>);
   }
@@ -179,12 +178,12 @@ const Header = styled.div`
 
 Working with utility-first CSS frameworks like Tailwind.
 
-<Tabs groupId="language" items={["javascript", "typescript"]}>
-<Tab value="javascript">
-```jsx
+<Tabs groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
 import { styled, atoms } from 'next-yak';
 
-const Header = styled.nav`
+const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
   ${({$variant}) => $variant === "primary"
     ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
     : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
@@ -192,11 +191,11 @@ const Header = styled.nav`
 `
 ```
 </Tab>
-<Tab value="typescript">
-```tsx twoslash
+<Tab value="javascript">
+```jsx
 import { styled, atoms } from 'next-yak';
 
-const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
+const Header = styled.nav`
   ${({$variant}) => $variant === "primary"
     ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
     : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
@@ -210,7 +209,7 @@ const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
 
 Building complex components from simpler ones.
 
-```jsx
+```jsx title="my-component.tsx"
 import { styled } from 'next-yak';
 
 const Input = styled.input``;

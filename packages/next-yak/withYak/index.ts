@@ -21,6 +21,13 @@ export type YakConfigOptions = {
    * or to add organization-specific prefixes.
    */
   prefix?: string;
+  /**
+   * Adds `displayName` to each components for better React DevTools debugging
+   * - Enabled by default in development mode
+   * - Disabled by default in production
+   * - Increases bundle size slightly when enabled
+   */
+  displayNames?: boolean;
   experiments?: {
     debug?:
       | boolean
@@ -33,15 +40,17 @@ export type YakConfigOptions = {
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const previousConfig = nextConfig.webpack;
+  const devMode = process.env.NODE_ENV !== "production";
 
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
   nextConfig.experimental.swcPlugins.push([
     resolve("yak-swc"),
     {
-      devMode: process.env.NODE_ENV !== "production",
+      devMode,
       basePath: currentDir,
       prefix: yakOptions.prefix,
+      displayNames: yakOptions.displayNames ?? devMode,
     },
   ]);
 
@@ -52,7 +61,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
 
     webpackConfig.module.rules.push({
       test: /\.yak\.module\.css$/,
-      loader: path.join(currentDir, "../loaders/css-loader.cjs"),
+      loader: path.join(currentDir, "../loaders/css-loader.js"),
       options: yakOptions,
     });
 

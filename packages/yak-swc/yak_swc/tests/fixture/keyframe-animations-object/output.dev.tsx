@@ -1,4 +1,5 @@
 import { styled, css, keyframes } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK Extracted CSS:
 :global(.FadeInText__$reverse_m7uBBu) {
@@ -11,7 +12,9 @@ export const FadeInText = /*YAK Extracted CSS:
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ styled.p("FadeInText_m7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("FadeInText__$reverse_m7uBBu") : /*#__PURE__*/ css("FadeInText__not_$reverse_m7uBBu"));
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("FadeInText_m7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("FadeInText__$reverse_m7uBBu") : /*#__PURE__*/ css("FadeInText__not_$reverse_m7uBBu")), {
+    "displayName": "FadeInText"
+});
 const animations = {
     fadeIn: /*YAK Extracted CSS:
 @keyframes :global(animations_fadeIn_m7uBBu) {
@@ -61,4 +64,6 @@ export const FancyButton = /*YAK Extracted CSS:
     animation: global(slides_200_m7uBBu) 1s ease-in-out, global(animations_fadeOut_m7uBBu) 1s ease-in;
   }
 }
-*/ /*#__PURE__*/ styled.button("FancyButton_m7uBBu");
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("FancyButton_m7uBBu"), {
+    "displayName": "FancyButton"
+});

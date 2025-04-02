@@ -30,7 +30,7 @@ pub fn relative_posix_path(base_path: &str, filename: &str) -> String {
 /// - "/foo/bar" -> "/foo/bar"
 fn convert_path_to_posix(path: &str) -> String {
   lazy_static! {
-    static ref PATH_REPLACEMENT_REGEX: Regex = Regex::new(r":\\|\\").unwrap();
+    static ref PATH_REPLACEMENT_REGEX: Regex = Regex::new(r":\\|\\|:/").unwrap();
   }
 
   PATH_REPLACEMENT_REGEX.replace_all(path, "/").to_string()
@@ -53,6 +53,14 @@ mod tests {
     assert_eq!(
       relative_posix_path(r"C:\foo\", r"C:\bar\baz.txt"),
       "../bar/baz.txt"
+    );
+  }
+
+  #[test]
+  fn test_relative_path_windows_forward_slash() {
+    assert_eq!(
+      relative_posix_path(r"E:\foo", "E:/foo/bar/file.tsx"),
+      "bar/file.tsx"
     );
   }
 

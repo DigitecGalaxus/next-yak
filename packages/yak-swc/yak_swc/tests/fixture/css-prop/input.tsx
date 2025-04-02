@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css, styled } from "next-yak";
 
 const Elem = () => (
   <div
@@ -58,3 +58,17 @@ const Elem6 = () => (
 const Elem7 = () => <div className="no-css" />;
 
 const Elem8 = () => <div css={css``} className="empty-css" />;
+
+const Text = styled.p`
+  font-size: 20px;
+`;
+
+const StyledComponentWithCSSProp = () => (
+  <Text
+    css={css`
+      color: red;
+    `}
+  >
+    test
+  </Text>
+);

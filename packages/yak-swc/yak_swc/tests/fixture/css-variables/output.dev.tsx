@@ -1,4 +1,5 @@
 import { styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const ThemedButton = /*YAK Extracted CSS:
 :global(.ThemedButton_m7uBBu) {
@@ -13,11 +14,15 @@ export const ThemedButton = /*YAK Extracted CSS:
     background-color: var(--secondary-color);
   }
 }
-*/ /*#__PURE__*/ styled.button("ThemedButton_m7uBBu");
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("ThemedButton_m7uBBu"), {
+    "displayName": "ThemedButton"
+});
 export const ThemeProvider = /*YAK Extracted CSS:
 :global(.ThemeProvider_m7uBBu) {
   --primary-color: #007bff;
   --secondary-color: #6c757d;
   --font-size-base: 16px;
 }
-*/ /*#__PURE__*/ styled.div("ThemeProvider_m7uBBu");
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("ThemeProvider_m7uBBu"), {
+    "displayName": "ThemeProvider"
+});

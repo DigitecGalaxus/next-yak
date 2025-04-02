@@ -1,14 +1,15 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu1", {
         "style": {
-            "--ym7uBBu2": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--ym7uBBu2": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
     return $letters > 5 && /*#__PURE__*/ css("ym7uBBu4");
 }, {
     "style": {
-        "--ym7uBBu3": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--ym7uBBu3": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
 export const ThemedButton = /*YAK Extracted CSS:
@@ -28,15 +29,15 @@ export const ThemedButton = /*YAK Extracted CSS:
 :global(.ym7uBBu9) {
   color: red;
 }
-*/ /*#__PURE__*/ styled.button("ym7uBBu5", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu6", {
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu5", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu6", {
         "style": {
-            "--ym7uBBu7": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--ym7uBBu7": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
     return $letters > 5 && /*#__PURE__*/ css("ym7uBBu9");
 }, {
     "style": {
-        "--ym7uBBu8": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--ym7uBBu8": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
 export const CustomThemedButton = /*YAK Extracted CSS:
@@ -57,14 +58,14 @@ export const CustomThemedButton = /*YAK Extracted CSS:
 :global(.ym7uBBuE) {
   color: red;
 }
-*/ /*#__PURE__*/ styled.button("ym7uBBuA", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuB", {
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuA", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuB", {
         "style": {
-            "--ym7uBBuC": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--ym7uBBuC": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
     return $letters > 5 && /*#__PURE__*/ css("ym7uBBuE");
 }, {
     "style": {
-        "--ym7uBBuD": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--ym7uBBuD": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });

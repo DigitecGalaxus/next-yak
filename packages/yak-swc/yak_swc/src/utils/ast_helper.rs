@@ -2,7 +2,7 @@ use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use swc_core::atoms::Atom;
-use swc_core::{ecma::ast::*, plugin::errors::HANDLER};
+use swc_core::{common::DUMMY_SP, ecma::ast::*, plugin::errors::HANDLER};
 
 use crate::variable_visitor::ScopedVariableReference;
 
@@ -60,6 +60,28 @@ pub fn member_expr_to_strings(member_expr: &MemberExpr) -> Option<(Ident, Vec<At
       Some((root_ident, nested_props))
     }
     _ => None,
+  }
+}
+
+/// String to MemberProp
+pub fn create_member_prop_from_string(s: String) -> MemberProp {
+  // if the string contains characters that are not allowed in an identifier
+  // "with space" -> foo["with space"]
+  if s.contains(|c: char| !c.is_alphanumeric() && c != '_' && c != '$')
+    || s.starts_with(|c: char| c.is_ascii_digit())
+  {
+    MemberProp::Computed(ComputedPropName {
+      span: DUMMY_SP,
+      expr: Box::new(Expr::Lit(Lit::Str(Str {
+        span: DUMMY_SP,
+        value: s.into(),
+        raw: None,
+      }))),
+    })
+  }
+  // otherwise "bar" -> foo.bar
+  else {
+    MemberProp::Ident(IdentName::new(s.into(), DUMMY_SP))
   }
 }
 

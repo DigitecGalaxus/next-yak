@@ -1,6 +1,10 @@
 import type { css as cssInternal, PropsToClassNameFn } from "../cssLiteral.js";
 
-export type { StaticCSSProp, CSSInterpolation } from "../cssLiteral.js";
+export type {
+  ComponentStyles,
+  CSSInterpolation,
+  CSSProp,
+} from "../cssLiteral.js";
 
 /**
  * Allows to use CSS styles in a styled or css block

@@ -1,514 +1,545 @@
 ---
 title: Migration from styled-components
-description: We tried to keep the changes you need to know if you're already familiar with styled-components to a minimum. 
+description: next-yak provides a RSC compatible API which is very similar to the styled-components API. In most cases the only change necessary is the import. However there are some edge cases which have to be migrated manually.
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Familiar API
+## Guide
 
-### styled
+One of the core goals of `next-yak` is to provide a seamless migration path from `styled-components` to `next-yak`.
+This comprehensive guide will walk you through the migrating, covering common scenarios and edge cases you might encounter.
 
-You can use the `styled` tag as you know for all kind of elements.
+## Feature comparison
 
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled from 'styled-components';
+Supported
+- Styled syntax (incl. static and dynamic parts)
+- Css tagged template literal
+- Css prop
+- Keyframes
+- Attrs
+- References to other components
+- Mixins
+- If some features are missing, please let us know and open a feature request on [GitHub](https://github.com/jantimon/next-yak/issues/new/choose)
 
-const Button = styled.button`
-	background: #BF4F74;
-`;
-
-const Nav = styled.nav`
-	background: #BF4F74;
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx twoslash
-import { styled } from 'next-yak';
-
-const Button = styled.button`
-	background: #BF4F74;
-`;
-
-const Nav = styled.nav`
-	background: #BF4F74;
-`;
-```
-</Tab>
-</Tabs>
-
-You can use static or dynamic parts the same way you would use it in styled-components.
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled from 'styled-components';
-
-const Button = styled.button<{ $primary: boolean }>`
-	background: #BF4F74;
-	color: ${props => props.$primary ? "white" : "#BF4F74"};
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx twoslash
-import { styled } from 'next-yak';
-
-const Button = styled.button<{ $primary: boolean }>`
-	background: #BF4F74;
-	color: ${props => props.$primary ? "white" : "#BF4F74"};
-`;
-```
-</Tab>
-</Tabs>
+Missing
+- Object syntax
+- Dynamic usage of the css prop
+- `as` prop – You can replace it with a [type-safe alternative](#property-as-does-not-exist)
+- `.withConfig`
+- CreateGlobalStyle - You can just import any global styles in your files directly
+- As of next.js 15, the server components theme provider is not supported. We are working on a solution for this.
 
 
-### css
+## Just change the import
 
-The `css` tagged template literal in styled-components is used when you want to use a dynamic
-CSS part "outside" of the styled literal. Next-yak works similar but with the difference that you
-should use it everytime you want to have dynamic properties where the CSS property isn't known
-in the outside literal.
+You need to do the least amount of work for the following changes. All other changes build upon this one.
+Just change the import from `styled-components` to `next-yak` and change the import of `styled` from a default import to a named import.
 
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled from 'styled-components';
-
-const Button = styled.button<{ $primary: boolean }>`
-	background: #BF4F74;
-	${props => props.$primary ? "color: white;" : "color: #BF4F74;"}
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx twoslash
-import { styled, css } from 'next-yak';
-
-const Button = styled.button<{ $primary: boolean }>`
-	background: #BF4F74;
-	${props => props.$primary ? css`color: white` : css`color: #BF4F74`}
-`;
-```
-</Tab>
-</Tabs>
-
-Next-yak transforms `css` code into a class name that is referenced. So you can think of it as
-an additional css class that gets added/subtracted as needed.
-
-#### css prop
-
-Also the css prop works similar to styled-components. The main difference is that you can't use
-dynamic values in the css prop and that you have to use the `css` tag to define the css.
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-<div
-  css={`
-    background: papayawhip;
-    color: ${props => props.theme.colors.text};
-  `}
-/>
-<Button
-  css="padding: 0.5em 1em;"
-/>
-```
-</Tab>
-<Tab value="next-yak">
-```tsx
-import { css } from 'next-yak';
-
-<div
-  css={css`
-    background: papayawhip;
-    color: 'red';
-  `}
-/>
-<Button
-  css={css`padding: 0.5em 1em;`}
-/>
-```
-</Tab>
-</Tabs>
-
-If you use TypeScript, you can just add the following to your `tsconfig.json` to get type checking for the css prop.
-
-```json
-{
-	"compilerOptions": {
-      "jsxImportSource": "next-yak"
-	}
-}
-```
-
-
-### keyframes
-
-The api for keyframes is exactly the same as in styled-components. You can define your keyframes
-and use it in your animations.
-
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled, { keyframes } from 'styled-components';
-
-const rotate = keyframes`
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-`;
-
-const Rotate = styled.div`
-	display: inline-block;
-	animation: ${rotate} 2s linear infinite;
-	padding: 2rem 1rem;
-	font-size: 2rem;
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx
-import { styled, keyframes } from 'next-yak';
-
-const rotate = keyframes`
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-`;
-
-const Rotate = styled.div`
-	display: inline-block;
-	animation: ${rotate} 2s linear infinite;
-	padding: 2rem 1rem;
-	font-size: 2rem;
-`;
-```
-</Tab>
-</Tabs>
-
-### attrs
-
-Next-yak also enables `.attrs` on your components and has the same behaviour as in styled-components
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled from 'styled-components';
-
-const Input = styled.input.attrs(props => ({
-	type: "text",
-	size: props.size || "1em"
-}))`
-	color: palevioletred;
-	font-size: 1em;
-	border: 2px solid palevioletred;
-	border-radius: 3px;
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx
-import { styled } from 'next-yak';
-
-const Input = styled.input.attrs(props => ({
-	type: "text",
-	size: props.size || "1em"
-}))`
-	color: palevioletred;
-	font-size: 1em;
-	border: 2px solid palevioletred;
-	border-radius: 3px;
-`;
-```
-</Tab>
-</Tabs>
-
-### References to other components
-
-In order to create a selector that includes another component, you can just reference it in the tagged
-template literal. 
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled from 'styled-components';
-
-const Button = styled.button`
-	color: blue;
-`;
-
-const Wrapper = styled.div`
-	${Button} {
-		color: red;
-	}
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx
-import { styled } from 'next-yak';
-
-const Button = styled.button`
-	color: blue;
-`;
-
-const Wrapper = styled.div`
-	${Button} {
-		color: red;
-	}
-`;
-```
-</Tab>
-</Tabs>
-
-During build time the reference is changed to the actual generated class name of the referenced component.
-
-### Mixins
-
-Mixins allow you to predefine CSS styles and reuse them across components. You can just create mixins the same
-way as you would with styled-components.
-
-<Tabs groupId="frameworks" items={["styled-components", "next-yak"]}>
-<Tab value="styled-components">
-```jsx
-import styled, { css } from 'styled-components';
-
-const mixin = css`
-	color: green;
-`;
-
-const MyComp = styled.div`
-	background-color: yellow;
-	${mixin}
-`;
-```
-</Tab>
-<Tab value="next-yak">
-```tsx
-import { css, styled } from 'next-yak';
-
-const mixin = css`
-	color: green;
-`;
-
-const MyComp = styled.div`
-	background-color: yellow;
-	${mixin}
-`;
-```
-</Tab>
-</Tabs>
-
-
-## Migration
-
-### Change import
-
-Change the import from `styled-components` to `next-yak` and change the import of `styled` from a default import 
-to a named import.
-
-```ts
+```tsx title="component.tsx"
 import styled, { css, keyframes } from 'styled-components'; // [!code --]
 import { styled, css, keyframes } from 'next-yak'; // [!code ++]
 ```
 
-### Add yak files
+### Static component styles
 
-Yak files are used to store static values that are extracted during build time. You can create a `.yak.ts` file
-everywhere in your project and it will be picked up by next-yak.
+For components with static styles, simply updating the import is sufficient:
 
-```ts [constants.yak.ts]
-export const colors = {
-	primary: "#BF4F74",
-	secondary: "#F7B801",
-};
-
-export const breakpoints = {
-	mobile: "@media (max-width: 420px)",
-	tablet: "@media (max-width: 768px)",
-	desktop: "@media (min-width: 769px)",
-};
-```
-
-You can then use these values in your styled components.
-
-```tsx
-import { styled } from 'next-yak';
-import { colors, breakpoints } from './constants.yak';
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
 
 const Button = styled.button`
-	background: ${colors.primary};
-	${breakpoints.mobile} {
-		font-size: 1rem;
-	}
-	${breakpoints.tablet} {
-		font-size: 1.5rem;
-	}
-	${breakpoints.desktop} {
-		font-size: 2rem;
-	}
+  background: #BF4F74;
+  color: white;
+  padding: 1em 2em;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 `;
 ```
 
-It looks and feels like a mixin from styled-components but it's actually a static value that gets injected during build time.
-This is the reason why you can't use dynamic values in yak files, as they have to be known during build time whereas 
-mixin values can be dynamic.
+<Callout>
+**Important Note on Selectors**:
+While most selectors work out of the box, you might encounter the error: `Selector "h1" is not pure (pure selectors must contain at least one local class or id)`. To resolve this, either:
+1. Update your Next.js PostCSS version
+2. Add an ampersand (&) before the selector
 
-So this doesn't work:
+For more detailed information, refer to the [FAQ](/docs/faq#i-get-an-error-about-selector-that-are-not-pure).
+</Callout>
 
-```ts [constants.yak.ts]
-export const colors = {
-	primary: "#BF4F74",
-	secondary: "#F7B801",
-	dynamic: (props: { $primary: boolean }) => props.$primary ? "#BF4F74" : "white", // [!code hl]
-};
+### Static mixins
 
-export const breakpoints = (media: Record<string, string>) => { // [!code hl]
-	return media;
-};
-```
+For static mixins, you can just change the import and you're done.
 
-### Replace styled-components with next-yak
-
-Replace all your styled-components with next-yak. You can use the same API as you would with styled-components.
-
-```tsx
-import styled, { css, keyframes } from 'styled-components'; // [!code --]
-import { styled, css, keyframes } from 'next-yak'; // [!code ++]
-
-const Button = styled.button`
-	background: #BF4F74;
-	color: ${props => props.$primary ? "white" : "#BF4F74"};
-`;
-
-const Input = styled.input.attrs(props => ({
-	type: "text",
-	size: props.size || "1em"
-}))`
-	color: palevioletred;
-	font-size: 1em;
-	border: 2px solid palevioletred;
-	border-radius: 3px;
-`;
-
-const Wrapper = styled.div`
-	${Button} {
-		color: red;
-	}
-`;
-
-const mixin = css`
-	color: green;
-`;
-
-const MyComp = styled.div`
-	background-color: yellow;
-	${mixin}
-`;
-
-const rotate = keyframes`
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-`;
-
-const Rotate = styled.div`
-	display: inline-block;
-	animation: ${rotate} 2s linear infinite;
-	padding: 2rem 1rem;
-	font-size: 2rem;
-`;
-```
-
-Replace some mixins with constant yak files.
-
-```tsx
+```tsx title="component.tsx"
 import styled, { css } from 'styled-components'; // [!code --]
-import { colors } from "./colors-mixin"; // [!code --]
 import { css, styled } from 'next-yak'; // [!code ++]
-import { colors } from './colors.yak'; // [!code ++]
 
-const Button = styled.button`
-	background: ${colors.primary};
-	color: ${props => props.$primary ? "white" : colors.primary};
+const mixin = css`
+  color: green;
+  font-size: 1rem;
+`;
+
+const MyComp = styled.div`
+  background-color: yellow;
+  ${mixin};
 `;
 ```
 
-Wrap the imported component in a local component when you want to reference it.
+This counts for all static mixins that you use in your styled components including exported mixins.
 
-```tsx
+<Callout>
+**Important note on semicolons**:
+You need to add a semicolon after the mixin to separate it from the rest of the styles.
+Otherwise the parser can not differentiate between a selector, a constant or a mixin.
+</Callout>
+
+### Keyframes
+
+For keyframes you can just change the import and you're done.
+
+```tsx title="component.tsx"
+import styled, { keyframes } from 'styled-components'; // [!code --]
+import { styled, keyframes } from 'next-yak'; // [!code ++]
+
+const rotate = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Rotate = styled.div`
+  display: inline-block;
+  animation: ${rotate} 2s linear infinite;
+  padding: 2rem 1rem;
+  font-size: 2rem;
+`;
+```
+
+### Component references
+
+Styling based on other components remains straightforward. You just need to change the import
+
+```tsx title="component.tsx"
 import styled from 'styled-components'; // [!code --]
 import { styled } from 'next-yak'; // [!code ++]
 import { Button } from './button';
 
-const LocalButton = styled(Button)``;
+const Container = styled.div`
+  ${Button} {
+    color: red;
+    margin: 0.5em;
 
-const Wrapper = styled.div`
-	${Button} { // [!code --]
-	${LocalButton} { // [!code ++]
-		color: red;
-	}
+    &:hover {
+      color: darkred;
+    }
+  }
 `;
 ```
 
+### Attrs
 
-Or add a static class to referenced components outside of the current file.
+If you use `.attrs` in your styled components, you can just change the import and you're done.
 
-<Tabs groupId="frameworks" items={["my-component.tsx", "wrapper.tsx"]}>
-<Tab value="my-component.tsx">
-```tsx
+```tsx title="component.tsx"
 import styled from 'styled-components'; // [!code --]
 import { styled } from 'next-yak'; // [!code ++]
 
-export const Button = styled.button` 
-	color: blue; 
-`; 
-
-export const MyComponent = () => {
-	return (
-		<Button
-			className="myButton" // [!code ++]
-		>
-			Click me
-		</Button>);
-```
-</Tab>
-<Tab value="wrapper.tsx">
-```tsx
-import { styled } from 'next-yak';
-import { Button } from './my-component'; // [!code --]
-
-const Wrapper = styled.div`
-	${Button} { // [!code --]
-	.myButton { // [!code ++]
-		color: red;
-	}
+const Input = styled.input.attrs(props => ({
+  type: "text",
+  size: props.size || "1em"
+}))`
+  color: palevioletred;
+  font-size: 1em;
+  border: 2px solid palevioletred;
+  border-radius: 3px;
 `;
 ```
-</Tab>
-</Tabs>
 
-## Missing features
+The same applies to the `.attrs` function for wrapped components.
 
-Currently `.withConfig` and the `as` prop are not supported. We might add support for these features in the future.
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+import { Button, type ButtonProps } from './button';
 
-## Conclusion
+const LocalButton = styled(Button).attrs<Partial<ButtonProps>>(() => ({
+    tabIndex: 0,
+  }))`
+  color: red;
+`;
+```
 
-next-yak is a drop-in replacement for styled-components that works with Server Components and Client Components. It
-provides a familiar API and adds the ability to use static values in your styled components. This is especially useful
-when you want to use the same values across your application and don't want to pass them down the component tree.
+## Property 'as' does not exist
+ 
+`next-yak` does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
+ 
+```tsx
+type ElementType =
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+ 
+const HtmlTag = <T extends ElementType>({
+  tag: Tag,
+  ...props
+}: {
+  tag: T;
+  children?: React.ReactNode;
+} & React.JSX.IntrinsicElements[T]) => <Tag {...(props as any)} />;
+```
 
-If you have any questions or feedback, feel free to reach out to us on [GitHub](https://github.com/jantimon/next-yak)
+You can then pass one of predefined tags of `ElementType` as a prop and style it like any other component:
+```tsx
+<Title tag="h1">Heading 1</Title>
+ 
+const Title = styled(HtmlTag)`
+  font-weight: bold;
+`;
+```
+ 
+This approach is preferred over the `as` prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
 
+## Change some more things
+
+The last part of the migration guide is about more complex cases where you need to change a bit more than just the import.
+
+### Dynamic component styles
+
+This will be the most complex part of the migration. Next-yak differentiates between dynamic css properties and property values which is different than styled-components.
+If you use property values you shouldn't need to change more than the import.
+
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+
+const Button = styled.button<{ $primary: boolean }>`
+  background: #BF4F74;
+  color: ${props => props.$primary ? "white" : "#BF4F74"};
+`;
+```
+
+This will be transformed to a css variable that gets injected during build time.
+
+```tsx title="transformed.tsx"
+// pseudo code
+const Button = styled.button`
+  background: #BF4F74;
+  color: var(--next-yak-1);
+`;
+```
+
+If you use dynamic css properties, you need to use the `css` tag to define the css.
+
+```tsx title="component.tsx"
+import styled, { css } from 'styled-components'; // [!code --]
+import { css, styled } from 'next-yak'; // [!code ++]
+
+const Button = styled.button<{ $primary: boolean }>`
+  background: #BF4F74;
+  ${props => props.$primary
+  ? ` // [!code --]
+  ? css` // [!code ++]
+    color: white;
+    font-size: 1rem;
+    padding: 1em 2em;
+  : ` // [!code --]
+  : css` // [!code ++]
+    color: #BF4F74;
+    font-size: 2rem;
+    padding: 2em 4em;
+  `
+  }
+`;
+```
+
+When next-yak encounters a css tag, it will transform the css into a class name that gets injected during build time.
+
+```tsx title="transformed.tsx"
+// pseudo code
+
+const Button = (props) =>
+  <button className={props.$primary ? "next-yak-1" : "next-yak-2"}>
+     Click me
+  </button>
+```
+
+You can nest the css tags arbitrarily deep and next-yak will transform them into class names and css variables.
+It's important to note that you can't nest arbitrary styles inside property values, but you can nest property values inside css tags.
+Generally, you should try to simplify your styles and avoid nesting as much as possible to keep your styles as fast as possible.
+
+### Dynamic mixins
+
+If you use dynamic mixins in your styled components, you need to change it the same way as you would with dynamic component styles.
+
+```tsx title="component.tsx"
+import styled, { css } from 'styled-components'; // [!code --]
+import { css, styled } from 'next-yak'; // [!code ++]
+
+const mixin = css<{ $primary: boolean }>`
+  color: green;
+
+  ${props => props.$primary
+    ? css`
+      background: white;
+    `
+    : css`
+      background: black;
+    `
+  }
+`;
+
+const MyComp = styled.div<{ $primary: boolean }>`
+  background-color: yellow;
+  ${mixin};
+`;
+```
+
+Dynamic mixins work differently in next-yak than in styled-components. With next-yak you're currently not able to export a dynamic mixin and use it in other components.
+As we transform the styles on a per-file basis, we can't share dynamic values between files. If you need to use a dynamic mixin in multiple components, you unfortunately need to duplicate the mixin in each file or move the components to the same file.
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { css, styled } from 'next-yak'; // [!code ++]
+
+import { mixin } from './mixin'; // [!code --]
+const mixin = css<{ $primary: boolean }>` // [!code ++]
+  color: green; // [!code ++]
+// [!code ++]
+  ${props => props.$primary // [!code ++]
+    ? css`background: white;` // [!code ++]
+    : css`background: black;` // [!code ++]
+  } // [!code ++]
+`; // [!code ++]
+
+const MyComp = styled.div<{ $primary: boolean }>`
+  background-color: yellow;
+  ${mixin};
+`;
+```
+
+```tsx title="mixin.ts"
+import { css } from 'styled-components'; // [!code --]
+
+export const mixin = css<{ $primary: boolean }>` // [!code --]
+  color: green; // [!code --]
+// [!code --]
+  ${props => props.$primary // [!code --]
+    ? `background: white;` // [!code --]
+    : `background: black;` // [!code --]
+  } // [!code --]
+`; // [!code --]
+```
+
+### Reference external styles
+
+If you reference external styles (styles that aren't component styles) in your styled components, you need to change the identifier in addition to the import.
+
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+
+const Button = styled.button`
+  color: blue;
+
+  .myGlobalClass { // [!code --]
+  :global(.myGlobalClass) { // [!code ++]
+    color: red;
+  }
+`;
+```
+
+The reason for this is that next-yak transforms your styles to module-css styles. And if you want to reference global selectors, you need to use the `:global` selector.
+More can be found in the [docs of css-modules](https://github.com/css-modules/css-modules/blob/master/docs/composition.md#exceptions)
+
+### Functions that generate styles
+
+If you have somewhere utility functions that generate styles, you need to change them. Either transform them so that they cover every different static style or
+create a dynamic mixin.
+
+```tsx title="util.ts"
+export const generateAllColors = (primaryColor: string) => { // [!code --]
+  return { // [!code --]
+    primary: primaryColor, // [!code --]
+    secondary: "#F7B801", // [!code --]
+  }; // [!code --]
+}; // [!code --]
+export const allColors = { // [!code ++]
+  "red": { // [!code ++]
+    primary: "red", // [!code ++]
+    secondary: "#F7B801", // [!code ++]
+  }, // [!code ++]
+  "blue": { // [!code ++]
+    primary: "blue", // [!code ++]
+    secondary: "#F7B801", // [!code ++]
+  }, // [!code ++]
+  "green": { // [!code ++]
+    primary: "green", // [!code ++]
+    secondary: "#F7B801", // [!code ++]
+  } // [!code ++]
+}; // [!code ++]
+```
+or
+
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+import { generateAllColors } from './util'; // [!code --]
+
+const Button = styled.button<{ $color: string }>`
+  color: ${generateAllColors}; // [!code --]
+  color: ${props => props.$color}; // [!code ++]
+`;
+```
+
+### CSS prop (optional)
+
+If you use the css prop in your styled components, you can almost just change the import and you're done.
+But you also need to tell TypeScript that native JSX elements can have a css prop. In order to do that, you can add the following to your `tsconfig.json`.
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+      "jsxImportSource": "next-yak" // [!code ++]
+  }
+}
+```
+
+Or if you want to use the css prop in a single file, you can just add the following to the top of the file.
+
+```tsx title="component.tsx"
+/** @jsxImportSource next-yak */ // [!code ++]
+```
+
+And afterwards you can just change the import and you're done.
+
+```tsx title="component.tsx"
+import styled, { css } from 'styled-components'; // [!code --]
+import { css, styled } from 'next-yak'; // [!code ++]
+
+const MyComponent = () => {
+  return (
+    <div
+      css={css`
+        background: papayawhip;
+        color: red;
+      `}
+    />
+  );
+};
+```
+
+If you need dynamic values you can use the same interpolation as you would with your other styled components.
+
+```tsx title="component.tsx"
+import { css } from "next-yak";
+
+const MyComponent = ({color}: {color: string}) => {
+  return (
+    <div
+      css={css`
+        background: papayawhip;
+        color: ${() => color};
+      `}
+    />
+  );
+};
+```
+
+## Move some code to yak files
+
+Migrating `styled-components` with complex logic might need a bit more work. Yak files are special files that are evaluated during build time and can be used to store static values that are extracted during build time. You can create a `.yak.ts` or `.yak.tsx` file everywhere in your project and it will be picked up by next-yak.
+
+<Callout>
+**Important note on `.yak.tsx` files**:
+As yak files are evaluated on every code change, they will slow down your dev experience and your production build times. They should only be used as a last resort.
+</Callout>
+
+
+### Styles that use calculated values
+
+Move calculated values to `.yak.ts` files:
+
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+
+const RADIUS = 5; // [!code --]
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // [!code --]
+import { CIRCUMFERENCE } from './constants.yak'; // [!code ++]
+
+const Circle = styled.div`
+  width: ${CIRCUMFERENCE}px;
+  height: ${CIRCUMFERENCE}px;
+  border-radius: 50%;
+  border: 1px solid black;
+`;
+```
+
+```ts title="constants.yak.ts"
+const RADIUS = 5; // [!code ++]
+export const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // [!code ++]
+```
+
+A general rule of thumb is that next-yak doesn't run any JavaScript code to figure out any interpolated values except the code recides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
+
+Everything except calculations and string contatinations, or more generally, values that don't need a runtime in order to have a value, should
+work out of the box without any yak files and should be the preferred way to write your styles to keep your build times as fast as possible.
+
+## Troubleshooting
+
+This section covers common issues you might encounter during the migration process and how to resolve them.
+
+### Debugging
+
+If you encounter issues during the migration process, you can enable debug mode to get more information about what's going wrong.
+
+Just enable it in the next config file.
+
+```js title="next.config.js"
+export default withYak({
+  experiments: {
+    debug: {
+      filter: (path: string) => path.includes("myPage"),
+      type: "all", // or "css" or "js"
+    },
+  },
+},nextConfig);
+```
+
+And you should see the transformed files and styles. This can help you to understand what's going wrong.
+
+### My styles are not applied
+
+If you see that your styles are not applied, you should check if the styles are transformed correctly. Debugging can help you with that.
+
+If you wrap a styled-component component with a next-yak component, you need to add `&&` before the styles to increase the specificity as otherwise styled-components would always win.
+
+```tsx title="component.tsx"
+const Button = styled(StyledComponentsButton)`
+  && { // [!code ++]
+    color: red;
+  } // [!code ++]
+`;
+```
+
+This is only needed if you simultaneously use styled-components and next-yak. If you fully migrated to next-yak, you don't need to do that.
+
+### I get a compile error
+
+Please read the error message carefully. It should give you a hint on what's going wrong.
+
+If you can't figure it out, please open an issue on [GitHub](https://github.com/jantimon/next-yak/issues/new/choose)
+
+### I think I found a bug
+
+Please open an issue on [GitHub](https://github.com/jantimon/next-yak/issues/new/choose)

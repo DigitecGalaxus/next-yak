@@ -1,7 +1,7 @@
-import type { LoaderContext } from "webpack";
-import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 import { relative } from "path";
+import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
+import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
 /**
  * Transform typescript to css
@@ -12,7 +12,7 @@ import type { YakConfigOptions } from "../withYak/index.js";
 export default async function cssExtractLoader(
   this: LoaderContext<YakConfigOptions>,
   // Instead of the source code, we receive the extracted css
-  // from the ts-loader transformation
+  // from the yak-swc transformation
   _code: string,
   sourceMap: string | undefined,
 ): Promise<string | void> {
@@ -21,6 +21,11 @@ export default async function cssExtractLoader(
   return this.loadModule(this.resourcePath, (err, source) => {
     if (err) {
       return callback(err);
+    }
+    if (!source) {
+      return callback(
+        new Error(`Source code for ${this.resourcePath} is empty`),
+      );
     }
     const { experiments } = this.getOptions();
     const debugLog = createDebugLogger(this, experiments?.debug);
@@ -36,8 +41,22 @@ export default async function cssExtractLoader(
   });
 }
 
-function extractCss(code: string): string {
-  const codeParts = code.split("/*YAK Extracted CSS:\n");
+function extractCss(code: string | Buffer<ArrayBufferLike>): string {
+  let codeString: string;
+
+  if (typeof code === "string") {
+    codeString = code;
+  } else if (code instanceof Buffer) {
+    codeString = code.toString("utf-8");
+  } else if (code instanceof ArrayBuffer) {
+    codeString = new TextDecoder("utf-8").decode(code);
+  } else {
+    throw new Error(
+      "Invalid input type: code must be string, Buffer, or ArrayBuffer",
+    );
+  }
+
+  const codeParts = codeString.split("/*YAK Extracted CSS:\n");
   let result = "";
   for (let i = 1; i < codeParts.length; i++) {
     const codeUntilEnd = codeParts[i].split("*/")[0];
@@ -63,7 +82,10 @@ function createDebugLogger(
     return () => {};
   }
   const debugType = debugOptions === true ? "ts" : debugOptions.type;
-  return (messageType: "ts" | "css" | "css resolved", message: string) => {
+  return (
+    messageType: "ts" | "css" | "css resolved",
+    message: string | Buffer<ArrayBufferLike> | undefined,
+  ) => {
     if (messageType === debugType || debugType === "all") {
       console.log(
         "🐮 Yak",

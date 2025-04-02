@@ -59,85 +59,85 @@ impl VisitMut for YakFileVisitor {
     // This is necessary as the mixin is also imported at runtime and a string would be
     // interpreted as a class name
     if let Expr::TaggedTpl(n) = expr {
-      if let Some(name) = self
+      if let Some("css") = self
         .yak_imports
-        .as_mut()
+        .as_ref()
         .unwrap()
         .get_yak_library_function_name(n)
+        .as_deref()
       {
-        if name == atom!("css") {
-          *expr = ObjectLit {
-            span: n.span,
-            props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-              key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
-              value: Box::new(Expr::Tpl(Tpl {
-                span: n.span,
-                exprs: n.tpl.exprs.clone(),
-                quasis: n.tpl.quasis.clone(),
-              })),
-            })))]
-            .into_iter()
-            .collect(),
-          }
-          .into();
+        *expr = ObjectLit {
+          span: n.span,
+          props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+            key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
+            value: Box::new(Expr::Tpl(Tpl {
+              span: n.span,
+              exprs: n.tpl.exprs.clone(),
+              quasis: n.tpl.quasis.clone(),
+            })),
+          })))]
+          .into_iter()
+          .collect(),
         }
+        .into();
       }
     }
   }
 
   fn visit_mut_tagged_tpl(&mut self, n: &mut TaggedTpl) {
-    if let Some(name) = self
+    let Some(name) = self
       .yak_imports
-      .as_mut()
+      .as_ref()
       .unwrap()
       .get_yak_library_function_name(n)
-    {
-      // Right now only css template literals are allowed
-      if name != atom!("css") {
-        HANDLER.with(|handler| {
-          handler
-            .struct_span_err(
-              n.span,
-              "Only css template literals are allowed inside .yak files",
-            )
-            .emit();
-        });
-        return;
-      }
-
-      if self.is_inside_css_tpl {
-        HANDLER.with(|handler| {
-          handler
-            .struct_span_err(
-              n.span,
-              "Nested css template literals are not allowed inside .yak files",
-            )
-            .emit();
-        });
-        return;
-      }
-
-      let before_is_inside_css_tpl = self.is_inside_css_tpl;
-      self.is_inside_css_tpl = true;
-
-      for expr in &n.tpl.exprs {
-        if self.is_invalid_expr(expr) {
-          HANDLER.with(|handler| {
-            handler
-              .struct_span_err(
-                expr.span(),
-                "Function expressions are not allowed in css template literals inside .yak files",
-              )
-              .emit();
-          });
-        }
-      }
-
-      n.tpl.exprs.visit_mut_with(self);
-      self.is_inside_css_tpl = before_is_inside_css_tpl;
-    } else {
+    else {
       // Ignore unknown template literals
+      return;
+    };
+
+    // Right now only css template literals are allowed
+    if name != atom!("css") {
+      HANDLER.with(|handler| {
+        handler
+          .struct_span_err(
+            n.span,
+            "Only css template literals are allowed inside .yak files",
+          )
+          .emit();
+      });
+      return;
     }
+
+    if self.is_inside_css_tpl {
+      HANDLER.with(|handler| {
+        handler
+          .struct_span_err(
+            n.span,
+            "Nested css template literals are not allowed inside .yak files",
+          )
+          .emit();
+      });
+      return;
+    }
+
+    let before_is_inside_css_tpl = self.is_inside_css_tpl;
+    self.is_inside_css_tpl = true;
+
+    for expr in &n.tpl.exprs {
+      if self.is_invalid_expr(expr) {
+        HANDLER.with(|handler| {
+          handler
+            .struct_span_err(
+              expr.span(),
+              "Function expressions are not allowed in css template literals inside .yak files",
+            )
+            .emit();
+        });
+      }
+    }
+
+    n.tpl.exprs.visit_mut_with(self);
+    self.is_inside_css_tpl = before_is_inside_css_tpl;
   }
 }
 

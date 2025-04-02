@@ -85,26 +85,6 @@ impl NamingConvention {
     self.generate_unique_name(&css_variable_name)
   }
 
-  /// Generate a unique CSS class name based on the file name and a base name
-  pub fn get_css_class_name(&mut self, base_name: &str) -> String {
-    let name: String = if self.dev_mode {
-      if base_name.is_empty() {
-        String::from("var_")
-      } else {
-        format!("{}_", base_name)
-      }
-    } else {
-      "".to_string()
-    };
-    let css_variable_name = format!(
-      "{}{}{}",
-      self.prefix.clone(),
-      name,
-      self.get_file_name_hash()
-    );
-    self.generate_unique_name(&css_variable_name)
-  }
-
   /// Generate a unique CSS keyframe name based on the file name and a base name
   pub fn get_keyframe_name(&mut self, base_name: &str) -> String {
     let name: String = if self.dev_mode {

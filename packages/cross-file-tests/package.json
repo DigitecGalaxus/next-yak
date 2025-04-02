@@ -10,14 +10,14 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "vite": "5.3.4",
-    "vitest": "2.0.4",
-    "webpack": "5.92.1",
-    "swc-loader": "0.2.6",
-    "@swc/core": "1.7.42",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev",
+    "webpack": "catalog:dev",
+    "swc-loader": "catalog:dev",
+    "@swc/core": "catalog:dev",
     "next-yak": "workspace:*",
-    "memfs": "4.9.3",
-    "unionfs": "4.5.4",
-    "fast-glob": "3.3.2"
+    "memfs": "catalog:dev",
+    "unionfs": "catalog:dev",
+    "fast-glob": "catalog:dev"
   }
 }

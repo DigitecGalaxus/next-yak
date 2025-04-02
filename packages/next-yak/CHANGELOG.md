@@ -1,5 +1,82 @@
 # next-yak
 
+## 5.1.0
+
+### Minor Changes
+
+- e2afeb9: Improved React DevTools support - Styled components created with next-yak now show up with their actual variable names in React DevTools instead of a generic yak label
+
+### Patch Changes
+
+- Updated dependencies [d461cf5]
+- Updated dependencies [b3e4fec]
+- Updated dependencies [e2afeb9]
+  - yak-swc@5.1.0
+
+## 5.0.0
+
+### Major Changes
+
+- 6fd9b9a: Add compatibility with Next.js 15.2.1
+
+### Patch Changes
+
+- Updated dependencies [6fd9b9a]
+  - yak-swc@5.0.0
+
+## 4.1.1
+
+### Patch Changes
+
+- 79bb695: Fix dead-lock inside webpack caused by css-loader cache
+
+## 4.1.0
+
+### Minor Changes
+
+- 0eac2b4: improve bundle size by compiling styled.TAG_NAME
+
+### Patch Changes
+
+- Updated dependencies [ea744ac]
+- Updated dependencies [0eac2b4]
+  - yak-swc@4.1.0
+
+## 4.0.4
+
+### Patch Changes
+
+- 171898f: Fix issue with the css prop where it wouldn't be generated when used inside an exported component
+- d4379a2: Updated all dependencies
+- 7f90169: Updated @types/react to 19.0.2
+- 145c621: Refactor CSS prop types to improve type inference and consistency
+  - Added new type `CSSProp` to be used by custom components to receive the `css` prop in a somewhat typesafe way
+  - Updated `css` function to return `ComponentStyle` only
+
+## 4.0.3
+
+### Patch Changes
+
+- 154da2f: fix css prop class name access in nested jsx
+- Updated dependencies [154da2f]
+  - yak-swc@4.0.3
+
+## 4.0.2
+
+### Patch Changes
+
+- 5ce7f16: Enable css prop support for styled components, not just native HTML elements by fixing a bug in the types
+- 2f0ba89: Enable conditional styling for the css prop
+- Updated dependencies [2f0ba89][5ce7f16]
+  - yak-swc@4.0.2
+
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [859db1c]
+  - yak-swc@4.0.1
+
 ## 4.0.0
 
 ### Major Changes

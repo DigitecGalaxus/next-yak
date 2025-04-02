@@ -142,6 +142,34 @@ export default function Home() {
         >
           CSS Prop works if this is green
         </p>
+        <p
+          css={css`
+            color: red;
+            ${() =>
+              true &&
+              css`
+                color: green;
+              `}
+          `}
+        >
+          Conditional CSS Prop works if this is green
+        </p>
+        <p
+          css={css`
+            color: violet;
+          `}
+        >
+          Nested CSS Prop works
+          <span
+            css={css`
+              color: green;
+            `}
+          >
+            {" "}
+            if this is green{" "}
+          </span>
+          and this is violet
+        </p>
         <Inputs />
       </main>
     </YakThemeProvider>

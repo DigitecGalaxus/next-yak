@@ -1,4 +1,5 @@
 import { styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const GridLayout = /*YAK Extracted CSS:
 :global(.GridLayout_m7uBBu) {
@@ -56,4 +57,6 @@ export const GridLayout = /*YAK Extracted CSS:
     text-align: center;
   }
 }
-*/ /*#__PURE__*/ styled.div("GridLayout_m7uBBu");
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("GridLayout_m7uBBu"), {
+    "displayName": "GridLayout"
+});

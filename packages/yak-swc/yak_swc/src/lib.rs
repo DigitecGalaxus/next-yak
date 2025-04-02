@@ -2,6 +2,7 @@ use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
 use serde::Deserialize;
+use std::ops::Deref;
 use std::path::Path;
 use std::vec;
 use swc_core::atoms::atom;
@@ -35,6 +36,7 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod encode_module_import;
+  pub(crate) mod native_elements;
 }
 mod naming_convention;
 use naming_convention::NamingConvention;
@@ -58,6 +60,11 @@ pub struct Config {
   pub base_path: String,
   /// Prefix for the generated css identifier
   pub prefix: Option<String>,
+  /// Improves react DevTools experience by setting displayName
+  /// on the component to match the original component name.
+  /// Disabled by default.
+  #[serde(default)]
+  pub display_names: bool,
 }
 
 pub struct TransformVisitor<GenericComments>
@@ -100,6 +107,9 @@ where
   filename: String,
   /// Flag to check if we are inside a css attribute
   inside_element_with_css_attribute: bool,
+  /// If true, additional code will be injected to provide readable `displayName` values
+  /// in React DevTools and stack traces for every yak component
+  display_names: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -111,6 +121,7 @@ where
     filename: impl AsRef<str>,
     dev_mode: bool,
     prefix: Option<String>,
+    display_names: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -126,6 +137,7 @@ where
       inside_element_with_css_attribute: false,
       filename: filename.as_ref().into(),
       comments,
+      display_names,
     }
   }
 
@@ -522,14 +534,10 @@ where
       for item in module.body.iter_mut() {
         if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_declaration)) = item {
           if import_declaration.src.value == "next-yak/internal" {
-            // Add utility functions
-            import_declaration.specifiers.extend(
-              self
-                .yak_library_imports
-                .as_ref()
-                .unwrap()
-                .get_yak_utility_import_declaration(),
-            );
+            // Add all stored utility imports
+            import_declaration
+              .specifiers
+              .extend(self.yak_imports().get_yak_utility_import_specifiers());
             break;
           }
         }
@@ -545,6 +553,14 @@ where
           last_import_index = i + 1;
         }
       }
+
+      if let Some(module_decl) = self.yak_imports().get_yak_component_import_declaration() {
+        module
+          .body
+          .insert(last_import_index, ModuleItem::ModuleDecl(module_decl));
+        last_import_index += 1;
+      }
+
       module.body.insert(
         last_import_index,
         ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
@@ -743,24 +759,28 @@ where
   /// Visit tagged template literals
   /// This is where the css-in-js expressions are
   fn visit_mut_tagged_tpl(&mut self, n: &mut TaggedTpl) {
-    let yak_library_function_name = self
+    let Some(yak_library_function_name) = self
       .yak_library_imports
-      .as_mut()
+      .as_ref()
       .unwrap()
-      .get_yak_library_function_name(n);
-    if yak_library_function_name.is_none() {
+      .get_yak_library_function_name(n)
+    else {
       n.visit_mut_children_with(self);
       return;
-    }
+    };
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
 
-    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.as_deref() {
+    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      Some("styled") if is_top_level => Box::new(TransformStyled::new()),
+      "styled" if is_top_level => Box::new(TransformStyled::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
+        self.display_names,
+      )),
       // Keyframes transform works only on top level
-      Some("keyframes") if is_top_level => Box::new(TransformKeyframes::new(
+      "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
           .variable_name_selector_mapping
           .get(&current_variable_id)
@@ -772,12 +792,18 @@ where
           }),
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
-      Some("css") if is_top_level => Box::new(TransformCssMixin::new(
+      "css" if is_top_level => Box::new(TransformCssMixin::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
         self.current_exported,
         self.inside_element_with_css_attribute,
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
-      Some("css") => Box::new(TransformNestedCss::new(self.current_condition.clone())),
+      "css" => Box::new(TransformNestedCss::new(
+        &mut self.naming_convention,
+        &current_variable_id,
+        self.current_condition.clone(),
+      )),
       _ => {
         if !is_top_level {
           HANDLER.with(|handler| {
@@ -803,11 +829,7 @@ where
     //
     // Depending on the library function used (styled, keyframes, css, ...)
     // a surrounding scope is added
-    let css_state = Some(transform.create_css_state(
-      &mut self.naming_convention,
-      &current_variable_id,
-      self.current_css_state.clone(),
-    ));
+    let css_state = Some(transform.create_css_state(self.current_css_state.clone()));
 
     if let Some(css_reference_name) = transform.get_css_reference_name() {
       self
@@ -823,6 +845,7 @@ where
       runtime_expressions,
       &self.current_declaration,
       runtime_css_variables,
+      self.yak_library_imports.as_mut().unwrap(),
     );
 
     if is_top_level {
@@ -976,6 +999,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     deterministic_path,
     config.dev_mode,
     config.prefix,
+    config.display_names,
   )))
 }
 
@@ -1015,6 +1039,7 @@ mod tests {
           "path/input.tsx",
           true,
           None,
+          true,
         ))
       },
       &input,
@@ -1040,6 +1065,7 @@ mod tests {
           "path/input.tsx",
           false,
           None,
+          false,
         ))
       },
       &input,

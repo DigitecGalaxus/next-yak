@@ -1,30 +1,33 @@
 import { styled, css } from "next-yak/internal";
-import "./index.yak.module.css!=!./index?./index.yak.module.css";
+import * as __yak from "next-yak/internal";
+import __styleYak from "./index.yak.module.css!=!./index?./index.yak.module.css";
 var buttonTextMixin = /*#__PURE__*/ css(function(param) {
     var $disabled = param.$disabled;
-    return $disabled && /*#__PURE__*/ css("buttonTextMixin__$disabled_xEUJ1U");
+    return $disabled && /*#__PURE__*/ css(__styleYak.buttonTextMixin__$disabled);
 });
 var Button = /*YAK Extracted CSS:
-:global(.Button_xEUJ1U) {
+.Button {
   color: black;
 }
-:global(.Button__$disabled_xEUJ1U) {
+.Button__$disabled {
   opacity: 0.5;
 }
-:global(.Button__$hasIcon_xEUJ1U) {
+.Button__$hasIcon {
   padding-left: 30px;
 }
-:global(.Button__$disabled_xEUJ1U-01) {
+.Button__$disabled-01 {
   color: gray;
 }
-*/ /*#__PURE__*/ styled.button("Button_xEUJ1U", function(param) {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button(__styleYak.Button, function(param) {
     var $disabled = param.$disabled;
-    return $disabled && /*#__PURE__*/ css("Button__$disabled_xEUJ1U");
+    return $disabled && /*#__PURE__*/ css(__styleYak.Button__$disabled);
 }, function(param) {
     var $hasIcon = param.$hasIcon;
-    return $hasIcon && /*#__PURE__*/ css("Button__$hasIcon_xEUJ1U");
+    return $hasIcon && /*#__PURE__*/ css(__styleYak.Button__$hasIcon);
 }, function(param) {
     var $disabled = param.$disabled;
-    return $disabled && /*#__PURE__*/ css("Button__$disabled_xEUJ1U-01");
+    return $disabled && /*#__PURE__*/ css(__styleYak["Button__$disabled-01"]);
+}), {
+    "displayName": "Button"
 });
 export default Button;

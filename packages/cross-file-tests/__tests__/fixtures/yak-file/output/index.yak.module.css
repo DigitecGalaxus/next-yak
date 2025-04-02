@@ -1,5 +1,5 @@
 /* cssmodules-pure-no-check * /
-:global(.Button_Mx2s9f) {
+.Button {
   color: red;
   height: 10px;
 }

@@ -7,6 +7,9 @@ use swc_core::{
   ecma::{ast::*, visit::VisitMut},
 };
 
+use crate::utils::ast_helper::create_member_prop_from_string;
+use crate::utils::native_elements::VALID_ELEMENTS;
+
 #[derive(Debug)]
 
 pub struct YakImports {
@@ -16,6 +19,9 @@ pub struct YakImports {
   /// Imports from "next-yak"
   /// Local to Imported mapping
   yak_library_imports: FxHashMap<Id, Id>,
+  /// Direct component imports from "next-yak/internal"
+  /// e.g. __yak_button
+  yak_component_import: Option<Ident>,
   /// Local Identifiers for the next-yak css function \
   /// Most of the time it is just `css#0` for `import { css } from "next-yak"` \
   /// but it might also contain renamings like `import { css as css_ } from "next-yak"`
@@ -67,6 +73,7 @@ impl YakImports {
   ) -> Self {
     Self {
       yak_utilities: FxHashMap::default(),
+      yak_component_import: None,
       yak_library_imports,
       yak_css_idents,
       yak_keyframes_idents,
@@ -138,8 +145,30 @@ impl YakImports {
     }
   }
 
+  /// Returns the expression for the given component
+  /// e.g. __yak.__yak_button for button
+  /// Importing components as `import * as __yak from "next-yak/internal"` allows
+  /// webpack to optimize usages
+  /// Without this webpack injects `(0, s.As)` for `__yak_button` instead of `s.As`
+  pub fn get_yak_component_import(&mut self, name: impl AsRef<str>) -> Option<Box<Expr>> {
+    if !VALID_ELEMENTS.contains(name.as_ref()) {
+      return None;
+    }
+    if self.yak_component_import.is_none() {
+      self.yak_component_import = Some(Ident::from("__yak"));
+    }
+    self.yak_component_import.clone().map(|yak_ident| {
+      Box::new(Expr::Member(MemberExpr {
+        span: DUMMY_SP,
+        obj: Box::new(Expr::Ident(yak_ident)),
+        prop: create_member_prop_from_string(format!("__yak_{}", name.as_ref())),
+      }))
+    })
+  }
+
   /// Get the import declaration specifiers for all used utility functions
-  pub fn get_yak_utility_import_declaration(&self) -> Vec<ImportSpecifier> {
+  /// i.e. `import { __yak_unitPostFix } from "next-yak/internal"`
+  pub fn get_yak_utility_import_specifiers(&self) -> Vec<ImportSpecifier> {
     self
       .yak_utilities
       .values()
@@ -152,6 +181,23 @@ impl YakImports {
         })
       })
       .collect()
+  }
+  /// Get the import declaration for all usages of yak components in the given file
+  /// i.e. `import * as __yak from "next-yak/internal"`
+  pub fn get_yak_component_import_declaration(&self) -> Option<ModuleDecl> {
+    self.yak_component_import.clone().map(|yak_import| {
+      ModuleDecl::Import(ImportDecl {
+        span: DUMMY_SP,
+        specifiers: vec![ImportSpecifier::Namespace(ImportStarAsSpecifier {
+          span: DUMMY_SP,
+          local: yak_import,
+        })],
+        src: Box::new("next-yak/internal".into()),
+        type_only: false,
+        with: None,
+        phase: ImportPhase::Evaluation,
+      })
+    })
   }
 }
 

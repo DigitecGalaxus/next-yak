@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { type Compilation } from "webpack";
 import * as swc from "@swc/core";
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
+import { type Compilation } from "webpack";
 // had to update package exports
 // @ts-ignore
 import cssLoader = require("next-yak/loaders/css-loader");
-import path from "path";
 
 export const maxDuration = 60;
 
 const wasmPath = path.resolve(
   process.cwd(),
   "./node_modules",
-  "yak-swc/target/wasm32-wasi/release/yak_swc.wasm",
+  "yak-swc/target/wasm32-wasip1/release/yak_swc.wasm",
 );
 
 export async function POST(request: NextRequest) {

@@ -3,16 +3,32 @@ import type { YakTheme } from "./index.d.ts";
 
 export const yakComponentSymbol = Symbol("yak");
 
-type ComponentStyles<TProps> = (props: TProps) => {
+export type ComponentStyles<TProps> = (props: TProps) => {
   className: string;
   style?: {
     [key: string]: string;
   };
 };
 
-export type StaticCSSProp = {
-  className: string;
-  style?: CSSProperties;
+/**
+ * Convenience type to specify the CSS prop type.
+ * This type is used to allow the css prop on components.
+ *
+ * @example
+ * ```tsx
+ * const ComponentThatTakesCssProp = (p: CSSProp) =>
+ *   <div {...p}>anything</div>;
+ * ```
+ */
+export type CSSProp = {
+  /** This prop is transformed during compilation and doesn't exist at runtime. */
+  css?: ComponentStyles<Record<keyof any, never>>;
+  /** The css prop will return the name of the class and automatically merged with an existing class */
+  className?: string;
+  /** The css prop will return the style object and automatically merged with an existing style */
+  style?: {
+    [key: string]: string;
+  };
 };
 
 export type CSSInterpolation<TProps> =
@@ -22,7 +38,6 @@ export type CSSInterpolation<TProps> =
   | null
   | false
   | ComponentStyles<TProps>
-  | StaticCSSProp
   | {
       // type only identifier to allow targeting components
       // e.g. styled.svg`${Button}:hover & { fill: red; }`
@@ -58,14 +73,11 @@ export type PropsToClassNameFn = (props: unknown) =>
  * Therefore this is only an internal function only and it must be cast to any
  * before exported to the user.
  */
-export function css(styles: TemplateStringsArray, ...values: []): StaticCSSProp;
-export function css<TProps = {}>(
+export function css<TProps>(
   styles: TemplateStringsArray,
   ...values: CSSInterpolation<NoInfer<TProps> & { theme: YakTheme }>[]
 ): ComponentStyles<TProps>;
-export function css<TProps>(
-  ...args: Array<any>
-): StaticCSSProp | ComponentStyles<TProps> {
+export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
   const classNames: string[] = [];
   const dynamicCssFunctions: PropsToClassNameFn[] = [];
   const style: Record<string, string> = {};

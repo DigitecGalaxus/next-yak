@@ -1,4 +1,5 @@
 import { styled, keyframes } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const fadeIn = /*YAK Extracted CSS:
 @keyframes :global(fadeIn_m7uBBu) {
@@ -16,4 +17,6 @@ export const FadeInText = /*YAK Extracted CSS:
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ styled.p("FadeInText_m7uBBu");
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("FadeInText_m7uBBu"), {
+    "displayName": "FadeInText"
+});
