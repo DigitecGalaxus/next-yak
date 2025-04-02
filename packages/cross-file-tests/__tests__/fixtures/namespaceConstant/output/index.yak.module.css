@@ -1,5 +1,5 @@
 /* cssmodules-pure-no-check * /
-.Button {
+:global(.index_Button_bAtfrp) {
   color: var(--color-primary);
   background-color: var(--color-secondary);
 }

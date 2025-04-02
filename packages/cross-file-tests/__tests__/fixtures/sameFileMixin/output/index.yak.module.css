@@ -1,13 +1,13 @@
 /* cssmodules-pure-no-check * /
-.Button {
+:global(.index_Button_xEUJ1U) {
   color: black;
 }
-.Button__$disabled {
+:global(.index_Button__$disabled_xEUJ1U) {
   opacity: 0.5;
 }
-.Button__$hasIcon {
+:global(.index_Button__$hasIcon_xEUJ1U) {
   padding-left: 30px;
 }
-.Button__$disabled-01 {
+:global(.index_Button__$disabled_xEUJ1U-01) {
   color: gray;
 }

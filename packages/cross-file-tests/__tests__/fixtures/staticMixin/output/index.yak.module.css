@@ -1,5 +1,5 @@
 /* cssmodules-pure-no-check * /
-.ListItem {
+:global(.index_ListItem_PZqRtI) {
   margin-bottom: 10px;
   &:hover {
     &:last-child {
