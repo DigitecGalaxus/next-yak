@@ -22,8 +22,10 @@ export type YakConfigOptions = {
    */
   prefix?: string;
   /**
-   * Assign `displayName` to components for a better developer experience
-   * when using React Developer Tools. Default: match `devMode`
+   * Adds `displayName` to each components for better React DevTools debugging
+   * - Enabled by default in development mode
+   * - Disabled by default in production
+   * - Increases bundle size slightly when enabled
    */
   displayNames?: boolean;
   experiments?: {
