@@ -14,19 +14,19 @@ color: black;
 --yak-css-import: url("./typography:typogaphyMixin",mixin);
 */ /*#__PURE__*/ css();
 export const Button = /*YAK Extracted CSS:
-:global(.Button_m7uBBu) {
+:global(.input_Button_m7uBBu) {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-:global(.Button___m7uBBu) {
+:global(.input_Button___m7uBBu) {
   &:hover {
     font-size: 16px;
     color: black;
   }
 }
-:global(.Button_m7uBBu) {
+:global(.input_Button_m7uBBu) {
   &:focus {
     font-size: 16px;
     color: black;
@@ -34,7 +34,7 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("Button___m7uBBu")), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu", ({ $isSet })=>$isSet && true && true && true && /*#__PURE__*/ css("input_Button___m7uBBu")), {
     "displayName": "Button"
 });
 export const aspectRatios = {

@@ -2,7 +2,7 @@ import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const Button = /*YAK Extracted CSS:
-:global(.Button_m7uBBu) {
+:global(.input_Button_m7uBBu) {
   background-color: #007bff;
   color: #fff;
   padding: 10px 20px;
@@ -17,6 +17,6 @@ export const Button = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button.attrs({
     type: "button"
-})("Button_m7uBBu"), {
+})("input_Button_m7uBBu"), {
     "displayName": "Button"
 });

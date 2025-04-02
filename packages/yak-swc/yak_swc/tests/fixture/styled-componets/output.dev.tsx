@@ -6,10 +6,10 @@ import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = "red";
 // Should be transformed as it is yak
 export const CustomThemedButton = /*YAK Extracted CSS:
-:global(.CustomThemedButton_m7uBBu) {
+:global(.input_CustomThemedButton_m7uBBu) {
   color: blue;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("CustomThemedButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_CustomThemedButton_m7uBBu"), {
     "displayName": "CustomThemedButton"
 });
 // Should not be transformed as it is NOT yak

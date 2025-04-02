@@ -2,7 +2,7 @@ import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const ArticleCard = /*YAK Extracted CSS:
-:global(.ArticleCard_m7uBBu) {
+:global(.input_ArticleCard_m7uBBu) {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -53,6 +53,6 @@ export const ArticleCard = /*YAK Extracted CSS:
     }
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_article("ArticleCard_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_article("input_ArticleCard_m7uBBu"), {
     "displayName": "ArticleCard"
 });

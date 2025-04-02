@@ -4,6 +4,7 @@ use rustc_hash::FxHashMap;
 pub struct NamingConvention {
   postfix_counters: FxHashMap<String, u32>,
   file_name: String,
+  file_name_base: Option<String>,
   file_name_hash: Option<String>,
   dev_mode: bool,
   prefix: String,
@@ -17,6 +18,7 @@ impl NamingConvention {
     Self {
       postfix_counters: FxHashMap::default(),
       file_name: file_name.as_ref().into(),
+      file_name_base: None,
       file_name_hash: None,
       dev_mode,
       prefix: prefix.unwrap_or_else(|| {
@@ -40,6 +42,27 @@ impl NamingConvention {
       let hash = hash_to_css(&self.file_name);
       self.file_name_hash = Some(hash.clone());
       hash
+    }
+  }
+
+  /// Returns the base name of the file
+  /// This is used during development to help with debugging
+  pub fn get_file_name_base(&mut self) -> String {
+    if let Some(base) = &self.file_name_base {
+      base.clone()
+    } else {
+      // remove file extension and path \\ and /
+      let base = self
+        .file_name
+        .split(['\\', '/'])
+        .last()
+        .unwrap()
+        .split('.')
+        .next()
+        .unwrap()
+        .to_string();
+      self.file_name_base = Some(base.clone());
+      base
     }
   }
 
@@ -69,9 +92,9 @@ impl NamingConvention {
   pub fn get_css_variable_name(&mut self, base_name: &str) -> String {
     let name: String = if self.dev_mode {
       if base_name.is_empty() {
-        String::from("var_")
+        format!("{}_var_", self.get_file_name_base())
       } else {
-        format!("{}_", base_name)
+        format!("{}_{}_", self.get_file_name_base(), base_name)
       }
     } else {
       "".to_string()
@@ -218,9 +241,12 @@ mod tests {
   #[test]
   fn css_variable_name_dev_mode() {
     let mut convention = NamingConvention::new("file.css", true, None);
-    assert_eq!(convention.get_css_variable_name("foo"), "foo_oPBkbU");
-    assert_eq!(convention.get_css_variable_name("foo"), "foo_oPBkbU-01");
-    assert_eq!(convention.get_css_variable_name(""), "var_oPBkbU");
+    assert_eq!(convention.get_css_variable_name("foo"), "file_foo_oPBkbU");
+    assert_eq!(
+      convention.get_css_variable_name("foo"),
+      "file_foo_oPBkbU-01"
+    );
+    assert_eq!(convention.get_css_variable_name(""), "file_var_oPBkbU");
   }
 
   #[test]

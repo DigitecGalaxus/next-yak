@@ -12,11 +12,11 @@ const fadeIn = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ keyframes("fadeIn_m7uBBu");
 export const FadeInText = /*YAK Extracted CSS:
-:global(.FadeInText_m7uBBu) {
+:global(.input_FadeInText_m7uBBu) {
   animation: global(fadeIn_m7uBBu) 1s ease-in;
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("FadeInText_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_FadeInText_m7uBBu"), {
     "displayName": "FadeInText"
 });

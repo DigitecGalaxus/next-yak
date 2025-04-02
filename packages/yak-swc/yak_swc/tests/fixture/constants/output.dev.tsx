@@ -14,7 +14,7 @@ const colors = {
 const borderRadius = "4px";
 const stacking = 1;
 export const Button = /*YAK Extracted CSS:
-:global(.Button_m7uBBu) {
+:global(.input_Button_m7uBBu) {
   background-color: #007bff;
   color: #f8f9fa;
   padding: 10px 33.3333%;
@@ -29,6 +29,6 @@ export const Button = /*YAK Extracted CSS:
     background-color: #343a40;
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("Button_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"
 });
