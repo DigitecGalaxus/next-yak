@@ -292,7 +292,7 @@ Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 - https://github.com/vercel/next.js/pull/62639 (enable esmodule optimizations for css modules)
 - https://github.com/vercel/next.js/pull/62733 (Minify post css class names in production)
 - https://github.com/vercel/next.js/pull/64551 (fix lightningcss-loader)
-- https://github.com/vercel/next.js/pull/72622 (upgrades postcss-modules-local-by-default for keyframes)
+- https://github.com/vercel/next.js/pull/77321 (add cssmodules-pure-no-check)
 - https://github.com/webpack/webpack/pull/19012 (CSS Order without side effects)
 - https://github.com/swc-project/swc/issues/3934 (Browser SWC Plugin support)
 - https://github.com/parcel-bundler/lightningcss/issues/889 (add cssmodules-pure-no-check)
@@ -316,6 +316,7 @@ Massive kudos to:
 
 - @sokra: For guiding us through the webpacks module and loader APIs
 - @kdy1: For his support while rewriting our Babel plugin as a blazing fast SWC Rust WASM plugin
+- @samcx: For his great help to merge features into Next.js
 
 Special thanks to the contributors and the inspiring projects that influenced next-yak:
 
