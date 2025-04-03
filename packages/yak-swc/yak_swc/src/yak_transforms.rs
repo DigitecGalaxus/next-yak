@@ -166,7 +166,7 @@ impl YakTransform for TransformCssMixin {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!(".{}", self.class_name),
+      name: format!(":global(.{})", self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -474,7 +474,7 @@ impl YakTransform for TransformStyled {
 
   /// Get the selector for the specific styled component to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(format!(".{}", self.class_name))
+    Some(format!(":global(.{})", self.class_name))
   }
 }
 

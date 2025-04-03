@@ -70,7 +70,7 @@ const Elem7 = (props: any)=>{
 const Elem8 = ()=>{
     const show = Math.random() > 0.5;
     return <div {.../*YAK Extracted CSS:
-.ym7uBBuE {
+:global(.ym7uBBuE) {
   color: var(--ym7uBBuF);
 }
 */ /*#__PURE__*/ css({
@@ -84,7 +84,7 @@ const Elem9 = ()=>{
     return <div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
-.ym7uBBuG {
+:global(.ym7uBBuG) {
   color: var(--ym7uBBuH);
 }
 */ /*#__PURE__*/ css({
@@ -100,7 +100,7 @@ const Elem10 = ()=>{
             padding: "5px"
         }
     }, /*YAK Extracted CSS:
-.ym7uBBuI {
+:global(.ym7uBBuI) {
   padding: var(--ym7uBBuJ);
 }
 */ /*#__PURE__*/ css({
@@ -114,7 +114,7 @@ const Elem11 = (props: any)=>{
     return <div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
-.ym7uBBuK {
+:global(.ym7uBBuK) {
   color: var(--ym7uBBuL);
 }
 */ /*#__PURE__*/ css({
@@ -128,7 +128,7 @@ const Elem12 = (props: any)=>{
         ...props.a,
         ...props.b
     }, /*YAK Extracted CSS:
-.ym7uBBuM {
+:global(.ym7uBBuM) {
   color: var(--ym7uBBuN);
 }
 */ /*#__PURE__*/ css({
@@ -144,7 +144,7 @@ const Elem13 = (props: any)=>{
             fontWeight: "bold"
         }
     }, /*YAK Extracted CSS:
-.ym7uBBuO {
+:global(.ym7uBBuO) {
   font-size: var(--ym7uBBuP);
 }
 */ /*#__PURE__*/ css({
@@ -157,7 +157,7 @@ const Elem14 = (props: any)=>{
     return <div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*YAK Extracted CSS:
-.ym7uBBuQ {
+:global(.ym7uBBuQ) {
   display: var(--ym7uBBuR);
 }
 */ /*#__PURE__*/ css({

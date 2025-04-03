@@ -1,17 +1,17 @@
 import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 <div {.../*YAK Extracted CSS:
-.ym7uBBu {
+:global(.ym7uBBu) {
   color: red;
 }
 */ /*#__PURE__*/ css("ym7uBBu")({})}>
   <p {.../*YAK Extracted CSS:
-.ym7uBBu1 {
+:global(.ym7uBBu1) {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu1")({})}>
     <span {.../*YAK Extracted CSS:
-.ym7uBBu2 {
+:global(.ym7uBBu2) {
   color: green;
 }
 */ /*#__PURE__*/ css("ym7uBBu2")({})}>
