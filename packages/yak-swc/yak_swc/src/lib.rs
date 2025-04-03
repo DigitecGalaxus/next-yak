@@ -3,7 +3,6 @@ use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
 use serde::Deserialize;
 use std::ops::Deref;
-use std::path::Path;
 use std::vec;
 use swc_core::atoms::atom;
 use swc_core::atoms::Atom;
@@ -103,8 +102,6 @@ where
   naming_convention: NamingConvention,
   /// Expression replacement to replace a yak library call with the transformed one
   expression_replacement: Option<Box<Expr>>,
-  /// The current file name e.g. "App.tsx"
-  filename: String,
   /// Flag to check if we are inside a css attribute
   inside_element_with_css_attribute: bool,
   /// If true, additional code will be injected to provide readable `displayName` values
@@ -135,7 +132,6 @@ where
       variable_name_selector_mapping: FxHashMap::default(),
       expression_replacement: None,
       inside_element_with_css_attribute: false,
-      filename: filename.as_ref().into(),
       comments,
       display_names,
     }
@@ -162,15 +158,6 @@ where
         vec![atom!("yak")],
       )
     })
-  }
-
-  /// Get the current filename without extension or path e.g. "App" from "/path/to/App.tsx
-  fn get_file_name_without_extension(&self) -> String {
-    Path::new(&self.filename)
-      .file_stem()
-      .and_then(|os_str| os_str.to_str())
-      .map(|s| s.to_string())
-      .unwrap()
   }
 
   /// Iterate over the quasi and expressions of a tagged template literal
@@ -524,7 +511,7 @@ where
   /// !=! is a webpack-specific syntax that tells webpack to override the default loaders for this import
   /// ? is a fix for Next.js loaders which ignore the !=! statement
   fn visit_mut_module(&mut self, module: &mut Module) {
-    let basename = self.get_file_name_without_extension();
+    let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
 

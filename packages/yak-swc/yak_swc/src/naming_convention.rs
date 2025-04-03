@@ -1,5 +1,6 @@
 use crate::utils::css_hash::hash_to_css;
 use rustc_hash::FxHashMap;
+use std::path::Path;
 
 pub struct NamingConvention {
   postfix_counters: FxHashMap<String, u32>,
@@ -45,22 +46,16 @@ impl NamingConvention {
     }
   }
 
-  /// Returns the base name of the file
-  /// This is used during development to help with debugging
-  pub fn get_file_name_base(&mut self) -> String {
+  /// Get the current filename without extension or path e.g. "App" from "/path/to/App.tsx
+  pub fn get_base_file_name(&mut self) -> String {
     if let Some(base) = &self.file_name_base {
       base.clone()
     } else {
-      // remove file extension and path \\ and /
-      let base = self
-        .file_name
-        .split(['\\', '/'])
-        .last()
-        .unwrap()
-        .split('.')
-        .next()
-        .unwrap()
-        .to_string();
+      let base = Path::new(&self.file_name)
+        .file_stem()
+        .and_then(|os_str| os_str.to_str())
+        .map(|s| s.to_string())
+        .unwrap();
       self.file_name_base = Some(base.clone());
       base
     }
@@ -92,9 +87,9 @@ impl NamingConvention {
   pub fn get_css_variable_name(&mut self, base_name: &str) -> String {
     let name: String = if self.dev_mode {
       if base_name.is_empty() {
-        format!("{}_var_", self.get_file_name_base())
+        format!("{}_var_", self.get_base_file_name())
       } else {
-        format!("{}_{}_", self.get_file_name_base(), base_name)
+        format!("{}_{}_", self.get_base_file_name(), base_name)
       }
     } else {
       "".to_string()
