@@ -1,8 +1,8 @@
 /** @jsxImportSource next-yak */
 // this is only a type check file and should not be executed
 
-import { css, CSSProp, styled } from "next-yak";
-import { CSSProperties } from "react";
+import { css, styled } from "next-yak";
+import { ComponentProps, CSSProperties } from "react";
 
 declare module "next-yak" {
   export interface YakTheme {
@@ -28,10 +28,35 @@ const NestedComponentWithCssProp = () => (
   </div>
 );
 
-const ComponentThatTakesCssProp = (p: CSSProp) => <div {...p}>anything</div>;
+const ComponentThatTakesCssProp = (p: {
+  className?: string;
+  style?: ComponentProps<"div">["style"];
+}) => <div {...p}>anything</div>;
+
+const ComponentThatTakesCssProp2 = (p: {
+  className?: string | string[];
+  style?: {};
+}) => <div {...(p as any)}>anything</div>;
+
+const ComponentThatTakesCssProp3 = (p: {
+  className: string;
+  style?: Record<string, unknown>;
+}) => <div {...p}>anything</div>;
+
+const ComponentThatTakesCssProp4 = (p: {
+  className?: unknown;
+  style?: unknown;
+}) => <div {...(p as any)}>anything</div>;
 
 const ComponentWithCssPropAsProp = () => {
-  return <ComponentThatTakesCssProp css={css``} />;
+  return (
+    <>
+      <ComponentThatTakesCssProp css={css``} />
+      <ComponentThatTakesCssProp2 css={css``} />
+      <ComponentThatTakesCssProp3 css={css``} className="" />
+      <ComponentThatTakesCssProp4 css={css``} />
+    </>
+  );
 };
 
 const ObjectWithComponent = {
