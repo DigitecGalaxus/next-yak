@@ -1,5 +1,16 @@
 # next-yak
 
+## 5.2.0
+
+### Minor Changes
+
+- d018370: minify class names for production builds
+
+### Patch Changes
+
+- Updated dependencies [d018370]
+  - yak-swc@5.2.0
+
 ## 5.1.0
 
 ### Minor Changes
