@@ -46,13 +46,13 @@ use yak_transforms::{
 };
 
 /// Static plugin configuration.
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-  /// Use Readable CSS Variable Names
-  #[serde(default)]
-  pub dev_mode: bool,
+  /// Generate compact CSS names
+  #[serde(default = "Config::minify_default")]
+  pub minify: bool,
   /// The hash for a css-variable depends on the file name including createVar().
   /// To ensure that the hash is consistent accross multiple systems the relative path
   /// from the base dir to the source file is used.
@@ -64,6 +64,23 @@ pub struct Config {
   /// Disabled by default.
   #[serde(default)]
   pub display_names: bool,
+}
+
+impl Config {
+  fn minify_default() -> bool {
+    true
+  }
+}
+
+impl Default for Config {
+  fn default() -> Self {
+    Self {
+      minify: true,
+      base_path: Default::default(),
+      prefix: Default::default(),
+      display_names: Default::default(),
+    }
+  }
 }
 
 pub struct TransformVisitor<GenericComments>
@@ -116,7 +133,7 @@ where
   pub fn new(
     comments: Option<GenericComments>,
     filename: impl AsRef<str>,
-    dev_mode: bool,
+    minify: bool,
     prefix: Option<String>,
     display_names: bool,
   ) -> Self {
@@ -128,7 +145,7 @@ where
       current_exported: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
-      naming_convention: NamingConvention::new(filename.as_ref(), dev_mode, prefix),
+      naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
       variable_name_selector_mapping: FxHashMap::default(),
       expression_replacement: None,
       inside_element_with_css_attribute: false,
@@ -984,7 +1001,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
   program.apply(visit_mut_pass(&mut TransformVisitor::new(
     metadata.comments,
     deterministic_path,
-    config.dev_mode,
+    config.minify,
     config.prefix,
     config.display_names,
   )))
@@ -1024,7 +1041,7 @@ mod tests {
         visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
-          true,
+          false,
           None,
           true,
         ))
@@ -1050,7 +1067,7 @@ mod tests {
         visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
-          false,
+          true,
           None,
           false,
         ))

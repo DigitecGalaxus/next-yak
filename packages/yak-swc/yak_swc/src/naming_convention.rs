@@ -7,7 +7,7 @@ pub struct NamingConvention {
   file_name: String,
   file_name_base: Option<String>,
   file_name_hash: Option<String>,
-  dev_mode: bool,
+  minify: bool,
   prefix: String,
 }
 
@@ -15,15 +15,15 @@ pub struct NamingConvention {
 /// Use the `generate_unique_name` method to generate a unique name based on a base name.
 /// e.g. `generate_unique_name("foo bar")` might return `"foo_bar-01"`, `"foo_bar-02"`, etc.
 impl NamingConvention {
-  pub fn new(file_name: impl AsRef<str>, dev_mode: bool, prefix: Option<String>) -> Self {
+  pub fn new(file_name: impl AsRef<str>, minify: bool, prefix: Option<String>) -> Self {
     Self {
       postfix_counters: FxHashMap::default(),
       file_name: file_name.as_ref().into(),
       file_name_base: None,
       file_name_hash: None,
-      dev_mode,
+      minify,
       prefix: prefix.unwrap_or_else(|| {
-        if dev_mode {
+        if !minify {
           // In dev mode we don't prefix by default as it already uses long unique names
           "".into()
         } else {
@@ -76,7 +76,7 @@ impl NamingConvention {
     // Postfix only if there is more than one occurrence
     if *counter == 1 {
       escaped_name
-    } else if self.dev_mode {
+    } else if !self.minify {
       format!("{}-{:02}", escaped_name, *counter - 1)
     } else {
       format!("{}{}", escaped_name, minify_number(*counter - 1))
@@ -85,7 +85,7 @@ impl NamingConvention {
 
   /// Generate a unique CSS variable name based on the file name and a base name
   pub fn get_css_variable_name(&mut self, base_name: &str) -> String {
-    let name: String = if self.dev_mode {
+    let name: String = if !self.minify {
       if base_name.is_empty() {
         format!("{}_var_", self.get_base_file_name())
       } else {
@@ -105,7 +105,7 @@ impl NamingConvention {
 
   /// Generate a unique CSS keyframe name based on the file name and a base name
   pub fn get_keyframe_name(&mut self, base_name: &str) -> String {
-    let name: String = if self.dev_mode {
+    let name: String = if !self.minify {
       if base_name.is_empty() {
         String::from("animation_")
       } else {
@@ -205,7 +205,7 @@ mod tests {
 
   #[test]
   fn css_naming_convention() {
-    let mut convention = NamingConvention::new("file.css", true, None);
+    let mut convention = NamingConvention::new("file.css", false, None);
     assert_eq!(convention.generate_unique_name("foo"), "foo");
     assert_eq!(convention.generate_unique_name("foo"), "foo-01");
     assert_eq!(convention.generate_unique_name("foo"), "foo-02");
@@ -213,7 +213,7 @@ mod tests {
 
   #[test]
   fn css_variable_name() {
-    let mut convention = NamingConvention::new("file.css", false, None);
+    let mut convention = NamingConvention::new("file.css", true, None);
     assert_eq!(convention.get_css_variable_name("foo"), "yoPBkbU");
     assert_eq!(convention.get_css_variable_name("foo"), "yoPBkbU1");
     assert_eq!(convention.get_css_variable_name("foo"), "yoPBkbU2");
@@ -229,13 +229,13 @@ mod tests {
 
   #[test]
   fn css_variable_name_empty() {
-    let mut convention = NamingConvention::new("file.css", false, None);
+    let mut convention = NamingConvention::new("file.css", true, None);
     assert_eq!(convention.get_css_variable_name(""), "yoPBkbU");
   }
 
   #[test]
   fn css_variable_name_dev_mode() {
-    let mut convention = NamingConvention::new("file.css", true, None);
+    let mut convention = NamingConvention::new("file.css", false, None);
     assert_eq!(convention.get_css_variable_name("foo"), "file_foo_oPBkbU");
     assert_eq!(
       convention.get_css_variable_name("foo"),
