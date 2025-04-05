@@ -1,11 +1,12 @@
 /** @jsxImportSource next-yak */
-import { YakThemeProvider, css, styled } from "next-yak";
+import { YakThemeProvider, atoms, css, styled } from "next-yak";
 import styles from "./page.module.css";
 import { queries, colors } from "@/theme/constants.yak";
 import { Clock } from "./Clock";
 import { Inputs } from "@/app/Input";
 import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
+import "./global.css";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -169,6 +170,13 @@ export default function Home() {
             if this is green{" "}
           </span>
           and this is violet
+        </p>
+        <p css={atoms("salmon")}>
+          Atoms in css props work if this is <span>salmon</span>
+          <span css={atoms("salmon", true && "indigo")}>
+            {" "}
+            and this is indigo
+          </span>{" "}
         </p>
         <Inputs />
       </main>

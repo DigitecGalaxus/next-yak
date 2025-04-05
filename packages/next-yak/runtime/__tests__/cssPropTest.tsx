@@ -1,7 +1,7 @@
 /** @jsxImportSource next-yak */
 // this is only a type check file and should not be executed
 
-import { css, CSSProp, styled } from "next-yak";
+import { atoms, css, CSSProp, styled } from "next-yak";
 import { CSSProperties } from "react";
 
 declare module "next-yak" {
@@ -32,6 +32,9 @@ const ComponentThatTakesCssProp = (p: CSSProp) => <div {...p}>anything</div>;
 
 const ComponentWithCssPropAsProp = () => {
   return <ComponentThatTakesCssProp css={css``} />;
+};
+const ComponentWithCssPropAsPropThatUsesAtoms = () => {
+  return <ComponentThatTakesCssProp css={atoms("")} />;
 };
 
 const ObjectWithComponent = {
@@ -183,4 +186,12 @@ const ComponentWithCSSThatUsesDynamicMixinShouldGenerateTypeError = () => {
       `}
     />
   );
+};
+
+const BothCSSAndAtomsShouldBeHandledTheSame = () => {
+  const customAtoms = atoms("");
+  const mixin = css``;
+
+  <div css={customAtoms} />;
+  <div css={mixin} />;
 };
