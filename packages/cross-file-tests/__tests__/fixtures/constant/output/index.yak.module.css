@@ -1,11 +1,12 @@
-.Button {
+/* cssmodules-pure-no-check * /
+:global(.index_Button_wIxfWW) {
   color: red;
   height: 10px;
   color: var(--color-primary);
   background-color: var(--color-secondary);
   z-index: -1;
 }
-.Button__ {
+:global(.index_Button___wIxfWW) {
   color: var(--color-secondary);
   background-color: var(--color-primary);
 }

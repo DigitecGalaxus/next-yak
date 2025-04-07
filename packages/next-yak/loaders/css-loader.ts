@@ -62,6 +62,10 @@ function extractCss(code: string | Buffer<ArrayBufferLike>): string {
     const codeUntilEnd = codeParts[i].split("*/")[0];
     result += codeUntilEnd;
   }
+  if (result) {
+    result = "/* cssmodules-pure-no-check */\n" + result;
+  }
+
   return result;
 }
 

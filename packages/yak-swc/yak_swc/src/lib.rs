@@ -2,7 +2,7 @@ use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
 use serde::Deserialize;
-use std::path::Path;
+use std::ops::Deref;
 use std::vec;
 use swc_core::atoms::atom;
 use swc_core::atoms::Atom;
@@ -46,19 +46,41 @@ use yak_transforms::{
 };
 
 /// Static plugin configuration.
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-  /// Use Readable CSS Variable Names
-  #[serde(default)]
-  pub dev_mode: bool,
+  /// Generate compact CSS names
+  #[serde(default = "Config::minify_default")]
+  pub minify: bool,
   /// The hash for a css-variable depends on the file name including createVar().
   /// To ensure that the hash is consistent accross multiple systems the relative path
   /// from the base dir to the source file is used.
   pub base_path: String,
   /// Prefix for the generated css identifier
   pub prefix: Option<String>,
+  /// Improves react DevTools experience by setting displayName
+  /// on the component to match the original component name.
+  /// Disabled by default.
+  #[serde(default)]
+  pub display_names: bool,
+}
+
+impl Config {
+  fn minify_default() -> bool {
+    true
+  }
+}
+
+impl Default for Config {
+  fn default() -> Self {
+    Self {
+      minify: true,
+      base_path: Default::default(),
+      prefix: Default::default(),
+      display_names: Default::default(),
+    }
+  }
 }
 
 pub struct TransformVisitor<GenericComments>
@@ -97,12 +119,11 @@ where
   naming_convention: NamingConvention,
   /// Expression replacement to replace a yak library call with the transformed one
   expression_replacement: Option<Box<Expr>>,
-  /// The current file name e.g. "App.tsx"
-  filename: String,
-  /// The imported css module from the virtual yak.module.css
-  css_module_identifier: Option<Ident>,
   /// Flag to check if we are inside a css attribute
   inside_element_with_css_attribute: bool,
+  /// If true, additional code will be injected to provide readable `displayName` values
+  /// in React DevTools and stack traces for every yak component
+  display_names: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -112,8 +133,9 @@ where
   pub fn new(
     comments: Option<GenericComments>,
     filename: impl AsRef<str>,
-    dev_mode: bool,
+    minify: bool,
     prefix: Option<String>,
+    display_names: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -123,13 +145,12 @@ where
       current_exported: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
-      naming_convention: NamingConvention::new(filename.as_ref(), dev_mode, prefix),
+      naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
       variable_name_selector_mapping: FxHashMap::default(),
       expression_replacement: None,
-      css_module_identifier: None,
       inside_element_with_css_attribute: false,
-      filename: filename.as_ref().into(),
       comments,
+      display_names,
     }
   }
 
@@ -154,15 +175,6 @@ where
         vec![atom!("yak")],
       )
     })
-  }
-
-  /// Get the current filename without extension or path e.g. "App" from "/path/to/App.tsx
-  fn get_file_name_without_extension(&self) -> String {
-    Path::new(&self.filename)
-      .file_stem()
-      .and_then(|os_str| os_str.to_str())
-      .map(|s| s.to_string())
-      .unwrap()
   }
 
   /// Iterate over the quasi and expressions of a tagged template literal
@@ -315,7 +327,7 @@ where
                 // Create a unique name for the keyframe
                 let keyframe_name = self
                   .naming_convention
-                  .generate_unique_name_for_variable(&scoped_name);
+                  .get_keyframe_name(&scoped_name.to_readable_string());
                 // Store the keyframe for the later keyframe declaration
                 self
                   .variable_name_selector_mapping
@@ -516,9 +528,7 @@ where
   /// !=! is a webpack-specific syntax that tells webpack to override the default loaders for this import
   /// ? is a fix for Next.js loaders which ignore the !=! statement
   fn visit_mut_module(&mut self, module: &mut Module) {
-    let basename = self.get_file_name_without_extension();
-    let css_module_identifier = Ident::new("__styleYak".into(), DUMMY_SP, SyntaxContext::empty());
-    self.css_module_identifier = Some(css_module_identifier.clone());
+    let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
 
@@ -560,11 +570,7 @@ where
         ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
           phase: Default::default(),
           span: DUMMY_SP,
-          specifiers: vec![ImportDefaultSpecifier {
-            span: DUMMY_SP,
-            local: css_module_identifier,
-          }
-          .into()],
+          specifiers: vec![],
           src: Box::new(Str {
             span: DUMMY_SP,
             value: format!(
@@ -757,24 +763,28 @@ where
   /// Visit tagged template literals
   /// This is where the css-in-js expressions are
   fn visit_mut_tagged_tpl(&mut self, n: &mut TaggedTpl) {
-    let yak_library_function_name = self
+    let Some(yak_library_function_name) = self
       .yak_library_imports
-      .as_mut()
+      .as_ref()
       .unwrap()
-      .get_yak_library_function_name(n);
-    if yak_library_function_name.is_none() {
+      .get_yak_library_function_name(n)
+    else {
       n.visit_mut_children_with(self);
       return;
-    }
+    };
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
 
-    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.as_deref() {
+    let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      Some("styled") if is_top_level => Box::new(TransformStyled::new()),
+      "styled" if is_top_level => Box::new(TransformStyled::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
+        self.display_names,
+      )),
       // Keyframes transform works only on top level
-      Some("keyframes") if is_top_level => Box::new(TransformKeyframes::new(
+      "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
           .variable_name_selector_mapping
           .get(&current_variable_id)
@@ -782,16 +792,22 @@ where
           .unwrap_or_else(|| {
             self
               .naming_convention
-              .generate_unique_name_for_variable(&current_variable_id)
+              .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
-      Some("css") if is_top_level => Box::new(TransformCssMixin::new(
+      "css" if is_top_level => Box::new(TransformCssMixin::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
         self.current_exported,
         self.inside_element_with_css_attribute,
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
-      Some("css") => Box::new(TransformNestedCss::new(self.current_condition.clone())),
+      "css" => Box::new(TransformNestedCss::new(
+        &mut self.naming_convention,
+        &current_variable_id,
+        self.current_condition.clone(),
+      )),
       _ => {
         if !is_top_level {
           HANDLER.with(|handler| {
@@ -817,11 +833,7 @@ where
     //
     // Depending on the library function used (styled, keyframes, css, ...)
     // a surrounding scope is added
-    let css_state = Some(transform.create_css_state(
-      &mut self.naming_convention,
-      &current_variable_id,
-      self.current_css_state.clone(),
-    ));
+    let css_state = Some(transform.create_css_state(self.current_css_state.clone()));
 
     if let Some(css_reference_name) = transform.get_css_reference_name() {
       self
@@ -834,7 +846,6 @@ where
 
     let transform_result = transform.transform_expression(
       n,
-      self.css_module_identifier.clone().unwrap(),
       runtime_expressions,
       &self.current_declaration,
       runtime_css_variables,
@@ -990,8 +1001,9 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
   program.apply(visit_mut_pass(&mut TransformVisitor::new(
     metadata.comments,
     deterministic_path,
-    config.dev_mode,
+    config.minify,
     config.prefix,
+    config.display_names,
   )))
 }
 
@@ -1029,8 +1041,9 @@ mod tests {
         visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
-          true,
+          false,
           None,
+          true,
         ))
       },
       &input,
@@ -1054,8 +1067,9 @@ mod tests {
         visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
-          false,
+          true,
           None,
+          false,
         ))
       },
       &input,

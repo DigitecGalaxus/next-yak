@@ -1,20 +1,20 @@
 import { css, __yak_mergeCssProp } from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 <div {.../*YAK Extracted CSS:
-.yak {
+:global(.ym7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ css(__styleYak.yak)({})}>
+*/ /*#__PURE__*/ css("ym7uBBu")({})}>
   <p {.../*YAK Extracted CSS:
-.yak1 {
+:global(.ym7uBBu1) {
   color: blue;
 }
-*/ /*#__PURE__*/ css(__styleYak.yak1)({})}>
+*/ /*#__PURE__*/ css("ym7uBBu1")({})}>
     <span {.../*YAK Extracted CSS:
-.yak2 {
+:global(.ym7uBBu2) {
   color: green;
 }
-*/ /*#__PURE__*/ css(__styleYak.yak2)({})}>
+*/ /*#__PURE__*/ css("ym7uBBu2")({})}>
       hello
     </span>
     world

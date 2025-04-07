@@ -1,5 +1,5 @@
 use swc_core::{
-  common::{SyntaxContext, DUMMY_SP},
+  common::{source_map::PURE_SP, SyntaxContext, DUMMY_SP},
   ecma::ast::*,
 };
 
@@ -8,7 +8,7 @@ use swc_core::{
 pub fn add_suffix_to_expr(expr: Expr, helper: Ident, suffix: impl AsRef<str>) -> Expr {
   // Otherwise, replace the expression with a call to the utility function
   Expr::Call(CallExpr {
-    span: DUMMY_SP,
+    span: PURE_SP,
     ctxt: SyntaxContext::empty(),
     callee: Callee::Expr(helper.into()),
     args: vec![

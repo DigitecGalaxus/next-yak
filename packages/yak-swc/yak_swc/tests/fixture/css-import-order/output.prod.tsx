@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import { IconButton } from "./iconButton";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FancyIconButton = /*YAK Extracted CSS:
-.FancyIconButton {
+:global(.ym7uBBu) {
   color: hotpink;
   &:before {
     content: "FancyIconButton";
@@ -11,4 +11,4 @@ export const FancyIconButton = /*YAK Extracted CSS:
     color: #f0f;
   }
 }
-*/ /*#__PURE__*/ styled(IconButton)(__styleYak.FancyIconButton);
+*/ /*#__PURE__*/ styled(IconButton)("ym7uBBu");

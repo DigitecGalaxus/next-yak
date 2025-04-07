@@ -14,6 +14,12 @@ const currentDir =
 const { resolve } = createRequire(currentDir + "/index.js");
 
 export type YakConfigOptions = {
+  /**
+   * Generate compact CSS class and variable names.
+   * @defaultValue
+   * enabled if NODE_ENV is set to `production`, otherwise disabled
+   */
+  minify?: boolean;
   contextPath?: string;
   /**
    * Optional prefix for generated CSS identifiers.
@@ -21,6 +27,13 @@ export type YakConfigOptions = {
    * or to add organization-specific prefixes.
    */
   prefix?: string;
+  /**
+   * Adds `displayName` to each component for better React DevTools debugging
+   * - Enabled by default in development mode
+   * - Disabled by default in production
+   * - Increases bundle size slightly when enabled
+   */
+  displayNames?: boolean;
   experiments?: {
     debug?:
       | boolean
@@ -33,15 +46,20 @@ export type YakConfigOptions = {
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const previousConfig = nextConfig.webpack;
+  const minify =
+    yakOptions.minify !== undefined
+      ? yakOptions.minify
+      : process.env.NODE_ENV === "production";
 
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
   nextConfig.experimental.swcPlugins.push([
     resolve("yak-swc"),
     {
-      devMode: process.env.NODE_ENV !== "production",
+      minify,
       basePath: currentDir,
       prefix: yakOptions.prefix,
+      displayNames: yakOptions.displayNames ?? !minify,
     },
   ]);
 

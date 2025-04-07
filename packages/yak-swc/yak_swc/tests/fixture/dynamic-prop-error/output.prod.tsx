@@ -1,15 +1,15 @@
 import { styled, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FlexContainer = /*YAK Extracted CSS:
-.FlexContainer {
+:global(.ym7uBBu) {
   display: flex;
-  z-index: var(--ym7uBBu);
-  margin-bottom: var(--ym7uBBu1);
+  z-index: var(--ym7uBBu1);
+  margin-bottom: var(--ym7uBBu2);
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.FlexContainer, {
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu", {
     "style": {
-        "--ym7uBBu": getZIndex(),
-        "--ym7uBBu1": __yak_unitPostFix(spacing[40].toString(), "px")
+        "--ym7uBBu1": getZIndex(),
+        "--ym7uBBu2": /*#__PURE__*/ __yak_unitPostFix(spacing[40].toString(), "px")
     }
 });

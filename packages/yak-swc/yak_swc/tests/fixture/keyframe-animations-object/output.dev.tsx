@@ -1,21 +1,23 @@
 import { styled, css, keyframes } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK Extracted CSS:
-.FadeInText__$reverse {
-  animation: animations_fadeOut 1s ease-in;
+:global(.input_FadeInText__$reverse_m7uBBu) {
+  animation: animations_fadeOut_m7uBBu 1s ease-in;
 }
-.FadeInText__not_$reverse {
-  animation: animations_fadeIn 1s ease-in;
+:global(.input_FadeInText__not_$reverse_m7uBBu) {
+  animation: animations_fadeIn_m7uBBu 1s ease-in;
 }
-.FadeInText {
+:global(.input_FadeInText_m7uBBu) {
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ __yak.__yak_p(__styleYak.FadeInText, ({ $reverse })=>$reverse ? /*#__PURE__*/ css(__styleYak.FadeInText__$reverse) : /*#__PURE__*/ css(__styleYak.FadeInText__not_$reverse));
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_FadeInText_m7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("input_FadeInText__$reverse_m7uBBu") : /*#__PURE__*/ css("input_FadeInText__not_$reverse_m7uBBu")), {
+    "displayName": "FadeInText"
+});
 const animations = {
     fadeIn: /*YAK Extracted CSS:
-@keyframes animations_fadeIn {
+@keyframes :global(animations_fadeIn_m7uBBu) {
   from {
     opacity: 0;
   }
@@ -23,9 +25,9 @@ const animations = {
     opacity: 1;
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.animations_fadeIn),
+*/ /*#__PURE__*/ keyframes("animations_fadeIn_m7uBBu"),
     fadeOut: /*YAK Extracted CSS:
-@keyframes animations_fadeOut {
+@keyframes :global(animations_fadeOut_m7uBBu) {
   from {
     opacity: 1;
   }
@@ -33,18 +35,18 @@ const animations = {
     opacity: 0;
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.animations_fadeOut)
+*/ /*#__PURE__*/ keyframes("animations_fadeOut_m7uBBu")
 };
 const slides = {
     200: /*YAK Extracted CSS:
-@keyframes slides_200 {
+@keyframes :global(slides_200_m7uBBu) {
   to {
     transform: translate(200px, 200px);
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.slides_200),
+*/ /*#__PURE__*/ keyframes("slides_200_m7uBBu"),
     "x400": /*YAK Extracted CSS:
-@keyframes slides_x400 {
+@keyframes :global(slides_x400_m7uBBu) {
   from {
     transform: translateX(0);
   }
@@ -52,14 +54,16 @@ const slides = {
     transform: translateX(400px);
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.slides_x400)
+*/ /*#__PURE__*/ keyframes("slides_x400_m7uBBu")
 };
 export const FancyButton = /*YAK Extracted CSS:
-.FancyButton {
+:global(.input_FancyButton_m7uBBu) {
   background-color: #f00;
-  animation: slides_x400 1s ease-in-out, animations_fadeIn 1s ease-in;
+  animation: global(slides_x400_m7uBBu) 1s ease-in-out, global(animations_fadeIn_m7uBBu) 1s ease-in;
   &:hover {
-    animation: slides_200 1s ease-in-out, animations_fadeOut 1s ease-in;
+    animation: global(slides_200_m7uBBu) 1s ease-in-out, global(animations_fadeOut_m7uBBu) 1s ease-in;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.FancyButton);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_FancyButton_m7uBBu"), {
+    "displayName": "FancyButton"
+});

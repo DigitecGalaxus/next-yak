@@ -1,5 +1,16 @@
 # yak-swc
 
+## 5.1.0
+
+### Minor Changes
+
+- e2afeb9: Improved React DevTools support - Styled components created with next-yak now show up with their actual variable names in React DevTools instead of a generic yak label
+
+### Patch Changes
+
+- d461cf5: Mark `__yak_unitPostFix` as pure (generated code)
+- b3e4fec: Minor refactoring of visitors
+
 ## 5.0.0
 
 ### Major Changes

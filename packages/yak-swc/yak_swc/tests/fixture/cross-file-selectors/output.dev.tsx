@@ -2,10 +2,10 @@ import { styled } from "next-yak/internal";
 // @ts-ignore
 import { Icon } from "./Icon";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const primary = "green";
 export const Button = /*YAK Extracted CSS:
-.Button {
+:global(.input_Button_m7uBBu) {
   font-size: 1rem;
   color: green;
   --yak-css-import: url("./Icon:Icon",selector) {
@@ -15,4 +15,6 @@ export const Button = /*YAK Extracted CSS:
     color: blue;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
+    "displayName": "Button"
+});

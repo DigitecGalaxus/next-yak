@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const ArticleCard = /*YAK Extracted CSS:
-.ArticleCard {
+:global(.ym7uBBu) {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -53,4 +53,4 @@ export const ArticleCard = /*YAK Extracted CSS:
     }
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_article(__styleYak.ArticleCard);
+*/ /*#__PURE__*/ __yak.__yak_article("ym7uBBu");

@@ -1,4 +1,5 @@
-.Headline {
+/* cssmodules-pure-no-check * /
+:global(.index_Headline_mxjUbw) {
   color: red;
   
         font-family: "Roboto", sans-serif;
@@ -8,7 +9,7 @@
         letter-spacing: 0.00938em;
     
 }
-.Button {
+:global(.index_Button_mxjUbw) {
   color: red;
   
         font-family: "Roboto", sans-serif;

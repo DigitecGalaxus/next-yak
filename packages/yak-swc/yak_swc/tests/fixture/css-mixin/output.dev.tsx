@@ -1,71 +1,75 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
-const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css(__styleYak.buttonStyles__$active, {
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
+const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("input_buttonStyles__$active_m7uBBu", {
         "style": {
-            "--buttonStyles__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--input_buttonStyles__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
-    return $letters > 5 && /*#__PURE__*/ css(__styleYak.buttonStyles__);
+    return $letters > 5 && /*#__PURE__*/ css("input_buttonStyles___m7uBBu");
 }, {
     "style": {
-        "--buttonStyles__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--input_buttonStyles__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
 export const ThemedButton = /*YAK Extracted CSS:
-.ThemedButton {
+:global(.input_ThemedButton_m7uBBu) {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-.ThemedButton__$active {
+:global(.input_ThemedButton__$active_m7uBBu) {
   background-color: #f0f0f0;
-  max-width: var(--ThemedButton__max-width_m7uBBu);
+  max-width: var(--input_ThemedButton__max-width_m7uBBu);
 }
-.ThemedButton {
-  width: var(--ThemedButton__width_m7uBBu);
+:global(.input_ThemedButton_m7uBBu) {
+  width: var(--input_ThemedButton__width_m7uBBu);
 }
-.ThemedButton__ {
+:global(.input_ThemedButton___m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.ThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.ThemedButton__$active, {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_ThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_ThemedButton__$active_m7uBBu", {
         "style": {
-            "--ThemedButton__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--input_ThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
-    return $letters > 5 && /*#__PURE__*/ css(__styleYak.ThemedButton__);
+    return $letters > 5 && /*#__PURE__*/ css("input_ThemedButton___m7uBBu");
 }, {
     "style": {
-        "--ThemedButton__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--input_ThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "ThemedButton"
 });
 export const CustomThemedButton = /*YAK Extracted CSS:
-.CustomThemedButton {
+:global(.input_CustomThemedButton_m7uBBu) {
   color: red;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-.CustomThemedButton__$active {
+:global(.input_CustomThemedButton__$active_m7uBBu) {
   background-color: #f0f0f0;
-  max-width: var(--CustomThemedButton__max-width_m7uBBu);
+  max-width: var(--input_CustomThemedButton__max-width_m7uBBu);
 }
-.CustomThemedButton {
-  width: var(--CustomThemedButton__width_m7uBBu);
+:global(.input_CustomThemedButton_m7uBBu) {
+  width: var(--input_CustomThemedButton__width_m7uBBu);
 }
-.CustomThemedButton__ {
+:global(.input_CustomThemedButton___m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.CustomThemedButton, ({ $active })=>$active && /*#__PURE__*/ css(__styleYak.CustomThemedButton__$active, {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_CustomThemedButton_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_CustomThemedButton__$active_m7uBBu", {
         "style": {
-            "--CustomThemedButton__max-width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
+            "--input_CustomThemedButton__max-width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
         }
     }), function({ $letters }) {
-    return $letters > 5 && /*#__PURE__*/ css(__styleYak.CustomThemedButton__);
+    return $letters > 5 && /*#__PURE__*/ css("input_CustomThemedButton___m7uBBu");
 }, {
     "style": {
-        "--CustomThemedButton__width_m7uBBu": __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
+        "--input_CustomThemedButton__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
+}), {
+    "displayName": "CustomThemedButton"
 });

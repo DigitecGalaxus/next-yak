@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const Card = /*YAK Extracted CSS:
-.Card {
+:global(.input_Card_m7uBBu) {
   background-color: #fff;
   border-radius: 8px;
   padding: 20px;
@@ -30,4 +30,6 @@ export const Card = /*YAK Extracted CSS:
     }
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_div(__styleYak.Card);
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu"), {
+    "displayName": "Card"
+});

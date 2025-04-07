@@ -1,21 +1,21 @@
 import { styled, css, keyframes } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK Extracted CSS:
-.FadeInText__$reverse {
-  animation: animations_fadeOut 1s ease-in;
+:global(.ym7uBBu1) {
+  animation: ym7uBBu2 1s ease-in;
 }
-.FadeInText__not_$reverse {
-  animation: animations_fadeIn 1s ease-in;
+:global(.ym7uBBu3) {
+  animation: ym7uBBu4 1s ease-in;
 }
-.FadeInText {
+:global(.ym7uBBu) {
   font-size: 18px;
   color: #333;
 }
-*/ /*#__PURE__*/ __yak.__yak_p(__styleYak.FadeInText, ({ $reverse })=>$reverse ? /*#__PURE__*/ css(__styleYak.FadeInText__$reverse) : /*#__PURE__*/ css(__styleYak.FadeInText__not_$reverse));
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu", ({ $reverse })=>$reverse ? /*#__PURE__*/ css("ym7uBBu1") : /*#__PURE__*/ css("ym7uBBu3"));
 const animations = {
     fadeIn: /*YAK Extracted CSS:
-@keyframes animations_fadeIn {
+@keyframes :global(ym7uBBu4) {
   from {
     opacity: 0;
   }
@@ -23,9 +23,9 @@ const animations = {
     opacity: 1;
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.animations_fadeIn),
+*/ /*#__PURE__*/ keyframes("ym7uBBu4"),
     fadeOut: /*YAK Extracted CSS:
-@keyframes animations_fadeOut {
+@keyframes :global(ym7uBBu2) {
   from {
     opacity: 1;
   }
@@ -33,18 +33,18 @@ const animations = {
     opacity: 0;
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.animations_fadeOut)
+*/ /*#__PURE__*/ keyframes("ym7uBBu2")
 };
 const slides = {
     200: /*YAK Extracted CSS:
-@keyframes slides_200 {
+@keyframes :global(ym7uBBu5) {
   to {
     transform: translate(200px, 200px);
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.slides_200),
+*/ /*#__PURE__*/ keyframes("ym7uBBu5"),
     "x400": /*YAK Extracted CSS:
-@keyframes slides_x400 {
+@keyframes :global(ym7uBBu6) {
   from {
     transform: translateX(0);
   }
@@ -52,14 +52,14 @@ const slides = {
     transform: translateX(400px);
   }
 }
-*/ /*#__PURE__*/ keyframes(__styleYak.slides_x400)
+*/ /*#__PURE__*/ keyframes("ym7uBBu6")
 };
 export const FancyButton = /*YAK Extracted CSS:
-.FancyButton {
+:global(.ym7uBBu7) {
   background-color: #f00;
-  animation: slides_x400 1s ease-in-out, animations_fadeIn 1s ease-in;
+  animation: global(ym7uBBu6) 1s ease-in-out, global(ym7uBBu4) 1s ease-in;
   &:hover {
-    animation: slides_200 1s ease-in-out, animations_fadeOut 1s ease-in;
+    animation: global(ym7uBBu5) 1s ease-in-out, global(ym7uBBu2) 1s ease-in;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.FancyButton);
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu7");

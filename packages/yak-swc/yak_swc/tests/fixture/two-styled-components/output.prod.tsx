@@ -1,23 +1,23 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import __styleYak from "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const Button = /*YAK Extracted CSS:
-.Button {
+:global(.ym7uBBu) {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button);
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
 export const FancyButton = /*YAK Extracted CSS:
-.FancyButton {
+:global(.ym7uBBu1) {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ styled(Button)(__styleYak.FancyButton);
+*/ /*#__PURE__*/ styled(Button)("ym7uBBu1");
 export const Button2 = /*YAK Extracted CSS:
-.Button2 {
+:global(.ym7uBBu2) {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ __yak.__yak_button(__styleYak.Button2);
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu2");
 export const Button3 = /*YAK Extracted CSS:
-.Button3 {
+:global(.ym7uBBu3) {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ styled("button")(__styleYak.Button3);
+*/ /*#__PURE__*/ styled("button")("ym7uBBu3");
