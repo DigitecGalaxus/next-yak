@@ -2,7 +2,7 @@ import ReactJSXRuntime from "react/jsx-runtime";
 import type { ComponentStyles } from "./mocks/cssLiteral.js";
 
 // Only return the css prop if the "className" and "style" properties are present
-// This was taken from emotion
+// This was inspired from emotion
 // https://github.com/emotion-js/emotion/blob/cce67ec6b2fc94261028b4f4778aae8c3d6c5fd6/packages/react/src/jsx-namespace.ts#L9C6-L9C28
 type WithConditionalCSSProp<P> = "className" | "style" extends keyof P
   ? string extends P["className" & keyof P]
