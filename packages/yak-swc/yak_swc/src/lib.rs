@@ -690,14 +690,7 @@ where
       self.inside_element_with_css_attribute = true;
       n.visit_mut_children_with(self);
       self.inside_element_with_css_attribute = previous_inside_css_attribute;
-      css_prop.transform(
-        n,
-        &self
-          .yak_library_imports
-          .as_mut()
-          .unwrap()
-          .get_yak_utility_ident("mergeCssProp"),
-      );
+      css_prop.transform(n);
     }
   }
 

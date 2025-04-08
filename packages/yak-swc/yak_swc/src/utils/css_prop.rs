@@ -2,9 +2,9 @@ use swc_core::{
   common::errors::HANDLER,
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
-    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement,
+    CallExpr, Callee, Expr, ExprOrSpread, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue,
+    JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName, PropOrSpread,
+    SpreadElement,
   },
 };
 
@@ -15,9 +15,8 @@ pub struct CSSProp {
 }
 
 impl CSSProp {
-  /// Transforms the css prop to a spread attribute, changes the call to invoke it without parameters
-  /// and inserts it into the correct position.
-  /// If the css prop has relevant props, they are removed and transformed into a merge call.
+  /// Transforms the css prop to a spread attribute, changes the call to invoke it with all relevant props
+  /// as a single object parameter and inserts it into the correct position.
   ///
   /// e.g.
   /// ```jsx
@@ -33,23 +32,43 @@ impl CSSProp {
   /// ```
   /// becomes
   /// ```jsx
-  /// <div {...__yak_mergeCssProp(
-  ///   css("divClassName")({}),
-  ///   {
+  /// <div {...css("divClassName")({
   ///     style: {color: red},
   ///     className: "myClassName"
   ///   })} />
   /// ```
-  pub fn transform(&self, opening_element: &mut JSXOpeningElement, merge_ident: &Ident) {
+  pub fn transform(&self, opening_element: &mut JSXOpeningElement) {
     let result: Result<_, TransformError> = (|| {
       let value = opening_element.attrs.remove(self.index);
 
-      let (merge_call, insert_index) = if self.relevant_props_indices.is_empty() {
-        (
-          Self::extract_css_expr(&value, opening_element.span)?,
-          self.index,
-        )
+      let css_expr_base = match &value {
+        JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
+          .value
+          .as_ref()
+          .ok_or(TransformError::InvalidCSSAttribute(opening_element.span))
+          .and_then(|value| match value {
+            JSXAttrValue::JSXExprContainer(container) => match &container.expr {
+              JSXExpr::Expr(expr) => Ok(expr.clone()),
+              _ => Err(TransformError::InvalidCSSAttribute(container.span)),
+            },
+            _ => Err(TransformError::InvalidCSSAttribute(opening_element.span)),
+          })?,
+        JSXAttrOrSpread::SpreadElement(_) => {
+          return Err(TransformError::UnsupportedSpreadElement(
+            opening_element.span,
+          ))
+        }
+      };
+
+      // Props object to pass to the CSS function
+      let props_object = if self.relevant_props_indices.is_empty() {
+        // Empty object if no relevant props
+        ObjectLit {
+          span: DUMMY_SP,
+          props: vec![],
+        }
       } else {
+        // Create object with all relevant props
         let removed_attrs: Vec<_> = self
           .relevant_props_indices
           .iter()
@@ -59,18 +78,39 @@ impl CSSProp {
             opening_element.attrs.remove(adjusted_index)
           })
           .collect();
+
         let mapped_props = Self::map_props(&removed_attrs)?;
-        let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
-        (
-          Self::create_merge_call(&mapped_props, css_expr, merge_ident),
-          opening_element.attrs.len(),
-        )
+
+        ObjectLit {
+          span: DUMMY_SP,
+          props: mapped_props,
+        }
+      };
+
+      // Create the call expression: css("divClassName")({ props })
+      let css_expr = Box::new(Expr::Call(CallExpr {
+        span: DUMMY_SP,
+        callee: Callee::Expr(css_expr_base),
+        args: vec![ExprOrSpread {
+          spread: None,
+          expr: Box::new(Expr::Object(props_object)),
+        }],
+        ctxt: SyntaxContext::empty(),
+        type_args: None,
+      }));
+
+      let insert_index = if self.relevant_props_indices.is_empty() {
+        self.index
+      } else {
+        // Insert at the end if props were removed
+        opening_element.attrs.len()
       };
 
       let spread_attr = JSXAttrOrSpread::SpreadElement(SpreadElement {
         dot3_token: DUMMY_SP,
-        expr: merge_call,
+        expr: css_expr,
       });
+
       opening_element.attrs.insert(insert_index, spread_attr);
       Ok(())
     })();
@@ -82,40 +122,8 @@ impl CSSProp {
     }
   }
 
-  /// Extracts the CSS expression from a JSX attribute or spread element.
-  /// Returns the expression wrapped in a function call with an empty object argument.
-  /// e.g. `css\`color: red\`` becomes `css\`color: red\`({})`
-  fn extract_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
-    match attr {
-      JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
-        .value
-        .as_ref()
-        .ok_or(TransformError::InvalidCSSAttribute(span))
-        .and_then(|value| match value {
-          JSXAttrValue::JSXExprContainer(container) => match &container.expr {
-            JSXExpr::Expr(expr) => Ok(Box::new(Expr::Call(CallExpr {
-              span: DUMMY_SP,
-              callee: Callee::Expr(expr.clone()),
-              args: vec![ExprOrSpread {
-                spread: None,
-                expr: Box::new(Expr::Object(ObjectLit {
-                  span: DUMMY_SP,
-                  props: vec![],
-                })),
-              }],
-              ctxt: SyntaxContext::empty(),
-              type_args: None,
-            }))),
-            _ => Err(TransformError::InvalidCSSAttribute(container.span)),
-          },
-          _ => Err(TransformError::InvalidCSSAttribute(span)),
-        }),
-      JSXAttrOrSpread::SpreadElement(_) => Err(TransformError::UnsupportedSpreadElement(span)),
-    }
-  }
-
   /// Maps JSX attributes or spread elements to PropOrSpread elements.
-  /// This is used to convert JSX attributes to object properties for the merge call.
+  /// This is used to convert JSX attributes to object properties for the props object.
   /// Because the order of the properties are already reversed, the attributes are iterated in reverse order.
   /// This is done to maintain the order of the attributes when they are merged.
   fn map_props(props: &[JSXAttrOrSpread]) -> Result<Vec<PropOrSpread>, TransformError> {
@@ -130,7 +138,7 @@ impl CSSProp {
   }
 
   /// Maps a single JSX attribute to a PropOrSpread element.
-  /// This is used to convert a JSX attribute to an object property for the merge call.
+  /// This is used to convert a JSX attribute to an object property for the props object.
   /// e.g. `style={{color: red}}` becomes `{style: {color: red}}`
   fn map_jsx_attr(attr: &JSXAttr) -> Result<PropOrSpread, TransformError> {
     match &attr.name {
@@ -157,32 +165,6 @@ impl CSSProp {
         },
         _ => Err(TransformError::UnsupportedAttributeValue(span)),
       })
-  }
-
-  /// Creates a merge call expression that combines the CSS props with other relevant props.
-  /// This is used when there are additional props (like className or style) that need to be merged.
-  /// e.g. `style={{color: "red"}} className="foo"` becomes `merge_ident({style: {color: "red"}}, {className: "foo"})`
-  fn create_merge_call(
-    mapped_props: &[PropOrSpread],
-    expr: Box<Expr>,
-    merge_ident: &Ident,
-  ) -> Box<Expr> {
-    Box::new(Expr::Call(CallExpr {
-      span: DUMMY_SP,
-      callee: Callee::Expr(Box::new(Expr::Ident(merge_ident.clone()))),
-      args: vec![
-        ExprOrSpread {
-          spread: None,
-          expr: Box::new(Expr::Object(ObjectLit {
-            span: DUMMY_SP,
-            props: mapped_props.to_vec(),
-          })),
-        },
-        ExprOrSpread { spread: None, expr },
-      ],
-      ctxt: SyntaxContext::empty(),
-      type_args: None,
-    }))
   }
 }
 

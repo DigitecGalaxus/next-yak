@@ -146,7 +146,18 @@ export default function Home() {
             color: green;
           `}
         >
-          CSS Prop works if this is green
+          CSS Prop works if this is green{" "}
+          <span
+            data-testid="test-id"
+            {...{
+              style: { color: "orange" },
+            }}
+            css={css`
+              color: ${() => "purple"};
+            `}
+          >
+            and this is orange
+          </span>
         </p>
         <p
           css={css`
@@ -158,7 +169,17 @@ export default function Home() {
               `}
           `}
         >
-          Conditional CSS Prop works if this is green
+          Conditional CSS Prop works if this is green{" "}
+          <span
+            css={css`
+              ${() => css`
+                color: yellow;
+              `};
+              color: ${() => "purple"};
+            `}
+          >
+            and this is purple
+          </span>
         </p>
         <p
           css={css`

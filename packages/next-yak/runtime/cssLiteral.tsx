@@ -55,7 +55,9 @@ export function css<TProps>(
   styles: TemplateStringsArray,
   ...values: CSSInterpolation<NoInfer<TProps> & { theme: YakTheme }>[]
 ): ComponentStyles<TProps>;
-export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
+export function css<TProps extends Record<string, unknown>>(
+  ...args: Array<any>
+): (props: TProps) => TProps {
   const classNames: string[] = [];
   const dynamicCssFunctions: PropsToClassNameFn[] = [];
   const style: Record<string, string> = {};
@@ -63,7 +65,7 @@ export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
     // A CSS-module class name which got auto generated during build from static css
     // e.g. css`color: red;`
     // compiled -> css("yak31e4")
-    if (typeof arg === "string") {
+    if (typeof arg === "string" && arg.length !== 0) {
       classNames.push(arg);
     }
     // Dynamic CSS e.g.
@@ -97,22 +99,16 @@ export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
     }
   }
 
-  // Non Dynamic CSS
-  if (dynamicCssFunctions.length === 0) {
-    const className = classNames.join(" ");
-    return () => ({ className, style });
-  }
-
-  return (props: unknown) => {
+  return (props) => {
     const allClassNames: string[] = [...classNames];
     const allStyles: Record<string, string> = { ...style };
     for (let i = 0; i < dynamicCssFunctions.length; i++) {
       unwrapProps(props, dynamicCssFunctions[i], allClassNames, allStyles);
     }
-    return {
+    return combineProps(props, {
       className: allClassNames.join(" "),
       style: allStyles,
-    };
+    });
   };
 }
 
@@ -164,4 +160,71 @@ const recursivePropExecution = (
     }
   }
   return result;
+};
+
+/**
+ * merge props and processed props (including class names and styles)
+ * e.g.:\
+ * `{ className: "a", foo: 1 }` and `{ className: "b", bar: 2 }` \
+ * => `{ className: "a b", foo: 1, bar: 2 }`
+ */
+export const combineProps = <
+  T extends {
+    className?: string;
+    style?: React.CSSProperties;
+  },
+  TOther extends
+    | {
+        className?: string;
+        style?: React.CSSProperties;
+      }
+    | null
+    | undefined,
+>(
+  props: T,
+  newProps: TOther,
+) =>
+  newProps
+    ? (props.className === newProps.className || !newProps.className) &&
+      (props.style === newProps.style || !newProps.style)
+      ? // shortcut if no style and class merging is necessary
+        {
+          ...props,
+          ...newProps,
+        }
+      : // merge class names and styles
+        {
+          ...props,
+          ...newProps,
+          className: mergeClassNames(props.className, newProps.className),
+          style: { ...(props.style || {}), ...(newProps.style || {}) },
+        }
+    : // if no new props are provided, no merging is necessary
+      props;
+
+// util function to merge class names, as they are concatenated with a space
+export const mergeClassNames = (a?: string, b?: string) => {
+  if (!a && !b) return undefined;
+  if (!a) return b;
+  if (!b) return a;
+
+  // Check if strings are identical
+  if (a === b) return a;
+
+  // Quick check if one is a subset of the other
+  if (` ${a} `.includes(` ${b} `)) return a;
+  if (` ${b} `.includes(` ${a} `)) return b;
+
+  // Use object as a map for fast deduplication
+  const classMap = {} as Record<string, true>;
+
+  a.split(" ").forEach((cls) => {
+    classMap[cls] = true;
+  });
+
+  b.split(" ").forEach((cls) => {
+    classMap[cls] = true;
+  });
+
+  return Object.keys(classMap).join(" ");
 };

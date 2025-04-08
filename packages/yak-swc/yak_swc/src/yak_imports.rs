@@ -14,7 +14,7 @@ use crate::utils::native_elements::VALID_ELEMENTS;
 
 pub struct YakImports {
   /// Utilities used from "next-yak/internal"
-  /// e.g. unitPostFix, mergeCssProp
+  /// e.g. unitPostFix
   yak_utilities: FxHashMap<String, Ident>,
   /// Imports from "next-yak"
   /// Local to Imported mapping
@@ -53,7 +53,7 @@ pub fn visit_module_imports(module: &mut Module) -> YakImports {
   yak_import_visitor.into()
 }
 
-const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp"];
+const UTILITIES: &[&str] = &["unitPostFix"];
 
 impl From<YakImportVisitor> for YakImports {
   fn from(value: YakImportVisitor) -> Self {
@@ -409,7 +409,5 @@ mod tests {
     let mut imports: YakImports = visitor.into();
     let ident = imports.get_yak_utility_ident("unitPostFix");
     assert_eq!(ident.sym, "__yak_unitPostFix");
-    let ident = imports.get_yak_utility_ident("mergeCssProp");
-    assert_eq!(ident.sym, "__yak_mergeCssProp");
   }
 }

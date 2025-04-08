@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const YakLogo = ()=><div {.../*YAK Extracted CSS:
 :global(.input_YakLogo_m7uBBu) {
