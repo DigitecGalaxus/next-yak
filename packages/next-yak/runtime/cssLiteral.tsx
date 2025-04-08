@@ -106,7 +106,6 @@ export function css<TProps extends Record<string, unknown>>(
     for (let i = 0; i < dynamicCssFunctions.length; i++) {
       unwrapProps(props, dynamicCssFunctions[i], allClassNames, allStyles);
     }
-    console.log({ props, allClassNames, allStyles });
     return combineProps(props, {
       className: allClassNames.join(" "),
       style: allStyles,
