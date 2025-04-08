@@ -1,7 +1,8 @@
 import {
   CSSInterpolation,
-  ComponentStyles,
+  combineProps,
   css,
+  mergeClassNames,
   yakComponentSymbol,
 } from "./cssLiteral.js";
 import React from "react";
@@ -25,7 +26,7 @@ const noTheme: YakTheme = {};
  */
 type HtmlTags = keyof React.JSX.IntrinsicElements;
 
-/**
+/*
  * Return type of the provided props merged with the initial props
  * where the specified props are optional
  */
@@ -137,7 +138,7 @@ const yakStyled = <
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
-      const combinedProps =
+      const propsWithTheme =
         "$__attrs" in props
           ? {
               theme,
@@ -161,13 +162,13 @@ const yakStyled = <
             );
       // execute all functions inside the style literal
       // e.g. styled.button`color: ${props => props.color};`
-      const runtimeStyles = getRuntimeStyles(combinedProps as T & TCSSProps);
+      const combinedProps = getRuntimeStyles(propsWithTheme);
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
       // prevents passing the theme prop to the DOM element of a styled component
       const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } =
-        combinedProps;
+        combinedProps as unknown as T & TCSSProps & { theme: YakTheme };
       const propsBeforeFiltering =
         themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
 
@@ -181,18 +182,6 @@ const yakStyled = <
         className?: string;
         style?: React.CSSProperties;
       };
-
-      filteredProps.className = mergeClassNames(
-        filteredProps.className,
-        runtimeStyles.className,
-      );
-      filteredProps.style =
-        "style" in filteredProps
-          ? {
-              ...filteredProps.style,
-              ...runtimeStyles.style,
-            }
-          : runtimeStyles.style;
 
       return parentYakComponent ? (
         // if the styled(Component) syntax is used and the component is a yak component
@@ -279,54 +268,6 @@ const removeNonDomProperties = <T extends Record<string, unknown>>(
   }
   return result;
 };
-
-// util function to merge class names, as they are concatenated with a space
-const mergeClassNames = (a?: string, b?: string) => {
-  if (!a && !b) return undefined;
-  if (!a) return b;
-  if (!b) return a;
-  return a + " " + b;
-};
-
-/**
- * merge props and processed props (including class names and styles)
- * e.g.:\
- * `{ className: "a", foo: 1 }` and `{ className: "b", bar: 2 }` \
- * => `{ className: "a b", foo: 1, bar: 2 }`
- */
-const combineProps = <
-  T extends {
-    className?: string;
-    style?: React.CSSProperties;
-  },
-  TOther extends
-    | {
-        className?: string;
-        style?: React.CSSProperties;
-      }
-    | null
-    | undefined,
->(
-  props: T,
-  newProps: TOther,
-) =>
-  newProps
-    ? (props.className === newProps.className || !newProps.className) &&
-      (props.style === newProps.style || !newProps.style)
-      ? // shortcut if no style and class merging is necessary
-        {
-          ...props,
-          ...newProps,
-        }
-      : // merge class names and styles
-        {
-          ...props,
-          ...newProps,
-          className: mergeClassNames(props.className, newProps.className),
-          style: { ...(props.style || {}), ...(newProps.style || {}) },
-        }
-    : // if no new props are provided, no merging is necessary
-      props;
 
 // util type to remove properties from an object
 type FastOmit<T extends object, U extends string | number | symbol> = {

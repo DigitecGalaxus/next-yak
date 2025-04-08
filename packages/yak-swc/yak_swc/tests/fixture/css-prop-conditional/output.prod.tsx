@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
@@ -10,62 +10,62 @@ const Elem = ()=>{
 };
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        className: "test-class"
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBu3) {
   color: red;
 }
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu3"), "ym7uBBu2")({}))}/>;
+*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu3"), "ym7uBBu2")({
+        className: "test-class"
+    })}/>;
 };
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   padding: 10px;
 }
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu5"), "ym7uBBu4")({}))}/>;
+*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu5"), "ym7uBBu4")({
+        style: {
+            padding: "5px"
+        }
+    })}/>;
 };
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        ...props
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBu7) {
   color: green;
 }
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu7"), "ym7uBBu6")({}))}/>;
+*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu7"), "ym7uBBu6")({
+        ...props
+    })}/>;
 };
 const Elem5 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
-        ...props.a,
-        ...props.b
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBu9) {
   color: purple;
 }
-*/ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBu9"), "ym7uBBu8")({}))}/>;
+*/ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBu9"), "ym7uBBu8")({
+        ...props.a,
+        ...props.b
+    })}/>;
 };
 const Elem6 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
+    return <div {.../*YAK Extracted CSS:
+:global(.ym7uBBuB) {
+  font-size: 16px;
+}
+*/ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBuB"), "ym7uBBuA")({
         className: "main",
         style: {
             fontWeight: "bold"
         }
-    }, /*YAK Extracted CSS:
-:global(.ym7uBBuB) {
-  font-size: 16px;
-}
-*/ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBuB"), "ym7uBBuA")({}))}/>;
+    })}/>;
 };
 const Elem7 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
+    return <div {.../*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css(), "ym7uBBuC")({
         className: "empty-css"
-    }, /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css(), "ym7uBBuC")({}))}/>;
+    })}/>;
 };
 const Elem8 = ()=>{
     const show = Math.random() > 0.5;
@@ -81,9 +81,7 @@ const Elem8 = ()=>{
 };
 const Elem9 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        className: "test-class"
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuG) {
   color: var(--ym7uBBuH);
 }
@@ -91,15 +89,13 @@ const Elem9 = ()=>{
         "style": {
             "--ym7uBBuH": ()=>show && "red"
         }
-    }, "ym7uBBuG")({}))}/>;
+    }, "ym7uBBuG")({
+        className: "test-class"
+    })}/>;
 };
 const Elem10 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuI) {
   padding: var(--ym7uBBuJ);
 }
@@ -107,13 +103,15 @@ const Elem10 = ()=>{
         "style": {
             "--ym7uBBuJ": ()=>show && "10px"
         }
-    }, "ym7uBBuI")({}))}/>;
+    }, "ym7uBBuI")({
+        style: {
+            padding: "5px"
+        }
+    })}/>;
 };
 const Elem11 = (props: any)=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        ...props
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuK) {
   color: var(--ym7uBBuL);
 }
@@ -121,13 +119,12 @@ const Elem11 = (props: any)=>{
         "style": {
             "--ym7uBBuL": ()=>show && "green"
         }
-    }, "ym7uBBuK")({}))}/>;
+    }, "ym7uBBuK")({
+        ...props
+    })}/>;
 };
 const Elem12 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
-        ...props.a,
-        ...props.b
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuM) {
   color: var(--ym7uBBuN);
 }
@@ -135,15 +132,13 @@ const Elem12 = (props: any)=>{
         "style": {
             "--ym7uBBuN": ()=>props.show && "purple"
         }
-    }, "ym7uBBuM")({}))}/>;
+    }, "ym7uBBuM")({
+        ...props.a,
+        ...props.b
+    })}/>;
 };
 const Elem13 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
-        className: "main",
-        style: {
-            fontWeight: "bold"
-        }
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuO) {
   font-size: var(--ym7uBBuP);
 }
@@ -151,12 +146,15 @@ const Elem13 = (props: any)=>{
         "style": {
             "--ym7uBBuP": ()=>props.show && "16px"
         }
-    }, "ym7uBBuO")({}))}/>;
+    }, "ym7uBBuO")({
+        className: "main",
+        style: {
+            fontWeight: "bold"
+        }
+    })}/>;
 };
 const Elem14 = (props: any)=>{
-    return <div {...__yak_mergeCssProp({
-        className: "empty-css"
-    }, /*YAK Extracted CSS:
+    return <div {.../*YAK Extracted CSS:
 :global(.ym7uBBuQ) {
   display: var(--ym7uBBuR);
 }
@@ -164,7 +162,9 @@ const Elem14 = (props: any)=>{
         "style": {
             "--ym7uBBuR": ()=>props.show && "block"
         }
-    }, "ym7uBBuQ")({}))}/>;
+    }, "ym7uBBuQ")({
+        className: "empty-css"
+    })}/>;
 };
 const Elem15 = (props: any)=>{
     return <div {.../*YAK Extracted CSS:
