@@ -26,7 +26,7 @@ const noTheme: YakTheme = {};
  */
 type HtmlTags = keyof React.JSX.IntrinsicElements;
 
-/*
+/**
  * Return type of the provided props merged with the initial props
  * where the specified props are optional
  */
@@ -162,13 +162,17 @@ const yakStyled = <
             );
       // execute all functions inside the style literal
       // e.g. styled.button`color: ${props => props.color};`
-      const combinedProps = getRuntimeStyles(propsWithTheme);
+      const combinedProps = getRuntimeStyles(propsWithTheme) as T & {
+        // the external types of `css` are not the internal representation
+        className?: string;
+        style?: React.CSSProperties;
+      } & { theme: YakTheme };
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
       // prevents passing the theme prop to the DOM element of a styled component
       const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } =
-        combinedProps as unknown as T & TCSSProps & { theme: YakTheme };
+        combinedProps;
       const propsBeforeFiltering =
         themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
 
@@ -179,6 +183,7 @@ const yakStyled = <
           ? removeNonDomProperties(propsBeforeFiltering)
           : propsBeforeFiltering
       ) as T & {
+        // Unfortunately Omit<T & {theme: YakTheme}, "theme"> isn't the same as T and we need to manually specify the type here
         className?: string;
         style?: React.CSSProperties;
       };

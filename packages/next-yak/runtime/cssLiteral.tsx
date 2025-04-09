@@ -57,7 +57,12 @@ export function css<TProps>(
 ): ComponentStyles<TProps>;
 export function css<TProps extends Record<string, unknown>>(
   ...args: Array<any>
-): ComponentStyles<TProps> {
+): (props: TProps) => TProps & {
+  className: string;
+  style?: {
+    [key: string]: string;
+  };
+} {
   const classNames: string[] = [];
   const dynamicCssFunctions: PropsToClassNameFn[] = [];
   const style: Record<string, string> = {};
@@ -99,7 +104,6 @@ export function css<TProps extends Record<string, unknown>>(
     }
   }
 
-  // @ts-ignore
   return (props) => {
     const allClassNames: string[] = [...classNames];
     const allStyles: Record<string, string> = { ...style };
@@ -109,7 +113,12 @@ export function css<TProps extends Record<string, unknown>>(
     return combineProps(props, {
       className: allClassNames.join(" "),
       style: allStyles,
-    });
+    }) as TProps & {
+      className: string;
+      style?: {
+        [key: string]: string;
+      };
+    };
   };
 }
 
