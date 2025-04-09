@@ -1,9 +1,9 @@
 use swc_core::{
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, JSXAttr, JSXAttrName, JSXAttrOrSpread,
-    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement,
+    CallExpr, Callee, Expr, ExprOrSpread, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue,
+    JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName, PropOrSpread,
+    SpreadElement,
   },
   plugin::errors::HANDLER,
 };
@@ -53,7 +53,11 @@ impl CSSProp {
             },
             _ => Err(TransformError::InvalidCSSAttribute(opening_element.span)),
           })?,
-        JSXAttrOrSpread::SpreadElement(_) => return Err(TransformError::UnsupportedSpreadElement(opening_element.span)),
+        JSXAttrOrSpread::SpreadElement(_) => {
+          return Err(TransformError::UnsupportedSpreadElement(
+            opening_element.span,
+          ))
+        }
       };
 
       // Props object to pass to the CSS function
