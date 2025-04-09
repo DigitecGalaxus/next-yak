@@ -1,6 +1,5 @@
 @layer global, base;
 @layer global {
-
   * {
     box-sizing: border-box;
     padding: 0;
@@ -28,4 +27,10 @@
     }
   }
 
+  .salmon {
+    color: salmon;
+  }
+  .indigo {
+    color: indigo;
+  }
 }

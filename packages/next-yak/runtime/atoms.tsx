@@ -1,3 +1,5 @@
+import { combineProps, ComponentStyles } from "./cssLiteral.js";
+
 /**
  * Allows to use atomic CSS classes in a styled or css block
  *
@@ -12,7 +14,10 @@
  * `;
  * ```
  */
-export const atoms = (...atoms: string[]) => {
-  const className = atoms.join(" ");
-  return () => ({ className });
+export const atoms = (...atoms: string[]): ComponentStyles<unknown> => {
+  return (props: any) => {
+    return combineProps(props, {
+      className: atoms.filter(Boolean).join(" "),
+    });
+  };
 };

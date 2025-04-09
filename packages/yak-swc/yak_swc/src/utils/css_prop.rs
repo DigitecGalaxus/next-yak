@@ -226,13 +226,13 @@ impl TransformError {
   fn message(&self) -> &'static str {
     match self {
             TransformError::InvalidCSSAttribute(_) =>
-                "Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression. \
-                Example: css={css`color: red;`}",
+            "Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression or atoms function call. \
+              Example: css={css`color: red;`} or css={atoms(\"m-8 p-6\",\"flex\")}",
 
             TransformError::UnsupportedSpreadElement(_) =>
                 "Spread elements are not supported in the 'css' prop. \
-                    Instead, use a css template literals for your styles. \
-                    Example: css={css`color: red;`}",
+                    Instead, use a css template literals or atoms function for your styles. \
+                    Example: css={css`color: red;`} or css={atoms(\"m-8 p-6\")}",
 
             TransformError::InvalidJSXAttribute(_) =>
                 "Invalid JSX attribute detected. Ensure all attributes have valid names and values. \
