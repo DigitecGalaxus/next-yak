@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.2.0
+
+### Minor Changes
+
+- d018370: minify class names for production builds
+
 ## 5.1.0
 
 ### Minor Changes

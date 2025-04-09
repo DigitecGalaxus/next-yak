@@ -1,5 +1,18 @@
 # next-yak
 
+## 5.2.0
+
+### Minor Changes
+
+- dd11a02: Expose `minify` as an explicit option to `withYak`. It defaults to `NODE_ENV === 'production'`
+- d018370: minify class names for production builds
+
+### Patch Changes
+
+- 60a1bb0: Automatically add the css prop to all components that can receive `className` and `style`.
+- Updated dependencies [d018370]
+  - yak-swc@5.2.0
+
 ## 5.1.0
 
 ### Minor Changes
