@@ -1,5 +1,13 @@
 # next-yak
 
+## 5.2.1
+
+### Patch Changes
+
+- 4f69bd9: fix class name escaping in dev mode
+- Updated dependencies [4f69bd9]
+  - yak-swc@5.2.1
+
 ## 5.2.0
 
 ### Minor Changes

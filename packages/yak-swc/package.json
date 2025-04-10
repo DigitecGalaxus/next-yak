@@ -1,6 +1,6 @@
 {
   "name": "yak-swc",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "next-yak rust based swc plugin to compile styled components at build time",
   "homepage": "https://yak.js.org/",
   "repository": {

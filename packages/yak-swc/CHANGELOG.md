@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.2.1
+
+### Patch Changes
+
+- 4f69bd9: fix class name escaping in dev mode
+
 ## 5.2.0
 
 ### Minor Changes
