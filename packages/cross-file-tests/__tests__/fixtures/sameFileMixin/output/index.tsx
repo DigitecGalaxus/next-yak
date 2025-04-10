@@ -9,13 +9,13 @@ var Button = /*YAK Extracted CSS:
 :global(.index_Button_xEUJ1U) {
   color: black;
 }
-:global(.index_Button__$disabled_xEUJ1U) {
+:global(.index_Button__\$disabled_xEUJ1U) {
   opacity: 0.5;
 }
-:global(.index_Button__$hasIcon_xEUJ1U) {
+:global(.index_Button__\$hasIcon_xEUJ1U) {
   padding-left: 30px;
 }
-:global(.index_Button__$disabled_xEUJ1U-01) {
+:global(.index_Button__\$disabled_xEUJ1U-01) {
   color: gray;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("index_Button_xEUJ1U", function(param) {
