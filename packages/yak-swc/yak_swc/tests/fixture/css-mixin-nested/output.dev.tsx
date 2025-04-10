@@ -17,7 +17,7 @@ export const ThemedButton = /*YAK Extracted CSS:
   border-radius: 5px;
   cursor: pointer;
 }
-:global(.input_ThemedButton__$active_m7uBBu) {
+:global(.input_ThemedButton__\$active_m7uBBu) {
   @media (max-width: 600px) {
     background-color: #f0f0f0;
     max-width: var(--input_ThemedButton__max-width_m7uBBu);
@@ -47,7 +47,7 @@ export const CustomThemedButton = /*YAK Extracted CSS:
     cursor: pointer;
   }
 }
-:global(.input_CustomThemedButton__$active_m7uBBu) {
+:global(.input_CustomThemedButton__\$active_m7uBBu) {
   &:not([disabled]) {
     @media (max-width: 600px) {
       background-color: #f0f0f0;

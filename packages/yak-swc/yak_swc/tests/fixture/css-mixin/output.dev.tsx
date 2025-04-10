@@ -19,7 +19,7 @@ export const ThemedButton = /*YAK Extracted CSS:
   border-radius: 5px;
   cursor: pointer;
 }
-:global(.input_ThemedButton__$active_m7uBBu) {
+:global(.input_ThemedButton__\$active_m7uBBu) {
   background-color: #f0f0f0;
   max-width: var(--input_ThemedButton__max-width_m7uBBu);
 }
@@ -50,7 +50,7 @@ export const CustomThemedButton = /*YAK Extracted CSS:
   border-radius: 5px;
   cursor: pointer;
 }
-:global(.input_CustomThemedButton__$active_m7uBBu) {
+:global(.input_CustomThemedButton__\$active_m7uBBu) {
   background-color: #f0f0f0;
   max-width: var(--input_CustomThemedButton__max-width_m7uBBu);
 }

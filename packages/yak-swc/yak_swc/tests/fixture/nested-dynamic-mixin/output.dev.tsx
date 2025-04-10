@@ -10,10 +10,10 @@ const ContainerFluid = /*YAK Extracted CSS:
   padding-top: 20px;
   max-width: 100%;
 }
-:global(.input_ContainerFluid__$isApp_m7uBBu) {
+:global(.input_ContainerFluid__\$isApp_m7uBBu) {
   margin-top: unset;
 }
-:global(.input_ContainerFluid__not_$isApp_m7uBBu) {
+:global(.input_ContainerFluid__not_\$isApp_m7uBBu) {
   margin-top: px;
 }
 :global(.input_ContainerFluid_m7uBBu) {

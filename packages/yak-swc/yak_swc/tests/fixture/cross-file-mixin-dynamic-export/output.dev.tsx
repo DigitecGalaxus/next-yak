@@ -25,7 +25,7 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-:global(.input_Button__-and-$active_m7uBBu) {
+:global(.input_Button__-and-\$active_m7uBBu) {
   &:hover {
     color: red;
   }
@@ -36,7 +36,7 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-:global(.input_Button__$active_m7uBBu) {
+:global(.input_Button__\$active_m7uBBu) {
   &:focus {
     color: red;
   }
@@ -47,7 +47,7 @@ export const Button = /*YAK Extracted CSS:
     color: black;
   }
 }
-:global(.input_Button__$active_m7uBBu-01) {
+:global(.input_Button__\$active_m7uBBu-01) {
   &:focus {
     color: red;
   }

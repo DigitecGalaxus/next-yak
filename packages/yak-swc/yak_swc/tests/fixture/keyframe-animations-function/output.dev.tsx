@@ -2,10 +2,10 @@ import { styled, css, keyframes } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK Extracted CSS:
-:global(.input_FadeInText__$reverse_m7uBBu) {
+:global(.input_FadeInText__\$reverse_m7uBBu) {
   animation: fadeOut_m7uBBu 1s ease-in;
 }
-:global(.input_FadeInText__not_$reverse_m7uBBu) {
+:global(.input_FadeInText__not_\$reverse_m7uBBu) {
   animation: fadeIn_m7uBBu 1s ease-in;
 }
 :global(.input_FadeInText_m7uBBu) {

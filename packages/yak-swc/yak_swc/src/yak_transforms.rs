@@ -12,7 +12,7 @@ use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_
 use swc_core::ecma::ast::*;
 use swc_core::plugin::errors::HANDLER;
 
-use crate::naming_convention::NamingConvention;
+use crate::naming_convention::{get_css_modules_class_name, NamingConvention};
 
 /// Represents a CSS result after the transformation
 #[derive(Debug)]
@@ -79,7 +79,7 @@ impl YakTransform for TransformNestedCss {
     let mut parser_state = previous_parser_state.clone().unwrap();
     // The first scope is the class name which gets attached to the element
     parser_state.current_scopes[0] = CssScope {
-      name: format!(":global(.{})", self.class_name),
+      name: get_css_modules_class_name(&self.class_name),
       scope_type: ScopeType::Selector,
     };
     parser_state
@@ -166,7 +166,7 @@ impl YakTransform for TransformCssMixin {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!(":global(.{})", self.class_name),
+      name: get_css_modules_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -412,7 +412,7 @@ impl YakTransform for TransformStyled {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!(":global(.{})", self.class_name),
+      name: get_css_modules_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -474,7 +474,7 @@ impl YakTransform for TransformStyled {
 
   /// Get the selector for the specific styled component to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(format!(":global(.{})", self.class_name))
+    Some(get_css_modules_class_name(&self.class_name))
   }
 }
 

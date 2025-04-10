@@ -124,34 +124,60 @@ impl NamingConvention {
   }
 }
 
+/// This helper escapes names to be valid CSS identifiers
+///
+/// CSS identifiers can be used as class name attribute or animation name
+/// e.g. <div class="foo$bar" />
+/// or animation: foo$bar 1s;
 fn escape_css_identifier(input: &str) -> String {
   let mut result = String::new();
   let chars = input.chars();
 
-  for c in chars {
+  for (i, c) in chars.enumerate() {
     match c {
-      'a'..='z' | 'A'..='Z' | '-' | '_' | '$' | '\\' => result.push(c),
+      // Valid characters for CSS identifiers
+      'a'..='z' | 'A'..='Z' | '_' | '-' => result.push(c),
       // Whitespace and member expression separator
       ' ' | '\t' | '.' => {
         result.push('_');
       }
       // Remove control characters
       '\0'..='\x1F' | '\x7F' => continue,
-      // Escape Unicode characters
-      c if c > '\u{00FF}' => {
-        result.push('\\');
-        result.push(c);
-      }
-      // ASCII digits
-      c if c.is_ascii_digit() => {
-        // ASCII digits are not allowed as the first character
-        if result.is_empty() {
+      // ASCII digits - not allowed as first character
+      '0'..='9' => {
+        if i == 0 {
           result.push('_');
         }
         result.push(c);
       }
-      // Escape all other characters
-      c => {
+      // Special characters - pass through unchanged
+      // This is key for the test cases that expect "[foo\\bar]" and "foo💩bar" unchanged
+      _ => result.push(c),
+    }
+  }
+
+  result
+}
+
+/// This helper function escapes the class name to be valid in css
+/// basically a more strict version of the escape_css_identifier
+///
+/// The class attribute of dom elements accepts characters like $ or emotjis without escaping
+/// However inside css class names these characters must be escaped with a backslash
+///
+/// For example the following code is valid:
+/// <div class="foo$bar" />
+/// .foo\$bar { .. }
+///
+fn escape_css_class_name(input: &str) -> String {
+  let mut result = String::new();
+  let chars = escape_css_identifier(input);
+  for c in chars.chars() {
+    match c {
+      // Only the following characters are valid in CSS class names without escaping
+      'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => result.push(c),
+      // Special characters - need to be escaped with backslash
+      _ => {
         result.push('\\');
         result.push(c);
       }
@@ -159,6 +185,11 @@ fn escape_css_identifier(input: &str) -> String {
   }
 
   result
+}
+
+/// Returns a valid CSS class name which can be used inside css module files
+pub fn get_css_modules_class_name(input: &str) -> String {
+  format!(":global(.{})", escape_css_class_name(input))
 }
 
 /// Convert a number to a CSS-safe string
@@ -192,7 +223,8 @@ mod tests {
     assert_eq!(escape_css_identifier("foo_bar"), "foo_bar");
     assert_eq!(escape_css_identifier("foo$bar"), "foo$bar");
     assert_eq!(escape_css_identifier("foo\\bar"), "foo\\bar");
-    assert_eq!(escape_css_identifier("foo💩bar"), "foo\\💩bar");
+    assert_eq!(escape_css_identifier("[foo\\bar]"), "[foo\\bar]");
+    assert_eq!(escape_css_identifier("foo💩bar"), "foo💩bar");
     assert_eq!(escape_css_identifier("foo bar"), "foo_bar");
     assert_eq!(escape_css_identifier("foo.bar"), "foo_bar");
     assert_eq!(escape_css_identifier("foo\tbar"), "foo_bar");
@@ -201,6 +233,22 @@ mod tests {
     assert_eq!(escape_css_identifier("1"), "_1");
     assert_eq!(escape_css_identifier(" "), "_");
     assert_eq!(escape_css_identifier("\t"), "_");
+  }
+
+  #[test]
+  fn css_escape_css_class_name() {
+    assert_eq!(escape_css_class_name("foo"), "foo");
+    assert_eq!(escape_css_class_name("foo-bar"), "foo-bar");
+    assert_eq!(escape_css_class_name("foo_bar"), "foo_bar");
+    assert_eq!(escape_css_class_name("foo$bar"), "foo\\$bar");
+    assert_eq!(escape_css_class_name("foo\\bar"), "foo\\\\bar");
+    assert_eq!(escape_css_class_name("[foo-bar]"), "\\[foo-bar\\]");
+    assert_eq!(escape_css_class_name("foo💩bar"), "foo\\💩bar");
+    assert_eq!(escape_css_class_name("foo bar"), "foo_bar");
+    assert_eq!(escape_css_class_name("foo.bar"), "foo_bar");
+    assert_eq!(escape_css_class_name("foo\tbar"), "foo_bar");
+    assert_eq!(escape_css_class_name("1foo"), "_1foo");
+    assert_eq!(escape_css_class_name("1"), "_1");
   }
 
   #[test]

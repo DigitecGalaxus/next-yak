@@ -5,7 +5,7 @@ export const Card = /*YAK Extracted CSS:
 :global(.input_Card_m7uBBu) {
   background: url("/card-bg.jpg") no-repeat;
 }
-:global(.input_Card__$active_m7uBBu) {
+:global(.input_Card__\$active_m7uBBu) {
   backgorund: url(/card-bg-active.jpg) no-repeat;
 }
 :global(.input_Card_m7uBBu) {

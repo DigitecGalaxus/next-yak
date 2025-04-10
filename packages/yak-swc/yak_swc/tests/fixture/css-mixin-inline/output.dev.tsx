@@ -7,7 +7,7 @@ export const ThemedButton = /*YAK Extracted CSS:
     color: black;
   }
 }
-:global(.input_ThemedButton__$active_m7uBBu) {
+:global(.input_ThemedButton__\$active_m7uBBu) {
   &:hover {
     color: red;
   }
