@@ -10,7 +10,7 @@ const BaseButton = /*YAK Extracted CSS:
   cursor: pointer;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
-export const PrimaryButton = /*YAK Extracted CSS:
+export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:ym7uBBu1*//*YAK Extracted CSS:
 :global(.ym7uBBu1) {
   background-color: #007bff;
   color: #fff;
@@ -19,7 +19,7 @@ export const PrimaryButton = /*YAK Extracted CSS:
   }
 }
 */ /*#__PURE__*/ styled(BaseButton)("ym7uBBu1");
-export const SecondaryButton = /*YAK Extracted CSS:
+export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:ym7uBBu2*//*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   background-color: #6c757d;
   color: #fff;

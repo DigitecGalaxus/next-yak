@@ -1,7 +1,7 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-export const ThemedButton = /*YAK Extracted CSS:
+export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:input_ThemedButton_m7uBBu*//*YAK Extracted CSS:
 :global(.input_ThemedButton_m7uBBu) {
   background-color: var(--primary-color);
   color: #fff;
@@ -17,7 +17,7 @@ export const ThemedButton = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_ThemedButton_m7uBBu"), {
     "displayName": "ThemedButton"
 });
-export const ThemeProvider = /*YAK Extracted CSS:
+export const ThemeProvider = /*YAK EXPORTED STYLED:ThemeProvider:input_ThemeProvider_m7uBBu*//*YAK Extracted CSS:
 :global(.input_ThemeProvider_m7uBBu) {
   --primary-color: #007bff;
   --secondary-color: #6c757d;

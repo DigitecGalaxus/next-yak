@@ -13,7 +13,7 @@ const colors = {
 };
 const borderRadius = "4px";
 const stacking = 1;
-export const Button = /*YAK Extracted CSS:
+export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {
   background-color: #007bff;
   color: #f8f9fa;

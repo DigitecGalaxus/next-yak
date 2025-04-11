@@ -12,7 +12,7 @@ font-size: 16px;
 color: black;
 color: red;
 */ /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu5"));
-export const Button = /*YAK Extracted CSS:
+export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu6*//*YAK Extracted CSS:
 :global(.ym7uBBu6) {
   padding: 10px 20px;
   border: none;

@@ -12,7 +12,7 @@ const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ c
         "--ym7uBBu3": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
-export const ThemedButton = /*YAK Extracted CSS:
+export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:ym7uBBu5*//*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   padding: 10px 20px;
   border: none;
@@ -40,7 +40,7 @@ export const ThemedButton = /*YAK Extracted CSS:
         "--ym7uBBu8": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 10, "px")
     }
 });
-export const CustomThemedButton = /*YAK Extracted CSS:
+export const CustomThemedButton = /*YAK EXPORTED STYLED:CustomThemedButton:ym7uBBuA*//*YAK Extracted CSS:
 :global(.ym7uBBuA) {
   color: red;
   padding: 10px 20px;

@@ -4,7 +4,7 @@ import { Icon } from "./Icon";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const primary = "green";
-export const Button = /*YAK Extracted CSS:
+export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {
   font-size: 1rem;
   color: green;

@@ -268,6 +268,7 @@ pub struct TransformStyled {
   class_name: String,
   declaration_name: ScopedVariableReference,
   assign_display_name: bool,
+  is_exported: bool,
 }
 
 impl TransformStyled {
@@ -275,6 +276,7 @@ impl TransformStyled {
     naming_convention: &mut NamingConvention,
     declaration_name: ScopedVariableReference,
     assign_display_name: bool,
+    is_exported: bool,
   ) -> TransformStyled {
     let class_name =
       naming_convention.get_css_variable_name(&declaration_name.to_readable_string());
@@ -282,6 +284,7 @@ impl TransformStyled {
       class_name,
       declaration_name,
       assign_display_name,
+      is_exported,
     }
   }
 
@@ -427,7 +430,7 @@ impl YakTransform for TransformStyled {
     yak_imports: &mut YakImports,
   ) -> YakTransformResult {
     let mut arguments: Vec<ExprOrSpread> = vec![];
-    if !declarations.is_empty() {
+    if !declarations.is_empty() || self.is_exported {
       // As yak generates the final class name, this name can use it directly in the js code
       arguments.push(
         Expr::Lit(Lit::Str(Str {
@@ -463,9 +466,21 @@ impl YakTransform for TransformStyled {
       result_expr
     };
 
+    // Add the class name For cross file selectors to allow the css loader to
+    // extract the generated class name
+    let css_prefix = if self.is_exported {
+      Some(format!(
+        "YAK EXPORTED STYLED:{}:{}*//*YAK Extracted CSS:",
+        self.declaration_name.to_readable_string(),
+        self.class_name
+      ))
+    } else {
+      Some("YAK Extracted CSS:".to_string())
+    };
+
     YakTransformResult {
       css: YakCss {
-        comment_prefix: Some("YAK Extracted CSS:".to_string()),
+        comment_prefix: css_prefix,
         declarations: declarations.to_vec(),
       },
       expression: result_expr,
