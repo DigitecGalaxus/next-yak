@@ -351,9 +351,12 @@ async function parseExports(
                       declaration.id.type === "Identifier" &&
                       declaration.init
                     ) {
-                      exports[declaration.id.name] = parseExportValueExpression(
+                      const parsed = parseExportValueExpression(
                         declaration.init,
                       );
+                      if (parsed) {
+                        exports[declaration.id.name] = parsed;
+                      }
                     }
                   });
                 }
@@ -467,6 +470,11 @@ function parseExportValueExpression(
   // ignores `as` casts so it doesn't interfere with the ast node type detection
   const expression = unpackTSAsExpression(node);
   if (
+    expression.type === "CallExpression" ||
+    expression.type === "TaggedTemplateExpression"
+  ) {
+    return { type: "styled-component" };
+  } else if (
     expression.type === "StringLiteral" ||
     expression.type === "NumericLiteral"
   ) {
@@ -498,9 +506,12 @@ function parseObjectExpression(
       property.key.type === "Identifier"
     ) {
       const key = property.key.name;
-      result[key] = parseExportValueExpression(
+      const parsed = parseExportValueExpression(
         property.value as babel.types.Expression,
       );
+      if (parsed) {
+        result[key] = parsed;
+      }
     }
   }
   return result;
@@ -668,7 +679,7 @@ type ParsedFile =
   | { type: "yak"; exports: Record<string, ParsedExport>; filePath: string };
 
 type ParsedExport =
-  | { type: "styled-component"; value: string }
+  | { type: "styled-component"; value?: string } // the value could be undefined because it gets replaced separately by parseStyledComponents
   | { type: "mixin"; value: string }
   | { type: "constant"; value: string | number }
   | { type: "record"; value: Record<any, ParsedExport> | {} }
@@ -677,6 +688,6 @@ type ParsedExport =
   | { type: "star-export"; from: string[] };
 
 type ResolvedExport =
-  | { type: "styled-component"; from: string; name: string; value: string }
+  | { type: "styled-component"; from: string; name: string; value?: string } // the value could be undefined because it gets replaced separately by parseStyledComponents
   | { type: "mixin"; value: string | number }
   | { type: "constant"; value: string | number };
