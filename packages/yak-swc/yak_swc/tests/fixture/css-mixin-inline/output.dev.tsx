@@ -1,7 +1,7 @@
 import { styled, css } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-export const ThemedButton = /*YAK Extracted CSS:
+export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:input_ThemedButton_m7uBBu*//*YAK Extracted CSS:
 :global(.input_ThemedButton_m7uBBu) {
   &:hover {
     color: black;

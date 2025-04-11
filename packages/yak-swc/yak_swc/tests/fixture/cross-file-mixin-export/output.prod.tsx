@@ -13,7 +13,7 @@ font-size: 16px;
 color: black;
 --yak-css-import: url("./typography:typogaphyMixin",mixin);
 */ /*#__PURE__*/ css();
-export const Button = /*YAK Extracted CSS:
+export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu3*//*YAK Extracted CSS:
 :global(.ym7uBBu3) {
   padding: 10px 20px;
   border: none;

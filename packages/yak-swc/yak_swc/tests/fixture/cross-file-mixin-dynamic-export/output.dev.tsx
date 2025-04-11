@@ -12,7 +12,7 @@ font-size: 16px;
 color: black;
 color: red;
 */ /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("input_buttonStyles__$active_m7uBBu"));
-export const Button = /*YAK Extracted CSS:
+export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Button_m7uBBu) {
   padding: 10px 20px;
   border: none;

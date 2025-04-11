@@ -2,7 +2,6 @@ import babel from "@babel/core";
 import path from "path";
 // @ts-expect-error - this is used by babel directly so we ignore that it is not typed
 import babelPlugin from "@babel/plugin-syntax-typescript";
-import { getCssModuleLocalIdent } from "next/dist/build/webpack/config/blocks/css/loaders/getCssModuleLocalIdent.js";
 import type { Compilation, LoaderContext } from "webpack";
 
 const yakCssImportRegex =
@@ -100,9 +99,14 @@ export async function resolveCrossFileConstant(
       const resolved = resolvedValues[i];
 
       if (importKind === "selector") {
-        if (resolved.type === "mixin") {
+        if (
+          resolved.type !== "styled-component" &&
+          resolved.type !== "constant"
+        ) {
           throw new Error(
-            `Found mixin but expected a selector - did you forget a semicolon after \`${specifier.join(
+            `Found ${
+              resolved.type
+            } but expected a selector - did you forget a semicolon after \`${specifier.join(
               ".",
             )}\`?`,
           );
@@ -111,15 +115,7 @@ export async function resolveCrossFileConstant(
 
       const replacement =
         resolved.type === "styled-component"
-          ? `:global(.${getCssModuleLocalIdent(
-              {
-                rootContext: loader.rootContext,
-                resourcePath: resolved.from,
-              },
-              null,
-              resolved.name,
-              {},
-            )})`
+          ? resolved.value
           : resolved.value +
             // resolved.value can be of two different types:
             // - mixin:
@@ -259,6 +255,7 @@ async function parseFile(
 
     const exports = await parseExports(await sourceContents, isTSX);
     const mixins = parseMixins(await tranformedSource);
+    const styledComponents = parseStyledComponents(await tranformedSource);
 
     // Recursively resolve cross-file constants in mixins
     // e.g. cross file mixins inside a cross file mixin
@@ -305,7 +302,11 @@ async function parseFile(
 
     return {
       type: "regular",
-      exports,
+      exports: {
+        ...exports,
+        ...mixins,
+        ...styledComponents,
+      },
       filePath,
     };
   } catch (error) {
@@ -350,9 +351,12 @@ async function parseExports(
                       declaration.id.type === "Identifier" &&
                       declaration.init
                     ) {
-                      exports[declaration.id.name] = parseExportValueExpression(
+                      const parsed = parseExportValueExpression(
                         declaration.init,
                       );
+                      if (parsed) {
+                        exports[declaration.id.name] = parsed;
+                      }
                     }
                   });
                 }
@@ -425,6 +429,29 @@ function parseMixins(
   return mixins;
 }
 
+function parseStyledComponents(
+  sourceContents: string,
+): Record<string, { type: "styled-component"; value: string }> {
+  // cross-file Styled Components are always in the following format:
+  // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
+  const styledParts = sourceContents.split("/*YAK EXPORTED STYLED:");
+  let styledComponents: Record<
+    string,
+    { type: "styled-component"; value: string }
+  > = {};
+
+  for (let i = 1; i < styledParts.length; i++) {
+    const [comment] = styledParts[i].split("*/", 1);
+    const [componentName, className] = comment.split(":");
+    styledComponents[componentName] = {
+      type: "styled-component",
+      value: `:global(.${className})`,
+    };
+  }
+
+  return styledComponents;
+}
+
 /**
  * Unpacks a TSAsExpression to its expression value
  */
@@ -479,9 +506,12 @@ function parseObjectExpression(
       property.key.type === "Identifier"
     ) {
       const key = property.key.name;
-      result[key] = parseExportValueExpression(
+      const parsed = parseExportValueExpression(
         property.value as babel.types.Expression,
       );
+      if (parsed) {
+        result[key] = parsed;
+      }
     }
   }
   return result;
@@ -581,6 +611,7 @@ async function resolveModuleSpecifierRecursively(
         type: "styled-component",
         from: module.filePath,
         name: specifier[specifier.length - 1],
+        value: exportValue.value,
       };
     } else if (exportValue.type === "constant") {
       return { type: "constant", value: exportValue.value };
@@ -648,7 +679,7 @@ type ParsedFile =
   | { type: "yak"; exports: Record<string, ParsedExport>; filePath: string };
 
 type ParsedExport =
-  | { type: "styled-component" }
+  | { type: "styled-component"; value?: string } // the value could be undefined because it gets replaced separately by parseStyledComponents
   | { type: "mixin"; value: string }
   | { type: "constant"; value: string | number }
   | { type: "record"; value: Record<any, ParsedExport> | {} }
@@ -657,6 +688,6 @@ type ParsedExport =
   | { type: "star-export"; from: string[] };
 
 type ResolvedExport =
-  | { type: "styled-component"; from: string; name: string }
+  | { type: "styled-component"; from: string; name: string; value?: string } // the value could be undefined because it gets replaced separately by parseStyledComponents
   | { type: "mixin"; value: string | number }
   | { type: "constant"; value: string | number };

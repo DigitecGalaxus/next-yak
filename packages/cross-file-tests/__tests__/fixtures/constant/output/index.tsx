@@ -2,7 +2,7 @@ import { styled, css } from "next-yak/internal";
 import { colors, negative, siteMaxWidth } from "./constants";
 import * as __yak from "next-yak/internal";
 import "./index.yak.module.css!=!./index?./index.yak.module.css";
-export var Button = /*YAK Extracted CSS:
+export var Button = /*YAK EXPORTED STYLED:Button:index_Button_wIxfWW*//*YAK Extracted CSS:
 :global(.index_Button_wIxfWW) {
   color: red;
   height: --yak-css-import: url("./constants:siteMaxWidth",mixin)px;

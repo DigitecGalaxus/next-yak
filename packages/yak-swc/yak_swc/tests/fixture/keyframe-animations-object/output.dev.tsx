@@ -1,7 +1,7 @@
 import { styled, css, keyframes } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-export const FadeInText = /*YAK Extracted CSS:
+export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:input_FadeInText_m7uBBu*//*YAK Extracted CSS:
 :global(.input_FadeInText__\$reverse_m7uBBu) {
   animation: animations_fadeOut_m7uBBu 1s ease-in;
 }
@@ -56,7 +56,7 @@ const slides = {
 }
 */ /*#__PURE__*/ keyframes("slides_x400_m7uBBu")
 };
-export const FancyButton = /*YAK Extracted CSS:
+export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:input_FancyButton_m7uBBu*//*YAK Extracted CSS:
 :global(.input_FancyButton_m7uBBu) {
   background-color: #f00;
   animation: global(slides_x400_m7uBBu) 1s ease-in-out, global(animations_fadeIn_m7uBBu) 1s ease-in;

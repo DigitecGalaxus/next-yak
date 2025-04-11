@@ -1,7 +1,7 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-export const Card = /*YAK Extracted CSS:
+export const Card = /*YAK EXPORTED STYLED:Card:input_Card_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Card_m7uBBu) {
   background: url("/card-bg.jpg") no-repeat;
 }

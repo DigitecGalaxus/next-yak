@@ -12,7 +12,7 @@ const BaseButton = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_BaseButton_m7uBBu"), {
     "displayName": "BaseButton"
 });
-export const PrimaryButton = /*YAK Extracted CSS:
+export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:input_PrimaryButton_m7uBBu*//*YAK Extracted CSS:
 :global(.input_PrimaryButton_m7uBBu) {
   background-color: #007bff;
   color: #fff;
@@ -23,7 +23,7 @@ export const PrimaryButton = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(BaseButton)("input_PrimaryButton_m7uBBu"), {
     "displayName": "PrimaryButton"
 });
-export const SecondaryButton = /*YAK Extracted CSS:
+export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:input_SecondaryButton_m7uBBu*//*YAK Extracted CSS:
 :global(.input_SecondaryButton_m7uBBu) {
   background-color: #6c757d;
   color: #fff;

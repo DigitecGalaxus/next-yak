@@ -1,23 +1,14 @@
 /* cssmodules-pure-no-check * /
 :global(.index_Button_oPtJMe) {
   color: black;
-:global(.icon_Icon__vdEsc) {
+--yak-css-import: url("./icon:Icon",selector) {
   color: black;
 }
 
 }
 :global(.index_PrimaryButton_oPtJMe) {
-  color: black;
-:global(.icon_Icon__vdEsc) {
-  color: black;
-}
-
+  --yak-css-import: url("../mixin:buttonMixin",mixin);
 color: green;
-font-family: "Roboto", sans-serif;
-font-size: 16px;
-font-weight: 400;
-line-height: 1.5;
-letter-spacing: 0.00938em;
-
+--yak-css-import: url("./typography:typography:h1",mixin);
 
 }

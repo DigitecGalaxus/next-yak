@@ -782,6 +782,7 @@ where
         &mut self.naming_convention,
         current_variable_id.clone(),
         self.display_names,
+        self.current_exported,
       )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
@@ -857,7 +858,7 @@ where
     }
     let css_code = to_css(&transform_result.css.declarations);
     let result_span = transform_result.expression.span();
-    if !css_code.is_empty() && is_top_level {
+    if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
         self.comments.add_leading(
           result_span.lo,

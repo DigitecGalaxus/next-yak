@@ -359,17 +359,18 @@ it("should remap props", () => {
   const Comp = styled.button.attrs<{ primary?: boolean; $submit?: boolean }>(
     (p) => ({
       type: p.$submit ? "submit" : "button",
-      $primary: p.primary,
+      $disabled: p.disabled,
     }),
-  )<{ $primary?: boolean }>``;
+  )<{ $disabled?: boolean }>``;
 
   expect(getSnapshot(<Comp />)).toMatchInlineSnapshot(`
     <button
       type="button"
     />
   `);
-  expect(getSnapshot(<Comp primary />)).toMatchInlineSnapshot(`
+  expect(getSnapshot(<Comp disabled />)).toMatchInlineSnapshot(`
     <button
+      disabled=""
       type="button"
     />
   `);

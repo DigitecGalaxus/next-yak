@@ -5,7 +5,7 @@ import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = "red";
 // Should be transformed as it is yak
-export const CustomThemedButton = /*YAK Extracted CSS:
+export const CustomThemedButton = /*YAK EXPORTED STYLED:CustomThemedButton:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {
   color: blue;
 }

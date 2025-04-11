@@ -11,7 +11,7 @@ const fadeIn = /*YAK Extracted CSS:
   }
 }
 */ /*#__PURE__*/ keyframes("fadeIn_m7uBBu");
-export const FadeInText = /*YAK Extracted CSS:
+export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:input_FadeInText_m7uBBu*//*YAK Extracted CSS:
 :global(.input_FadeInText_m7uBBu) {
   animation: global(fadeIn_m7uBBu) 1s ease-in;
   font-size: 18px;
