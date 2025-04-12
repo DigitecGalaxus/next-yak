@@ -689,6 +689,11 @@ type ParsedExport =
   | { type: "star-export"; from: string[] };
 
 type ResolvedExport =
-  | { type: "styled-component"; from: string; name: string; value: string | undefined }
+  | {
+      type: "styled-component";
+      from: string;
+      name: string;
+      value: string | undefined;
+    }
   | { type: "mixin"; value: string | number }
   | { type: "constant"; value: string | number };
