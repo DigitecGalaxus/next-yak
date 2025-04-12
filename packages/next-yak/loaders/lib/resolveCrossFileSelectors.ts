@@ -473,7 +473,8 @@ function parseExportValueExpression(
     expression.type === "CallExpression" ||
     expression.type === "TaggedTemplateExpression"
   ) {
-    return { type: "unsupported", hint: "parsed styled-component" };
+    // The value will be set by parseStyledComponents
+    return { type: "styled-component", value: undefined };
   } else if (
     expression.type === "StringLiteral" ||
     expression.type === "NumericLiteral"
@@ -679,7 +680,7 @@ type ParsedFile =
   | { type: "yak"; exports: Record<string, ParsedExport>; filePath: string };
 
 type ParsedExport =
-  | { type: "styled-component"; value: string }
+  | { type: "styled-component"; value: string | undefined }
   | { type: "mixin"; value: string }
   | { type: "constant"; value: string | number }
   | { type: "record"; value: Record<any, ParsedExport> | {} }
@@ -688,6 +689,6 @@ type ParsedExport =
   | { type: "star-export"; from: string[] };
 
 type ResolvedExport =
-  | { type: "styled-component"; from: string; name: string; value: string }
+  | { type: "styled-component"; from: string; name: string; value: string | undefined }
   | { type: "mixin"; value: string | number }
   | { type: "constant"; value: string | number };
