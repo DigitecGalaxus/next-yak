@@ -1,17 +1,13 @@
 /// <reference types="node" />
-import { NextConfig } from "../../example/node_modules/next/dist/server/config.js";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
-import { dirname } from "node:path";
-import { createRequire } from "module";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { NextConfig } from "../../example/node_modules/next/dist/server/config.js";
 
 const currentDir =
   typeof __dirname !== "undefined"
     ? __dirname
     : dirname(fileURLToPath(import.meta.url));
-
-const { resolve } = createRequire(currentDir + "/index.js");
 
 export type YakConfigOptions = {
   /**
@@ -54,7 +50,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
   nextConfig.experimental.swcPlugins.push([
-    resolve("yak-swc"),
+    "yak-swc",
     {
       minify,
       basePath: currentDir,
