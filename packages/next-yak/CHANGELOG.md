@@ -1,5 +1,15 @@
 # next-yak
 
+## 5.2.2
+
+### Patch Changes
+
+- cd964ac: fix cross file selectors
+- 364f415: fix recursive class name replacement inside mixins
+- Updated dependencies [cd964ac]
+- Updated dependencies [364f415]
+  - yak-swc@5.2.2
+
 ## 5.2.1
 
 ### Patch Changes
