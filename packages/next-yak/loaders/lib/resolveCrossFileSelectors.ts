@@ -255,7 +255,7 @@ async function parseFile(
 
     const exports = await parseExports(await sourceContents, isTSX);
     const mixins = parseMixins(await tranformedSource);
-    const styledComponents = parseStyledComponents(await tranformedSource);
+    Object.assign(exports, parseStyledComponents(await tranformedSource));
 
     // Recursively resolve cross-file constants in mixins
     // e.g. cross file mixins inside a cross file mixin
@@ -302,11 +302,7 @@ async function parseFile(
 
     return {
       type: "regular",
-      exports: {
-        ...exports,
-        ...mixins,
-        ...styledComponents,
-      },
+      exports,
       filePath,
     };
   } catch (error) {
