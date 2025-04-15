@@ -18,6 +18,7 @@
     "next-yak": "workspace:*",
     "memfs": "catalog:dev",
     "unionfs": "catalog:dev",
-    "fast-glob": "catalog:dev"
+    "fast-glob": "catalog:dev",
+    "yak-swc": "workspace:*"
   }
 }
