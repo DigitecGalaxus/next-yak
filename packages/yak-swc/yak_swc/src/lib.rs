@@ -332,7 +332,7 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = parse_css(keyframe_name.as_str(), css_state);
+                let (new_state, _) = parse_css(&format!(":global({})", keyframe_name), css_state);
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
