@@ -1,5 +1,15 @@
 # yak-swc
 
+## 5.3.0
+
+### Minor Changes
+
+- 3fde4f1: use a turbopack compatible swc plugin path
+
+### Patch Changes
+
+- 14f2db8: Fix keyframe animation references when used before declaration
+
 ## 5.2.2
 
 ### Patch Changes
