@@ -3,4 +3,4 @@
 "next-yak": patch
 ---
 
-Fix reference of animations
+Fix keyframe animation references when used before declaration
