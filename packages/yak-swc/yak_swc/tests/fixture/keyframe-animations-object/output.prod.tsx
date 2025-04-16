@@ -3,10 +3,10 @@ import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu1) {
-  animation: ym7uBBu2 1s ease-in;
+  animation: :global(ym7uBBu2) 1s ease-in;
 }
 :global(.ym7uBBu3) {
-  animation: ym7uBBu4 1s ease-in;
+  animation: :global(ym7uBBu4) 1s ease-in;
 }
 :global(.ym7uBBu) {
   font-size: 18px;
