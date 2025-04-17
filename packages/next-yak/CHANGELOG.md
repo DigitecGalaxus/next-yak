@@ -1,5 +1,13 @@
 # next-yak
 
+## 5.3.1
+
+### Patch Changes
+
+- 4c9d3c3: Fix animation references by using "global()" instead of ":global()"
+- Updated dependencies [4c9d3c3]
+  - yak-swc@5.3.1
+
 ## 5.3.0
 
 ### Minor Changes

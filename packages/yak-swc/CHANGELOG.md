@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.3.1
+
+### Patch Changes
+
+- 4c9d3c3: Fix animation references by using "global()" instead of ":global()"
+
 ## 5.3.0
 
 ### Minor Changes
