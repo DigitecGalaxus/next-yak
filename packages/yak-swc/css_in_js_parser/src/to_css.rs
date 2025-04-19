@@ -1,18 +1,46 @@
 //! Converts a list of CSS declarations to a CSS string
-use crate::{CssScope, Declaration};
+use crate::{CssScope, Declaration, ScopeType};
 
 pub fn to_css(declarations: &[Declaration]) -> String {
-  let mut css = String::new();
+  let mut hoisted_css = String::new();
+  let mut regular_css = String::new();
   let mut previous_scopes: Vec<CssScope> = Vec::new();
+  let mut previous_hoisted_scope: Option<CssScope> = None;
 
   for declaration in declarations {
+    // Check if this declaration must not be nested inside a selector
+    // e.g. @property { ... }
+    let hoisted_scope = get_non_nestable_declarations(declaration);
+
+    // Close the previous hoisted scope (if any)
+    if previous_hoisted_scope.is_some() && previous_hoisted_scope != hoisted_scope {
+      hoisted_css.push_str("\n}\n");
+      previous_hoisted_scope = None;
+    }
+
+    // Handle declarations which must not be nested
+    // to prevent invalid CSS
+    if let Some(scope) = &hoisted_scope {
+      // If this is a new scope open it
+      // e.g. @property {
+      if previous_hoisted_scope.is_none() {
+        hoisted_css.push_str(&format!("\n{} {{", scope.name));
+      }
+      hoisted_css.push_str(&format!(
+        "\n  {}: {};",
+        declaration.property, declaration.value
+      ));
+      previous_hoisted_scope = hoisted_scope;
+      continue;
+    }
+
     let scopes = &declaration.scope;
 
     // Close scopes that are not in the current declaration
     for i in 0..previous_scopes.len() {
       if i >= scopes.len() || scopes[i] != previous_scopes[i] {
         for j in (i..previous_scopes.len()).rev() {
-          css.push_str(&format!("\n{}}}", "  ".repeat(j)));
+          regular_css.push_str(&format!("\n{}}}", "  ".repeat(j)));
         }
         break;
       }
@@ -22,13 +50,13 @@ pub fn to_css(declarations: &[Declaration]) -> String {
     for i in 0..scopes.len() {
       if i >= previous_scopes.len() || scopes[i] != previous_scopes[i] {
         for (j, scope) in scopes.iter().enumerate().skip(i) {
-          css.push_str(&format!("\n{}{} {{", "  ".repeat(j), scope.name));
+          regular_css.push_str(&format!("\n{}{} {{", "  ".repeat(j), scope.name));
         }
         break;
       }
     }
 
-    css.push_str(&format!(
+    regular_css.push_str(&format!(
       "\n{}{}: {};",
       "  ".repeat(scopes.len()),
       declaration.property,
@@ -38,12 +66,33 @@ pub fn to_css(declarations: &[Declaration]) -> String {
     previous_scopes = scopes.to_vec();
   }
 
-  // Close all scopes with proper indentation
-  for i in (0..previous_scopes.len()).rev() {
-    css.push_str(&format!("\n{}}}", "  ".repeat(i)));
+  // Close the last @property block if necessary
+  if previous_hoisted_scope.is_some() {
+    hoisted_css.push_str("\n}\n");
   }
 
-  css
+  // Close all regular scopes with proper indentation
+  for i in (0..previous_scopes.len()).rev() {
+    regular_css.push_str(&format!("\n{}}}", "  ".repeat(i)));
+  }
+
+  // Combine hoisted CSS and regular CSS
+  if !hoisted_css.is_empty() && !regular_css.is_empty() {
+    format!("{}{}", hoisted_css, regular_css)
+  } else {
+    hoisted_css + &regular_css
+  }
+}
+
+/// If according to the css spec the inner scope of declaration must not be nested
+/// (e.g. @property) return that scope
+fn get_non_nestable_declarations(declaration: &Declaration) -> Option<CssScope> {
+  for scope in &declaration.scope {
+    if scope.scope_type == ScopeType::AtRule && (scope.name.starts_with("@property")) {
+      return Some(scope.clone());
+    }
+  }
+  None
 }
 
 #[cfg(test)]
@@ -215,6 +264,44 @@ mod tests {
       r#"
 .foo {
   color: orange;
+}"#
+    );
+  }
+
+  #[test]
+  fn test_property_at_rule_hoisting() {
+    // Initial CSS with @property nested inside selectors (invalid CSS)
+    let (_, declarations) = parse_css(
+      r#"
+        .foo {
+            .fancy {
+              @property --angle {
+                  syntax: '<angle>';
+                  inherits: true;
+                  initial-value: 0turn;
+                  }
+              }
+            &:hover {
+                color: orange;
+            }
+        }
+        "#,
+      None,
+    );
+    // The result should show @property at the top level, not nested inside selectors
+    assert_eq!(
+      to_css(&declarations),
+      r#"
+@property --angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0turn;
+}
+
+.foo {
+  &:hover {
+    color: orange;
+  }
 }"#
     );
   }
