@@ -1,6 +1,29 @@
 //! Converts a list of CSS declarations to a CSS string
 use crate::{CssScope, Declaration, ScopeType};
 
+/// Converts a list of CSS declarations into properly formatted CSS code
+///
+/// This function is handling indentation, scope nesting, and maintaining proper selector hierarchy
+/// It does that by combining declarations that share the same scope
+///
+/// # Example
+///
+/// ```
+/// let declarations = vec![
+///   Declaration {
+///     property: "color".to_string(),
+///     value: "blue".to_string(),
+///     scope: vec![
+///       CssScope {
+///         name: ".foo".to_string(),
+///         scope_type: ScopeType::Selector
+///       }
+///     ]
+///   }
+/// ];
+/// let css_string = to_css(&declarations);
+/// // Results in: ".foo { color: blue; }"
+/// ```
 pub fn to_css(declarations: &[Declaration]) -> String {
   let mut hoisted_css = String::new();
   let mut regular_css = String::new();
