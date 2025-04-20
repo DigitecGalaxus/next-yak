@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.4.0
+
+### Minor Changes
+
+- 2ba5777: Add support for `@property` inside `styled` and `css` tags
+
 ## 5.3.1
 
 ### Patch Changes
