@@ -9,10 +9,13 @@ use crate::{CssScope, Declaration, ScopeType};
 /// # Example
 ///
 /// ```
+/// use css_in_js_parser::{Declaration, CssScope, ScopeType, to_css};
+///
 /// let declarations = vec![
 ///   Declaration {
 ///     property: "color".to_string(),
 ///     value: "blue".to_string(),
+///     closed: true,
 ///     scope: vec![
 ///       CssScope {
 ///         name: ".foo".to_string(),
