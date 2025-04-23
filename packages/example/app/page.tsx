@@ -52,7 +52,7 @@ const headline = css<{ $primary?: boolean }>`
 `;
 
 const Headline = styled.h1<{ $primary?: boolean }>`
-  ${headline}
+  ${headline};
 `;
 
 const SubHeadline = styled.h2`
