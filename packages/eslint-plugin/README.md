@@ -12,25 +12,31 @@ npm install --save-dev eslint-plugin-yak
 
 ## Usage
 
-TODO:
+### Recommended
 
-Add `yak` to the plugins section of your `.eslintrc` configuration file:
+Import the plugin and add the recommended configuration
 
-```json
-{
-  "plugins": ["yak"]
+```js
+import yakPlugin from "eslint-plugin-yak";
+
+export default config = {
+  yakPlugin.configs.recommended,
 }
 ```
 
-Then configure the rules you want to use:
+### Customize
 
-```json
-{
-  "rules": {
-    "yak/css-nesting-operator": "error",
-    "yak/enforce-semicolon": "error",
-    "yak/style-conditions": "error"
-  }
+If you need to customize the recommended settings, you can just override the rules setting:
+
+```js
+export default config = {
+  {
+    ...yakPlugin.configs.recommended,
+    rules: {
+      ...yakPlugin.configs.recommended.rules,
+      "eslint-plugin-yak/style-conditions": "off", // or any other rule
+    },
+  },
 }
 ```
 

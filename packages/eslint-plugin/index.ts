@@ -29,7 +29,7 @@ Object.assign(plugin.configs, {
     rules: {
       [`${pkg.name}/css-nesting-operator`]: "error",
       [`${pkg.name}/enforce-semicolon`]: "error",
-      [`${pkg.name}/style-conditions`]: "suggestion",
+      [`${pkg.name}/style-conditions`]: "warn",
     },
   },
 });

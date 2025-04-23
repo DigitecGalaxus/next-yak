@@ -33,9 +33,9 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && cp ./package.json ./dist/",
     "test": "vitest",
-    "update:docs": "pnpm tsup && cp ./package.json ./dist/ && eslint-doc-generator"
+    "update:docs": "pnpm tsup && eslint-doc-generator"
   },
   "files": [
     "."
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@types/node": "catalog:dev",
     "@typescript-eslint/rule-tester": "catalog:dev",
-    "eslint-doc-generator": "^2.1.2",
+    "eslint-doc-generator": "catalog:dev",
     "tsup": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:dev"
