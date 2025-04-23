@@ -8,5 +8,5 @@ export interface EsLintPluginYakRuleDocs {
 
 export const createRule = ESLintUtils.RuleCreator<EsLintPluginYakRuleDocs>(
   (name) =>
-    `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/${name}.md`,
+    `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/rules/${name}.md`,
 );

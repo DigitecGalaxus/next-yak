@@ -7,7 +7,7 @@ import { AST_NODE_TYPES as AST_NODE_TYPES2 } from "@typescript-eslint/utils";
 // utils.ts
 import { ESLintUtils } from "@typescript-eslint/utils";
 var createRule = ESLintUtils.RuleCreator(
-  (name) => `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/${name}.md`
+  (name) => `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/rules/${name}.md`
 );
 
 // rules/utils.ts
