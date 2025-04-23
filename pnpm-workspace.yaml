@@ -12,6 +12,7 @@ catalogs:
     "@changesets/cli": 2.29.2
     "@codspeed/benchmark.js-plugin": 4.0.1
     "@monaco-editor/react": 4.7.0
+    "@next/eslint-plugin-next": 15.3.1
     "@next/mdx": 15.3.1
     "@shikijs/monaco": 3.3.0
     "@shikijs/transformers": 3.3.0
@@ -33,6 +34,9 @@ catalogs:
     "@vitejs/plugin-react": 4.4.1
     autoprefixer: 10.4.21
     benchmark: 2.1.4
+    eslint: 9.25.1
+    eslint-config-next: 15.3.1
+    eslint-doc-generator: 2.1.2
     fast-glob: 3.3.3
     fumadocs-core: 15.2.11
     fumadocs-mdx: 11.6.1
