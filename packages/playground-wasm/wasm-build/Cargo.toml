@@ -1,0 +1,23 @@
+[package]
+name = "playground-wasm"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1.0.98"
+console_error_panic_hook = "0.1.7"
+js-sys = "0.3.77"
+once_cell = "1.21.3"
+serde = { version = "1.0.219", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+swc_core = { version = "22.5.2", features = ["__common", "__visit"] }
+swc_ecma_codegen = "10.0.0"
+swc_ecma_lexer = "11.1.3"
+swc_ecma_parser = "11.1.3"
+wasm-bindgen = "0.2"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.50"
