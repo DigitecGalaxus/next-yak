@@ -2,7 +2,7 @@
 
 ESLint plugin for [next-yak](https://yak.js.org/) - a powerful CSS-in-JS library for React applications.
 
-Helps with the migration from `styled-components` to `next-yak`.
+Helps with the migration from `styled-components` to `next-yak` and nudges you towards using it the most performant way.
 
 ## Installation
 
