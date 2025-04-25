@@ -14,7 +14,7 @@ const rotate = keyframes`
   `;
 
 const Headline = styled.h1`
-  animation: ${() => rotate} ${verySlow} linear infinite;
+  animation: ${rotate} ${verySlow} linear infinite;
 `;
 
 const colorRotation = keyframes`
