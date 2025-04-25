@@ -375,6 +375,9 @@ var styleConditions = createRule({
       },
       /** All return statements in styled/css literals */
       "TaggedTemplateExpression :matches(ArrowFunctionExpression, ReturnStatement)"(node) {
+        if (isInsideAttrsMethod(node)) {
+          return;
+        }
         const { tag, params } = findClosestStyledOrCssTag(node, importedNames);
         if (!tag) {
           return;
@@ -459,10 +462,7 @@ function isNodeAccessingParams(node, params, importedNames) {
     case AST_NODE_TYPES4.BinaryExpression:
       return isNodeAccessingParams(node.left, params, importedNames) || isNodeAccessingParams(node.right, params, importedNames);
     case AST_NODE_TYPES4.UnaryExpression:
-      if (node.operator === "!") {
-        return isNodeAccessingParams(node.argument, params, importedNames);
-      }
-      return false;
+      return isNodeAccessingParams(node.argument, params, importedNames);
     default:
       return isFalsyLiteral(node);
   }
@@ -493,6 +493,22 @@ function isValidTestExpression(node) {
     default:
       return false;
   }
+}
+function isInsideAttrsMethod(node) {
+  let current = node;
+  while (current && current.parent) {
+    if (current.parent.type === AST_NODE_TYPES4.CallExpression) {
+      const callExpr = current.parent;
+      if (callExpr.callee.type === AST_NODE_TYPES4.MemberExpression) {
+        const memberExpr = callExpr.callee;
+        if (memberExpr.property.type === AST_NODE_TYPES4.Identifier && memberExpr.property.name === "attrs") {
+          return true;
+        }
+      }
+    }
+    current = current.parent;
+  }
+  return false;
 }
 
 // index.ts

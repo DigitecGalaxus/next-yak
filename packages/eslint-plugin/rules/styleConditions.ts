@@ -74,6 +74,11 @@ export const styleConditions = createRule({
       "TaggedTemplateExpression :matches(ArrowFunctionExpression, ReturnStatement)"(
         node: TSESTree.ReturnStatement | TSESTree.ArrowFunctionExpression,
       ) {
+        // Skip if this is an arrow function inside the .attrs method
+        if (isInsideAttrsMethod(node)) {
+          return;
+        }
+
         // Params are used to detect valid runtime values
         // e.g. css`width: ${({ $size }) => $size}px`
         const { tag, params } = findClosestStyledOrCssTag(node, importedNames);
@@ -258,11 +263,7 @@ function isNodeAccessingParams(
         isNodeAccessingParams(node.right, params, importedNames)
       );
     case AST_NODE_TYPES.UnaryExpression:
-      // Handle unary expressions with the logical NOT operator
-      if (node.operator === "!") {
-        return isNodeAccessingParams(node.argument, params, importedNames);
-      }
-      return false;
+      return isNodeAccessingParams(node.argument, params, importedNames);
     default:
       return isFalsyLiteral(node);
   }
@@ -297,4 +298,34 @@ function isValidTestExpression(node: TSESTree.Node): boolean {
     default:
       return false;
   }
+}
+
+/**
+ * Checks if a node is inside the attrs method of a styled component
+ */
+function isInsideAttrsMethod(node: TSESTree.Node): boolean {
+  let current: TSESTree.Node | undefined = node;
+
+  while (current && current.parent) {
+    // Check if parent is a CallExpression
+    if (current.parent.type === AST_NODE_TYPES.CallExpression) {
+      const callExpr = current.parent;
+
+      // Check if the callee is a MemberExpression
+      if (callExpr.callee.type === AST_NODE_TYPES.MemberExpression) {
+        const memberExpr = callExpr.callee;
+
+        // Check if the property name is 'attrs'
+        if (
+          memberExpr.property.type === AST_NODE_TYPES.Identifier &&
+          memberExpr.property.name === "attrs"
+        ) {
+          return true;
+        }
+      }
+    }
+    current = current.parent;
+  }
+
+  return false;
 }

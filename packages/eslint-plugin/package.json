@@ -33,9 +33,9 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && cp ./package.json ./dist/",
+    "build": "tsup && cp ./package.json ./dist/package.json",
     "test": "vitest",
-    "update:docs": "pnpm tsup && eslint-doc-generator"
+    "update:docs": "pnpm build && eslint-doc-generator"
   },
   "files": [
     "."

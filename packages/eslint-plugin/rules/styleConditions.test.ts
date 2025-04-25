@@ -92,6 +92,21 @@ ruleTester.run("yak-style-conditions", styleConditions, {
         'import { styled } from "next-yak"; import sth from "sth";' +
         "styled.button`background-color: ${({ $backgroundColor }) => $backgroundColor ? $backgroundColor : sth.transparent};`",
     },
+    {
+      code:
+        'import { styled } from "next-yak";' +
+        "styled.div`margin-top: ${({ index }) => -index * 30}px;`",
+    },
+    {
+      code:
+        'import { styled } from "next-yak";' +
+        "const Input = styled.input.attrs<{ $size?: string }>((props) => ({type: 'text'}))<{ $size?: string }>``;",
+    },
+    {
+      code:
+        'import { styled } from "next-yak";' +
+        "const Button = ''; const Input = styled(Button).attrs<{ $size?: string }>((props) => ({type: 'text'}))<{ $size?: string }>``;",
+    },
   ],
   invalid: [
     {
