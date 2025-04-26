@@ -1,9 +1,11 @@
-import { defineDocs, defineConfig } from "fumadocs-mdx/config";
-import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
-import { transformerTwoslash } from "fumadocs-twoslash";
 import { transformerNotationDiff } from "@shikijs/transformers";
+import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
+import { defineConfig, defineDocs } from "fumadocs-mdx/config";
+import { transformerTwoslash } from "fumadocs-twoslash";
 
-export const { docs, meta } = defineDocs();
+export const docs = defineDocs({
+  dir: "content/docs",
+});
 
 export default defineConfig({
   mdxOptions: {
