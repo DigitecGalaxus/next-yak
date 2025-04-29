@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const ArticleCard = /*YAK EXPORTED STYLED:ArticleCard:input_ArticleCard_m7uBBu*//*YAK Extracted CSS:
-:global(.input_ArticleCard_m7uBBu) {
+.input_ArticleCard_m7uBBu {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;

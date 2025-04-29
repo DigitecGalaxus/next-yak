@@ -1,9 +1,9 @@
 import React from 'react';
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const ThemedComponent = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   background-color: var(--ym7uBBu1);
   color: var(--ym7uBBu2);
   padding: 20px;

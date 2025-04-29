@@ -28,11 +28,10 @@
       "yak-swc": "workspace:*"
     }
   },
-  "packageManager": "pnpm@9.12.3",
   "author": "Jan Nicklas",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "catalog:dev",
-    "@changesets/cli": "catalog:dev"
+    "@changesets/cli": "catalog:dev",
+    "prettier": "catalog:dev"
   }
 }

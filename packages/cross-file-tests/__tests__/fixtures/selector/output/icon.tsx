@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./icon.yak.module.css!=!./icon?./icon.yak.module.css";
+import "./icon.yak.css!=!./icon?./icon.yak.css";
 export var Icon = /*YAK EXPORTED STYLED:Icon:icon_Icon_kYzpEN*//*YAK Extracted CSS:
-:global(.icon_Icon_kYzpEN) {
+.icon_Icon_kYzpEN {
   width: 32px;
   height: 32px;
 }

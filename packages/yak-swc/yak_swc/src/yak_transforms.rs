@@ -12,7 +12,7 @@ use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_
 use swc_core::ecma::ast::*;
 use swc_core::plugin::errors::HANDLER;
 
-use crate::naming_convention::{get_css_modules_class_name, NamingConvention};
+use crate::naming_convention::{get_css_class_name, get_css_modules_class_name, NamingConvention};
 
 /// Represents a CSS result after the transformation
 #[derive(Debug)]
@@ -32,7 +32,7 @@ pub trait YakTransform {
   /// Create a CSS Scope\
   /// This CSS Scope will surround the entire CSS for this literal\
   /// e.g. const myMixin = css`...` -> .myMixin { ... }
-  fn create_css_state(&self, previous_parser_state: Option<ParserState>) -> ParserState;
+  fn create_css_state(&self, previous_parser_state: Option<ParserState>, compile_to_css_module: bool) -> ParserState;
   /// Transform the expression\
   /// This is where the TypeScript AST for the expression is finally transformed
   fn transform_expression(
@@ -44,7 +44,7 @@ pub trait YakTransform {
     yak_imports: &mut YakImports,
   ) -> YakTransformResult;
   /// Get animation or styled component selector name
-  fn get_css_reference_name(&self) -> Option<String> {
+  fn get_css_reference_name(&self, _: bool) -> Option<String> {
     None
   }
 }
@@ -74,12 +74,16 @@ impl TransformNestedCss {
 }
 
 impl YakTransform for TransformNestedCss {
-  fn create_css_state(&self, previous_parser_state: Option<ParserState>) -> ParserState {
+  fn create_css_state(&self, previous_parser_state: Option<ParserState>, compile_to_css_module: bool) -> ParserState {
     // It is safe to unwrap here because the previous_parser_state is always set for a nested css
     let mut parser_state = previous_parser_state.clone().unwrap();
     // The first scope is the class name which gets attached to the element
     parser_state.current_scopes[0] = CssScope {
-      name: get_css_modules_class_name(&self.class_name),
+      name: if compile_to_css_module {
+        get_css_modules_class_name(&self.class_name)
+      } else {
+        get_css_class_name(&self.class_name)
+      },
       scope_type: ScopeType::Selector,
     };
     parser_state
@@ -163,10 +167,14 @@ impl TransformCssMixin {
 }
 
 impl YakTransform for TransformCssMixin {
-  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>, compile_to_css_module: bool) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: get_css_modules_class_name(&self.class_name),
+      name: if compile_to_css_module {
+        get_css_modules_class_name(&self.class_name)
+      } else {
+        get_css_class_name(&self.class_name)
+      },
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -252,7 +260,7 @@ impl YakTransform for TransformCssMixin {
     }
   }
 
-  fn get_css_reference_name(&self) -> Option<String> {
+  fn get_css_reference_name(&self, _: bool) -> Option<String> {
     if self.is_within_jsx_attribute {
       Some(self.class_name.clone())
     } else {
@@ -412,10 +420,14 @@ fn transform_styled_usages(expression: Box<Expr>, yak_imports: &mut YakImports) 
 }
 
 impl YakTransform for TransformStyled {
-  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>, compile_to_css_module: bool) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: get_css_modules_class_name(&self.class_name),
+      name: if compile_to_css_module {
+        get_css_modules_class_name(&self.class_name)
+      } else {
+        get_css_class_name(&self.class_name)
+      },
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -488,8 +500,12 @@ impl YakTransform for TransformStyled {
   }
 
   /// Get the selector for the specific styled component to be used in other expressions
-  fn get_css_reference_name(&self) -> Option<String> {
-    Some(get_css_modules_class_name(&self.class_name))
+  fn get_css_reference_name(&self, compile_to_css_module: bool) -> Option<String> {
+    if compile_to_css_module {
+        Some(get_css_modules_class_name(&self.class_name))
+    } else {
+      Some(get_css_class_name(&self.class_name))
+    }
   }
 }
 
@@ -507,10 +523,14 @@ impl TransformKeyframes {
 }
 
 impl YakTransform for TransformKeyframes {
-  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>, compile_to_css_module: bool) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: format!("@keyframes :global({})", self.animation_name),
+      name: if compile_to_css_module {
+        format!("@keyframes :global({})", self.animation_name)
+      } else {
+        format!("@keyframes {}", self.animation_name)
+      },
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -560,7 +580,11 @@ impl YakTransform for TransformKeyframes {
   }
 
   /// Get the selector for the keyframe to be used in other expressions
-  fn get_css_reference_name(&self) -> Option<String> {
-    Some(format!("global({})", self.animation_name))
+  fn get_css_reference_name(&self, compile_to_css_module: bool) -> Option<String> {
+    if compile_to_css_module {
+      Some(format!("global({})", self.animation_name))
+    } else {
+      Some(format!("{}", self.animation_name))
+    }
   }
 }

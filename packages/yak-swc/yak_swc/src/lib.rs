@@ -124,6 +124,8 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
+
+  compile_to_css_module: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -151,6 +153,7 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
+      compile_to_css_module: false,
     }
   }
 
@@ -332,7 +335,11 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = parse_css(&format!("global({})", keyframe_name), css_state);
+                let (new_state, _) = if self.compile_to_css_module {
+                  parse_css(&format!("global({})", keyframe_name), css_state)
+                } else {
+                  parse_css(&keyframe_name, css_state)
+                };
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
@@ -573,9 +580,13 @@ where
           specifiers: vec![],
           src: Box::new(Str {
             span: DUMMY_SP,
-            value: format!(
-              "./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css"
-            )
+            value: if self.compile_to_css_module {
+              format!(
+                "./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css"
+              )
+            } else {
+              format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+            }
             .into(),
             raw: None,
           }),
@@ -834,9 +845,9 @@ where
     //
     // Depending on the library function used (styled, keyframes, css, ...)
     // a surrounding scope is added
-    let css_state = Some(transform.create_css_state(self.current_css_state.clone()));
+    let css_state = Some(transform.create_css_state(self.current_css_state.clone(), self.compile_to_css_module));
 
-    if let Some(css_reference_name) = transform.get_css_reference_name() {
+    if let Some(css_reference_name) = transform.get_css_reference_name(self.compile_to_css_module) {
       self
         .variable_name_selector_mapping
         .insert(current_variable_id, css_reference_name);

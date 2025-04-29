@@ -1,12 +1,12 @@
 /* cssmodules-pure-no-check * /
-:global(.index_Button_oPtJMe) {
+.index_Button_oPtJMe {
   color: black;
 :global(.icon_Icon_je4Wtv) {
   color: black;
 }
 
 }
-:global(.index_PrimaryButton_oPtJMe) {
+.index_PrimaryButton_oPtJMe {
   color: black;
 :global(.icon_Icon_je4Wtv) {
   color: black;

@@ -1,14 +1,14 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const Card = /*YAK EXPORTED STYLED:Card:input_Card_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Card_m7uBBu) {
+.input_Card_m7uBBu {
   background: url("/card-bg.jpg") no-repeat;
 }
-:global(.input_Card__\$active_m7uBBu) {
+.input_Card__\$active_m7uBBu {
   backgorund: url(/card-bg-active.jpg) no-repeat;
 }
-:global(.input_Card_m7uBBu) {
+.input_Card_m7uBBu {
   transform: translate(-50%, -50%) rotate(var(--input_Card__transform_m7uBBu))
 translate(0, -88px) rotate(var(--input_Card__transform_m7uBBu-01));
 }

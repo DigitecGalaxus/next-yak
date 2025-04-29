@@ -441,7 +441,7 @@ function parseStyledComponents(
     const [componentName, className] = comment.split(":");
     styledComponents[componentName] = {
       type: "styled-component",
-      value: `:global(.${className})`,
+      value: `.${className}`,
     };
   }
 

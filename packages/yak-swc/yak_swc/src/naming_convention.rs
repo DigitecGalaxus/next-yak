@@ -192,6 +192,11 @@ pub fn get_css_modules_class_name(input: &str) -> String {
   format!(":global(.{})", escape_css_class_name(input))
 }
 
+/// Returns a valid CSS class name which can be used inside css module files
+pub fn get_css_class_name(input: &str) -> String {
+  format!(".{}", escape_css_class_name(input))
+}
+
 /// Convert a number to a CSS-safe string
 fn minify_number(num: u32) -> String {
   const CSS_CHARS: &[char] = &[

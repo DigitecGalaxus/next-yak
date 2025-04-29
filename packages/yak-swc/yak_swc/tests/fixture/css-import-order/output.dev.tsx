@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import { IconButton } from "./iconButton";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const FancyIconButton = /*YAK EXPORTED STYLED:FancyIconButton:input_FancyIconButton_m7uBBu*//*YAK Extracted CSS:
-:global(.input_FancyIconButton_m7uBBu) {
+.input_FancyIconButton_m7uBBu {
   color: hotpink;
   &:before {
     content: "FancyIconButton";

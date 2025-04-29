@@ -1,7 +1,7 @@
 import { css, __yak_mergeCssProp } from "next-yak/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const YakLogo = ()=><div {.../*YAK Extracted CSS:
-:global(.input_YakLogo_m7uBBu) {
+.input_YakLogo_m7uBBu {
   display: flex;
   gap: 6px;
 }

@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const BaseButton = /*YAK Extracted CSS:
-:global(.input_BaseButton_m7uBBu) {
+.input_BaseButton_m7uBBu {
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
@@ -13,7 +13,7 @@ const BaseButton = /*YAK Extracted CSS:
     "displayName": "BaseButton"
 });
 export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:input_PrimaryButton_m7uBBu*//*YAK Extracted CSS:
-:global(.input_PrimaryButton_m7uBBu) {
+.input_PrimaryButton_m7uBBu {
   background-color: #007bff;
   color: #fff;
   &:hover {
@@ -24,7 +24,7 @@ export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:input_PrimaryBu
     "displayName": "PrimaryButton"
 });
 export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:input_SecondaryButton_m7uBBu*//*YAK Extracted CSS:
-:global(.input_SecondaryButton_m7uBBu) {
+.input_SecondaryButton_m7uBBu {
   background-color: #6c757d;
   color: #fff;
   &:hover {

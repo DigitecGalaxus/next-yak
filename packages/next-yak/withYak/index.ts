@@ -65,7 +65,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     }
 
     webpackConfig.module.rules.push({
-      test: /\.yak\.module\.css$/,
+      test: /\.yak\.css$/,
       loader: path.join(currentDir, "../loaders/css-loader.js"),
       options: yakOptions,
     });
