@@ -31,7 +31,7 @@ export default async function cssExtractLoader(
     const debugLog = createDebugLogger(this, experiments?.debug);
 
     debugLog("ts", source);
-    const css = extractCss(source);
+    const css = extractCss(source, experiments?.transpileMode);
     debugLog("css", css);
 
     return resolveCrossFileConstant(this, this.context, css).then((result) => {
@@ -41,7 +41,10 @@ export default async function cssExtractLoader(
   });
 }
 
-function extractCss(code: string | Buffer<ArrayBufferLike>): string {
+function extractCss(
+  code: string | Buffer<ArrayBufferLike>,
+  transpileMode: NonNullable<YakConfigOptions["experiments"]>["transpileMode"],
+): string {
   let codeString: string;
 
   if (typeof code === "string") {
@@ -62,7 +65,7 @@ function extractCss(code: string | Buffer<ArrayBufferLike>): string {
     const codeUntilEnd = codeParts[i].split("*/")[0];
     result += codeUntilEnd;
   }
-  if (result) {
+  if (result && transpileMode !== "Css") {
     result = "/* cssmodules-pure-no-check */\n" + result;
   }
 

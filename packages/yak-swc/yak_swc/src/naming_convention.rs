@@ -1,5 +1,6 @@
 use crate::utils::css_hash::hash_to_css;
 use rustc_hash::FxHashMap;
+use serde::Deserialize;
 use std::path::Path;
 
 pub struct NamingConvention {
@@ -187,9 +188,18 @@ fn escape_css_class_name(input: &str) -> String {
   result
 }
 
-/// Returns a valid CSS class name which can be used inside css module files
-pub fn get_css_modules_class_name(input: &str) -> String {
-  format!(":global(.{})", escape_css_class_name(input))
+#[derive(Deserialize, Clone, Copy)]
+pub enum TranspileMode {
+  CssModule,
+  Css
+}
+
+/// Returns a valid CSS class name
+pub fn get_css_class_name(input: &str, mode: &TranspileMode) -> String {
+  match mode {
+    TranspileMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
+    TranspileMode::Css => format!(".{}", escape_css_class_name(input)),
+  }
 }
 
 /// Convert a number to a CSS-safe string
