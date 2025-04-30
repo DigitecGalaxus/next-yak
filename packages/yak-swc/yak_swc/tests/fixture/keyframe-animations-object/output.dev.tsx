@@ -1,14 +1,14 @@
 import { styled, css, keyframes } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:input_FadeInText_m7uBBu*//*YAK Extracted CSS:
-.input_FadeInText__\$reverse_m7uBBu {
-  animation: animations_fadeOut_m7uBBu 1s ease-in;
+:global(.input_FadeInText__\$reverse_m7uBBu) {
+  animation: global(animations_fadeOut_m7uBBu) 1s ease-in;
 }
-.input_FadeInText__not_\$reverse_m7uBBu {
-  animation: animations_fadeIn_m7uBBu 1s ease-in;
+:global(.input_FadeInText__not_\$reverse_m7uBBu) {
+  animation: global(animations_fadeIn_m7uBBu) 1s ease-in;
 }
-.input_FadeInText_m7uBBu {
+:global(.input_FadeInText_m7uBBu) {
   font-size: 18px;
   color: #333;
 }
@@ -17,7 +17,7 @@ export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:input_FadeInText_m7uB
 });
 const animations = {
     fadeIn: /*YAK Extracted CSS:
-@keyframes animations_fadeIn_m7uBBu {
+@keyframes :global(animations_fadeIn_m7uBBu) {
   from {
     opacity: 0;
   }
@@ -27,7 +27,7 @@ const animations = {
 }
 */ /*#__PURE__*/ keyframes("animations_fadeIn_m7uBBu"),
     fadeOut: /*YAK Extracted CSS:
-@keyframes animations_fadeOut_m7uBBu {
+@keyframes :global(animations_fadeOut_m7uBBu) {
   from {
     opacity: 1;
   }
@@ -39,14 +39,14 @@ const animations = {
 };
 const slides = {
     200: /*YAK Extracted CSS:
-@keyframes slides_200_m7uBBu {
+@keyframes :global(slides_200_m7uBBu) {
   to {
     transform: translate(200px, 200px);
   }
 }
 */ /*#__PURE__*/ keyframes("slides_200_m7uBBu"),
     "x400": /*YAK Extracted CSS:
-@keyframes slides_x400_m7uBBu {
+@keyframes :global(slides_x400_m7uBBu) {
   from {
     transform: translateX(0);
   }
@@ -57,11 +57,11 @@ const slides = {
 */ /*#__PURE__*/ keyframes("slides_x400_m7uBBu")
 };
 export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:input_FancyButton_m7uBBu*//*YAK Extracted CSS:
-.input_FancyButton_m7uBBu {
+:global(.input_FancyButton_m7uBBu) {
   background-color: #f00;
-  animation: slides_x400_m7uBBu 1s ease-in-out, animations_fadeIn_m7uBBu 1s ease-in;
+  animation: global(slides_x400_m7uBBu) 1s ease-in-out, global(animations_fadeIn_m7uBBu) 1s ease-in;
   &:hover {
-    animation: slides_200_m7uBBu 1s ease-in-out, animations_fadeOut_m7uBBu 1s ease-in;
+    animation: global(slides_200_m7uBBu) 1s ease-in-out, global(animations_fadeOut_m7uBBu) 1s ease-in;
   }
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_FancyButton_m7uBBu"), {

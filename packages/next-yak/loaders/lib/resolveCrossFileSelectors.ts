@@ -53,6 +53,7 @@ export async function resolveCrossFileConstant(
   loader: LoaderContext<{}>,
   pathContext: string,
   css: string,
+  turbopack: boolean,
 ): Promise<string> {
   // Search for --yak-css-import: url("path/to/module") in the css
   const matches = [...css.matchAll(yakCssImportRegex)].map((match) => {
@@ -80,12 +81,14 @@ export async function resolveCrossFileConstant(
           loader,
           moduleSpecifier,
           pathContext,
+          turbopack,
         );
 
         const resolvedValue = await resolveModuleSpecifierRecursively(
           loader,
           parsedModule,
           specifier,
+          turbopack,
         );
 
         return resolvedValue;
@@ -175,6 +178,7 @@ async function parseModule(
   loader: LoaderContext<{}>,
   moduleSpecifier: string,
   context: string,
+  turbopack: boolean,
 ): Promise<ParsedFile> {
   const cache = getCompilationCache(loader).parsedFiles;
 
@@ -184,7 +188,7 @@ async function parseModule(
 
   let parsedFile = cache.get(resolvedModule);
   if (!parsedFile) {
-    parsedFile = await parseFile(loader, resolvedModule);
+    parsedFile = await parseFile(loader, resolvedModule, turbopack);
 
     // We cache the parsed file to avoid re-parsing it.
     // It's ok, that initial parallel requests to the same file will parse it multiple times.
@@ -199,6 +203,7 @@ async function parseModule(
 async function parseFile(
   loader: LoaderContext<{}>,
   filePath: string,
+  turbopack: boolean,
 ): Promise<ParsedFile> {
   const isYak =
     filePath.endsWith(".yak.ts") ||
@@ -255,7 +260,10 @@ async function parseFile(
 
     const exports = await parseExports(await sourceContents, isTSX);
     const mixins = parseMixins(await tranformedSource);
-    Object.assign(exports, parseStyledComponents(await tranformedSource));
+    Object.assign(
+      exports,
+      parseStyledComponents(await tranformedSource, turbopack),
+    );
 
     // Recursively resolve cross-file constants in mixins
     // e.g. cross file mixins inside a cross file mixin
@@ -266,6 +274,7 @@ async function parseFile(
           loader,
           path.dirname(filePath),
           value,
+          turbopack,
         );
         if (nameParts.length === 1) {
           exports[name] = { type: "mixin", value: resolvedValue };
@@ -427,6 +436,7 @@ function parseMixins(
 
 function parseStyledComponents(
   sourceContents: string,
+  turbopack: boolean,
 ): Record<string, { type: "styled-component"; value: string }> {
   // cross-file Styled Components are always in the following format:
   // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
@@ -441,7 +451,7 @@ function parseStyledComponents(
     const [componentName, className] = comment.split(":");
     styledComponents[componentName] = {
       type: "styled-component",
-      value: `.${className}`,
+      value: turbopack ? `.${className}` : `:global(.${className})`,
     };
   }
 
@@ -546,6 +556,7 @@ async function resolveModuleSpecifierRecursively(
   loader: LoaderContext<{}>,
   module: ParsedFile,
   specifier: string[],
+  turbopack: boolean,
 ): Promise<ResolvedExport> {
   try {
     const exportName = specifier[0];
@@ -582,11 +593,14 @@ async function resolveModuleSpecifierRecursively(
         loader,
         exportValue.from,
         path.dirname(module.filePath),
+        turbopack,
       );
-      return resolveModuleSpecifierRecursively(loader, importedModule, [
-        exportValue.imported,
-        ...specifier.slice(1),
-      ]);
+      return resolveModuleSpecifierRecursively(
+        loader,
+        importedModule,
+        [exportValue.imported, ...specifier.slice(1)],
+        turbopack,
+      );
     }
     // Namespace export
     // e.g. export * as colors from "./colors";
@@ -595,11 +609,13 @@ async function resolveModuleSpecifierRecursively(
         loader,
         exportValue.from[0],
         path.dirname(module.filePath),
+        turbopack,
       );
       return resolveModuleSpecifierRecursively(
         loader,
         importedModule,
         specifier.slice(1),
+        turbopack,
       );
     }
 

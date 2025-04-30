@@ -1,8 +1,8 @@
 import { styled, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:ym7uBBu*//*YAK Extracted CSS:
-.ym7uBBu {
+:global(.ym7uBBu) {
   display: flex;
   z-index: var(--ym7uBBu1);
   margin-bottom: var(--ym7uBBu2);

@@ -1,0 +1,11 @@
+  x The shorthand access to the variable "$pageHeaderHeight" is not allowed in a nested expression.
+  | To be able to use the property turn it into a CSS variable by wrapping it in a function:
+  | 
+  | ${() => $pageHeaderHeight};
+  | 
+    ,-[input.js:17:1]
+ 16 |     ` : css`
+ 17 |       margin-top: ${$pageHeaderHeight}px;
+    :                     ^^^^^^^^^^^^^^^^^
+ 18 |     `};
+    `----

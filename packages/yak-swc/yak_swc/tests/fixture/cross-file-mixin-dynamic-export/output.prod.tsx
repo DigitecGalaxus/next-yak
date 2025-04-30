@@ -1,6 +1,6 @@
 import { css, styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu1"));
 const textStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu3"));
 export const buttonStyles = /*YAK EXPORTED MIXIN:buttonStyles
@@ -13,41 +13,41 @@ color: black;
 color: red;
 */ /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu5"));
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu6*//*YAK Extracted CSS:
-.ym7uBBu6 {
+:global(.ym7uBBu6) {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-.ym7uBBu7 {
+:global(.ym7uBBu7) {
   &:hover {
     font-size: 16px;
     color: black;
   }
 }
-.ym7uBBu8 {
+:global(.ym7uBBu8) {
   &:hover {
     color: red;
   }
 }
-.ym7uBBu6 {
+:global(.ym7uBBu6) {
   &:focus {
     font-size: 16px;
     color: black;
   }
 }
-.ym7uBBu9 {
+:global(.ym7uBBu9) {
   &:focus {
     color: red;
   }
 }
-.ym7uBBu6 {
+:global(.ym7uBBu6) {
   &:focus {
     font-size: 16px;
     color: black;
   }
 }
-.ym7uBBuA {
+:global(.ym7uBBuA) {
   &:focus {
     color: red;
   }

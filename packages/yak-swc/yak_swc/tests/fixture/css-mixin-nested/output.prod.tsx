@@ -1,6 +1,6 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu1", {
         "style": {
             "--ym7uBBu2": /*#__PURE__*/ __yak_unitPostFix(({ $letters })=>$letters * 15, "px")
@@ -11,19 +11,19 @@ const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ c
     }
 });
 export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:ym7uBBu4*//*YAK Extracted CSS:
-.ym7uBBu4 {
+:global(.ym7uBBu4) {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-.ym7uBBu5 {
+:global(.ym7uBBu5) {
   @media (max-width: 600px) {
     background-color: #f0f0f0;
     max-width: var(--ym7uBBu6);
   }
 }
-.ym7uBBu4 {
+:global(.ym7uBBu4) {
   width: var(--ym7uBBu7);
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu4", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu5", {
@@ -36,7 +36,7 @@ export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:ym7uBBu4*//*YAK E
     }
 });
 export const CustomThemedButton = /*YAK EXPORTED STYLED:CustomThemedButton:ym7uBBu8*//*YAK Extracted CSS:
-.ym7uBBu8 {
+:global(.ym7uBBu8) {
   color: red;
   &:not([disabled]) {
     padding: 10px 20px;
@@ -45,7 +45,7 @@ export const CustomThemedButton = /*YAK EXPORTED STYLED:CustomThemedButton:ym7uB
     cursor: pointer;
   }
 }
-.ym7uBBu9 {
+:global(.ym7uBBu9) {
   &:not([disabled]) {
     @media (max-width: 600px) {
       background-color: #f0f0f0;
@@ -53,7 +53,7 @@ export const CustomThemedButton = /*YAK EXPORTED STYLED:CustomThemedButton:ym7uB
     }
   }
 }
-.ym7uBBu8 {
+:global(.ym7uBBu8) {
   &:not([disabled]) {
     width: var(--ym7uBBuB);
   }

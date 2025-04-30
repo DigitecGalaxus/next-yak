@@ -16,6 +16,7 @@ export default async function cssExtractLoader(
   _code: string,
   sourceMap: string | undefined,
 ): Promise<string | void> {
+  console.log({ this: this });
   const callback = this.async();
   // Load the module from the original typescript request (without !=! and the query)
   return this.loadModule(this.resourcePath, (err, source) => {
@@ -27,14 +28,19 @@ export default async function cssExtractLoader(
         new Error(`Source code for ${this.resourcePath} is empty`),
       );
     }
-    const { experiments } = this.getOptions();
+    const { experiments, turbopack } = this.getOptions();
     const debugLog = createDebugLogger(this, experiments?.debug);
 
     debugLog("ts", source);
     const css = extractCss(source);
     debugLog("css", css);
 
-    return resolveCrossFileConstant(this, this.context, css).then((result) => {
+    return resolveCrossFileConstant(
+      this,
+      this.context,
+      css,
+      turbopack ?? false,
+    ).then((result) => {
       debugLog("css resolved", css);
       return callback(null, result, sourceMap);
     }, callback);

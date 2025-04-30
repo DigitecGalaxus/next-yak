@@ -1,8 +1,8 @@
 import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const GridLayout = /*YAK EXPORTED STYLED:GridLayout:input_GridLayout_m7uBBu*//*YAK Extracted CSS:
-.input_GridLayout_m7uBBu {
+:global(.input_GridLayout_m7uBBu) {
   display: grid;
   grid-template-areas: "header header header"
 "nav content sidebar"

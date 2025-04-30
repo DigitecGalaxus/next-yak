@@ -1,3 +1,5 @@
+use base64::prelude::BASE64_STANDARD;
+use base64::Engine;
 use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
@@ -64,6 +66,10 @@ pub struct Config {
   /// Disabled by default.
   #[serde(default)]
   pub display_names: bool,
+  /// Enable turbopack support.
+  /// Disabled by default.
+  #[serde(default)]
+  pub turbopack: bool,
 }
 
 impl Config {
@@ -79,6 +85,7 @@ impl Default for Config {
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
+      turbopack: Default::default(),
     }
   }
 }
@@ -124,8 +131,12 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
-
+  /// Compile to CSS Module or to native CSS
   compile_to_css_module: bool,
+  /// Instead of creating a inline match resource, create a data URL
+  create_data_url: bool,
+  /// Gathers all rules to be put into a data URL
+  all_css_rules: Vec<String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -138,6 +149,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
+    turbopack: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -153,7 +165,9 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
-      compile_to_css_module: false,
+      compile_to_css_module: !turbopack,
+      create_data_url: turbopack,
+      all_css_rules: Vec::new(),
     }
   }
 
@@ -572,28 +586,55 @@ where
         last_import_index += 1;
       }
 
-      module.body.insert(
-        last_import_index,
-        ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
-          phase: Default::default(),
-          span: DUMMY_SP,
-          specifiers: vec![],
-          src: Box::new(Str {
+      if self.create_data_url {
+        module.body.insert(
+          last_import_index,
+          ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
+            phase: Default::default(),
             span: DUMMY_SP,
-            value: if self.compile_to_css_module {
-              format!(
-                "./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css"
-              )
-            } else {
-              format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
-            }
-            .into(),
-            raw: None,
-          }),
-          type_only: false,
-          with: None,
-        })),
-      );
+            specifiers: vec![],
+            src: Box::new(Str {
+              span: DUMMY_SP,
+              value: if self.compile_to_css_module {
+                format!(
+                  "data:text/css+module;base64,{}",
+                  BASE64_STANDARD.encode(self.all_css_rules.join(""))
+                )
+              } else {
+                format!(
+                  "data:text/css;base64,{}",
+                  BASE64_STANDARD.encode(self.all_css_rules.join(""))
+                )
+              }
+              .into(),
+              raw: None,
+            }),
+            type_only: false,
+            with: None,
+          })),
+        );
+      } else {
+        module.body.insert(
+          last_import_index,
+          ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
+            phase: Default::default(),
+            span: DUMMY_SP,
+            specifiers: vec![],
+            src: Box::new(Str {
+              span: DUMMY_SP,
+              value: if self.compile_to_css_module {
+                format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
+              } else {
+                format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+              }
+              .into(),
+              raw: None,
+            }),
+            type_only: false,
+            with: None,
+          })),
+        );
+      }
     }
   }
 
@@ -845,7 +886,8 @@ where
     //
     // Depending on the library function used (styled, keyframes, css, ...)
     // a surrounding scope is added
-    let css_state = Some(transform.create_css_state(self.current_css_state.clone(), self.compile_to_css_module));
+    let css_state =
+      Some(transform.create_css_state(self.current_css_state.clone(), self.compile_to_css_module));
 
     if let Some(css_reference_name) = transform.get_css_reference_name(self.compile_to_css_module) {
       self
@@ -871,14 +913,18 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
-        self.comments.add_leading(
-          result_span.lo,
-          Comment {
-            kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
-          },
-        );
+        if self.create_data_url {
+          self.all_css_rules.push(css_code.trim().into());
+        } else {
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            },
+          );
+        }
       }
     }
     self.comments.add_leading(result_span.lo, pure_annotation());
@@ -1009,13 +1055,15 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
 
   // Get a relative posix path to generate always the same hash
   // on different machines or operating systems
-  let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
+  // let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
   program.apply(visit_mut_pass(&mut TransformVisitor::new(
     metadata.comments,
-    deterministic_path,
+    // deterministic_path,
+    filename,
     config.minify,
     config.prefix,
     config.display_names,
+    config.turbopack,
   )))
 }
 
@@ -1056,10 +1104,38 @@ mod tests {
           false,
           None,
           true,
+          false,
         ))
       },
       &input,
       &input.with_file_name("output.dev.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_dev_turbo(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          false,
+          None,
+          true,
+          true,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.turbo.dev.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,
@@ -1081,6 +1157,7 @@ mod tests {
           "path/input.tsx",
           true,
           None,
+          false,
           false,
         ))
       },

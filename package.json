@@ -24,14 +24,16 @@
     "pnpm": ">=9.7.0"
   },
   "pnpm": {
-    "overrides": {
-      "yak-swc": "workspace:*"
-    }
+    "overrides": {}
   },
   "author": "Jan Nicklas",
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "catalog:dev",
     "prettier": "catalog:dev"
+  },
+  "dependencies": {
+    "next-yak": "link:",
+    "yak-swc": "link:"
   }
 }

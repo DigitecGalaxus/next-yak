@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "pnpm run build:yak && pnpm run build:next",
     "build:next": "next build",
     "build:yak": "pnpm run --filter next-yak build",
@@ -20,7 +20,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "next": "catalog:dev",
+    "next": "15.4.0-canary.11",
     "next-yak": "workspace:*",
     "postcss-nested": "catalog:dev",
     "react": "catalog:dev",

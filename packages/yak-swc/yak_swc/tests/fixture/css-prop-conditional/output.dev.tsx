@@ -1,9 +1,9 @@
 import { css, __yak_mergeCssProp } from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
     return <div {.../*YAK Extracted CSS:
-.input_Elem__show_m7uBBu {
+:global(.input_Elem__show_m7uBBu) {
   color: red;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem__show_m7uBBu"), "input_Elem_m7uBBu")({})}/>;
@@ -13,7 +13,7 @@ const Elem2 = ()=>{
     return <div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
-.input_Elem2__show_m7uBBu {
+:global(.input_Elem2__show_m7uBBu) {
   color: red;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem2__show_m7uBBu"), "input_Elem2_m7uBBu")({}))}/>;
@@ -25,7 +25,7 @@ const Elem3 = ()=>{
             padding: "5px"
         }
     }, /*YAK Extracted CSS:
-.input_Elem3__show_m7uBBu {
+:global(.input_Elem3__show_m7uBBu) {
   padding: 10px;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem3__show_m7uBBu"), "input_Elem3_m7uBBu")({}))}/>;
@@ -35,7 +35,7 @@ const Elem4 = (props: any)=>{
     return <div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
-.input_Elem4__show_m7uBBu {
+:global(.input_Elem4__show_m7uBBu) {
   color: green;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem4__show_m7uBBu"), "input_Elem4_m7uBBu")({}))}/>;
@@ -45,7 +45,7 @@ const Elem5 = (props: any)=>{
         ...props.a,
         ...props.b
     }, /*YAK Extracted CSS:
-.input_Elem5__props_show_m7uBBu {
+:global(.input_Elem5__props_show_m7uBBu) {
   color: purple;
 }
 */ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("input_Elem5__props_show_m7uBBu"), "input_Elem5_m7uBBu")({}))}/>;
@@ -57,7 +57,7 @@ const Elem6 = (props: any)=>{
             fontWeight: "bold"
         }
     }, /*YAK Extracted CSS:
-.input_Elem6__props_show_m7uBBu {
+:global(.input_Elem6__props_show_m7uBBu) {
   font-size: 16px;
 }
 */ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("input_Elem6__props_show_m7uBBu"), "input_Elem6_m7uBBu")({}))}/>;
@@ -70,7 +70,7 @@ const Elem7 = (props: any)=>{
 const Elem8 = ()=>{
     const show = Math.random() > 0.5;
     return <div {.../*YAK Extracted CSS:
-.input_Elem8_m7uBBu {
+:global(.input_Elem8_m7uBBu) {
   color: var(--input_Elem8__color_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -84,7 +84,7 @@ const Elem9 = ()=>{
     return <div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
-.input_Elem9_m7uBBu {
+:global(.input_Elem9_m7uBBu) {
   color: var(--input_Elem9__color_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -100,7 +100,7 @@ const Elem10 = ()=>{
             padding: "5px"
         }
     }, /*YAK Extracted CSS:
-.input_Elem10_m7uBBu {
+:global(.input_Elem10_m7uBBu) {
   padding: var(--input_Elem10__padding_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -114,7 +114,7 @@ const Elem11 = (props: any)=>{
     return <div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
-.input_Elem11_m7uBBu {
+:global(.input_Elem11_m7uBBu) {
   color: var(--input_Elem11__color_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -128,7 +128,7 @@ const Elem12 = (props: any)=>{
         ...props.a,
         ...props.b
     }, /*YAK Extracted CSS:
-.input_Elem12_m7uBBu {
+:global(.input_Elem12_m7uBBu) {
   color: var(--input_Elem12__color_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -144,7 +144,7 @@ const Elem13 = (props: any)=>{
             fontWeight: "bold"
         }
     }, /*YAK Extracted CSS:
-.input_Elem13_m7uBBu {
+:global(.input_Elem13_m7uBBu) {
   font-size: var(--input_Elem13__font-size_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -157,7 +157,7 @@ const Elem14 = (props: any)=>{
     return <div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*YAK Extracted CSS:
-.input_Elem14_m7uBBu {
+:global(.input_Elem14_m7uBBu) {
   display: var(--input_Elem14__display_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -168,7 +168,7 @@ const Elem14 = (props: any)=>{
 };
 const Elem15 = (props: any)=>{
     return <div {.../*YAK Extracted CSS:
-.input_Elem15__props_a-and-props_b_m7uBBu {
+:global(.input_Elem15__props_a-and-props_b_m7uBBu) {
   color: var(--input_Elem15__color_m7uBBu);
 }
 */ /*#__PURE__*/ css(()=>props.a && /*#__PURE__*/ css("input_Elem15__props_a_m7uBBu", ()=>props.b && /*#__PURE__*/ css("input_Elem15__props_a-and-props_b_m7uBBu", {

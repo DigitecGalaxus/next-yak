@@ -1,22 +1,22 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "./input.yak.css!=!./input?./input.yak.css";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // example taken from https://github.com/jantimon/next-yak/issues/208 
 const spacing = "20px";
 const ContainerFluid = /*YAK Extracted CSS:
-.ym7uBBu {
+:global(.ym7uBBu) {
   position: relative;
   margin: 0 auto;
   padding-top: 20px;
   max-width: 100%;
 }
-.ym7uBBu1 {
+:global(.ym7uBBu1) {
   margin-top: unset;
 }
-.ym7uBBu2 {
+:global(.ym7uBBu2) {
   margin-top: px;
 }
-.ym7uBBu {
+:global(.ym7uBBu) {
   margin-top: var(--ym7uBBu3);
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu", ({ $isApp, $pageHeaderHeight })=>$isApp ? /*#__PURE__*/ css("ym7uBBu1") : /*#__PURE__*/ css("ym7uBBu2"), {

@@ -30,6 +30,7 @@ export type YakConfigOptions = {
    * - Increases bundle size slightly when enabled
    */
   displayNames?: boolean;
+  turbopack?: boolean;
   experiments?: {
     debug?:
       | boolean
@@ -56,19 +57,31 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       basePath: currentDir,
       prefix: yakOptions.prefix,
       displayNames: yakOptions.displayNames ?? !minify,
+      turbopack: yakOptions.turbopack ?? false,
     },
   ]);
+
+  if (yakOptions.turbopack) {
+    nextConfig.turbopack ||= {};
+    nextConfig.turbopack.rules ||= {};
+    nextConfig.turbopack.rules["data:*"] = {
+      // todo: append to existing loaders
+      loaders: [path.join(currentDir, "../loaders/css-loader.js")],
+    };
+  }
 
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
     }
 
-    webpackConfig.module.rules.push({
-      test: /\.yak\.css$/,
-      loader: path.join(currentDir, "../loaders/css-loader.js"),
-      options: yakOptions,
-    });
+    if (!yakOptions.turbopack) {
+      webpackConfig.module.rules.push({
+        test: /\.yak\.module\.css$/,
+        loader: path.join(currentDir, "../loaders/css-loader.js"),
+        options: yakOptions,
+      });
+    }
 
     // With the following alias the internal next-yak code
     // is able to import a context which works for server components
