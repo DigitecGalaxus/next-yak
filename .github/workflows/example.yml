@@ -38,6 +38,9 @@ jobs:
       - name: Install node_modules
         run: pnpm install
 
+      - name: Build Linter
+        run: pnpm --filter eslint-plugin-yak build
+
       - name: Lint Example
         run: pnpm --filter next-yak-example lint
 
