@@ -39,7 +39,7 @@ jobs:
         run: pnpm install
 
       - name: Lint Example
-        run: pnpm run lint
+        run: pnpm --filter next-yak-example lint
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
