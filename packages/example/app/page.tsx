@@ -9,13 +9,19 @@ export default function Home() {
     <main>
       <Button>TEST</Button>
       <ClientExample />
+      <Test>TEST</Test>
     </main>
   );
 }
 
 const Button = styled.button`
   color: yellow;
-  ${OtherButton} {
-    color: orange;
-  }
+  // uncomment this to see if cross module import work (or don't)
+  // ${OtherButton} {
+  // color: orange;
+  // }
+`;
+
+const Test = styled.button`
+  color: blue;
 `;
