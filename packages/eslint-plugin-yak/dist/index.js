@@ -1,5 +1,74 @@
-// index.ts
-import fs from "node:fs";
+// package.json
+var package_default = {
+  name: "eslint-plugin-yak",
+  version: "0.0.1",
+  description: "Eslint plugin for next-yak",
+  homepage: "https://yak.js.org/",
+  type: "module",
+  repository: {
+    type: "git",
+    url: "https://github.com/DigitecGalaxus/next-yak"
+  },
+  bugs: {
+    url: "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  license: "MIT",
+  keywords: [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "css-in-js",
+    "styled-components",
+    "react",
+    "typescript"
+  ],
+  exports: {
+    ".": {
+      types: "./dist/index.d.ts",
+      require: "./dist/index.cjs",
+      import: "./dist/index.js"
+    }
+  },
+  main: "./dist/index.cjs",
+  module: "./dist/index.js",
+  types: "./dist/index.d.ts",
+  sideEffects: false,
+  scripts: {
+    build: "tsup --format esm,cjs --clean",
+    test: "vitest",
+    "update:docs": "pnpm build && eslint-doc-generator"
+  },
+  files: [
+    "."
+  ],
+  dependencies: {
+    "@typescript-eslint/utils": "catalog:dev"
+  },
+  devDependencies: {
+    "@types/node": "catalog:dev",
+    "@typescript-eslint/rule-tester": "catalog:dev",
+    "eslint-doc-generator": "catalog:dev",
+    tsup: "catalog:dev",
+    typescript: "catalog:dev",
+    vitest: "catalog:dev"
+  },
+  peerDependencies: {
+    "@typescript-eslint/parser": ">8.0.0",
+    eslint: ">=9.0.0",
+    typescript: ">=5.0.0"
+  },
+  publishConfig: {
+    access: "public"
+  },
+  maintainers: [
+    {
+      name: "Luca Schneider"
+    }
+  ],
+  author: {
+    name: "Jan Nicklas"
+  }
+};
 
 // rules/cssNestingOperator.ts
 import { AST_NODE_TYPES as AST_NODE_TYPES2 } from "@typescript-eslint/utils";
@@ -7,7 +76,7 @@ import { AST_NODE_TYPES as AST_NODE_TYPES2 } from "@typescript-eslint/utils";
 // utils.ts
 import { ESLintUtils } from "@typescript-eslint/utils";
 var createRule = ESLintUtils.RuleCreator(
-  (name) => `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/rules/${name}.md`
+  (name2) => `https://github.com/DigitecGalaxus/next-yak/packages/eslint-plugin/docs/rules/${name2}.md`
 );
 
 // rules/utils.ts
@@ -512,13 +581,10 @@ function isInsideAttrsMethod(node) {
 }
 
 // index.ts
-var pkg = JSON.parse(
-  fs.readFileSync(new URL("./package.json", import.meta.url), "utf8")
-);
 var plugin = {
   meta: {
-    name: pkg.name,
-    version: pkg.version
+    name: package_default.name,
+    version: package_default.version
   },
   configs: {},
   rules: {
@@ -531,17 +597,29 @@ var plugin = {
 Object.assign(plugin.configs, {
   recommended: {
     plugins: {
-      [pkg.name]: plugin
+      [package_default.name]: plugin
     },
     rules: {
-      [`${pkg.name}/css-nesting-operator`]: "error",
-      [`${pkg.name}/enforce-semicolon`]: "error",
-      [`${pkg.name}/style-conditions`]: "warn"
+      [`${package_default.name}/css-nesting-operator`]: "error",
+      [`${package_default.name}/enforce-semicolon`]: "error",
+      [`${package_default.name}/style-conditions`]: "warn"
     }
   }
 });
+var rules = plugin.rules;
+var configs = plugin.configs;
+var processors = plugin.processors;
+var meta = plugin.meta;
+var name = plugin.meta.name;
+var version = plugin.meta.version;
 var index_default = plugin;
 export {
-  index_default as default
+  configs,
+  index_default as default,
+  meta,
+  name,
+  processors,
+  rules,
+  version
 };
 //# sourceMappingURL=index.js.map

@@ -1,11 +1,7 @@
-import fs from "node:fs";
+import pkg from "./package.json" with { type: "json" };
 import { cssNestingOperator } from "./rules/cssNestingOperator.js";
 import { enforceSemicolons } from "./rules/enforceSemicolon.js";
 import { styleConditions } from "./rules/styleConditions.js";
-
-const pkg = JSON.parse(
-  fs.readFileSync(new URL("./package.json", import.meta.url), "utf8"),
-);
 
 const plugin = {
   meta: {
@@ -34,4 +30,10 @@ Object.assign(plugin.configs, {
   },
 });
 
+export const rules = plugin.rules;
+export const configs = plugin.configs;
+export const processors = plugin.processors;
+export const meta = plugin.meta;
+export const name = plugin.meta.name;
+export const version = plugin.meta.version;
 export default plugin;
