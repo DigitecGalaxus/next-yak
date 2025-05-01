@@ -18,10 +18,11 @@ Import the plugin and add the recommended configuration
 
 ```js
 import yakPlugin from "eslint-plugin-yak";
+import { defineConfig } from "eslint/config";
 
-export default config = {
+export default defineConfig([
   yakPlugin.configs.recommended,
-}
+]);
 ```
 
 ### Customize
@@ -29,15 +30,19 @@ export default config = {
 If you need to customize the recommended settings, you can just override the rules setting:
 
 ```js
-export default config = {
-  {
-    ...yakPlugin.configs.recommended,
-    rules: {
-      ...yakPlugin.configs.recommended.rules,
-      "eslint-plugin-yak/style-conditions": "off", // or any other rule
-    },
+import yakPlugin from "eslint-plugin-yak";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig({
+  plugins: {
+    yak: yakPlugin,
   },
-}
+  rules: {
+    "eslint-plugin-yak/css-nesting-operator": "error",
+    "eslint-plugin-yak/enforce-semicolon": "warn",
+    "eslint-plugin-yak/style-conditions": "off",
+  },
+});
 ```
 
 ## Rules
