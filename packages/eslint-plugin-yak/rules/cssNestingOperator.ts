@@ -15,7 +15,7 @@ export const cssNestingOperator = createRule({
       missingNestingOperator:
         "Nesting selector missing.\nDid you forget the &?",
     },
-    // fixable: "code",
+    fixable: "code",
     hasSuggestions: true,
     schema: [],
   },

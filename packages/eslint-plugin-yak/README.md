@@ -55,7 +55,7 @@ export default defineConfig({
 
 | Name                                                                                                                                       | Description                                                                                                   | 🔧 | 💡 | 💭 |
 | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :- | :- | :- |
-| [css-nesting-operator](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/css-nesting-operator.md) | Enforces css selectors in next-yak to correctly use the nesting selector (&)                                  |    | 💡 |    |
+| [css-nesting-operator](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/css-nesting-operator.md) | Enforces css selectors in next-yak to correctly use the nesting selector (&)                                  | 🔧 | 💡 |    |
 | [enforce-semicolon](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/enforce-semicolon.md)       | Enforces that expression in styled/css literals from next-yak use semicolons                                  | 🔧 |    |    |
 | [style-conditions](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/style-conditions.md)         | Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak |    |    | 💭 |
 
