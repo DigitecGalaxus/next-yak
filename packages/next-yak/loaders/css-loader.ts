@@ -16,35 +16,54 @@ export default async function cssExtractLoader(
   _code: string,
   sourceMap: string | undefined,
 ): Promise<string | void> {
-  console.log({ this: this });
   const callback = this.async();
-  // Load the module from the original typescript request (without !=! and the query)
-  return this.loadModule(this.resourcePath, (err, source) => {
-    if (err) {
-      return callback(err);
-    }
-    if (!source) {
-      return callback(
-        new Error(`Source code for ${this.resourcePath} is empty`),
-      );
-    }
-    const { experiments, turbopack } = this.getOptions();
-    const debugLog = createDebugLogger(this, experiments?.debug);
 
-    debugLog("ts", source);
-    const css = extractCss(source);
-    debugLog("css", css);
+  const { experiments, turbopack } = this.getOptions();
 
-    return resolveCrossFileConstant(
-      this,
-      this.context,
-      css,
-      turbopack ?? false,
-    ).then((result) => {
-      debugLog("css resolved", css);
-      return callback(null, result, sourceMap);
-    }, callback);
-  });
+  console.log({ experiments, turbopack });
+
+  if (turbopack) {
+    // return resolveCrossFileConstant(
+    //         this,
+    //         this.context,
+    //         css,
+    //         turbopack ?? false,
+    //       ).then((result) => {
+    //         debugLog("css resolved", css);
+    //         return callback(null, result, sourceMap);
+    //       }, callback);
+
+    console.log(_code);
+
+    return callback(null, _code, sourceMap);
+  } else {
+    // Load the module from the original typescript request (without !=! and the query)
+    return this.loadModule(this.resourcePath, (err, source) => {
+      if (err) {
+        return callback(err);
+      }
+      if (!source) {
+        return callback(
+          new Error(`Source code for ${this.resourcePath} is empty`),
+        );
+      }
+      const debugLog = createDebugLogger(this, experiments?.debug);
+
+      debugLog("ts", source);
+      const css = extractCss(source);
+      debugLog("css", css);
+
+      return resolveCrossFileConstant(
+        this,
+        this.context,
+        css,
+        turbopack ?? false,
+      ).then((result) => {
+        debugLog("css resolved", css);
+        return callback(null, result, sourceMap);
+      }, callback);
+    });
+  }
 }
 
 function extractCss(code: string | Buffer<ArrayBufferLike>): string {

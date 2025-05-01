@@ -1055,11 +1055,10 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
 
   // Get a relative posix path to generate always the same hash
   // on different machines or operating systems
-  // let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
+  let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
   program.apply(visit_mut_pass(&mut TransformVisitor::new(
     metadata.comments,
-    // deterministic_path,
-    filename,
+    deterministic_path,
     config.minify,
     config.prefix,
     config.display_names,

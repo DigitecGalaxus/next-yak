@@ -20,7 +20,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "next": "15.4.0-canary.11",
+    "next": "15.4.0-canary.17",
     "next-yak": "workspace:*",
     "postcss-nested": "catalog:dev",
     "react": "catalog:dev",

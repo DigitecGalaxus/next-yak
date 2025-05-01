@@ -66,7 +66,14 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     nextConfig.turbopack.rules ||= {};
     nextConfig.turbopack.rules["data:*"] = {
       // todo: append to existing loaders
-      loaders: [path.join(currentDir, "../loaders/css-loader.js")],
+      loaders: [
+        {
+          loader: path.join(currentDir, "../loaders/css-loader.js"),
+          options: {
+            turbopack: yakOptions.turbopack,
+          },
+        },
+      ],
     };
   }
 
