@@ -33,7 +33,9 @@ pub fn relative_posix_path(base_path: &str, filename: &str) -> String {
 /// - "/foo/bar" -> true
 /// - "C:\foo\bar" -> true
 fn is_absolute_path(path: &str) -> bool {
-  path.starts_with('/') || path.starts_with('\\') || (path.len() > 2 && (&path[1..3] == ":\\" || &path[1..3] == ":/"))
+  path.starts_with('/')
+    || path.starts_with('\\')
+    || (path.len() > 2 && (&path[1..3] == ":\\" || &path[1..3] == ":/"))
 }
 
 /// Returns the path converted to a POSIX path (naive approach).
