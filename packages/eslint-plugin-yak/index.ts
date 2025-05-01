@@ -30,10 +30,4 @@ Object.assign(plugin.configs, {
   },
 });
 
-export const rules = plugin.rules;
-export const configs = plugin.configs;
-export const processors = plugin.processors;
-export const meta = plugin.meta;
-export const name = plugin.meta.name;
-export const version = plugin.meta.version;
 export default plugin;
