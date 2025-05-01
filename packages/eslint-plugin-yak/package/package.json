@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-yak",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Eslint plugin for next-yak",
   "homepage": "https://yak.js.org/",
   "type": "module",
@@ -33,8 +33,7 @@
   "scripts": {
     "build": "tsup --clean",
     "test": "vitest",
-    "update:docs": "pnpm build && eslint-doc-generator",
-    "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build && pnpm update:docs && pnpm test -- --watch=false"
+    "update:docs": "pnpm build && eslint-doc-generator"
   },
   "files": [
     "dist",

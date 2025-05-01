@@ -1,7 +1,7 @@
 // package.json
 var package_default = {
   name: "eslint-plugin-yak",
-  version: "0.0.1",
+  version: "0.0.2",
   description: "Eslint plugin for next-yak",
   homepage: "https://yak.js.org/",
   type: "module",
@@ -34,10 +34,12 @@ var package_default = {
   scripts: {
     build: "tsup --clean",
     test: "vitest",
-    "update:docs": "pnpm build && eslint-doc-generator"
+    "update:docs": "pnpm build && eslint-doc-generator",
+    prepublishOnly: "pnpm build && pnpm update:docs && pnpm test -- --watch=false"
   },
   files: [
-    "dist"
+    "dist",
+    "docs"
   ],
   dependencies: {
     "@typescript-eslint/utils": "catalog:dev"
