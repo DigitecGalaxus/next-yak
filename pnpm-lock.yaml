@@ -387,7 +387,7 @@ importers:
         specifier: catalog:dev
         version: 5.8.3
 
-  packages/eslint-plugin:
+  packages/eslint-plugin-yak:
     dependencies:
       '@typescript-eslint/parser':
         specifier: '>8.0.0'
@@ -477,7 +477,7 @@ importers:
         version: 15.3.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
       eslint-plugin-yak:
         specifier: workspace:^
-        version: link:../eslint-plugin
+        version: link:../eslint-plugin-yak
       jest:
         specifier: catalog:dev
         version: 29.7.0(@types/node@22.15.2)
@@ -9002,7 +9002,7 @@ snapshots:
 
   eslint-doc-generator@2.1.2(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/utils': 8.23.0(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
       ajv: 8.17.1
       change-case: 5.4.4
       commander: 13.1.0

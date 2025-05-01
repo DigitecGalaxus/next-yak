@@ -22,24 +22,22 @@ var package_default = {
     "react",
     "typescript"
   ],
+  main: "./dist/index.js",
+  types: "./dist/index.d.ts",
   exports: {
     ".": {
       types: "./dist/index.d.ts",
-      require: "./dist/index.cjs",
       import: "./dist/index.js"
     }
   },
-  main: "./dist/index.cjs",
-  module: "./dist/index.js",
-  types: "./dist/index.d.ts",
   sideEffects: false,
   scripts: {
-    build: "tsup --format esm,cjs --clean",
+    build: "tsup --clean",
     test: "vitest",
     "update:docs": "pnpm build && eslint-doc-generator"
   },
   files: [
-    "."
+    "dist"
   ],
   dependencies: {
     "@typescript-eslint/utils": "catalog:dev"
