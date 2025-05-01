@@ -21,7 +21,6 @@
     "@swc/core": "catalog:dev",
     "fumadocs-core": "catalog:dev",
     "fumadocs-mdx": "catalog:dev",
-    "fumadocs-openapi": "catalog:dev",
     "fumadocs-twoslash": "catalog:dev",
     "fumadocs-ui": "catalog:dev",
     "next": "catalog:dev",
@@ -36,6 +35,7 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "catalog:dev",
     "@types/mdx": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",

@@ -7,6 +7,7 @@ import {
 } from "fumadocs-ui/page";
 import { notFound } from "next/navigation";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { createRelativeLink } from "fumadocs-ui/mdx";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
 
@@ -17,14 +18,14 @@ export default async function Page(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const MDX = page.data.body;
+  const MDXContent = page.data.body;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX
+        <MDXContent
           components={{
             ...defaultMdxComponents,
             Popup,
@@ -34,6 +35,8 @@ export default async function Page(props: {
             PopupTrigger,
             Tabs,
             Tab,
+            // @ts-expect-error - As long as fumadocs didn't update to react 19, this is necessary
+            a: createRelativeLink(source, page),
           }}
         />
       </DocsBody>
