@@ -35,7 +35,7 @@ var package_default = {
     build: "tsup --clean",
     test: "vitest",
     "update:docs": "pnpm build && eslint-doc-generator",
-    prepublishOnly: "pnpm build && pnpm update:docs && pnpm test -- --watch=false"
+    prepublishOnly: "node ../../scripts/check-pnpm.js && pnpm build && pnpm update:docs && pnpm test -- --watch=false"
   },
   files: [
     "dist",

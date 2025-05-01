@@ -55,8 +55,8 @@ export default defineConfig({
 
 | Name                                                       | Description                                                                                                   | 🔧 | 💡 | 💭 |
 | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :- | :- | :- |
-| [css-nesting-operator](docs/rules/css-nesting-operator.md) | Enforces css selectors in next-yak to correctly use the nesting selector (&)                                  |    | 💡 |    |
-| [enforce-semicolon](docs/rules/enforce-semicolon.md)       | Enforces that expression in styled/css literals from next-yak use semicolons                                  | 🔧 |    |    |
-| [style-conditions](docs/rules/style-conditions.md)         | Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak |    |    | 💭 |
+| [css-nesting-operator](./docs/rules/css-nesting-operator.md) | Enforces css selectors in next-yak to correctly use the nesting selector (&)                                  |    | 💡 |    |
+| [enforce-semicolon](./docs/rules/enforce-semicolon.md)       | Enforces that expression in styled/css literals from next-yak use semicolons                                  | 🔧 |    |    |
+| [style-conditions](./docs/rules/style-conditions.md)         | Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak |    |    | 💭 |
 
 <!-- end auto-generated rules list -->
