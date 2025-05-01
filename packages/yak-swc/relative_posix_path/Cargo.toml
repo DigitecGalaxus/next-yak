@@ -11,6 +11,6 @@ keywords = ["path", "posix", "relative", "cross-platform", "filesystem"]
 categories = ["filesystem", "os::unix-apis", "os::windows-apis"]
 
 [dependencies]
-lazy_static = "1.4.0"
-pathdiff = "0.2.3"
-regex = "1.10.3"
+lazy_static.workspace = true
+pathdiff.workspace = true
+regex.workspace = true

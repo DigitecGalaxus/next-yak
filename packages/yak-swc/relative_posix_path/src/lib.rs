@@ -9,8 +9,12 @@ extern crate lazy_static;
 /// - "/foo/", "/bar/baz.txt" -> "../bar/baz.txt"
 /// - "C:\foo\", "C:\foo\baz.txt" -> "../bar/baz.txt"
 ///
-/// The format of `base_path` and `filename` must match the current OS.
+/// Works with both absolute and relative paths
 pub fn relative_posix_path(base_path: &str, filename: &str) -> String {
+  if !is_absolute_path(filename) {
+    return convert_path_to_posix(filename);
+  }
+
   let normalized_base_path = convert_path_to_posix(base_path);
   let normalized_filename = convert_path_to_posix(filename);
   let relative_filename =
@@ -21,6 +25,17 @@ pub fn relative_posix_path(base_path: &str, filename: &str) -> String {
     .collect::<Vec<&str>>();
 
   path_parts.join("/")
+}
+
+/// Checks if the given path is an absolute path
+///
+/// For example:
+/// - "/foo/bar" -> true
+/// - "C:\foo\bar" -> true
+fn is_absolute_path(path: &str) -> bool {
+  path.starts_with('/')
+    || path.starts_with('\\')
+    || (path.len() > 2 && (&path[1..3] == ":\\" || &path[1..3] == ":/"))
 }
 
 /// Returns the path converted to a POSIX path (naive approach).
@@ -65,6 +80,19 @@ mod tests {
   }
 
   #[test]
+  fn test_relative_path_posix_relative_path() {
+    assert_eq!(relative_posix_path(r"/foo", "bar/file.tsx"), "bar/file.tsx");
+  }
+
+  #[test]
+  fn test_relative_path_windows_relative_path() {
+    assert_eq!(
+      relative_posix_path(r"E:\foo", "bar\\file.tsx"),
+      "bar/file.tsx"
+    );
+  }
+
+  #[test]
   fn test_convert_unix_path() {
     assert_eq!(convert_path_to_posix(r"/foo/bar"), "/foo/bar");
   }
@@ -72,5 +100,14 @@ mod tests {
   #[test]
   fn test_convert_windows_path() {
     assert_eq!(convert_path_to_posix(r"C:\foo\bar"), "C/foo/bar");
+  }
+
+  #[test]
+  fn test_is_absolute_path() {
+    assert!(is_absolute_path("/foo/bar"));
+    assert!(is_absolute_path("C:\\foo\\bar"));
+    assert!(!is_absolute_path("foo/bar"));
+    assert!(!is_absolute_path("C:foo\\bar"));
+    assert!(!is_absolute_path("f"));
   }
 }
