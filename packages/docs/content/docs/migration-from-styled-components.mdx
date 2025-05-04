@@ -9,6 +9,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 One of the core goals of `next-yak` is to provide a seamless migration path from `styled-components` to `next-yak`.
 This comprehensive guide will walk you through the migrating, covering common scenarios and edge cases you might encounter.
 
+## Eslint plugin
+
+In order to make the migration easier, we provide an eslint plugin which will help you to identify potential issues during the migration and afterwards.
+
+Just have a look at the [eslint plugin documentation](./eslint-plugin) and install it in your project.
+
 ## Feature comparison
 
 Supported
@@ -178,9 +184,9 @@ const LocalButton = styled(Button).attrs<Partial<ButtonProps>>(() => ({
 ```
 
 ## Property 'as' does not exist
- 
+
 `next-yak` does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
- 
+
 ```tsx
 type ElementType =
   | "h1"
@@ -189,7 +195,7 @@ type ElementType =
   | "h4"
   | "h5"
   | "h6"
- 
+
 const HtmlTag = <T extends ElementType>({
   tag: Tag,
   ...props
@@ -202,12 +208,12 @@ const HtmlTag = <T extends ElementType>({
 You can then pass one of predefined tags of `ElementType` as a prop and style it like any other component:
 ```tsx
 <Title tag="h1">Heading 1</Title>
- 
+
 const Title = styled(HtmlTag)`
   font-weight: bold;
 `;
 ```
- 
+
 This approach is preferred over the `as` prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
 
 ## Change some more things
@@ -331,7 +337,8 @@ const MyComp = styled.div<{ $primary: boolean }>`
 import { css } from 'styled-components'; // [!code --]
 
 export const mixin = css<{ $primary: boolean }>` // [!code --]
-  color: green; // [!code --]
+// [!code --]
+  color: green;
 // [!code --]
   ${props => props.$primary // [!code --]
     ? `background: white;` // [!code --]
@@ -351,8 +358,10 @@ import { styled } from 'next-yak'; // [!code ++]
 const Button = styled.button`
   color: blue;
 
-  .myGlobalClass { // [!code --]
-  :global(.myGlobalClass) { // [!code ++]
+// [!code --]
+  .myGlobalClass {
+// [!code ++]
+  :global(.myGlobalClass) {
     color: red;
   }
 `;

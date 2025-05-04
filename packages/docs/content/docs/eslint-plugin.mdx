@@ -1,0 +1,130 @@
+---
+title: Eslint plugin
+description: The eslint-plugin-yak provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
+---
+
+## Installation
+
+Install eslint-plugin-yak in your project:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm install -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm i -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn i -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun i -D eslint-plugin-yak
+```
+</Tab>
+</Tabs>
+
+Add it to your eslint config:
+
+```js title="eslint.config.mjs"
+import yakPlugin from "eslint-plugin-yak";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([
+  yakPlugin.configs.recommended,
+]);
+```
+
+Now, you can run eslint to check your code.
+
+```ts
+const myDiv = styled.div`
+    > div {}
+`;
+// ^ eslint: Nesting selector missing. Did you forget the &?
+```
+
+## Rules
+
+### css-nesting-operator
+
+Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector). Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+
+Example:
+
+```tsx title="example.tsx"
+const myDiv = styled.div`
+ //[!code --]
+ > div {}
+ //[!code ++]
+ & > div {}
+`;
+```
+
+### enforce-semicolon
+
+Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier.
+
+Example:
+
+```tsx title="example.tsx"
+styled.div`
+//[!code --]
+  ${skeletonStyle}
+//[!code ++]
+  ${skeletonStyle};
+`;
+```
+
+### style-conditions
+
+Warns if runtime performance could be improved by using css literals.
+
+Example:
+
+```tsx title="example.tsx"
+styled.button`
+//[!code --]
+  color: ${() => color};
+//[!code ++]
+  color: ${({$color}) => $color};
+// or if the value is defined outside the component: // [!code ++]
+//[!code ++]
+  color: ${color};
+`;
+```
+
+
+```tsx title="example.tsx"
+styled.button`
+  color: ${() => {
+    if (variant === 'primary') {
+      return primary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$primary}) => $primary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${primary}; // [!code ++]
+      `; // [!code ++]
+    } else {
+      return secondary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$secondary}) => $secondary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${secondary}; // [!code ++]
+      `; // [!code ++]
+    }
+  }};
+`;
+
+
+```
