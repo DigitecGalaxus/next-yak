@@ -2,6 +2,8 @@
 title: Eslint plugin
 description: The eslint-plugin-yak provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
 ---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Installation
 
@@ -54,7 +56,7 @@ const myDiv = styled.div`
 
 ### css-nesting-operator
 
-Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector). Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
 
 Example:
 
@@ -66,6 +68,12 @@ const myDiv = styled.div`
  & > div {}
 `;
 ```
+
+#### Reason why
+
+Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+
+We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
 
 ### enforce-semicolon
 
@@ -80,6 +88,36 @@ styled.div`
 //[!code ++]
   ${skeletonStyle};
 `;
+```
+
+#### Reason why
+
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, `next-yak` has to understand the code statically. A variable might have different meanings:
+
+- **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
+- **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules
+- **Constants** (like `margin-top: ${marginTop}`)
+- **Runtime Variables** (like `x: ${({$x}) => $x}`)
+
+Constants and runtime values are easy to detect as they are always after a colon (:).
+However to distinguish between selectors and mixins we need the semicolon (;):
+
+```tsx
+// This works correctly - mixin properly terminated with semicolon
+styled.div`
+  ${skeleton};
+  div {
+    color: blue;
+  }
+`
+
+// This causes ambiguity - is it a mixin or part of the selector?
+styled.div`
+  ${skeleton}
+  div {
+    color: blue;
+  }
+`
 ```
 
 ### style-conditions
@@ -99,7 +137,6 @@ styled.button`
   color: ${color};
 `;
 ```
-
 
 ```tsx title="example.tsx"
 styled.button`
@@ -125,6 +162,59 @@ styled.button`
     }
   }};
 `;
-
-
 ```
+
+#### Reason why
+
+next-yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
+
+<Steps>
+<Step>
+Class-based Dynamic Styles:
+
+The first approach compiles dynamic styles into separate CSS classes that are toggled at runtime:
+
+```tsx
+styled.button<{$primary?: boolean}>`
+  color: blue;
+  ${({$primary}) => $primary && css`
+    color: red;
+  `}
+`;
+```
+
+In this example:
+- The base style color: blue is extracted into a CSS class that's always applied
+- The conditional style color: red is extracted into a separate CSS class that's only toggled based on the $primary prop
+- This approach is highly efficient since all styles are pre-compiled and only class names are manipulated at runtime
+</Step>
+
+<Step>
+CSS Variables for Truly Dynamic Values
+
+The second approach uses CSS custom properties (variables) for values that cannot be determined at build time:
+
+```tsx
+styled.div<{$x: number}>`
+  left: ${({$x}) => `${$x}px`}
+`;
+```
+
+In this example:
+
+- The value for $x is extracted into a CSS variable (e.g., --x)
+- At runtime, this variable is set via inline styles: `<div style="--x: 43px">...</div>`
+- This allows for fully dynamic values but adds a small runtime overhead
+</Step>
+</Steps>
+
+#### Best Practices
+
+- Use the class-based approach (first example) for binary conditions and fixed value variations
+- Use CSS variables (second example) only when values are truly dynamic, such as:
+  - User inputs
+  - Calculated positions
+  - Animation states
+  - Values from external APIs
+
+The yak/style-conditions rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.

@@ -4,7 +4,37 @@
 
 <!-- end auto-generated rule header -->
 
-Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier.
+Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier during build.
+
+## Reason why
+
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, `next-yak` has to understand the code statically. A variable might have different meanings:
+
+- **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
+- **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules
+- **Constants** (like `margin-top: ${marginTop}`)
+- **Runtime Variables** (like `x: ${({$x}) => $x}`)
+
+Constants and runtime values are easy to detect as they are always after a colon (:).
+However to distinguish between selectors and mixins we need the semicolon (;):
+
+```tsx
+// This works correctly - mixin properly terminated with semicolon
+styled.div`
+  ${skeleton};
+  div {
+    color: blue;
+  }
+`
+
+// This causes ambiguity - is it a mixin or part of the selector?
+styled.div`
+  ${skeleton}
+  div {
+    color: blue;
+  }
+`
+```
 
 ## Rule details
 

@@ -4,7 +4,13 @@
 
 <!-- end auto-generated rule header -->
 
-Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector). Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
+
+## Reason why
+
+Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+
+We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
 
 ## Rule details
 
