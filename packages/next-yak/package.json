@@ -1,6 +1,6 @@
 {
   "name": "next-yak",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "type": "module",
   "types": "./dist/",
   "sideEffects": false,
@@ -76,7 +76,7 @@
   "dependencies": {
     "@babel/core": "catalog:core",
     "@babel/plugin-syntax-typescript": "catalog:core",
-    "yak-swc": "5.4.0"
+    "yak-swc": "5.5.0"
   },
   "devDependencies": {
     "@babel/types": "catalog:dev",

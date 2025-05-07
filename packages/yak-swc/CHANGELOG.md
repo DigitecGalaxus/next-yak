@@ -1,5 +1,15 @@
 # yak-swc
 
+## 5.5.0
+
+### Minor Changes
+
+- 6ed6e55: Updated all dependencies
+
+### Patch Changes
+
+- 720e426: Add support for turbopacks relative filepaths
+
 ## 5.4.0
 
 ### Minor Changes

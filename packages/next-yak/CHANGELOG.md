@@ -1,5 +1,18 @@
 # next-yak
 
+## 5.5.0
+
+### Minor Changes
+
+- 6ed6e55: Updated all dependencies
+
+### Patch Changes
+
+- 720e426: Add support for turbopacks relative filepaths
+- Updated dependencies [720e426]
+- Updated dependencies [6ed6e55]
+  - yak-swc@5.5.0
+
 ## 5.4.0
 
 ### Minor Changes
