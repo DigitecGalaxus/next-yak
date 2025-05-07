@@ -4,6 +4,7 @@ import { breakpoints, colors, theme } from "@/lib/utils/constants";
 import NextLink from "next/link";
 import NextImage from "next/image";
 import yakJumping from "@/public/img/yak-jumping.png";
+import { ErrorBoundary } from "./errorBoundary";
 
 export const LandingPage = () => {
   return (
@@ -123,7 +124,9 @@ export const LandingPage = () => {
           JavaScript.
         </li>
       </List>
-      <AnimatedCode />
+      <ErrorBoundary fallback={null}>
+        <AnimatedCode />
+      </ErrorBoundary>
     </Article>
   );
 };
