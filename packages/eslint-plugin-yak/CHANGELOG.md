@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.0.1
+
+### Patch Changes
+
+- 0d8099d: add typings for recommended eslint configs
+
 ## 1.0.0
 
 ### Major Changes

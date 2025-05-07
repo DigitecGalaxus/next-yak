@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-yak",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Eslint plugin for next-yak",
   "homepage": "https://yak.js.org/",
   "type": "module",
