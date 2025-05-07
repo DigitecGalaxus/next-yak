@@ -8,7 +8,6 @@ const plugin = {
     name: pkg.name,
     version: pkg.version,
   },
-  configs: {},
   rules: {
     "css-nesting-operator": cssNestingOperator,
     "enforce-semicolon": enforceSemicolons,
@@ -17,7 +16,7 @@ const plugin = {
   processors: {},
 };
 
-Object.assign(plugin.configs, {
+const configs = {
   recommended: {
     plugins: {
       [pkg.name]: plugin,
@@ -28,6 +27,8 @@ Object.assign(plugin.configs, {
       [`${pkg.name}/style-conditions`]: "warn",
     },
   },
-});
+};
 
-export default plugin;
+export default Object.assign(plugin, {
+  configs,
+});
