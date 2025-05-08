@@ -20,8 +20,6 @@ export default async function cssExtractLoader(
 
   const { experiments, turbopack } = this.getOptions();
 
-  console.log({ experiments, turbopack });
-
   if (turbopack) {
     // return resolveCrossFileConstant(
     //         this,
@@ -32,9 +30,6 @@ export default async function cssExtractLoader(
     //         debugLog("css resolved", css);
     //         return callback(null, result, sourceMap);
     //       }, callback);
-
-    console.log(_code);
-
     return callback(null, _code, sourceMap);
   } else {
     // Load the module from the original typescript request (without !=! and the query)
