@@ -981,7 +981,7 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
   use swc_core::common::plugin::metadata::TransformPluginMetadataContextKind;
-  use swc_core::ecma::visit_mut_pass;
+  use swc_core::ecma::visit::visit_mut_pass;
   use yak_file_visitor::YakFileVisitor;
 
   let config: Config = serde_json::from_str(
@@ -1036,6 +1036,7 @@ mod tests {
   };
   use swc_ecma_parser::{Syntax, TsSyntax};
   use swc_ecma_transforms_testing::FixtureTestConfig;
+  use yak_file_visitor::YakFileVisitor;
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {
