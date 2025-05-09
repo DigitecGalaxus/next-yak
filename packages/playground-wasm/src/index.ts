@@ -1,11 +1,38 @@
-import init, { start, transform } from "../wasm/index";
+import init, {Options, start, transform} from "../wasm/index";
 
 document.getElementsByTagName("button")[0].onclick = () => {
   const input = (document.getElementById("input") as HTMLTextAreaElement).value;
 
   console.log(`start transformation ${input}`);
 
-  showTransformOutput(transform(input));
+  let opts : Options = {
+    filename: "theFile.tsx",
+    "jsc": {
+      "target": "es2020",
+      "loose": false,
+      "externalHelpers": false,
+      "keepClassNames": true,
+      "parser": {
+        "syntax": "typescript",
+        "tsx": true,
+        "decorators": true,
+      },
+      transform: {
+        react: {
+          "runtime": "automatic",
+          // wtf is this?
+          "importSource": "@emotion/react"
+        }
+      },
+    },
+      // source is a module
+      isModule: true,
+      // code gen target should be a module
+      module: {
+        type: "es6",
+      }
+    };
+  showTransformOutput(transform(input, opts, undefined) as { code: string});
 };
 
 init().then(() => {
@@ -13,6 +40,7 @@ init().then(() => {
   console.log("started");
 });
 
-const showTransformOutput = (result: string) => {
-  document.getElementById("content").innerHTML = result;
+const showTransformOutput = (result: { code: string }) => {
+  console.log("result", result);
+  document.getElementById("content").innerHTML = result.code;
 };

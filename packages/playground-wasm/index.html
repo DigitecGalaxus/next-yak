@@ -9,7 +9,15 @@
   </head>
   <body>
     <h1>example</h1>
-    <textarea id="input">const test = 42;</textarea>
+    <textarea id="input">import { styled } from "next-yak";
+
+export const Button = styled.button`
+  color: red;
+  &:before {
+    content: "Button";
+  }
+`;
+</textarea>
     <button>Transform</button>
     <main id="content"></main>
   </body>
