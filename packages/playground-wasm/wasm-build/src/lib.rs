@@ -1,57 +1,74 @@
-mod typs;
+mod types;
 
-use swc_core::binding_macros::build_transform_sync;
-use swc_core::binding_macros::wasm::SingleThreadedComments;
+use swc_core::binding_macros::wasm;
+use swc_core::binding_macros::wasm::{SingleThreadedComments, compiler};
+use swc_core::ecma::visit::VisitMutWith;
 use swc_core::ecma::visit::swc_ecma_ast::*;
-use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 use wasm_bindgen::prelude::*;
 
-// Transformer that converts console.log to console.error
-struct ConsoleLogToErrorTransformer;
+// Copied from build_transform_sync so that we can pass the same comments structure to
+// the yak pass.
+#[wasm_bindgen(js_name = "transform")]
+pub fn transform_sync(s: JsValue, opts: JsValue) -> Result<JsValue, JsValue> {
+    use serde::Serialize;
 
-impl VisitMut for ConsoleLogToErrorTransformer {
-    // Visit every call expression in the AST
-    fn visit_mut_call_expr(&mut self, call: &mut CallExpr) {
-        // First, visit any nested expressions
-        call.visit_mut_children_with(self);
+    let c = compiler();
 
-        // Check if this is a console.log call
-        if let Callee::Expr(expr) = &mut call.callee {
-            if let Expr::Member(member_expr) = &mut **expr {
-                // Check if it's accessing a property on 'console' object
-                if let Expr::Ident(ident) = &*member_expr.obj {
-                    if ident.sym.to_string() == "console" {
-                        // Check if the property is 'log'
-                        if let MemberProp::Ident(prop_ident) = &mut member_expr.prop {
-                            if prop_ident.sym.to_string() == "log" {
-                                // Replace 'log' with 'error'
-                                prop_ident.sym = "error".into();
-                            }
-                        }
-                    }
+    let opts: wasm::Options = if opts.is_null() || opts.is_undefined() {
+        Default::default()
+    } else {
+        wasm::serde_wasm_bindgen::from_value(opts)?
+    };
+
+    let error_format = opts.experimental.error_format.unwrap_or_default();
+    wasm::try_with_handler_globals(c.cm.clone(), Default::default(), |handler| {
+        c.run(|| {
+            let s = JsCast::dyn_into::<js_sys::JsString>(s);
+            let out = match s {
+                Ok(s) => {
+                    let fm = c.cm.new_source_file(
+                        if opts.filename.is_empty() {
+                            wasm::FileName::Anon.into()
+                        } else {
+                            wasm::FileName::Real(opts.filename.clone().into()).into()
+                        },
+                        s.into(),
+                    );
+
+                    // Note: SingleThreadedComments uses Rc internally.
+                    // Clones will contribute to the same comment map.
+                    let comments = SingleThreadedComments::default();
+                    wasm::anyhow::Context::context(
+                        c.process_js_with_custom_pass(
+                            fm,
+                            None,
+                            handler,
+                            &opts,
+                            comments.clone(),
+                            |_| yak_pass(comments.clone()),
+                            |_| noop_pass(),
+                        ),
+                        "failed to process js file",
+                    )?
                 }
-            }
-        }
-    }
-}
+                Err(v) => c.process_js(
+                    handler,
+                    wasm::serde_wasm_bindgen::from_value(v).expect(""),
+                    &opts,
+                )?,
+            };
 
-build_transform_sync!(
-    #[wasm_bindgen(js_name = "transform")],
-    |_| (log_to_error_pass(), yak_pass()),
-    |_| noop_pass(),
-    Default::default());
-
-fn log_to_error_pass() -> impl Pass {
-    fn_pass(|program: &mut Program| {
-        let mut transformer = ConsoleLogToErrorTransformer;
-        program.visit_mut_with(&mut transformer);
+            out.serialize(wasm::compat_serializer().as_ref())
+                .map_err(|e| anyhow::anyhow!("failed to serialize transform result: {}", e))
+        })
     })
+    .map_err(|e| wasm::convert_err(e, Some(error_format)))
 }
 
-fn yak_pass() -> impl Pass {
-    fn_pass(|program: &mut Program| {
+fn yak_pass(comments: SingleThreadedComments) -> impl Pass + use<> {
+    fn_pass(move |program: &mut Program| {
         let mut transformer = yak_swc::TransformVisitor::new(
-            Some(SingleThreadedComments::default()),
+            Some(comments.clone()),
             "theFile.tsx",
             false,
             None,

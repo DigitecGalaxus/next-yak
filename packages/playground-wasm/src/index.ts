@@ -24,6 +24,7 @@ document.getElementsByTagName("button")[0].onclick = () => {
           "importSource": "@emotion/react"
         }
       },
+      "preserveAllComments": true,
     },
       // source is a module
       isModule: true,
