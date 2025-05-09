@@ -292,10 +292,10 @@ const libraries = {
       "Vite": true,
       "Framework agnostic": true,
     },
-    ReStyle: {
+    Restyle: {
       "INP optimized": false,
       "Zero Runtime": false,
-      "Zero SSR Overhead": false,
+      "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": false,
       "Using JS Constants in CSS": true,
       Mixins: true,
@@ -311,7 +311,7 @@ const libraries = {
       "Next.js": true,
       "React": true,
       "React Server Components": true,
-      "Vite": false,
+      "Vite": true,
       "Framework agnostic": false,
     },
   },
