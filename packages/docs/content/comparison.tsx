@@ -6,7 +6,7 @@ type Features =
   | "Zero SSR Overhead"
   | "Vanilla CSS Syntax"
   | "Using JS Constants in CSS"
-  | "Mixins"
+  | "Mixins / JS Fragments"
   | "Type-safe cross file selectors"
   | "Type-safe CSS runtime values"
   | "Type-safe conditional styling"
@@ -30,7 +30,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": false,
-      Mixins: false,
+      "Mixins / JS Fragments": false,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
       "Type-safe conditional styling": false,
@@ -54,7 +54,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": true,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -76,7 +76,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": false,
       "Using JS Constants in CSS": false,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
       "Type-safe conditional styling": false,
@@ -98,7 +98,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": false,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
       "Type-safe conditional styling": false,
@@ -120,7 +120,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": false,
-      Mixins: false,
+      "Mixins / JS Fragments": false,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
       "Type-safe conditional styling": false,
@@ -142,7 +142,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": false,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -164,7 +164,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
       "Type-safe conditional styling": true,
@@ -186,7 +186,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -208,7 +208,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": false,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": true,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -232,7 +232,7 @@ const libraries = {
       "Zero SSR Overhead": false,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": true,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -254,7 +254,7 @@ const libraries = {
       "Zero SSR Overhead": false,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": true,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -276,7 +276,7 @@ const libraries = {
       "Zero SSR Overhead": false,
       "Vanilla CSS Syntax": true,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": true,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -298,7 +298,7 @@ const libraries = {
       "Zero SSR Overhead": true,
       "Vanilla CSS Syntax": false,
       "Using JS Constants in CSS": true,
-      Mixins: true,
+      "Mixins / JS Fragments": true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": true,
       "Type-safe conditional styling": true,
@@ -338,6 +338,7 @@ const sups = [
 
 export const ComparisonTable = () => {
   return (
+    <MaxWidth>
     <table>
       <thead>
         <tr>
@@ -399,7 +400,7 @@ export const ComparisonTable = () => {
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></MaxWidth>
   );
 };
 
@@ -420,6 +421,15 @@ const titleText = (featureName: string, libName: string, supported: boolean) => 
   return `${featureName} ${plural} ${not}supported by ${libName}`;
 }
 
+const MaxWidth = styled.div`
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 auto;
+  padding: 0 2rem;
+  @media (max-width: 900px) {
+    padding: 0 0.5rem;
+  }
+`;
 
 
 const ColumnHead = styled.td<{
@@ -443,6 +453,11 @@ const ColumnFeatureName = styled.td`
   white-space: nowrap;
   font-weight: 600;
   transition: background-color 500ms;
+  padding-left: 3rem;
+  padding-right: 1rem;
+  @media (max-width: 900px) {
+    padding-left: 1rem;
+  }
   tr:hover & {
     color: var(--color-fd-accent);
     background-color: var(--color-fd-accent-foreground);
