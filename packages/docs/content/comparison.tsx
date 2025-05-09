@@ -305,7 +305,7 @@ const libraries = {
       "CSS Colocation": true,
       "Collision-free class names": true,
       "CSS Code Splitting by page": true,
-      "Compact HTML output": true,
+      "Compact HTML output": false,
       "Zero Compile": true,
       "Compile time optimized": true,
       "Next.js": true,
