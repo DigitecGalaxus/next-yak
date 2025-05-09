@@ -167,7 +167,7 @@ const libraries = {
       Mixins: true,
       "Type-safe cross file selectors": false,
       "Type-safe CSS runtime values": false,
-      "Type-safe conditional styling": false,
+      "Type-safe conditional styling": true,
       "CSS Colocation": true,
       "Collision-free class names": true,
       "CSS Code Splitting by page": false,
