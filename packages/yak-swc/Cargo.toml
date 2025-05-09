@@ -1,5 +1,5 @@
 [workspace]
-members = ["css_in_js_parser", "yak_swc", "relative_posix_path"]
+members = ["css_in_js_parser", "yak_swc", "relative_posix_path", "../playground-wasm/wasm-build"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -14,7 +14,7 @@ rustc-hash = "2.1.1"
 serde = "1.0.217"
 serde_json = "1.0.134"
 serde_repr = "0.1"
-swc_core = { version = "22.5.2", features = ["ecma_plugin_transform"] }
+swc_core = { version = "22.5.2" }
 swc_ecma_transforms_testing = "15.0.0"
 swc_ecma_parser = "11.1.3"
 testing = "9.0.0"

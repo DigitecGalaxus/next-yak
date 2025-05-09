@@ -2,22 +2,29 @@
 name = "playground-wasm"
 version = "0.1.0"
 edition = "2024"
+workspace = "../../yak-swc"
 
 [lib]
 crate-type = ["cdylib"]
+
+[features]
+# required by the swc macros; should not be enabled
+__plugin = []
 
 [dependencies]
 anyhow = "1.0.98"
 console_error_panic_hook = "0.1.7"
 js-sys = "0.3.77"
-once_cell = "1.21.3"
 serde = { version = "1.0.219", features = ["derive"] }
-serde-wasm-bindgen = "0.6.5"
-swc_core = { version = "22.5.2", features = ["__common", "__visit"] }
-swc_ecma_codegen = "10.0.0"
-swc_ecma_lexer = "11.1.3"
-swc_ecma_parser = "11.1.3"
+serde-wasm-bindgen = {version = "0.6.5"}
+# enable the js flag for the getrandom transitive dependency
+getrandom = { version = "*", features = ["js"] }
+swc_core = { workspace = true, features = [
+    "ecma_ast_serde",
+    "binding_macro_wasm",
+] }
 wasm-bindgen = "0.2"
+yak_swc = { version = "0.1.0", path = "../../yak-swc/yak_swc", default-features = false }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.50"

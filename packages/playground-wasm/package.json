@@ -12,7 +12,8 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm:wasm && vite build",
-    "build:wasm": "wasm-pack build --dev ./wasm-build --out-dir ../wasm --out-name index --target web"
+    "build:wasm": "pnpm run build:wasm:opt --dev",
+    "build:wasm:opt": "wasm-pack build ./wasm-build --out-dir ../wasm --out-name index --target web"
   },
   "dependencies": {
     "typescript": "^5.7.3",

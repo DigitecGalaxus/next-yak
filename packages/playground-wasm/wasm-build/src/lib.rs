@@ -42,10 +42,10 @@ build_transform_sync!(
     Default::default());
 
 fn log_to_error_pass() -> impl Pass {
-    fn_pass(|program: &mut Program|{
+    fn_pass(|program: &mut Program| {
         let mut transformer = ConsoleLogToErrorTransformer;
         program.visit_mut_with(&mut transformer);
-        })
+    })
 }
 
 fn yak_pass() -> impl Pass {

@@ -1,8 +1,8 @@
 use swc_core::atoms::atom;
+use swc_core::common::errors::HANDLER;
 use swc_core::common::Spanned;
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Fold, VisitMut, VisitMutWith};
-use swc_core::plugin::errors::HANDLER;
 
 use crate::yak_imports::{visit_module_imports, YakImports};
 

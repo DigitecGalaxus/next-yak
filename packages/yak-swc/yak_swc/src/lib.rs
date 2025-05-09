@@ -9,11 +9,11 @@ use swc_core::atoms::Atom;
 
 use swc_core::common::comments::Comment;
 use swc_core::common::comments::Comments;
+use swc_core::common::errors::HANDLER;
 use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
-use swc_core::ecma::visit::{visit_mut_pass, Fold, VisitMutWith};
+use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
-use swc_core::plugin::errors::HANDLER;
-use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
+#[cfg(feature = "plugin")]
 use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
@@ -24,9 +24,9 @@ mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
 mod yak_imports;
 use yak_imports::{visit_module_imports, YakImports};
-mod yak_file_visitor;
-use yak_file_visitor::YakFileVisitor;
 mod math_evaluate;
+#[cfg(feature = "plugin")]
+mod yak_file_visitor;
 use math_evaluate::try_evaluate;
 
 mod utils {
@@ -977,8 +977,13 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
   }
 }
 
+#[cfg(feature = "plugin")]
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
+  use swc_core::common::plugin::metadata::TransformPluginMetadataContextKind;
+  use swc_core::ecma::visit_mut_pass;
+  use yak_file_visitor::YakFileVisitor;
+
   let config: Config = serde_json::from_str(
     &metadata
       .get_transform_plugin_config()
@@ -1008,6 +1013,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
   )))
 }
 
+#[cfg(feature = "plugin")]
 fn is_yak_file(filename: &str) -> bool {
   // Ignore the valid case of a file with only 7 characters
   // as it would have only an extension and no filename
