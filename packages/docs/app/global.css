@@ -2,3 +2,13 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-twoslash/twoslash.css";
+
+.full-width {
+    width: 100%;
+    max-width: 100%;
+    h1,h2,h3,h4,h5,h6,p {
+        max-width: 860px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

@@ -1,0 +1,22 @@
+---
+title: Comparison
+full: true
+---
+
+import { ComparisonTable } from '../comparison';
+
+## Comparison
+
+The world is not always ✅ or ❌. The following table is simplified. The best choice depends on your specific use case and preferences.
+
+If you believe that a feature is missing, needs clarification or is incorrect, please create an issue or PR in the [GitHub repository](https://github.com/DigitecGalaxus/next-yak)
+
+<ComparisonTable />
+
+<sup>1)</sup> Input Delay - Injecting styles during streaming or render can cause long delays on low end devices because of style invalidations
+
+<sup>2)</sup> Zero Runtime - No code for CSSOM insertions or updates
+
+<sup>3)</sup> Zero SSR Overhead - During SSR no code is generating CSS
+
+<sup>4)</sup> Compile time optimized - Minimizing compile time (e.g. by using Rust)
