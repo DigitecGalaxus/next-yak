@@ -1,67 +1,15 @@
-import * as swc from "@swc/core";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import { type Compilation } from "webpack";
-// had to update package exports
+import type { Compilation } from "webpack";
 // @ts-ignore
 import cssLoader = require("next-yak/loaders/css-loader");
 
-export const maxDuration = 60;
-
-const wasmPath = path.resolve(
-  process.cwd(),
-  "./node_modules",
-  "yak-swc/target/wasm32-wasip1/release/yak_swc.wasm",
-);
-
-export async function POST(request: NextRequest) {
-  const code = (await request.json()) as Record<`file:///${string}`, string>;
-
-  const result: Record<
-    keyof typeof code,
+export async function runLoader(
+  result: Record<
+    `file:///${string}`,
     { original: string; transformed: string; css?: string }
-  > = {};
-  for (const [filePath, originalCode] of Object.entries(code) as [
-    keyof typeof code,
-    string,
-  ][]) {
-    result[filePath] = {
-      original: originalCode,
-      transformed: swc.transformSync(originalCode, {
-        filename: "/bar/index.tsx",
-        jsc: {
-          experimental: {
-            plugins: [[wasmPath, { basePath: "/foo/" }]],
-          },
-          target: "es2022",
-          loose: false,
-          minify: {
-            compress: false,
-            mangle: false,
-          },
-          preserveAllComments: true,
-        },
-        minify: false,
-        isModule: true,
-      }).code,
-    };
-  }
-
-  const transpiledYakFile = swc.transformSync(
-    result["file:///different.yak.ts"].original,
-    {
-      filename: "/bar/index.tsx",
-      jsc: {
-        target: "es5",
-      },
-      isModule: true,
-      module: {
-        type: "commonjs",
-      },
-    },
-  );
-
-  const mockLoader = new MockLoaderContext(transpiledYakFile.code);
+  >,
+  input: string,
+) {
+  const mockLoader = new MockLoaderContext(input);
   mockLoader.fs.setFile(
     "/src/index.tsx",
     result["file:///index.tsx"].transformed,
@@ -109,9 +57,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(result, {
-    status: 200,
-  });
+  return result;
 }
 
 function createAsyncPromise(mockLoader: MockLoaderContext) {

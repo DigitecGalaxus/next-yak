@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "module": "./wasm/index.js",
+  "types": "./wasm/index.d.ts",
   "files": [
-    "dist"
+    "wasm"
   ],
   "scripts": {
     "dev": "vite",
