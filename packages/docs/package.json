@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "pnpm run build:yak && pnpm run build:next",
+    "build": "pnpm run build:yak && pnpm run build:wasm && pnpm run build:next",
     "build:next": "next build",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
+    "build:wasm": "pnpm run --filter playground-wasm build:wasm:opt",
     "dev": "next dev",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
@@ -32,7 +33,8 @@
     "react-resizable-panels": "catalog:dev",
     "shiki": "catalog:dev",
     "shiki-magic-move": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "yak-swc": "workspace:*",
+    "playground-wasm": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:dev",

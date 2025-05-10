@@ -1,0 +1,22 @@
+{
+  "name": "playground-wasm",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "module": "./wasm/index.js",
+  "types": "./wasm/index.d.ts",
+  "files": [
+    "wasm"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm:wasm && vite build",
+    "build:wasm": "pnpm run build:wasm:opt --dev",
+    "build:wasm:opt": "wasm-pack build ./wasm-build --out-dir ../wasm --out-name index --target web"
+  },
+  "dependencies": {
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vite-plugin-wasm": "^3.0.0"
+  }
+}
