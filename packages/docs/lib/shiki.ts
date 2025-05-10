@@ -11,5 +11,6 @@ import styled from "./langs/styled";
 export const highlighterPromise = createHighlighterCore({
   themes: [vitesseLight, vitesseDark],
   langs: [tsx, ts, css, cssStyled, styled],
-  engine: createJavaScriptRegexEngine(),
+  // forgiving is set for safari, as the RegExp engine is not fully compatible with Safari's RegExp implementation
+  engine: createJavaScriptRegexEngine({ forgiving: true }),
 });
