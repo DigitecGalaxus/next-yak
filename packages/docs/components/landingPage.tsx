@@ -91,7 +91,7 @@ export const LandingPage = ({ version }: { version: string }) => {
       >
         Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
         about it's{" "}
-        <NextLink href="/docs/how-it-works">
+        <NextLink href="/docs/how-does-it-work">
           <Strong>Zero-Runtime</Strong> approach
         </NextLink>{" "}
         in the docs
