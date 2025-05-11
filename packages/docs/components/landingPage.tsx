@@ -5,8 +5,9 @@ import NextLink from "next/link";
 import NextImage from "next/image";
 import yakJumping from "@/public/img/yak-jumping.png";
 import { ErrorBoundary } from "./errorBoundary";
+import { BasicCode } from "./basicCode";
 
-export const LandingPage = () => {
+export const LandingPage = ({ version }: { version: string }) => {
   return (
     <Article>
       <div
@@ -21,13 +22,23 @@ export const LandingPage = () => {
           }
         `}
       >
-        <Title>Next-Yak</Title>
+        <div>
+          <Title>Next-Yak</Title>
+          <VersionLink href="https://www.npmjs.com/package/next-yak">
+            {version}
+          </VersionLink>
+        </div>
         <Image src={yakJumping} alt="Image of yak coding" priority />
       </div>
       <Description>
         <p>
-          🦀 Zero-runtime CSS-in-JS powered by Rust. Write styled-components
-          syntax, get build-time CSS extraction and full RSC compatibility.
+          🦀{" "}
+          <NextLink href="/docs/how-it-works">
+            <Strong>Zero-Runtime</Strong>
+          </NextLink>{" "}
+          CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
+          syntax, get build-time CSS extraction and full <Strong>RSC</Strong>{" "}
+          compatibility.
         </p>
       </Description>
 
@@ -70,18 +81,36 @@ export const LandingPage = () => {
         </SecondaryLink>
       </LinkArea>
 
+      <BasicCode />
+
       <Subtitle>Performance</Subtitle>
       <p
         style={{
           marginBottom: "1rem",
         }}
       >
-        Validated across many thousands of real-world users:
+        Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
+        about it's{" "}
+        <NextLink href="/docs/how-it-works">
+          <Strong>Zero-Runtime</Strong> approach
+        </NextLink>{" "}
+        in the docs
+      </p>
+      <p
+        style={{
+          marginBottom: "1rem",
+        }}
+      >
+        The performance was validated across many thousands of real-world users:
       </p>
       <List>
-        <li>&gt;20% faster navigational LCP</li>
+        <li>
+          &gt;20% faster navigational <Strong>LCP</Strong>
+        </li>
         <li>&gt;15% reduced server latency</li>
-        <li>&gt;10% faster INP</li>
+        <li>
+          &gt;10% faster <Strong>INP</Strong>
+        </li>
       </List>
       <p
         style={{
@@ -89,27 +118,35 @@ export const LandingPage = () => {
         }}
       >
         Get started and profit from these improvements without any significant
-        increase in build times.
+        increase in build times
       </p>
 
       <Subtitle>Features</Subtitle>
       <List>
         <li>
-          <EnumTitle>NextJs Compatibility</EnumTitle>
+          <EnumTitle>
+            <Strong>Next.js</Strong> Compatibility
+          </EnumTitle>
           Works smoothly with both React Server and Client Components
         </li>
         <li>
-          <EnumTitle>Build-time CSS</EnumTitle>
+          <EnumTitle>
+            <Strong>Build-Time</Strong> CSS
+          </EnumTitle>
           Reduces load time by handling CSS during the build phase, using
-          Next.js built-in CSS Modules features
+          Next.js built-in CSS features
         </li>
         <li>
-          <EnumTitle>Lightweight Runtime</EnumTitle>
+          <EnumTitle>
+            <Strong>Zero Runtime</Strong>
+          </EnumTitle>
           Operates with minimal impact, simply changing CSS classes without
-          modifying the CSSOM
+          modifying the CSSOM or DOM
         </li>
         <li>
-          <EnumTitle>Standard CSS Syntax</EnumTitle>
+          <EnumTitle>
+            <Strong>Standard CSS</Strong> Syntax
+          </EnumTitle>
           Write styles in familiar, easy-to-use CSS
         </li>
         <li>
@@ -259,4 +296,42 @@ const EnumTitle = styled.div`
 
 const Svg = styled.svg`
   height: 0.7lh;
+`;
+
+const VersionLink = styled.a`
+  display: inline-block;
+  font-size: 1.2rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background: rgb(37 99 235);
+  color: white;
+
+  @supports (text-box-trim: trim-both) {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
+  }
+`;
+
+const shimmer = keyframes`
+  0% {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: 100%;
+  }
+`;
+
+const Strong = styled.strong`
+  ${theme.dark} {
+    background: linear-gradient(45deg, #fc00ff, #00dbde, #fc00ff) -100%/ 200%;
+    background-clip: text;
+  }
+  background: linear-gradient(45deg, #5a005b, #005355, #5a005b) -100%/ 200%;
+  background-clip: text;
+  animation: ${shimmer} 20s linear infinite;
+  animation-direction: alternate;
+  color: transparent;
+  font-weight: 550;
 `;
