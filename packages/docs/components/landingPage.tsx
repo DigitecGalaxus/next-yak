@@ -6,6 +6,7 @@ import NextImage from "next/image";
 import yakJumping from "@/public/img/yak-jumping.png";
 import { ErrorBoundary } from "./errorBoundary";
 import { BasicCode } from "./basicCode";
+import { shine } from "@/lib/utils/shine";
 
 export const LandingPage = ({ version }: { version: string }) => {
   return (
@@ -22,20 +23,20 @@ export const LandingPage = ({ version }: { version: string }) => {
           }
         `}
       >
-        <div>
-          <Title>Next-Yak</Title>
+        <Title>
+          Next-Yak
           <VersionLink href="https://www.npmjs.com/package/next-yak">
             {version}
           </VersionLink>
-        </div>
+        </Title>
         <Image src={yakJumping} alt="Image of yak coding" priority />
       </div>
       <Description>
         <p>
           🦀{" "}
-          <NextLink href="/docs/how-it-works">
+          <Link href="/docs/how-it-works">
             <Strong>Zero-Runtime</Strong>
-          </NextLink>{" "}
+          </Link>{" "}
           CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
           syntax, get build-time CSS extraction and full <Strong>RSC</Strong>{" "}
           compatibility.
@@ -91,10 +92,10 @@ export const LandingPage = ({ version }: { version: string }) => {
       >
         Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
         about it's{" "}
-        <NextLink href="/docs/how-does-it-work">
-          <Strong>Zero-Runtime</Strong> approach
-        </NextLink>{" "}
-        in the docs
+        <Link href="/docs/how-does-it-work">
+          <Strong>Zero-Runtime</Strong>
+        </Link>{" "}
+        approach in the docs
       </p>
       <p
         style={{
@@ -178,6 +179,16 @@ const Article = styled.article`
 `;
 
 const Title = styled.h1`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  ${breakpoints.sm} {
+    flex-direction: row;
+    align-items: baseline;
+  }
+
+  gap: 1.5rem;
   font-size: 5rem;
   font-weight: 400;
 
@@ -211,9 +222,6 @@ const Image = styled(NextImage)`
 
 const Description = styled.div`
   margin-block-end: 2rem;
-  ${breakpoints.md} {
-    margin-block: 1.5rem;
-  }
 `;
 
 const LinkArea = styled.div`
@@ -232,12 +240,30 @@ const clickScale = keyframes`
 `;
 
 const PrimaryLink = styled(NextLink)`
+  position: relative;
   display: inline-flex;
   align-items: center;
   border-radius: 12px;
   padding: 8px;
   padding-inline-start: 16px;
-  ${colors.primary};
+
+  background-image:
+    linear-gradient(var(--color-fd-background), var(--color-fd-background)),
+    linear-gradient(
+      45deg,
+      hsl(50deg 51% 63%) 0%,
+      hsl(41deg 61% 64%) 17%,
+      hsl(33deg 68% 65%) 33%,
+      hsl(25deg 74% 66%) 50%,
+      hsl(18deg 78% 68%) 67%,
+      hsl(10deg 78% 70%) 83%,
+      hsl(0deg 75% 72%) 100%
+    );
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  border: 2px solid transparent;
+
+  ${shine};
 
   &:hover svg {
     animation: ${clickScale} 0.3s alternate;
@@ -260,12 +286,15 @@ const PrimaryLink = styled(NextLink)`
 `;
 
 const SecondaryLink = styled(NextLink)`
+  position: relative;
   display: inline-flex;
   align-items: center;
   border-radius: 12px;
   padding: 8px;
   padding-inline-start: 16px;
   ${colors.secondary};
+
+  ${shine};
 
   &:hover svg {
     transform: translateX(4px);
@@ -299,12 +328,25 @@ const Svg = styled.svg`
 `;
 
 const VersionLink = styled.a`
+  position: relative;
   display: inline-block;
-  font-size: 1.2rem;
+  font-size: 1rem;
   padding: 0.2rem 0.7rem;
   border-radius: 9999px;
-  background: rgb(37 99 235);
   color: white;
+  ${colors.secondary}
+  transform: translateY(-.6rem);
+
+  margin-block: -1rem 1rem;
+  ${breakpoints.sm} {
+    margin-block: 0;
+  }
+
+  ${shine};
+
+  &:after {
+    border-radius: 9999px;
+  }
 
   @supports (text-box-trim: trim-both) {
     padding-top: 0.6rem;
@@ -324,14 +366,32 @@ const shimmer = keyframes`
 `;
 
 const Strong = styled.strong`
+  background: linear-gradient(45deg, #bea524, #cd3e3e, #bea524) -100%/ 200%;
+  background-clip: text;
   ${theme.dark} {
-    background: linear-gradient(45deg, #fc00ff, #00dbde, #fc00ff) -100%/ 200%;
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
     background-clip: text;
   }
-  background: linear-gradient(45deg, #5a005b, #005355, #5a005b) -100%/ 200%;
-  background-clip: text;
   animation: ${shimmer} 20s linear infinite;
   animation-direction: alternate;
   color: transparent;
   font-weight: 550;
+`;
+
+const Link = styled(NextLink)`
+  position: relative;
+  white-space: nowrap;
+  &:before {
+    content: "";
+    position: absolute;
+    height: 1px;
+    inset-inline: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #bea524, #cd3e3e, #bea524) -100%/ 200%;
+    ${theme.dark} {
+      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+    }
+    animation: ${shimmer} 20s linear infinite;
+    animation-direction: alternate;
+  }
 `;

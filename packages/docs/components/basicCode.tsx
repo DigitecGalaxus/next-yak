@@ -1,11 +1,7 @@
-"use client";
 import { highlighterPromise } from "@/lib/shiki";
 import { colors, theme } from "@/lib/utils/constants";
-import { useTheme } from "next-themes";
 import { styled } from "next-yak";
 import { use } from "react";
-import "shiki-magic-move/dist/style.css";
-import { ShikiMagicMove } from "shiki-magic-move/react";
 
 // Define the structure for code examples
 type CodeExample = {
@@ -15,7 +11,7 @@ type CodeExample = {
 const initialCodeExample: CodeExample = {
   tsxInput: `import { styled, css } from "next-yak";
 
-export const Title = styled.button<{ $primary }>\`
+export const Title = styled.button<{ $primary: boolean }>\`
   font-size: 1.5em;
   color: palevioletred;
   &:hover {
@@ -30,22 +26,19 @@ export const Title = styled.button<{ $primary }>\`
 
 export const BasicCode = () => {
   const highlighter = use(highlighterPromise);
-  const { theme: currentTheme } = useTheme();
-
-  // Use the appropriate theme based on the current theme
-  const shikiTheme = currentTheme === "dark" ? "vitesse-dark" : "vitesse-light";
-
   return (
-    <ResponsiveCode key={shikiTheme}>
-      <CodeWrapper>
-        <ShikiMagicMove
-          lang="tsx"
-          theme={shikiTheme}
-          highlighter={highlighter}
-          code={initialCodeExample.tsxInput}
-          options={{ lineNumbers: false }}
-        />
-      </CodeWrapper>
+    <ResponsiveCode>
+      <CodeWrapper
+        dangerouslySetInnerHTML={{
+          __html: highlighter.codeToHtml(initialCodeExample.tsxInput, {
+            lang: "tsx",
+            themes: {
+              light: "vitesse-light",
+              dark: "vitesse-dark",
+            },
+          }),
+        }}
+      ></CodeWrapper>
     </ResponsiveCode>
   );
 };
@@ -55,8 +48,15 @@ const CodeWrapper = styled.div`
   display: inline-block;
   ${colors.secondaryStatic};
   border: none;
-  ${theme.dark} {
-    background: rgb(18, 18, 18);
+
+  & :global(.shiki) :global(.line) {
+    white-space: pre-wrap;
+  }
+
+  :global(html.dark) & :global(.shiki),
+  :global(html.dark) & :global(.shiki) span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
   }
 `;
 
