@@ -433,7 +433,7 @@ const Title = styled.h1`
       position: absolute;
       inset: -4px;
       background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
-      animation: ${shimmer} 20s linear infinite;
+      animation: ${shimmer} 20s linear infinite alternate;
       mix-blend-mode: screen;
     }
 
