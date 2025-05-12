@@ -191,7 +191,7 @@ fn escape_css_class_name(input: &str) -> String {
 #[derive(Deserialize, Clone, Copy)]
 pub enum TranspileMode {
   CssModule,
-  Css
+  Css,
 }
 
 /// Returns a valid CSS class name

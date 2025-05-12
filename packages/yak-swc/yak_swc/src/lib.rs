@@ -70,7 +70,6 @@ pub struct Config {
   pub transpile_mode: TranspileMode,
 }
 
-
 impl Config {
   fn minify_default() -> bool {
     true
@@ -347,7 +346,9 @@ where
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
                 let (new_state, _) = match &self.transpile_mode {
-                  TranspileMode::CssModule => parse_css(&format!("global({})", keyframe_name), css_state),
+                  TranspileMode::CssModule => {
+                    parse_css(&format!("global({})", keyframe_name), css_state)
+                  }
                   TranspileMode::Css => parse_css(&keyframe_name, css_state),
                 };
                 css_state = Some(new_state);
@@ -591,10 +592,12 @@ where
           src: Box::new(Str {
             span: DUMMY_SP,
             value: match &self.transpile_mode {
-              TranspileMode::CssModule => format!(
-                "./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css"
-              ),
-              TranspileMode::Css => format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+              TranspileMode::CssModule => {
+                format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
+              }
+              TranspileMode::Css => {
+                format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+              }
             }
             .into(),
             raw: None,

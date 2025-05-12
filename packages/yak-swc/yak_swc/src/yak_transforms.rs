@@ -71,7 +71,10 @@ impl TransformNestedCss {
       declaration_name.to_readable_string(),
       condition_concatenated
     ));
-    TransformNestedCss { class_name, transpile_mode }
+    TransformNestedCss {
+      class_name,
+      transpile_mode,
+    }
   }
 }
 
@@ -510,8 +513,14 @@ pub struct TransformKeyframes {
 }
 
 impl TransformKeyframes {
-  pub fn with_animation_name(animation_name: String, transpile_mode: TranspileMode) -> TransformKeyframes {
-    TransformKeyframes { animation_name, transpile_mode }
+  pub fn with_animation_name(
+    animation_name: String,
+    transpile_mode: TranspileMode,
+  ) -> TransformKeyframes {
+    TransformKeyframes {
+      animation_name,
+      transpile_mode,
+    }
   }
 }
 
@@ -521,7 +530,7 @@ impl YakTransform for TransformKeyframes {
     parser_state.current_scopes = vec![CssScope {
       name: match &self.transpile_mode {
         TranspileMode::CssModule => format!("@keyframes :global({})", self.animation_name),
-        TranspileMode::Css => format!("@keyframes {}", self.animation_name)
+        TranspileMode::Css => format!("@keyframes {}", self.animation_name),
       },
       scope_type: ScopeType::AtRule,
     }];
