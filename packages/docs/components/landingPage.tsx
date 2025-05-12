@@ -336,6 +336,47 @@ const Svg = styled.svg`
   height: 0.7lh;
 `;
 
+const shimmer = keyframes`
+  0% {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: 100%;
+  }
+`;
+
+const keyframesUnderline = keyframes`
+  0% {
+    --hue: 0deg;
+  }
+  50% {
+    --hue: 40deg;
+  }
+  100% {
+    --hue: 0deg;
+  }
+`;
+
+const Link = styled(NextLink)`
+  position: relative;
+  white-space: nowrap;
+  @property --hue {
+    initial-value: 0deg;
+    inherits: false;
+    syntax: "<angle>";
+  }
+  animation: ${keyframesUnderline} 5s linear infinite;
+  border-image-source: linear-gradient(
+    45deg,
+    hsl(calc(50deg - var(--hue)), 68%, 44%) 0%,
+    hsl(calc(0deg + var(--hue)), 75%, 71%) 50%,
+    hsl(calc(50deg - var(--hue)), 68%, 44%) 100%
+  );
+  transition: border-image-source 0.3s ease-in-out;
+  border-image-slice: 1;
+  border-image-width: 0 0 1px;
+`;
+
 const VersionLink = styled.a`
   position: relative;
   display: inline-block;
@@ -364,15 +405,6 @@ const VersionLink = styled.a`
   }
 `;
 
-const shimmer = keyframes`
-  0% {
-    background-position-x: 0%;
-  }
-  to {
-    background-position-x: 100%;
-  }
-`;
-
 const Strong = styled.strong`
   background: linear-gradient(45deg, #bea524, #cd3e3e, #bea524) -100%/ 200%;
   background-clip: text;
@@ -384,22 +416,4 @@ const Strong = styled.strong`
   animation-direction: alternate;
   color: transparent;
   font-weight: 550;
-`;
-
-const Link = styled(NextLink)`
-  position: relative;
-  white-space: nowrap;
-  &:before {
-    content: "";
-    position: absolute;
-    height: 1px;
-    inset-inline: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, #bea524, #cd3e3e, #bea524) -100%/ 200%;
-    ${theme.dark} {
-      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
-    }
-    animation: ${shimmer} 20s linear infinite;
-    animation-direction: alternate;
-  }
 `;
