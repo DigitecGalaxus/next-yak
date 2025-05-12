@@ -323,7 +323,6 @@ async function parseExports(
       plugins: ["jsx", "typescript"] as const,
     });
 
-    // Traverse the AST using @babel/traverse
     traverse.default(ast, {
       ExportNamedDeclaration({ node }) {
         if (node.source) {
