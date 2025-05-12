@@ -407,43 +407,26 @@ const Title = styled.h1`
     #000 0%,
     #333 100%
   );
-
-  ${theme.dark} {
-    background: #fff;
-    background: radial-gradient(
-      circle farthest-corner at top left,
-      #ffffff 0%,
-      #cccccc 100%
-    );
-  }
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
   @supports (-webkit-text-stroke: red 1px) {
-    -webkit-text-stroke: black 4px;
-    color: white;
-    paint-order: stroke fill;
-    text-shadow: none;
-    -webkit-background-clip: initial;
-    -webkit-text-fill-color: initial;
-    background: none;
-    &:after {
-      pointer-events: none;
-      content: "";
-      position: absolute;
-      inset: -4px;
-      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
-      animation: ${shimmer} 20s linear infinite alternate;
-      mix-blend-mode: screen;
-    }
-
+    transform: translateY(-4px);
+    padding: 4px 0;
     ${theme.dark} {
-      background: none;
-      -webkit-text-stroke: white 4px;
-      color: black;
-      &:after {
-        mix-blend-mode: multiply;
-      }
+      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
     }
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+    animation: ${shimmer} 20s linear infinite alternate;
+    -webkit-text-fill-color: initial;
+    -webkit-text-stroke: 4px transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--color-fd-background);
+    letter-spacing: 0.02em;
   }
+
+  background-clip: text;
+  -webkit-background-clip: text;
 `;
