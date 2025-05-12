@@ -94,7 +94,7 @@ export const LandingPage = ({ version }: { version: string }) => {
         }}
       >
         Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
-        about it's{" "}
+        about its{" "}
         <Link href="/docs/how-does-it-work">
           <Strong>Zero-Runtime</Strong>
         </Link>{" "}
@@ -111,7 +111,9 @@ export const LandingPage = ({ version }: { version: string }) => {
         <li>
           &gt;20% faster navigational <Strong>LCP</Strong>
         </li>
-        <li>&gt;15% reduced server latency</li>
+        <li>
+          &gt;15% reduced <Strong>SSR</Strong> latency
+        </li>
         <li>
           &gt;10% faster <Strong>INP</Strong>
         </li>
@@ -188,39 +190,6 @@ const TitleRow = styled.div`
   align-items: baseline;
   gap: 1.5rem;
   margin-bottom: 1rem;
-`;
-
-const Title = styled.h1`
-  ${breakpoints.sm} {
-    flex-direction: row;
-    align-items: baseline;
-  }
-
-  font-size: 5rem;
-  font-weight: 400;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
-  white-space: nowrap;
-
-  background: #000;
-  background: radial-gradient(
-    circle farthest-corner at top left,
-    #000 0%,
-    #333 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  ${theme.dark} {
-    background: #fff;
-    background: radial-gradient(
-      circle farthest-corner at top left,
-      #ffffff 0%,
-      #cccccc 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
 `;
 
 const Image = styled(NextImage)`
@@ -418,4 +387,63 @@ const Strong = styled.strong`
   animation-direction: alternate;
   color: transparent;
   font-weight: 550;
+`;
+
+const Title = styled.h1`
+  ${breakpoints.sm} {
+    flex-direction: row;
+    align-items: baseline;
+  }
+  position: relative;
+  font-size: 5rem;
+  font-weight: 400;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  white-space: nowrap;
+
+  background: #000;
+  background: radial-gradient(
+    circle farthest-corner at top left,
+    #000 0%,
+    #333 100%
+  );
+
+  ${theme.dark} {
+    background: #fff;
+    background: radial-gradient(
+      circle farthest-corner at top left,
+      #ffffff 0%,
+      #cccccc 100%
+    );
+  }
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  @supports (-webkit-text-stroke: red 1px) {
+    -webkit-text-stroke: black 4px;
+    color: white;
+    paint-order: stroke fill;
+    text-shadow: none;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
+    background: none;
+    &:after {
+      pointer-events: none;
+      content: "";
+      position: absolute;
+      inset: -4px;
+      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+      animation: ${shimmer} 20s linear infinite;
+      mix-blend-mode: screen;
+    }
+
+    ${theme.dark} {
+      background: none;
+      -webkit-text-stroke: white 4px;
+      color: black;
+      &:after {
+        mix-blend-mode: multiply;
+      }
+    }
+  }
 `;
