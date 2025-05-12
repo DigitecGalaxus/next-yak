@@ -25,7 +25,10 @@ export const LandingPage = ({ version }: { version: string }) => {
       >
         <TitleRow>
           <Title>Next-Yak</Title>
-          <VersionLink href="https://www.npmjs.com/package/next-yak">
+          <VersionLink
+            href="https://www.npmjs.com/package/next-yak"
+            title={`next-yak ${version} on npm`}
+          >
             {version}
           </VersionLink>
         </TitleRow>
