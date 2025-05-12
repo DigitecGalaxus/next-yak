@@ -345,7 +345,7 @@ const shimmer = keyframes`
   }
 `;
 
-const keyframesUnderline = keyframes`
+const hueRotate = keyframes`
   0% {
     --hue: 0deg;
   }
@@ -365,14 +365,13 @@ const Link = styled(NextLink)`
     inherits: false;
     syntax: "<angle>";
   }
-  animation: ${keyframesUnderline} 5s linear infinite;
+  animation: ${hueRotate} 5s linear infinite;
   border-image-source: linear-gradient(
     45deg,
     hsl(calc(50deg - var(--hue)), 68%, 44%) 0%,
     hsl(calc(0deg + var(--hue)), 75%, 71%) 50%,
     hsl(calc(50deg - var(--hue)), 68%, 44%) 100%
   );
-  transition: border-image-source 0.3s ease-in-out;
   border-image-slice: 1;
   border-image-width: 0 0 1px;
 `;
