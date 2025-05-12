@@ -1,7 +1,6 @@
-import babel from "@babel/core";
+import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
 import path from "path";
-// @ts-expect-error - this is used by babel directly so we ignore that it is not typed
-import babelPlugin from "@babel/plugin-syntax-typescript";
 import type { Compilation, LoaderContext } from "webpack";
 
 const yakCssImportRegex =
@@ -319,77 +318,67 @@ async function parseExports(
   let exports: Record<string, ParsedExport> = {};
 
   try {
-    babel.transformSync(sourceContents, {
-      configFile: false,
-      plugins: [
-        [babelPlugin, { isTSX }],
-        [
-          (): babel.PluginObj => ({
-            visitor: {
-              ExportNamedDeclaration({ node }) {
-                if (node.source) {
-                  node.specifiers.forEach((specifier) => {
-                    if (
-                      specifier.type === "ExportSpecifier" &&
-                      specifier.exported.type === "Identifier" &&
-                      specifier.local.type === "Identifier"
-                    ) {
-                      exports[specifier.exported.name] = {
-                        type: "re-export",
-                        from: node.source!.value,
-                        imported: specifier.local.name,
-                      };
-                    }
-                  });
-                } else if (node.declaration?.type === "VariableDeclaration") {
-                  node.declaration.declarations.forEach((declaration) => {
-                    if (
-                      declaration.id.type === "Identifier" &&
-                      declaration.init
-                    ) {
-                      const parsed = parseExportValueExpression(
-                        declaration.init,
-                      );
-                      if (parsed) {
-                        exports[declaration.id.name] = parsed;
-                      }
-                    }
-                  });
-                }
-              },
-              ExportDeclaration({ node }) {
-                if ("specifiers" in node && node.source) {
-                  const { specifiers, source } = node;
-                  specifiers.forEach((specifier) => {
-                    // export * as color from "./colors";
-                    if (
-                      specifier.type === "ExportNamespaceSpecifier" &&
-                      specifier.exported.type === "Identifier"
-                    ) {
-                      exports[specifier.exported.name] = {
-                        type: "star-export",
-                        from: [source.value],
-                      };
-                    }
-                  });
-                }
-              },
-              ExportAllDeclaration({ node }) {
-                if (Object.keys(exports).length === 0) {
-                  exports["*"] ||= {
-                    type: "star-export",
-                    from: [],
-                  };
-                  if (exports["*"].type !== "star-export") {
-                    throw new Error("Invalid star export state");
-                  }
-                  exports["*"].from.push(node.source.value);
-                }
-              },
-            },
-          }),
-        ],
-      ],
+    const ast = parse(sourceContents, {
+      sourceType: "module",
+      plugins: ["jsx", "typescript"] as const,
+    });
+
+    traverse.default(ast, {
+      ExportNamedDeclaration({ node }) {
+        if (node.source) {
+          node.specifiers.forEach((specifier) => {
+            if (
+              specifier.type === "ExportSpecifier" &&
+              specifier.exported.type === "Identifier" &&
+              specifier.local.type === "Identifier"
+            ) {
+              exports[specifier.exported.name] = {
+                type: "re-export",
+                from: node.source!.value,
+                imported: specifier.local.name,
+              };
+            }
+          });
+        } else if (node.declaration?.type === "VariableDeclaration") {
+          node.declaration.declarations.forEach((declaration) => {
+            if (declaration.id.type === "Identifier" && declaration.init) {
+              const parsed = parseExportValueExpression(declaration.init);
+              if (parsed) {
+                exports[declaration.id.name] = parsed;
+              }
+            }
+          });
+        }
+      },
+      ExportDeclaration({ node }) {
+        if ("specifiers" in node && node.source) {
+          const { specifiers, source } = node;
+          specifiers.forEach((specifier) => {
+            // export * as color from "./colors";
+            if (
+              specifier.type === "ExportNamespaceSpecifier" &&
+              specifier.exported.type === "Identifier"
+            ) {
+              exports[specifier.exported.name] = {
+                type: "star-export",
+                from: [source.value],
+              };
+            }
+          });
+        }
+      },
+      ExportAllDeclaration({ node }) {
+        if (Object.keys(exports).length === 0) {
+          exports["*"] ||= {
+            type: "star-export",
+            from: [],
+          };
+          if (exports["*"].type !== "star-export") {
+            throw new Error("Invalid star export state");
+          }
+          exports["*"].from.push(node.source.value);
+        }
+      },
     });
 
     return exports;

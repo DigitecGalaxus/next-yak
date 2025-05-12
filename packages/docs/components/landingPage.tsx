@@ -5,8 +5,10 @@ import NextLink from "next/link";
 import NextImage from "next/image";
 import yakJumping from "@/public/img/yak-jumping.png";
 import { ErrorBoundary } from "./errorBoundary";
+import { BasicCode } from "./basicCode";
+import { shineAnimation } from "@/lib/utils/shine";
 
-export const LandingPage = () => {
+export const LandingPage = ({ version }: { version: string }) => {
   return (
     <Article>
       <div
@@ -21,13 +23,26 @@ export const LandingPage = () => {
           }
         `}
       >
-        <Title>Next-Yak</Title>
+        <TitleRow>
+          <Title>Next-Yak</Title>
+          <VersionLink
+            href="https://www.npmjs.com/package/next-yak"
+            title={`next-yak ${version} on npm`}
+          >
+            {version}
+          </VersionLink>
+        </TitleRow>
         <Image src={yakJumping} alt="Image of yak coding" priority />
       </div>
       <Description>
         <p>
-          🦀 Zero-runtime CSS-in-JS powered by Rust. Write styled-components
-          syntax, get build-time CSS extraction and full RSC compatibility.
+          🦀{" "}
+          <Link href="/docs/how-it-works">
+            <Strong>Zero-Runtime</Strong>
+          </Link>{" "}
+          CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
+          syntax, get build-time CSS extraction and full <Strong>RSC</Strong>{" "}
+          compatibility.
         </p>
       </Description>
 
@@ -70,18 +85,36 @@ export const LandingPage = () => {
         </SecondaryLink>
       </LinkArea>
 
+      <BasicCode />
+
       <Subtitle>Performance</Subtitle>
       <p
         style={{
           marginBottom: "1rem",
         }}
       >
-        Validated across many thousands of real-world users:
+        Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
+        about it's{" "}
+        <Link href="/docs/how-does-it-work">
+          <Strong>Zero-Runtime</Strong>
+        </Link>{" "}
+        approach in the docs
+      </p>
+      <p
+        style={{
+          marginBottom: "1rem",
+        }}
+      >
+        The performance was validated across many thousands of real-world users:
       </p>
       <List>
-        <li>&gt;20% faster navigational LCP</li>
+        <li>
+          &gt;20% faster navigational <Strong>LCP</Strong>
+        </li>
         <li>&gt;15% reduced server latency</li>
-        <li>&gt;10% faster INP</li>
+        <li>
+          &gt;10% faster <Strong>INP</Strong>
+        </li>
       </List>
       <p
         style={{
@@ -89,27 +122,35 @@ export const LandingPage = () => {
         }}
       >
         Get started and profit from these improvements without any significant
-        increase in build times.
+        increase in build times
       </p>
 
       <Subtitle>Features</Subtitle>
       <List>
         <li>
-          <EnumTitle>NextJs Compatibility</EnumTitle>
+          <EnumTitle>
+            <Strong>Next.js</Strong> Compatibility
+          </EnumTitle>
           Works smoothly with both React Server and Client Components
         </li>
         <li>
-          <EnumTitle>Build-time CSS</EnumTitle>
+          <EnumTitle>
+            <Strong>Build-Time</Strong> CSS
+          </EnumTitle>
           Reduces load time by handling CSS during the build phase, using
-          Next.js built-in CSS Modules features
+          Next.js built-in CSS features
         </li>
         <li>
-          <EnumTitle>Lightweight Runtime</EnumTitle>
+          <EnumTitle>
+            <Strong>Zero Runtime</Strong>
+          </EnumTitle>
           Operates with minimal impact, simply changing CSS classes without
-          modifying the CSSOM
+          modifying the CSSOM or DOM
         </li>
         <li>
-          <EnumTitle>Standard CSS Syntax</EnumTitle>
+          <EnumTitle>
+            <Strong>Standard CSS</Strong> Syntax
+          </EnumTitle>
           Write styles in familiar, easy-to-use CSS
         </li>
         <li>
@@ -138,11 +179,28 @@ const Article = styled.article`
   max-width: 80ch;
   margin-inline: auto;
   padding: 2rem 1rem;
+  flex-wrap: wrap;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
 `;
 
 const Title = styled.h1`
+  ${breakpoints.sm} {
+    flex-direction: row;
+    align-items: baseline;
+  }
+
   font-size: 5rem;
   font-weight: 400;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  white-space: nowrap;
 
   background: #000;
   background: radial-gradient(
@@ -167,16 +225,15 @@ const Title = styled.h1`
 
 const Image = styled(NextImage)`
   width: 256px;
+  margin-bottom: 2rem;
   ${breakpoints.md} {
     transform: scaleX(-1);
+    margin-bottom: 0;
   }
 `;
 
 const Description = styled.div`
   margin-block-end: 2rem;
-  ${breakpoints.md} {
-    margin-block: 1.5rem;
-  }
 `;
 
 const LinkArea = styled.div`
@@ -195,12 +252,30 @@ const clickScale = keyframes`
 `;
 
 const PrimaryLink = styled(NextLink)`
+  position: relative;
   display: inline-flex;
   align-items: center;
   border-radius: 12px;
   padding: 8px;
   padding-inline-start: 16px;
-  ${colors.primary};
+
+  background-image:
+    linear-gradient(var(--color-fd-background), var(--color-fd-background)),
+    linear-gradient(
+      45deg,
+      hsl(50deg 51% 63%) 0%,
+      hsl(41deg 61% 64%) 17%,
+      hsl(33deg 68% 65%) 33%,
+      hsl(25deg 74% 66%) 50%,
+      hsl(18deg 78% 68%) 67%,
+      hsl(10deg 78% 70%) 83%,
+      hsl(0deg 75% 72%) 100%
+    );
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  border: 2px solid transparent;
+
+  ${shineAnimation};
 
   &:hover svg {
     animation: ${clickScale} 0.3s alternate;
@@ -223,12 +298,15 @@ const PrimaryLink = styled(NextLink)`
 `;
 
 const SecondaryLink = styled(NextLink)`
+  position: relative;
   display: inline-flex;
   align-items: center;
   border-radius: 12px;
   padding: 8px;
   padding-inline-start: 16px;
   ${colors.secondary};
+
+  ${shineAnimation};
 
   &:hover svg {
     transform: translateX(4px);
@@ -259,4 +337,85 @@ const EnumTitle = styled.div`
 
 const Svg = styled.svg`
   height: 0.7lh;
+`;
+
+const shimmer = keyframes`
+  0% {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: 100%;
+  }
+`;
+
+const hueRotate = keyframes`
+  0% {
+    --hue: 0deg;
+  }
+  50% {
+    --hue: 40deg;
+  }
+  100% {
+    --hue: 0deg;
+  }
+`;
+
+const Link = styled(NextLink)`
+  position: relative;
+  white-space: nowrap;
+  @property --hue {
+    initial-value: 0deg;
+    inherits: false;
+    syntax: "<angle>";
+  }
+  animation: ${hueRotate} 5s linear infinite;
+  border-image-source: linear-gradient(
+    45deg,
+    hsl(calc(50deg - var(--hue)), 68%, 44%) 0%,
+    hsl(calc(0deg + var(--hue)), 75%, 71%) 50%,
+    hsl(calc(50deg - var(--hue)), 68%, 44%) 100%
+  );
+  border-image-slice: 1;
+  border-image-width: 0 0 1px;
+`;
+
+const VersionLink = styled.a`
+  position: relative;
+  display: inline-block;
+  font-size: 1rem;
+  padding: 0.2rem 0.7rem;
+  translate: 0 -0.7rem;
+  border-radius: 9999px;
+  ${colors.secondary}
+
+  ${breakpoints.sm} {
+    margin-block: 0;
+  }
+
+  ${shineAnimation};
+
+  &:after {
+    border-radius: 9999px;
+  }
+
+  @supports (text-box-trim: trim-both) {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    translate: 0 -0.6rem;
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
+  }
+`;
+
+const Strong = styled.strong`
+  background: linear-gradient(45deg, #bea524, #cd3e3e, #bea524) -100%/ 200%;
+  background-clip: text;
+  ${theme.dark} {
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+    background-clip: text;
+  }
+  animation: ${shimmer} 20s linear infinite;
+  animation-direction: alternate;
+  color: transparent;
+  font-weight: 550;
 `;

@@ -74,15 +74,15 @@
     "prettier": "npx prettier --write \"./{loaders,runtime,withYak}/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
-    "@babel/core": "catalog:core",
-    "@babel/plugin-syntax-typescript": "catalog:core",
+    "@babel/parser": "catalog:core",
+    "@babel/traverse": "catalog:core",
     "yak-swc": "5.5.0"
   },
   "devDependencies": {
-    "@babel/types": "catalog:dev",
     "@testing-library/jest-dom": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/babel__core": "catalog:dev",
+    "@types/babel__traverse": "catalog:dev",
     "@types/jest": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
