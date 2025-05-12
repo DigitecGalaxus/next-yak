@@ -2,4 +2,4 @@
 "next-yak": patch
 ---
 
-Replace @babel/core with @babel/parser and @babel/traverse
+Improve cross file compilation performance by removing the serialization
