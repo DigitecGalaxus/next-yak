@@ -6,7 +6,7 @@ import NextImage from "next/image";
 import yakJumping from "@/public/img/yak-jumping.png";
 import { ErrorBoundary } from "./errorBoundary";
 import { BasicCode } from "./basicCode";
-import { shine } from "@/lib/utils/shine";
+import { shineAnimation } from "@/lib/utils/shine";
 
 export const LandingPage = ({ version }: { version: string }) => {
   return (
@@ -23,12 +23,12 @@ export const LandingPage = ({ version }: { version: string }) => {
           }
         `}
       >
-        <Title>
-          Next-Yak
+        <TitleRow>
+          <Title>Next-Yak</Title>
           <VersionLink href="https://www.npmjs.com/package/next-yak">
             {version}
           </VersionLink>
-        </Title>
+        </TitleRow>
         <Image src={yakJumping} alt="Image of yak coding" priority />
       </div>
       <Description>
@@ -176,21 +176,28 @@ const Article = styled.article`
   max-width: 80ch;
   margin-inline: auto;
   padding: 2rem 1rem;
+  flex-wrap: wrap;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
 `;
 
 const Title = styled.h1`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
   ${breakpoints.sm} {
     flex-direction: row;
     align-items: baseline;
   }
 
-  gap: 1.5rem;
   font-size: 5rem;
   font-weight: 400;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  white-space: nowrap;
 
   background: #000;
   background: radial-gradient(
@@ -215,8 +222,10 @@ const Title = styled.h1`
 
 const Image = styled(NextImage)`
   width: 256px;
+  margin-bottom: 2rem;
   ${breakpoints.md} {
     transform: scaleX(-1);
+    margin-bottom: 0;
   }
 `;
 
@@ -263,7 +272,7 @@ const PrimaryLink = styled(NextLink)`
   background-origin: border-box;
   border: 2px solid transparent;
 
-  ${shine};
+  ${shineAnimation};
 
   &:hover svg {
     animation: ${clickScale} 0.3s alternate;
@@ -294,7 +303,7 @@ const SecondaryLink = styled(NextLink)`
   padding-inline-start: 16px;
   ${colors.secondary};
 
-  ${shine};
+  ${shineAnimation};
 
   &:hover svg {
     transform: translateX(4px);
@@ -332,17 +341,15 @@ const VersionLink = styled.a`
   display: inline-block;
   font-size: 1rem;
   padding: 0.2rem 0.7rem;
+  translate: 0 -0.7rem;
   border-radius: 9999px;
-  color: white;
   ${colors.secondary}
-  transform: translateY(-.6rem);
 
-  margin-block: -1rem 1rem;
   ${breakpoints.sm} {
     margin-block: 0;
   }
 
-  ${shine};
+  ${shineAnimation};
 
   &:after {
     border-radius: 9999px;
@@ -351,6 +358,7 @@ const VersionLink = styled.a`
   @supports (text-box-trim: trim-both) {
     padding-top: 0.6rem;
     padding-bottom: 0.6rem;
+    translate: 0 -0.6rem;
     text-box-trim: trim-both;
     text-box-edge: cap alphabetic;
   }

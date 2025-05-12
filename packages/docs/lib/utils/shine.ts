@@ -1,6 +1,6 @@
 import { css, keyframes } from "next-yak";
 
-const shineAnimation = keyframes`
+const shine = keyframes`
   0% {
       background-position-x: 100%;
     }
@@ -9,7 +9,7 @@ const shineAnimation = keyframes`
     }
   `;
 
-export const shine = css`
+export const shineAnimation = css`
   &:after {
     content: "";
     position: absolute;
@@ -25,6 +25,6 @@ export const shine = css`
         hsla(0, 0%, 96%, 0%) 60%
       )
       0%/ 300%;
-    animation: ${shineAnimation} 0.5s linear;
+    animation: ${shine} 0.5s linear;
   }
 `;
