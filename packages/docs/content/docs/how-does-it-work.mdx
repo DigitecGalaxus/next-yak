@@ -219,9 +219,17 @@ Once the final css is generated the loader hands it over as a CSS module file so
 
 See: [styled.tsx](https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/styled.tsx)
 
-The runtime part is responsible for merging styles and props. It's a simple function that takes in the styles and the props and returns the merged styles.
+Next-yak is a zero-runtime css-in-js library. This means there is zero code which manipulates the DOM or CSSOM.
 
-A lot of this code is types and comments to indicate why certain things are done. The actual runtime code is very small.
+Unlinke other CSS-in-JS libraries there is absolutely no code which instructs the browser or react to add or remove any `<style>` or `<link>` elements.
+
+For convenience we provide a minimal type-safe runtime which connects the generated CSS class names with your JSX and merges class names.
+This runtime has zero side effects and is therefore 100% compatible with server components.
+
+The runtime part is responsible for merging styles and props. It's a simple function that takes in the styles and the props and returns the merged styles.
+You can think of it as an integrated "classnames" package.
+
+Therefore the runtime code is very small and optimized to be tree-shakable
 
 ## Context
 

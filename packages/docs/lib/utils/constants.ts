@@ -6,25 +6,8 @@ export const theme = {
 };
 
 export const colors = {
-  primary: css`
-    transition: background-color 0.2s;
-    ${theme.light} {
-      color: white;
-      background-color: hsl(202.45 100% 27.25% / 1);
-      &:hover {
-        background-color: hsl(202.45 100% 27.25% / 0.85);
-      }
-    }
-    ${theme.dark} {
-      color: black;
-      background-color: hsl(0 0% 100% / 0.9);
-      &:hover {
-        background-color: hsl(0 0% 100% / 1);
-      }
-    }
-  `,
   secondary: css`
-    transition: outline-color 0.2s;
+    transition: border-color 0.2s;
     border-width: 1px;
     border-style: solid;
     ${theme.light} {
