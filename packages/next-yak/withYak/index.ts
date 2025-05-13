@@ -37,7 +37,7 @@ export type YakConfigOptions = {
           filter?: (path: string) => boolean;
           type: "all" | "ts" | "css" | "css resolved";
         };
-    transpileMode?: "CssModule" | "Css";
+    transpilationMode?: "CssModule" | "Css";
   };
 };
 
@@ -57,7 +57,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       basePath: currentDir,
       prefix: yakOptions.prefix,
       displayNames: yakOptions.displayNames ?? !minify,
-      transpileMode: yakOptions.experiments?.transpileMode,
+      transpilationMode: yakOptions.experiments?.transpilationMode,
     },
   ]);
 
@@ -68,7 +68,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
 
     webpackConfig.module.rules.push({
       test:
-        yakOptions.experiments?.transpileMode === "Css"
+        yakOptions.experiments?.transpilationMode === "Css"
           ? /\.yak\.css$/
           : /\.yak\.module\.css$/,
       loader: path.join(currentDir, "../loaders/css-loader.js"),

@@ -258,7 +258,7 @@ async function parseFile(
       exports,
       parseStyledComponents(
         await tranformedSource,
-        loader.getOptions().experiments?.transpileMode,
+        loader.getOptions().experiments?.transpilationMode,
       ),
     );
 
@@ -421,7 +421,9 @@ function parseMixins(
 
 function parseStyledComponents(
   sourceContents: string,
-  transpileMode?: NonNullable<YakConfigOptions["experiments"]>["transpileMode"],
+  transpilationMode?: NonNullable<
+    YakConfigOptions["experiments"]
+  >["transpilationMode"],
 ): Record<string, { type: "styled-component"; value: string }> {
   // cross-file Styled Components are always in the following format:
   // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
@@ -437,7 +439,9 @@ function parseStyledComponents(
     styledComponents[componentName] = {
       type: "styled-component",
       value:
-        transpileMode === "Css" ? `.${className}` : `:global(.${className})`,
+        transpilationMode === "Css"
+          ? `.${className}`
+          : `:global(.${className})`,
     };
   }
 
