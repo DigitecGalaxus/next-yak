@@ -19,6 +19,7 @@
     "@shikijs/monaco": "catalog:dev",
     "@shikijs/transformers": "catalog:dev",
     "@swc/core": "catalog:dev",
+    "@vercel/analytics": "^1.5.0",
     "fumadocs-core": "catalog:dev",
     "fumadocs-mdx": "catalog:dev",
     "fumadocs-twoslash": "catalog:dev",
