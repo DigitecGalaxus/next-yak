@@ -38,7 +38,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 mod naming_convention;
-use naming_convention::NamingConvention;
+use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -64,11 +64,19 @@ pub struct Config {
   /// Disabled by default.
   #[serde(default)]
   pub display_names: bool,
+  /// Transpile mode for CSS
+  /// Influences how class names and selectors are transpiled
+  #[serde(default = "Config::transpilation_mode_default")]
+  pub transpilation_mode: TranspilationMode,
 }
 
 impl Config {
   fn minify_default() -> bool {
     true
+  }
+
+  fn transpilation_mode_default() -> TranspilationMode {
+    TranspilationMode::CssModule
   }
 }
 
@@ -79,6 +87,7 @@ impl Default for Config {
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
+      transpilation_mode: TranspilationMode::CssModule,
     }
   }
 }
@@ -124,6 +133,8 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
+  /// Transpilation mode to determine how to transpile the code
+  transpilation_mode: TranspilationMode,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -136,6 +147,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
+    transpilation_mode: TranspilationMode,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -151,6 +163,7 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
+      transpilation_mode,
     }
   }
 
@@ -332,7 +345,12 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = parse_css(&format!("global({})", keyframe_name), css_state);
+                let (new_state, _) = match &self.transpilation_mode {
+                  TranspilationMode::CssModule => {
+                    parse_css(&format!("global({})", keyframe_name), css_state)
+                  }
+                  TranspilationMode::Css => parse_css(&keyframe_name, css_state),
+                };
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
@@ -573,9 +591,14 @@ where
           specifiers: vec![],
           src: Box::new(Str {
             span: DUMMY_SP,
-            value: format!(
-              "./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css"
-            )
+            value: match &self.transpilation_mode {
+              TranspilationMode::CssModule => {
+                format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
+              }
+              TranspilationMode::Css => {
+                format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+              }
+            }
             .into(),
             raw: None,
           }),
@@ -783,6 +806,7 @@ where
         current_variable_id.clone(),
         self.display_names,
         self.current_exported,
+        self.transpilation_mode,
       )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
@@ -795,6 +819,7 @@ where
               .naming_convention
               .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
+        self.transpilation_mode,
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => Box::new(TransformCssMixin::new(
@@ -802,12 +827,14 @@ where
         current_variable_id.clone(),
         self.current_exported,
         self.inside_element_with_css_attribute,
+        self.transpilation_mode,
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
         &current_variable_id,
         self.current_condition.clone(),
+        self.transpilation_mode,
       )),
       _ => {
         if !is_top_level {
@@ -1010,6 +1037,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.minify,
     config.prefix,
     config.display_names,
+    config.transpilation_mode,
   )))
 }
 
@@ -1052,6 +1080,7 @@ mod tests {
           false,
           None,
           true,
+          TranspilationMode::CssModule,
         ))
       },
       &input,
@@ -1078,6 +1107,7 @@ mod tests {
           true,
           None,
           false,
+          TranspilationMode::CssModule,
         ))
       },
       &input,

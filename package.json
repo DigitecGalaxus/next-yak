@@ -21,8 +21,7 @@
     "release": "pnpm run --filter=next-yak build && pnpm run --filter=yak-swc build && changeset publish"
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=9.7.0"
+    "node": ">=20"
   },
   "pnpm": {
     "overrides": {
@@ -33,7 +32,7 @@
   "author": "Jan Nicklas",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "catalog:dev",
-    "@changesets/cli": "catalog:dev"
+    "@changesets/cli": "catalog:dev",
+    "prettier": "catalog:dev"
   }
 }

@@ -313,7 +313,7 @@ pub fn parse_css(
       };
 
       let is_previous_character_empty = (char_position > 0 && current_code.is_empty())
-        || previous_character.map_or(true, |c| c.is_whitespace());
+        || previous_character.is_none_or(|c| c.is_whitespace());
       let is_current_character_empty = current_character.is_whitespace();
 
       if !is_previous_character_empty || !is_current_character_empty {

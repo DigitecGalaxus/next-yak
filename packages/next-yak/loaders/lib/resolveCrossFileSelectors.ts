@@ -2,6 +2,7 @@ import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
 import path from "path";
 import type { Compilation, LoaderContext } from "webpack";
+import { YakConfigOptions } from "../../withYak/index.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
@@ -14,7 +15,7 @@ const compilationCache = new WeakMap<
   }
 >();
 
-const getCompilationCache = (loader: LoaderContext<{}>) => {
+const getCompilationCache = (loader: LoaderContext<YakConfigOptions>) => {
   const compilation = loader._compilation;
   if (!compilation) {
     throw new Error("Webpack compilation object not available");
@@ -171,7 +172,7 @@ export async function resolveModule(
  * ```
  */
 async function parseModule(
-  loader: LoaderContext<{}>,
+  loader: LoaderContext<YakConfigOptions>,
   moduleSpecifier: string,
   context: string,
 ): Promise<ParsedFile> {
@@ -196,7 +197,7 @@ async function parseModule(
 }
 
 async function parseFile(
-  loader: LoaderContext<{}>,
+  loader: LoaderContext<YakConfigOptions>,
   filePath: string,
 ): Promise<ParsedFile> {
   const isYak =
@@ -204,7 +205,6 @@ async function parseFile(
     filePath.endsWith(".yak.tsx") ||
     filePath.endsWith(".yak.js") ||
     filePath.endsWith(".yak.jsx");
-  const isTSX = filePath.endsWith(".tsx");
 
   try {
     if (isYak) {
@@ -252,9 +252,15 @@ async function parseFile(
       });
     });
 
-    const exports = await parseExports(await sourceContents, isTSX);
+    const exports = await parseExports(await sourceContents);
     const mixins = parseMixins(await tranformedSource);
-    Object.assign(exports, parseStyledComponents(await tranformedSource));
+    Object.assign(
+      exports,
+      parseStyledComponents(
+        await tranformedSource,
+        loader.getOptions().experiments?.transpilationMode,
+      ),
+    );
 
     // Recursively resolve cross-file constants in mixins
     // e.g. cross file mixins inside a cross file mixin
@@ -313,7 +319,6 @@ async function parseFile(
 
 async function parseExports(
   sourceContents: string,
-  isTSX: boolean,
 ): Promise<Record<string, ParsedExport>> {
   let exports: Record<string, ParsedExport> = {};
 
@@ -416,6 +421,9 @@ function parseMixins(
 
 function parseStyledComponents(
   sourceContents: string,
+  transpilationMode?: NonNullable<
+    YakConfigOptions["experiments"]
+  >["transpilationMode"],
 ): Record<string, { type: "styled-component"; value: string }> {
   // cross-file Styled Components are always in the following format:
   // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
@@ -430,7 +438,10 @@ function parseStyledComponents(
     const [componentName, className] = comment.split(":");
     styledComponents[componentName] = {
       type: "styled-component",
-      value: `:global(.${className})`,
+      value:
+        transpilationMode === "Css"
+          ? `.${className}`
+          : `:global(.${className})`,
     };
   }
 
