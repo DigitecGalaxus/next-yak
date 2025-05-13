@@ -73,6 +73,7 @@ jobs:
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Preview)
+        id: deploy-preview
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: |
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
@@ -80,13 +81,13 @@ jobs:
       - name: Find Documentation Comment
         uses: peter-evans/find-comment@v3
         id: find-comment
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         with:
           issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
           comment-author: "github-actions[bot]"
           body-includes: "🧪 Example App Preview Deployed!"
       - name: Create or Update Documentation Comment
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
