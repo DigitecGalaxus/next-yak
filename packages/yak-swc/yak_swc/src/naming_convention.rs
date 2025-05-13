@@ -194,11 +194,13 @@ pub enum TranspilationMode {
   Css,
 }
 
-/// Returns a valid CSS class name
-pub fn get_css_class_name(input: &str, mode: &TranspilationMode) -> String {
-  match mode {
-    TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
-    TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
+impl TranspilationMode {
+  /// Returns a valid CSS class name
+  pub fn css_class_name(&self, input: &str) -> String {
+    match self {
+      TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
+      TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
+    }
   }
 }
 
