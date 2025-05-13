@@ -83,8 +83,34 @@ jobs:
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Preview)
+        id: deploy-preview
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
-        run: vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+      - name: Find Documentation Comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        with:
+          issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "📚 Documentation Preview Deployed!"
+      - name: Create or Update Documentation Comment
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          body: |
+            ## 📚 Documentation Preview Deployed!
+
+            A preview of the documentation changes in this PR has been deployed to Vercel:
+
+            🔗 [View Documentation Preview](${{ steps.deploy-preview.outputs.deployment_url }})
+
+            This preview will update automatically with new commits to this PR.
+          edit-mode: replace
 
       # Production deployment (for main branch pushes)
       - name: Pull Vercel environment information (Production)
