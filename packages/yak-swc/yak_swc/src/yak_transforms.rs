@@ -12,7 +12,7 @@ use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_
 use swc_core::ecma::ast::*;
 use swc_core::plugin::errors::HANDLER;
 
-use crate::naming_convention::{get_css_class_name, NamingConvention, TranspileMode};
+use crate::naming_convention::{get_css_class_name, NamingConvention, TranspilationMode};
 
 /// Represents a CSS result after the transformation
 #[derive(Debug)]
@@ -54,7 +54,7 @@ pub trait YakTransform {
 pub struct TransformNestedCss {
   /// ClassName of the mixin
   class_name: String,
-  transpile_mode: TranspileMode,
+  transpile_mode: TranspilationMode,
 }
 
 impl TransformNestedCss {
@@ -63,7 +63,7 @@ impl TransformNestedCss {
     naming_convention: &mut NamingConvention,
     declaration_name: &ScopedVariableReference,
     condition: Vec<String>,
-    transpile_mode: TranspileMode,
+    transpile_mode: TranspilationMode,
   ) -> TransformNestedCss {
     let condition_concatenated = condition.as_slice().join("-and-");
     let class_name = naming_convention.get_css_variable_name(&format!(
@@ -147,7 +147,7 @@ pub struct TransformCssMixin {
   is_exported: bool,
   is_within_jsx_attribute: bool,
   class_name: String,
-  transpile_mode: TranspileMode,
+  transpile_mode: TranspilationMode,
 }
 
 impl TransformCssMixin {
@@ -156,7 +156,7 @@ impl TransformCssMixin {
     declaration_name: ScopedVariableReference,
     is_exported: bool,
     is_within_jsx_attribute: bool,
-    transpile_mode: TranspileMode,
+    transpile_mode: TranspilationMode,
   ) -> TransformCssMixin {
     let class_name =
       naming_convention.get_css_variable_name(&declaration_name.to_readable_string());
@@ -277,7 +277,7 @@ pub struct TransformStyled {
   declaration_name: ScopedVariableReference,
   assign_display_name: bool,
   is_exported: bool,
-  transpile_mode: TranspileMode,
+  transpile_mode: TranspilationMode,
 }
 
 impl TransformStyled {
@@ -286,7 +286,7 @@ impl TransformStyled {
     declaration_name: ScopedVariableReference,
     assign_display_name: bool,
     is_exported: bool,
-    transpile_mode: TranspileMode,
+    transpile_mode: TranspilationMode,
   ) -> TransformStyled {
     let class_name =
       naming_convention.get_css_variable_name(&declaration_name.to_readable_string());
@@ -509,13 +509,13 @@ impl YakTransform for TransformStyled {
 pub struct TransformKeyframes {
   /// Animation Name
   animation_name: String,
-  transpile_mode: TranspileMode,
+  transpile_mode: TranspilationMode,
 }
 
 impl TransformKeyframes {
   pub fn with_animation_name(
     animation_name: String,
-    transpile_mode: TranspileMode,
+    transpile_mode: TranspilationMode,
   ) -> TransformKeyframes {
     TransformKeyframes {
       animation_name,
@@ -529,8 +529,8 @@ impl YakTransform for TransformKeyframes {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
       name: match &self.transpile_mode {
-        TranspileMode::CssModule => format!("@keyframes :global({})", self.animation_name),
-        TranspileMode::Css => format!("@keyframes {}", self.animation_name),
+        TranspilationMode::CssModule => format!("@keyframes :global({})", self.animation_name),
+        TranspilationMode::Css => format!("@keyframes {}", self.animation_name),
       },
       scope_type: ScopeType::AtRule,
     }];
@@ -583,8 +583,8 @@ impl YakTransform for TransformKeyframes {
   /// Get the selector for the keyframe to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
     Some(match &self.transpile_mode {
-      TranspileMode::CssModule => format!("global({})", self.animation_name),
-      TranspileMode::Css => self.animation_name.clone(),
+      TranspilationMode::CssModule => format!("global({})", self.animation_name),
+      TranspilationMode::Css => self.animation_name.clone(),
     })
   }
 }

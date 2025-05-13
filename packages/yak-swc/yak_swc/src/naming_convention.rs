@@ -189,16 +189,16 @@ fn escape_css_class_name(input: &str) -> String {
 }
 
 #[derive(Deserialize, Clone, Copy)]
-pub enum TranspileMode {
+pub enum TranspilationMode {
   CssModule,
   Css,
 }
 
 /// Returns a valid CSS class name
-pub fn get_css_class_name(input: &str, mode: &TranspileMode) -> String {
+pub fn get_css_class_name(input: &str, mode: &TranspilationMode) -> String {
   match mode {
-    TranspileMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
-    TranspileMode::Css => format!(".{}", escape_css_class_name(input)),
+    TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
+    TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
   }
 }
 

@@ -38,7 +38,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 mod naming_convention;
-use naming_convention::{NamingConvention, TranspileMode};
+use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -67,7 +67,7 @@ pub struct Config {
   /// Transpile mode for CSS
   /// Influences how class names and selectors are transpiled
   #[serde(default = "Config::transpile_mode_default")]
-  pub transpile_mode: TranspileMode,
+  pub transpile_mode: TranspilationMode,
 }
 
 impl Config {
@@ -75,8 +75,8 @@ impl Config {
     true
   }
 
-  fn transpile_mode_default() -> TranspileMode {
-    TranspileMode::CssModule
+  fn transpile_mode_default() -> TranspilationMode {
+    TranspilationMode::CssModule
   }
 }
 
@@ -87,7 +87,7 @@ impl Default for Config {
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
-      transpile_mode: TranspileMode::CssModule,
+      transpile_mode: TranspilationMode::CssModule,
     }
   }
 }
@@ -134,7 +134,7 @@ where
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
   /// Transpile mode to determine how to transpile the code
-  transpile_mode: TranspileMode,
+  transpile_mode: TranspilationMode,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -147,7 +147,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
-    transpile_mode: TranspileMode,
+    transpile_mode: TranspilationMode,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -346,10 +346,10 @@ where
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
                 let (new_state, _) = match &self.transpile_mode {
-                  TranspileMode::CssModule => {
+                  TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
-                  TranspileMode::Css => parse_css(&keyframe_name, css_state),
+                  TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
                 css_state = Some(new_state);
               } else {
@@ -592,10 +592,10 @@ where
           src: Box::new(Str {
             span: DUMMY_SP,
             value: match &self.transpile_mode {
-              TranspileMode::CssModule => {
+              TranspilationMode::CssModule => {
                 format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
               }
-              TranspileMode::Css => {
+              TranspilationMode::Css => {
                 format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
               }
             }
@@ -1073,7 +1073,7 @@ mod tests {
           false,
           None,
           true,
-          TranspileMode::CssModule,
+          TranspilationMode::CssModule,
         ))
       },
       &input,
@@ -1100,7 +1100,7 @@ mod tests {
           true,
           None,
           false,
-          TranspileMode::CssModule,
+          TranspilationMode::CssModule,
         ))
       },
       &input,
