@@ -95,20 +95,20 @@ jobs:
           issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
           comment-author: "github-actions[bot]"
           body-includes: 🚀 Documentation Preview Deployed!
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.4
+        with:
+          template: .github/preview-template.md
+          vars: |
+            docs-link: ${{ steps.deploy-preview.outputs.deployment_url }}
       - name: Comment on PR with Preview URL
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
-          body: |
-            🚀 Documentation Preview Deployed!
-
-            A preview of the documentation changes in this PR has been deployed to Vercel:
-
-            🔗 [View Documentation Preview](${{ steps.deploy-preview.outputs.deployment_url }})
-
-            This preview will update automatically with new commits to this PR.
+          body: ${{ steps.template.outputs.result }}
           edit-mode: replace
 
       # Production deployment (for main branch pushes)
