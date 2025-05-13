@@ -66,8 +66,8 @@ pub struct Config {
   pub display_names: bool,
   /// Transpile mode for CSS
   /// Influences how class names and selectors are transpiled
-  #[serde(default = "Config::transpile_mode_default")]
-  pub transpile_mode: TranspilationMode,
+  #[serde(default = "Config::transpilation_mode_default")]
+  pub transpilation_mode: TranspilationMode,
 }
 
 impl Config {
@@ -75,7 +75,7 @@ impl Config {
     true
   }
 
-  fn transpile_mode_default() -> TranspilationMode {
+  fn transpilation_mode_default() -> TranspilationMode {
     TranspilationMode::CssModule
   }
 }
@@ -87,7 +87,7 @@ impl Default for Config {
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
-      transpile_mode: TranspilationMode::CssModule,
+      transpilation_mode: TranspilationMode::CssModule,
     }
   }
 }
@@ -133,8 +133,8 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
-  /// Transpile mode to determine how to transpile the code
-  transpile_mode: TranspilationMode,
+  /// Transpilation mode to determine how to transpile the code
+  transpilation_mode: TranspilationMode,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -147,7 +147,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
-    transpile_mode: TranspilationMode,
+    transpilation_mode: TranspilationMode,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -163,7 +163,7 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
-      transpile_mode,
+      transpilation_mode,
     }
   }
 
@@ -345,7 +345,7 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = match &self.transpile_mode {
+                let (new_state, _) = match &self.transpilation_mode {
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
@@ -591,7 +591,7 @@ where
           specifiers: vec![],
           src: Box::new(Str {
             span: DUMMY_SP,
-            value: match &self.transpile_mode {
+            value: match &self.transpilation_mode {
               TranspilationMode::CssModule => {
                 format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
               }
@@ -806,7 +806,7 @@ where
         current_variable_id.clone(),
         self.display_names,
         self.current_exported,
-        self.transpile_mode,
+        self.transpilation_mode,
       )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
@@ -819,7 +819,7 @@ where
               .naming_convention
               .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
-        self.transpile_mode,
+        self.transpilation_mode,
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => Box::new(TransformCssMixin::new(
@@ -827,14 +827,14 @@ where
         current_variable_id.clone(),
         self.current_exported,
         self.inside_element_with_css_attribute,
-        self.transpile_mode,
+        self.transpilation_mode,
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
         &current_variable_id,
         self.current_condition.clone(),
-        self.transpile_mode,
+        self.transpilation_mode,
       )),
       _ => {
         if !is_top_level {
@@ -1032,7 +1032,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.minify,
     config.prefix,
     config.display_names,
-    config.transpile_mode,
+    config.transpilation_mode,
   )))
 }
 
