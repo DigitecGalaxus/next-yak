@@ -1,4 +1,7 @@
+"use client";
+import { theme } from "@/lib/utils/constants";
 import { css, styled } from "next-yak";
+import { useState } from "react";
 
 type Features =
   | "INP optimized"
@@ -41,9 +44,9 @@ const libraries = {
       "Zero Compile": true,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
   },
@@ -65,9 +68,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": false,
+      Vite: false,
       "Framework agnostic": false,
     },
     Tailwind: {
@@ -87,9 +90,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     SCSS: {
@@ -109,9 +112,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     "CSS Modules": {
@@ -131,9 +134,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     StyleX: {
@@ -153,9 +156,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     "Panda CSS": {
@@ -175,9 +178,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     Linaria: {
@@ -197,9 +200,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     "Vanilla Extract": {
@@ -219,9 +222,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
   },
@@ -243,9 +246,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": false,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": false,
     },
     Emotion: {
@@ -265,9 +268,9 @@ const libraries = {
       "Zero Compile": false,
       "Compile time optimized": false,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": false,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": false,
     },
     Goober: {
@@ -287,9 +290,9 @@ const libraries = {
       "Zero Compile": true,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": false,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": true,
     },
     Restyle: {
@@ -309,9 +312,9 @@ const libraries = {
       "Zero Compile": true,
       "Compile time optimized": true,
       "Next.js": true,
-      "React": true,
+      React: true,
       "React Server Components": true,
-      "Vite": true,
+      Vite: true,
       "Framework agnostic": false,
     },
   },
@@ -337,79 +340,92 @@ const sups = [
 ] satisfies Array<Features>;
 
 export const ComparisonTable = () => {
+  const [activeLibrary, setActiveLibrary] = useState<string>("Next-Yak");
   return (
     <MaxWidth>
-    <table>
-      <thead>
-        <tr>
-          <th style={{background: "inherit"}}></th>
-          {categories.map((category) => (
-            <ColumnHead
-              $newCategory
-              key={category}
-              colSpan={Object.keys(libraries[category]).length}
-            >
-              {category}
-            </ColumnHead>
-          ))}
-        </tr>
-        <tr>
-        <th style={{background: "inherit"}}></th>
-          {categories.map((category) =>
-            Object.keys(libraries[category]).map((lib, i) => (
+      <Table>
+        <thead>
+          <tr>
+            <ColumnHead style={{borderBottomWidth: 0}} $active={false} />
+            {categories.map((category) => (
               <ColumnHead
-                key={lib}
-                $newCategory={i === 0}
+                $newCategory
+                $active={false}
+                key={category}
+                colSpan={Object.keys(libraries[category]).length}
               >
-                {lib}
+                {category}
               </ColumnHead>
-            ))
-          )}
-        </tr>
-      </thead>
-      <tbody>
-        {Object.keys(features).map((feature) => (
-          <tr key={feature}>
-            <ColumnFeatureName>
-              {feature}
-              {sups.includes(feature as any) && (
-                <sup style={{ marginLeft: "4px" }}>
-                  {sups.indexOf(feature as any) + 1})
-                </sup>
-              )}
-            </ColumnFeatureName>
+            ))}
+          </tr>
+          <tr>
+            <ColumnHead  $active={false} />
             {categories.map((category) =>
-              Object.values(libraries[category]).map((lib, i) => (
-                <Column key={lib[feature]} $newCategory={i === 0}>
-                  {lib[feature] ? <span
-                    title={titleText(
-                      feature,
-                      Object.keys(libraries[category])[i],
-                      true
-                    )}
-                  >✅</span> : <span
-                    title={titleText(
-                      feature,
-                      Object.keys(libraries[category])[i],
-                      false
-                    )}
-                  >❌</span>}
-                </Column>
+              Object.keys(libraries[category]).map((lib, i) => (
+                <ColumnHead key={lib} $newCategory={i === 0} onClick={() => setActiveLibrary(lib)} $active={activeLibrary === lib}>
+                  {lib}
+                </ColumnHead>
               ))
             )}
           </tr>
-        ))}
-      </tbody>
-    </table></MaxWidth>
+        </thead>
+        <tbody>
+          {Object.keys(features).map((feature) => (
+            <tr key={feature}>
+              <ColumnFeatureName>
+                {feature}
+                {sups.includes(feature as any) && (
+                  <sup style={{ marginLeft: "4px" }}>
+                    {sups.indexOf(feature as any) + 1})
+                  </sup>
+                )}
+              </ColumnFeatureName>
+              {categories.map((category) =>
+                Object.values(libraries[category]).map((lib, i) => (
+                  <Column key={lib[feature]} $newCategory={i === 0} onClick={() => setActiveLibrary(Object.keys(libraries[category])[i])} $active={activeLibrary === Object.keys(libraries[category])[i]}>
+                    {lib[feature] ? (
+                      <span
+                        title={titleText(
+                          feature,
+                          Object.keys(libraries[category])[i],
+                          true
+                        )}
+                      >
+                        ✅
+                      </span>
+                    ) : (
+                      <span
+                        title={titleText(
+                          feature,
+                          Object.keys(libraries[category])[i],
+                          false
+                        )}
+                      >
+                        ❌
+                      </span>
+                    )}
+                  </Column>
+                ))
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </MaxWidth>
   );
 };
 
-
 const verbs = ["agnostic", "optimized"] as const;
 
-const titleText = (featureName: string, libName: string, supported: boolean) => {
+const titleText = (
+  featureName: string,
+  libName: string,
+  supported: boolean
+) => {
   const endsWithVerb = verbs.find((verb) => featureName.endsWith(verb));
-  const term = endsWithVerb ? featureName.substring(0, featureName.length - endsWithVerb.length).trim() : featureName;
+  const term = endsWithVerb
+    ? featureName.substring(0, featureName.length - endsWithVerb.length).trim()
+    : featureName;
   const not = supported ? "" : "not ";
   if (endsWithVerb === "optimized") {
     return `${libName} is ${not}${endsWithVerb} for ${term}`;
@@ -419,7 +435,7 @@ const titleText = (featureName: string, libName: string, supported: boolean) => 
   }
   const plural = featureName.endsWith("s") ? "are" : "is";
   return `${featureName} ${plural} ${not}supported by ${libName}`;
-}
+};
 
 const MaxWidth = styled.div`
   max-width: 100%;
@@ -431,21 +447,46 @@ const MaxWidth = styled.div`
   }
 `;
 
+const Table = styled.table`
+  --table-background: hsl(0, 0%, 94.7%);
+  --table-highlight: hsla(0, 0%, 9.8%, 0.1);
+  --cell-background: var(--color-fd-card);
+  --border-color: rgba(0, 0, 0, 0);
+  --border-color-light: hsla(0, 0%, 94.7%, 0.7);
+  border-color: var(--border-color-light);
+
+  ${theme.dark} {
+    --table-background: hsl(0, 0%, 9.8%);
+    --table-highlight: hsla(0, 0%, 94.7%, 0.1);
+    --border-color-light: hsla(0, 0%, 9.8%, 0.5);
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+  }
+  background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+
+  & td {
+    border-color: var(--border-color-light);
+    background-clip: padding-box;
+  }
+
+`;
 
 const ColumnHead = styled.td<{
   $newCategory?: boolean;
+  $active: boolean;
 }>`
- text-align: center;
- font-weight: 600;
- white-space: nowrap;
+  text-align: center;
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--cell-background);
   ${({ $newCategory }) =>
     $newCategory &&
-    css`
-    border-left: 1px solid var(--color-fd-accent-foreground);
+    css`&& {
+      border-left: 1px solid var(--table-highlight);
+    }`}
+  ${({ $active }) => $active && css`
+    --cell-background: var(--table-highlight);
+    color: var(--color-fd-accent);
   `}
-  &:last-child {
-    border-right: 1px solid var(--color-fd-accent-foreground);
-  }
 `;
 
 const ColumnFeatureName = styled.td`
@@ -455,30 +496,36 @@ const ColumnFeatureName = styled.td`
   transition: background-color 500ms;
   padding-left: 3rem;
   padding-right: 1rem;
+  background-color: var(--cell-background);
   @media (max-width: 900px) {
     padding-left: 1rem;
   }
   tr:hover & {
     color: var(--color-fd-accent);
-    background-color: var(--color-fd-accent-foreground);
+    background-color: var(--table-highlight);
   }
 `;
 
 const Column = styled.td<{
   $newCategory?: boolean;
+  $active: boolean;
 }>`
- text-align: center;
- cursor: default;
- transition: background-color 500ms;
+  text-align: center;
+  cursor: default;
+  min-width: 6rem;
+  transition: background-color 500ms;
+  background-color: var(--cell-background);
   ${({ $newCategory }) =>
     $newCategory &&
-    css`
-    border-left: 1px solid var(--color-fd-accent-foreground);
+    css`&& {
+      border-left: 1px solid var(--table-highlight);
+    }`}
+  
+  ${({ $active }) => $active && css`
+    --cell-background: var(--table-highlight);
   `}
-  &:last-child {
-    border-right: 1px solid var(--color-fd-accent-foreground);
-  }
   tr:has(td:hover) & {
-    background-color: var(--color-fd-accent-foreground);
+    background-color: var(--table-highlight);
+    border-color: var(--border-color-light);
   }
 `;
