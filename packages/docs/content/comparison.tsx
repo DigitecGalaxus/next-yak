@@ -478,7 +478,8 @@ const MaxWidth = styled.div`
 
 const Table = styled.table`
   --table-background: hsl(0, 0%, 94.7%);
-  --table-highlight: hsla(0, 0%, 9.8%, 0.1);
+  --table-highlight-fg: hsl(0, 0%, 0%);
+  --table-highlight: hsla(0, 0%, 94.7%, 0.5);
   --cell-background: var(--color-fd-card);
   --border-color: rgba(0, 0, 0, 0);
   --border-color-light: hsla(0, 0%, 94.7%, 0.7);
@@ -486,7 +487,6 @@ const Table = styled.table`
 
   ${theme.dark} {
     --table-background: hsl(0, 0%, 9.8%);
-    --table-highlight: hsla(0, 0%, 94.7%, 0.1);
     --border-color-light: hsla(0, 0%, 9.8%, 0.5);
     background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
   }
@@ -517,7 +517,7 @@ const ColumnHead = styled.td<{
     $active &&
     css`
       --cell-background: var(--table-highlight);
-      color: var(--color-fd-accent);
+      color: var(--table-highlight-fg);
     `}
 `;
 
@@ -535,7 +535,7 @@ const ColumnFeatureName = styled.td`
     padding-left: 1rem;
   }
   tr:hover & {
-    color: var(--color-fd-accent);
+    color: var(--table-highlight-fg);
     background-color: var(--table-highlight);
   }
 `;
