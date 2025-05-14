@@ -2,6 +2,7 @@
 import { theme } from "@/lib/utils/constants";
 import { css, styled } from "next-yak";
 import { useState } from "react";
+import { library } from "webpack";
 
 type Features =
   | "INP optimized"
@@ -341,12 +342,26 @@ const sups = [
 
 export const ComparisonTable = () => {
   const [activeLibrary, setActiveLibrary] = useState<string>("Next-Yak");
+  const columnHoverEvents = (library: string) => ({
+    onMouseOver: () => {
+      setActiveLibrary(library);
+    },
+    onMouseOut: () => {
+      setActiveLibrary((prev) => {
+        if (prev === library) {
+          return "Next-Yak";
+        }
+        return prev;
+      });
+    },
+  });
+
   return (
     <MaxWidth>
       <Table>
         <thead>
           <tr>
-            <ColumnHead style={{borderBottomWidth: 0}} $active={false} />
+            <ColumnHead style={{ borderBottomWidth: 0 }} $active={false} />
             {categories.map((category) => (
               <ColumnHead
                 $newCategory
@@ -359,10 +374,15 @@ export const ComparisonTable = () => {
             ))}
           </tr>
           <tr>
-            <ColumnHead  $active={false} />
+            <ColumnHead $active={false} />
             {categories.map((category) =>
               Object.keys(libraries[category]).map((lib, i) => (
-                <ColumnHead key={lib} $newCategory={i === 0} onClick={() => setActiveLibrary(lib)} $active={activeLibrary === lib}>
+                <ColumnHead
+                  key={lib}
+                  $newCategory={i === 0}
+                  {...columnHoverEvents(lib)}
+                  $active={activeLibrary === lib}
+                >
                   {lib}
                 </ColumnHead>
               ))
@@ -372,7 +392,7 @@ export const ComparisonTable = () => {
         <tbody>
           {Object.keys(features).map((feature) => (
             <tr key={feature}>
-              <ColumnFeatureName>
+              <ColumnFeatureName {...columnHoverEvents("")}>
                 {feature}
                 {sups.includes(feature as any) && (
                   <sup style={{ marginLeft: "4px" }}>
@@ -382,7 +402,14 @@ export const ComparisonTable = () => {
               </ColumnFeatureName>
               {categories.map((category) =>
                 Object.values(libraries[category]).map((lib, i) => (
-                  <Column key={lib[feature]} $newCategory={i === 0} onClick={() => setActiveLibrary(Object.keys(libraries[category])[i])} $active={activeLibrary === Object.keys(libraries[category])[i]}>
+                  <Column
+                    key={Object.keys(libraries[category])[i]}
+                    $newCategory={i === 0}
+                    {...columnHoverEvents(Object.keys(libraries[category])[i])}
+                    $active={
+                      activeLibrary === Object.keys(libraries[category])[i]
+                    }
+                  >
                     {lib[feature] ? (
                       <span
                         title={titleText(
@@ -438,10 +465,12 @@ const titleText = (
 };
 
 const MaxWidth = styled.div`
+  width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: auto;
   margin: 0 auto;
   padding: 0 2rem;
+  position: relative;
   @media (max-width: 900px) {
     padding: 0 0.5rem;
   }
@@ -467,7 +496,6 @@ const Table = styled.table`
     border-color: var(--border-color-light);
     background-clip: padding-box;
   }
-
 `;
 
 const ColumnHead = styled.td<{
@@ -480,23 +508,29 @@ const ColumnHead = styled.td<{
   background-color: var(--cell-background);
   ${({ $newCategory }) =>
     $newCategory &&
-    css`&& {
-      border-left: 1px solid var(--table-highlight);
-    }`}
-  ${({ $active }) => $active && css`
-    --cell-background: var(--table-highlight);
-    color: var(--color-fd-accent);
-  `}
+    css`
+      && {
+        border-left: 1px solid var(--table-highlight);
+      }
+    `}
+  ${({ $active }) =>
+    $active &&
+    css`
+      --cell-background: var(--table-highlight);
+      color: var(--color-fd-accent);
+    `}
 `;
 
 const ColumnFeatureName = styled.td`
   text-align: left;
   white-space: nowrap;
   font-weight: 600;
-  transition: background-color 500ms;
   padding-left: 3rem;
   padding-right: 1rem;
   background-color: var(--cell-background);
+  position: sticky;
+  left: 0;
+  z-index: 1;
   @media (max-width: 900px) {
     padding-left: 1rem;
   }
@@ -513,17 +547,20 @@ const Column = styled.td<{
   text-align: center;
   cursor: default;
   min-width: 6rem;
-  transition: background-color 500ms;
   background-color: var(--cell-background);
   ${({ $newCategory }) =>
     $newCategory &&
-    css`&& {
-      border-left: 1px solid var(--table-highlight);
-    }`}
-  
-  ${({ $active }) => $active && css`
-    --cell-background: var(--table-highlight);
-  `}
+    css`
+      && {
+        border-left: 1px solid var(--table-highlight);
+      }
+    `}
+
+  ${({ $active }) =>
+    $active &&
+    css`
+      --cell-background: var(--table-highlight);
+    `}
   tr:has(td:hover) & {
     background-color: var(--table-highlight);
     border-color: var(--border-color-light);
