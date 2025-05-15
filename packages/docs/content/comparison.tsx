@@ -411,25 +411,21 @@ export const ComparisonTable = () => {
                     }
                   >
                     {lib[feature] ? (
-                      <span
+                      <SupportedYes
                         title={titleText(
                           feature,
                           Object.keys(libraries[category])[i],
                           true
                         )}
-                      >
-                        ✅
-                      </span>
+                      />
                     ) : (
-                      <span
+                      <SupportedNo
                         title={titleText(
                           feature,
                           Object.keys(libraries[category])[i],
                           false
                         )}
-                      >
-                        ❌
-                      </span>
+                      />
                     )}
                   </Column>
                 ))
@@ -480,12 +476,15 @@ const Table = styled.table`
   --table-background: hsl(0, 0%, 94.7%);
   --table-highlight-fg: hsl(0, 0%, 0%);
   --table-highlight: hsla(0, 0%, 94.7%, 0.5);
+  --table-highlight-border: hsla(0, 0%, 94.7%, 0.5);
   --cell-background: var(--color-fd-card);
   --border-color: rgba(0, 0, 0, 0);
   --border-color-light: hsla(0, 0%, 94.7%, 0.7);
   border-color: var(--border-color-light);
 
   ${theme.dark} {
+    --table-highlight:hsl(0deg 5.08% 16.34%);
+    --table-highlight-fg: hsl(0, 0%, 100%);
     --table-background: hsl(0, 0%, 9.8%);
     --border-color-light: hsla(0, 0%, 9.8%, 0.5);
     background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
@@ -510,7 +509,7 @@ const ColumnHead = styled.td<{
     $newCategory &&
     css`
       && {
-        border-left: 1px solid var(--table-highlight);
+        border-left: 1px solid var(--table-highlight-border);
       }
     `}
   ${({ $active }) =>
@@ -521,6 +520,28 @@ const ColumnHead = styled.td<{
     `}
 `;
 
+const SupportedYes = styled.span`
+  color: var(--table-highlight-fg);
+  &::before {
+    content: "✔" / "supported";
+  }
+  color: #0f840e;
+  ${theme.dark} {
+    color: #2faf1e;
+  }
+`;
+
+const SupportedNo = styled.span`
+  color: var(--table-highlight-fg);
+  &::before {
+    content: "✘" / "not supported";
+  }
+  color: #aa1313;
+  ${theme.dark} {
+    color: #ca3333;
+  }
+`;
+
 const ColumnFeatureName = styled.td`
   text-align: left;
   white-space: nowrap;
@@ -528,9 +549,6 @@ const ColumnFeatureName = styled.td`
   padding-left: 3rem;
   padding-right: 1rem;
   background-color: var(--cell-background);
-  position: sticky;
-  left: 0;
-  z-index: 1;
   @media (max-width: 900px) {
     padding-left: 1rem;
   }
@@ -548,11 +566,15 @@ const Column = styled.td<{
   cursor: default;
   min-width: 6rem;
   background-color: var(--cell-background);
+  tr:has(td:hover) & {
+    background-color: var(--table-highlight);
+    border-color: var(--border-color-light);
+  }
   ${({ $newCategory }) =>
     $newCategory &&
     css`
-      && {
-        border-left: 1px solid var(--table-highlight);
+      &&& {
+        border-left: 1px solid var(--table-highlight-border);
       }
     `}
 
@@ -561,8 +583,4 @@ const Column = styled.td<{
     css`
       --cell-background: var(--table-highlight);
     `}
-  tr:has(td:hover) & {
-    background-color: var(--table-highlight);
-    border-color: var(--border-color-light);
-  }
 `;
