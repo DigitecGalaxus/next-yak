@@ -54,70 +54,47 @@ export default dynamic(
           {
             react: React,
             "next-yak/internal": NextYakInternal,
-            "./theFile.yak.css!=!./theFile?./theFile.yak.css": {},
+            "./index.yak.css!=!./index?./index.yak.css": {},
+            "./other.yak.css!=!./other?./other.yak.css": {},
           },
           [
             {
               name: "file:///other.tsx",
               content: code["file:///other.tsx"],
             },
+            {
+              name: "file:///different.yak.ts",
+              content: code["file:///different.yak.ts"],
+            },
           ],
         )
-          .then(setComponent)
-          .catch(console.log);
+          .then((result) => {
+            if (!result) {
+              return;
+            }
+            setComponent(result.comp);
 
-        const result: Record<
-          keyof typeof code,
-          { original: string; transformed: string; css?: string }
-        > = {};
-        for (const [filePath, originalCode] of Object.entries(code) as [
-          keyof typeof code,
-          string,
-        ][]) {
-          result[filePath] = {
-            original: originalCode,
-            transformed: transform(originalCode, {
-              filename: "/bar/index.tsx",
-              jsc: {
-                target: "es2022",
-                loose: false,
-                minify: {
-                  compress: false,
-                  mangle: false,
-                },
-                preserveAllComments: true,
+            // @ts-expect-error
+            setResponse({
+              "file:///index.tsx": {
+                original: code["file:///index.tsx"],
+                transformed: result.transformedCodeToDisplay,
+                css: result.css,
               },
-              minify: false,
-              isModule: true,
-            }).code,
-          };
-        }
-
-        const transpiledYakFile = transform(
-          result["file:///different.yak.ts"].original,
-          {
-            filename: "/bar/index.tsx",
-            jsc: {
-              target: "es5",
-            },
-            isModule: true,
-            module: {
-              type: "commonjs",
-            },
-          },
-        );
-
-        runLoader(result, transpiledYakFile.code).then(async (r) => {
-          for (const key in result) {
-            const { transformed } = result[key];
-            result[key].transformed = await prettier.format(transformed, {
-              parser: "babel",
-              plugins: [babelParser, estreePlugin as any],
+              ...result.otherFilesTransformed.reduce(
+                (acc, { name, transformedCodeToDisplay, css }) => {
+                  acc[name] = {
+                    original: code[name],
+                    transformed: transformedCodeToDisplay,
+                    css: css,
+                  };
+                  return acc;
+                },
+                {} as Record<string, unknown>,
+              ),
             });
-          }
-
-          setResponse(result as any);
-        });
+          })
+          .catch(console.log);
       }, []);
 
       return (
@@ -375,10 +352,12 @@ export const myColor = \`#\${ green }\`;`,
     value: `import React from "react";
 import { styled } from "next-yak";
 import { OtherButton, Mixin } from "./other";
+import { myColor } from "./different.yak"
 
 const Button = styled.div\`
   color: red;
   \${Mixin};
+  color: \${myColor};
 \`;
 
 export default function Component() {

@@ -6,12 +6,25 @@ export async function executeCode(
   codeString: string,
   dependencies: Record<string, unknown>,
   otherFiles: { name: string; content: string }[],
-): Promise<ReactElement | null> {
+): Promise<{
+  comp: ReactElement;
+  transformedCodeToDisplay: string;
+  css: string;
+  otherFilesTransformed: {
+    name: string;
+    content: string;
+    exports: Record<string, unknown>;
+    transformedCodeToExecute: string;
+    transformedCodeToDisplay: string;
+    css: string;
+  }[];
+} | null> {
   const otherFilesTransformed: {
     name: string;
     content: string;
     exports: Record<string, unknown>;
-    transformedCode: string;
+    transformedCodeToExecute: string;
+    transformedCodeToDisplay: string;
     css: string;
   }[] = [];
   for (const file of otherFiles) {
@@ -22,8 +35,9 @@ export async function executeCode(
     console.log(`Content: ${content}`);
     console.log(`Dependencies: ${dependencies}`);
 
-    const { exports, transformedCode } = transform(
+    const { exports, transformedCode, transformedCodeToDisplay } = transform(
       transformCode,
+      name,
       content,
       dependencies,
     );
@@ -34,23 +48,36 @@ export async function executeCode(
       name,
       content,
       exports,
-      transformedCode,
-      css: await runLoaderForSingleFile(transformedCode, name),
+      transformedCodeToExecute: transformedCode,
+      transformedCodeToDisplay,
+      css: !name.endsWith("yak.ts")
+        ? await runLoaderForSingleFile(transformedCode, name)
+        : "",
     });
   }
 
   console.log({ otherFilesTransformed });
 
-  const { exports, transformedCode } = transform(transformCode, codeString, {
-    ...dependencies,
-    ...otherFilesTransformed.reduce((acc, { name, exports }) => {
-      console.log({
-        filename: name.replace("file://", ".").replace(".tsx", ""),
-      });
-      acc[name.replace("file://", ".").replace(".tsx", "")] = exports;
-      return acc;
-    }, {} as any),
-  });
+  const { exports, transformedCode, transformedCodeToDisplay } = transform(
+    transformCode,
+    "index.tsx",
+    codeString,
+    {
+      ...dependencies,
+      ...otherFilesTransformed.reduce((acc, { name, exports }) => {
+        console.log({
+          filename: name
+            .replace("file://", ".")
+            .replace(".tsx", "")
+            .replace(".ts", ""),
+        });
+        acc[
+          name.replace("file://", ".").replace(".tsx", "").replace(".ts", "")
+        ] = exports;
+        return acc;
+      }, {} as any),
+    },
+  );
 
   if (!("default" in exports)) {
     return null;
@@ -62,10 +89,12 @@ export async function executeCode(
   const css = await runLoaderForSingleFile(
     transformedCode,
     undefined,
-    otherFilesTransformed.map(({ name, transformedCode }) => ({
-      name,
-      content: transformedCode,
-    })),
+    otherFilesTransformed.map(
+      ({ name, transformedCodeToExecute: transformedCode }) => ({
+        name,
+        content: transformedCode,
+      }),
+    ),
   );
 
   let Comp = OriginalComponent;
@@ -94,11 +123,23 @@ export async function executeCode(
   }
 
   if (!Comp) return null;
-  if (isValidElement(Comp)) return Comp;
-  // @ts-expect-error Types don't work here
-  if (typeof Comp === "function") return createElement(Comp);
+  if (isValidElement(Comp))
+    return { comp: Comp, transformedCodeToDisplay, css, otherFilesTransformed };
+  if (typeof Comp === "function")
+    return {
+      // @ts-expect-error Types don't work here
+      comp: createElement(Comp),
+      transformedCodeToDisplay,
+      css,
+      otherFilesTransformed,
+    };
   if (typeof Comp === "string") {
-    return Comp as unknown as ReactElement;
+    return {
+      comp: Comp as unknown as ReactElement,
+      transformedCodeToDisplay,
+      css,
+      otherFilesTransformed,
+    };
   }
 
   return null;
@@ -106,11 +147,12 @@ export async function executeCode(
 
 export function transform(
   transformCode: (codeString: string, opts: any) => { code: string },
+  fileName: string,
   codeString: string,
   dependencies: Record<string, unknown>,
 ) {
   const transformedCode = transformCode(codeString, {
-    filename: "/bar/index.tsx",
+    filename: fileName,
     jsc: {
       target: "es2022",
       loose: false,
@@ -126,6 +168,22 @@ export function transform(
     minify: false,
     isModule: true,
   }).code;
+
+  const transformedCodeToDisplay = transformCode(codeString, {
+    filename: fileName,
+    jsc: {
+      target: "es2022",
+      loose: false,
+      minify: {
+        compress: false,
+        mangle: false,
+      },
+      preserveAllComments: true,
+    },
+    minify: false,
+    isModule: true,
+  }).code;
+
   const exports: Record<string, unknown> = {};
   const require = (path: string) => {
     if (dependencies[path]) {
@@ -141,5 +199,5 @@ export function transform(
 
   console.log({ transformedCode });
 
-  return { exports, transformedCode };
+  return { exports, transformedCode, transformedCodeToDisplay };
 }

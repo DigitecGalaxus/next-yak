@@ -65,11 +65,17 @@ export async function runLoaderForSingleFile(
   fileName: string = "/src/index.tsx",
   additionalFiles: { name: string; content: string }[] = [],
 ): Promise<string> {
-  const mockLoader = new MockLoaderContext(input);
+  const mockLoader = new MockLoaderContext("");
   mockLoader.fs.setFile(fileName, input);
 
   for (const { name, content } of additionalFiles) {
-    mockLoader.fs.setFile(name.replace("file://", "/src/."), content);
+    console.log(
+      `set mocked file: ${name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx")}`,
+    );
+    mockLoader.fs.setFile(
+      name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx"),
+      content,
+    );
   }
 
   mockLoader.resourcePath = fileName;
@@ -125,7 +131,10 @@ class MockLoaderContext {
   public resourcePath: string = "";
   public context: string = "/src";
 
-  constructor(public transpiledYakFile: string = "") {}
+  constructor(
+    public transpiledYakFile: string = "",
+    public deps: Record<string, unknown> = {},
+  ) {}
 
   async resolve(
     context: string,
@@ -137,16 +146,22 @@ class MockLoaderContext {
   }
 
   async importModule(request: string): Promise<Record<string, unknown>> {
-    const wrappedContent = `
-      "use strict";
-      var exports = {};
-      (function() {
-        ${this.transpiledYakFile}
-        return exports
-      })();
-    `;
-    const evaluatedContent = eval?.(wrappedContent);
-    return evaluatedContent;
+    console.log("importModule, ", request);
+
+    const file = this.fs.files.get(request);
+    console.log({ file });
+    const require = (path: string) => {
+      if (this.deps[path]) {
+        return this.deps[path];
+      }
+      throw Error(`Module not found: ${path}.`);
+    };
+
+    const result = new Function("exports", "require", file ?? "");
+
+    const exports: Record<string, unknown> = {};
+    result(exports, require);
+    return exports;
   }
 
   loadModule(
