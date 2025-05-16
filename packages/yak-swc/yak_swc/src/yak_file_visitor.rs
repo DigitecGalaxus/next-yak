@@ -146,7 +146,10 @@ impl Fold for YakFileVisitor {}
 #[cfg(test)]
 mod tests {
   use super::*;
+  use std::path::PathBuf;
   use swc_core::ecma::{transforms::testing::test_transform, visit::visit_mut_pass};
+  use swc_ecma_parser::{Syntax, TsSyntax};
+  use swc_ecma_transforms_testing::{test_fixture, FixtureTestConfig};
 
   #[test]
   fn test_yak_file_visitor() {
@@ -168,5 +171,23 @@ mod tests {
                 `};
             "#,
     );
+  }
+
+  #[testing::fixture("tests/fixture/**/input.yak.tsx")]
+  fn fixture_yak(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|_| visit_mut_pass(YakFileVisitor::new()),
+      &input,
+      &input.with_file_name("output.yak.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
   }
 }

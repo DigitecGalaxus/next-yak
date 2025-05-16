@@ -13,8 +13,6 @@ use swc_core::common::errors::HANDLER;
 use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
-#[cfg(feature = "plugin")]
-use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::css_prop::HasCSSProp;
@@ -26,7 +24,10 @@ mod yak_imports;
 use yak_imports::{visit_module_imports, YakImports};
 mod math_evaluate;
 #[cfg(feature = "plugin")]
+mod plugin;
+#[cfg(feature = "plugin")] // only used in the plugin today (but not itself plugin-specific)
 mod yak_file_visitor;
+
 use math_evaluate::try_evaluate;
 
 mod utils {
@@ -1004,56 +1005,6 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
   }
 }
 
-#[cfg(feature = "plugin")]
-#[plugin_transform]
-pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
-  use swc_core::common::plugin::metadata::TransformPluginMetadataContextKind;
-  use swc_core::ecma::visit::visit_mut_pass;
-  use yak_file_visitor::YakFileVisitor;
-
-  let config: Config = serde_json::from_str(
-    &metadata
-      .get_transform_plugin_config()
-      .expect("failed to get plugin config for swc-yak"),
-  )
-  .expect("failed to parse plugin swc-yak config");
-
-  let filename = metadata
-    .get_context(&TransformPluginMetadataContextKind::Filename)
-    .expect("failed to get filename");
-
-  // *.yak.ts and *.yak.tsx files follow different rules
-  // see yak_file_visitor.rs
-  if is_yak_file(&filename) {
-    return program.apply(visit_mut_pass(&mut YakFileVisitor::new()));
-  }
-
-  // Get a relative posix path to generate always the same hash
-  // on different machines or operating systems
-  let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
-  program.apply(visit_mut_pass(&mut TransformVisitor::new(
-    metadata.comments,
-    deterministic_path,
-    config.minify,
-    config.prefix,
-    config.display_names,
-    config.transpilation_mode,
-  )))
-}
-
-#[cfg(feature = "plugin")]
-fn is_yak_file(filename: &str) -> bool {
-  // Ignore the valid case of a file with only 7 characters
-  // as it would have only an extension and no filename
-  if filename.len() < 8 {
-    return false;
-  }
-  matches!(
-    &filename[filename.len() - 8..],
-    ".yak.tsx" | ".yak.jsx" | ".yak.mjs"
-  ) || matches!(&filename[filename.len() - 7..], ".yak.ts" | ".yak.js")
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -1064,7 +1015,6 @@ mod tests {
   };
   use swc_ecma_parser::{Syntax, TsSyntax};
   use swc_ecma_transforms_testing::FixtureTestConfig;
-  use yak_file_visitor::YakFileVisitor;
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {
@@ -1112,24 +1062,6 @@ mod tests {
       },
       &input,
       &input.with_file_name("output.prod.tsx"),
-      FixtureTestConfig {
-        module: None,
-        sourcemap: false,
-        allow_error: true,
-      },
-    )
-  }
-
-  #[testing::fixture("tests/fixture/**/input.yak.tsx")]
-  fn fixture_yak(input: PathBuf) {
-    test_fixture(
-      Syntax::Typescript(TsSyntax {
-        tsx: true,
-        ..Default::default()
-      }),
-      &|_| visit_mut_pass(YakFileVisitor::new()),
-      &input,
-      &input.with_file_name("output.yak.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,
