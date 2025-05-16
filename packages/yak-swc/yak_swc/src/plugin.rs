@@ -1,4 +1,4 @@
-use crate::yak_file_visitor::YakFileVisitor;
+use crate::yak_file::{is_yak_file, YakFileVisitor};
 use crate::{Config, TransformVisitor};
 use swc_core::common::plugin::metadata::TransformPluginMetadataContextKind;
 use swc_core::ecma::ast::Program;
@@ -19,7 +19,7 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     .expect("failed to get filename");
 
   // *.yak.ts and *.yak.tsx files follow different rules
-  // see yak_file_visitor.rs
+  // see yak_file
   if is_yak_file(&filename) {
     return program.apply(visit_mut_pass(&mut YakFileVisitor::new()));
   }
@@ -35,16 +35,4 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.display_names,
     config.transpilation_mode,
   )))
-}
-
-fn is_yak_file(filename: &str) -> bool {
-  // Ignore the valid case of a file with only 7 characters
-  // as it would have only an extension and no filename
-  if filename.len() < 8 {
-    return false;
-  }
-  matches!(
-    &filename[filename.len() - 8..],
-    ".yak.tsx" | ".yak.jsx" | ".yak.mjs"
-  ) || matches!(&filename[filename.len() - 7..], ".yak.ts" | ".yak.js")
 }

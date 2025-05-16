@@ -1,3 +1,6 @@
+//! Handles "yak files". These are special files that are evaluated at build time.
+//! Their transformation is entirely different from the transformation of ordinary files.
+
 use swc_core::atoms::atom;
 use swc_core::common::errors::HANDLER;
 use swc_core::common::Spanned;
@@ -142,6 +145,18 @@ impl VisitMut for YakFileVisitor {
 }
 
 impl Fold for YakFileVisitor {}
+
+pub fn is_yak_file(filename: &str) -> bool {
+  // Ignore the valid case of a file with only 7 characters
+  // as it would have only an extension and no filename
+  if filename.len() < 8 {
+    return false;
+  }
+  matches!(
+    &filename[filename.len() - 8..],
+    ".yak.tsx" | ".yak.jsx" | ".yak.mjs"
+  ) || matches!(&filename[filename.len() - 7..], ".yak.ts" | ".yak.js")
+}
 
 #[cfg(test)]
 mod tests {

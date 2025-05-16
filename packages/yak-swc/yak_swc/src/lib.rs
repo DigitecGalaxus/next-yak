@@ -25,8 +25,7 @@ use yak_imports::{visit_module_imports, YakImports};
 mod math_evaluate;
 #[cfg(feature = "plugin")]
 mod plugin;
-#[cfg(feature = "plugin")] // only used in the plugin today (but not itself plugin-specific)
-mod yak_file_visitor;
+pub mod yak_file;
 
 use math_evaluate::try_evaluate;
 

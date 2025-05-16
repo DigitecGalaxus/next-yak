@@ -1,10 +1,14 @@
 mod types;
 
+use either::{Left, Right};
+use std::borrow::Cow;
 use swc_core::binding_macros::wasm;
 use swc_core::binding_macros::wasm::{SingleThreadedComments, compiler};
-use swc_core::ecma::visit::VisitMutWith;
+use swc_core::common::{FileName, SourceFile};
 use swc_core::ecma::visit::swc_ecma_ast::*;
+use swc_core::ecma::visit::{VisitMutWith, visit_mut_pass};
 use wasm_bindgen::prelude::*;
+use yak_swc::yak_file::{YakFileVisitor, is_yak_file};
 
 // Copied from build_transform_sync so that we can pass the same comments structure to
 // the yak pass.
@@ -38,14 +42,21 @@ pub fn transform_sync(s: JsValue, opts: JsValue) -> Result<JsValue, JsValue> {
                     // Note: SingleThreadedComments uses Rc internally.
                     // Clones will contribute to the same comment map.
                     let comments = SingleThreadedComments::default();
+                    let file_name = real_file_name(&fm);
+                    let before_pass = if file_name.as_ref().is_some_and(|f| is_yak_file(&f)) {
+                        Left(visit_mut_pass(YakFileVisitor::new()))
+                    } else {
+                        Right(yak_pass(comments.clone(), file_name))
+                    };
+
                     wasm::anyhow::Context::context(
                         c.process_js_with_custom_pass(
-                            fm,
+                            fm.clone(),
                             None,
                             handler,
                             &opts,
                             comments.clone(),
-                            |_| yak_pass(comments.clone()),
+                            |_| before_pass,
                             |_| noop_pass(),
                         ),
                         "failed to process js file",
@@ -65,11 +76,13 @@ pub fn transform_sync(s: JsValue, opts: JsValue) -> Result<JsValue, JsValue> {
     .map_err(|e| wasm::convert_err(e, Some(error_format)))
 }
 
-fn yak_pass(comments: SingleThreadedComments) -> impl Pass + use<> {
+fn yak_pass(comments: SingleThreadedComments, file_name: Option<Cow<str>>) -> impl Pass + use<> {
+    let file_name = file_name.unwrap_or("anon.ts".into()).to_string();
+
     fn_pass(move |program: &mut Program| {
         let mut transformer = yak_swc::TransformVisitor::new(
             Some(comments.clone()),
-            "theFile.tsx",
+            &file_name,
             false,
             None,
             true,
@@ -77,6 +90,13 @@ fn yak_pass(comments: SingleThreadedComments) -> impl Pass + use<> {
         );
         program.visit_mut_with(&mut transformer);
     })
+}
+
+fn real_file_name(file: &SourceFile) -> Option<Cow<str>> {
+    match &*file.name {
+        FileName::Real(path) => path.file_name().map(|s| s.to_string_lossy()),
+        _ => None,
+    }
 }
 
 #[wasm_bindgen(typescript_custom_section)]

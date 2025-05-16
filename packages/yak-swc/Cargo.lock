@@ -1358,6 +1358,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "console_error_panic_hook",
+ "either",
  "getrandom 0.2.16",
  "js-sys",
  "serde",
