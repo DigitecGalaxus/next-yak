@@ -2,7 +2,7 @@ use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use swc_core::atoms::Atom;
-use swc_core::{common::DUMMY_SP, ecma::ast::*, plugin::errors::HANDLER};
+use swc_core::{common::errors::HANDLER, common::DUMMY_SP, ecma::ast::*};
 
 use crate::variable_visitor::ScopedVariableReference;
 

@@ -1,11 +1,11 @@
 use swc_core::{
+  common::errors::HANDLER,
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
     CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
     PropOrSpread, SpreadElement,
   },
-  plugin::errors::HANDLER,
 };
 
 #[derive(Debug)]

@@ -1,67 +1,15 @@
-import * as swc from "@swc/core";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
 import { type Compilation } from "webpack";
-// had to update package exports
 // @ts-ignore
 import cssLoader = require("next-yak/loaders/css-loader");
 
-export const maxDuration = 60;
-
-const wasmPath = path.resolve(
-  process.cwd(),
-  "./node_modules",
-  "yak-swc/target/wasm32-wasip1/release/yak_swc.wasm",
-);
-
-export async function POST(request: NextRequest) {
-  const code = (await request.json()) as Record<`file:///${string}`, string>;
-
-  const result: Record<
-    keyof typeof code,
+export async function runLoader(
+  result: Record<
+    `file:///${string}`,
     { original: string; transformed: string; css?: string }
-  > = {};
-  for (const [filePath, originalCode] of Object.entries(code) as [
-    keyof typeof code,
-    string,
-  ][]) {
-    result[filePath] = {
-      original: originalCode,
-      transformed: swc.transformSync(originalCode, {
-        filename: "/bar/index.tsx",
-        jsc: {
-          experimental: {
-            plugins: [[wasmPath, { basePath: "/foo/" }]],
-          },
-          target: "es2022",
-          loose: false,
-          minify: {
-            compress: false,
-            mangle: false,
-          },
-          preserveAllComments: true,
-        },
-        minify: false,
-        isModule: true,
-      }).code,
-    };
-  }
-
-  const transpiledYakFile = swc.transformSync(
-    result["file:///different.yak.ts"].original,
-    {
-      filename: "/bar/index.tsx",
-      jsc: {
-        target: "es5",
-      },
-      isModule: true,
-      module: {
-        type: "commonjs",
-      },
-    },
-  );
-
-  const mockLoader = new MockLoaderContext(transpiledYakFile.code);
+  >,
+  input: string,
+) {
+  const mockLoader = new MockLoaderContext(input);
   mockLoader.fs.setFile(
     "/src/index.tsx",
     result["file:///index.tsx"].transformed,
@@ -109,9 +57,33 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(result, {
-    status: 200,
-  });
+  return result;
+}
+
+export async function runLoaderForSingleFile(
+  input: string,
+  fileName: string = "/src/index.tsx",
+  additionalFiles: { name: string; content: string }[] = [],
+): Promise<string> {
+  const mockLoader = new MockLoaderContext("");
+  mockLoader.fs.setFile(fileName, input);
+
+  for (const { name, content } of additionalFiles) {
+    console.log(
+      `set mocked file: ${name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx")}`,
+    );
+    mockLoader.fs.setFile(
+      name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx"),
+      content,
+    );
+  }
+
+  mockLoader.resourcePath = fileName;
+
+  const p = createAsyncPromise(mockLoader);
+  // @ts-expect-error Types don't add up
+  cssLoader.default.call(mockLoader, "", undefined);
+  return (await p) as string;
 }
 
 function createAsyncPromise(mockLoader: MockLoaderContext) {
@@ -159,7 +131,10 @@ class MockLoaderContext {
   public resourcePath: string = "";
   public context: string = "/src";
 
-  constructor(public transpiledYakFile: string = "") {}
+  constructor(
+    public transpiledYakFile: string = "",
+    public deps: Record<string, unknown> = {},
+  ) {}
 
   async resolve(
     context: string,
@@ -171,16 +146,22 @@ class MockLoaderContext {
   }
 
   async importModule(request: string): Promise<Record<string, unknown>> {
-    const wrappedContent = `
-      "use strict";
-      var exports = {};
-      (function() {
-        ${this.transpiledYakFile}
-        return exports
-      })();
-    `;
-    const evaluatedContent = eval?.(wrappedContent);
-    return evaluatedContent;
+    console.log("importModule, ", request);
+
+    const file = this.fs.files.get(request);
+    console.log({ file });
+    const require = (path: string) => {
+      if (this.deps[path]) {
+        return this.deps[path];
+      }
+      throw Error(`Module not found: ${path}.`);
+    };
+
+    const result = new Function("exports", "require", file ?? "");
+
+    const exports: Record<string, unknown> = {};
+    result(exports, require);
+    return exports;
   }
 
   loadModule(
@@ -206,6 +187,9 @@ class MockLoaderContext {
 
   getOptions() {
     return {
+      experiments: {
+        transpilationMode: "Css",
+      },
       // experiments: {
       // debug: true,
       // },

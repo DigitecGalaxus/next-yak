@@ -1,11 +1,6 @@
-import { PlaygroundPage } from "@/components/playgroundPage";
-import { Metadata } from "next";
+import DynamicEditor from "@/components/editor";
+import "./playground.css";
 
-export const metadata: Metadata = {
-  title: "Playground",
-  description: "A playground to see how next-yak transpiles your code",
-};
-
-export default function Playground() {
-  return <PlaygroundPage />;
+export default function Home() {
+  return <DynamicEditor />;
 }
