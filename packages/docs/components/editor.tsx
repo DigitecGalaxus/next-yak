@@ -17,7 +17,7 @@ import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
 import { runLoader } from "./mockedLoader";
-import { executeCode } from "@/lib/execute-code";
+import { executeCode, transform as transformCode } from "@/lib/execute-code";
 import { ErrorBoundary } from "./errorBoundary";
 
 import * as prettier from "prettier";
@@ -48,11 +48,21 @@ export default dynamic(
           return acc;
         }, {});
 
-        executeCode(transform, code["file:///index.tsx"], {
-          react: React,
-          "next-yak/internal": NextYakInternal,
-          "./theFile.yak.css!=!./theFile?./theFile.yak.css": {},
-        })
+        executeCode(
+          transform,
+          code["file:///index.tsx"],
+          {
+            react: React,
+            "next-yak/internal": NextYakInternal,
+            "./theFile.yak.css!=!./theFile?./theFile.yak.css": {},
+          },
+          [
+            {
+              name: "file:///other.tsx",
+              content: code["file:///other.tsx"],
+            },
+          ],
+        )
           .then(setComponent)
           .catch(console.log);
 
@@ -344,10 +354,14 @@ export default dynamic(
 
 const files = {
   "other.tsx": {
-    value: `import { styled } from "next-yak";
+    value: `import { styled, css } from "next-yak";
 
 export const OtherButton = styled.div\`
   color: blue;
+\`;
+
+export const Mixin = css\`
+  color: yellow;
 \`;`,
     language: "typescript",
   },
@@ -360,9 +374,11 @@ export const myColor = \`#\${ green }\`;`,
   "index.tsx": {
     value: `import React from "react";
 import { styled } from "next-yak";
+import { OtherButton, Mixin } from "./other";
 
 const Button = styled.div\`
   color: red;
+  \${Mixin};
 \`;
 
 export default function Component() {
@@ -370,7 +386,8 @@ export default function Component() {
   <>
     <Button>
       Hello, world!
-    </Button>
+      </Button>
+    <OtherButton>Test</OtherButton>
   </>
   );
 };`,

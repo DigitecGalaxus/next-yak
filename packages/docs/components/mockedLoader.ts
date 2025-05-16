@@ -60,15 +60,22 @@ export async function runLoader(
   return result;
 }
 
-export async function runLoaderForSingleFile(input: string): Promise<string> {
+export async function runLoaderForSingleFile(
+  input: string,
+  fileName: string = "/src/index.tsx",
+  additionalFiles: { name: string; content: string }[] = [],
+): Promise<string> {
   const mockLoader = new MockLoaderContext(input);
-  mockLoader.fs.setFile("/src/index.tsx", input);
-  mockLoader.fs.setFile("/src/./index.tsx", input);
+  mockLoader.fs.setFile(fileName, input);
 
-  mockLoader.resourcePath = "/src/index.tsx";
+  for (const { name, content } of additionalFiles) {
+    mockLoader.fs.setFile(name.replace("file://", "/src/."), content);
+  }
+
+  mockLoader.resourcePath = fileName;
 
   const p = createAsyncPromise(mockLoader);
-  // @ts-ignore
+  // @ts-expect-error Types don't add up
   cssLoader.default.call(mockLoader, "", undefined);
   return (await p) as string;
 }
