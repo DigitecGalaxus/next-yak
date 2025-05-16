@@ -1,18 +1,33 @@
 "use client";
-import React, { use, useCallback } from "react";
+import { use, useCallback, useTransition } from "react";
+import * as React from "react";
+import * as NextYakInternal from "next-yak/internal";
 import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
 import { Primitive } from "fumadocs-ui/components/tabs";
 import { useTheme } from "next-themes";
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import {
+  PanelGroup,
+  Panel,
+  PanelResizeHandle,
+  ImperativePanelHandle,
+} from "react-resizable-panels";
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
 import { runLoader } from "./mockedLoader";
+import { executeCode } from "@/lib/execute-code";
+import { ErrorBoundary } from "./errorBoundary";
+
+import * as prettier from "prettier";
+import * as babelParser from "prettier/parser-babel";
+import * as estreePlugin from "prettier/plugins/estree";
+import { useRunner } from "@/lib/useRunner";
+import { ErrorBoundaryWithFallback } from "./errorBoundaryWithFallback";
 
 export default dynamic(
-  async function PageComponent() {
+  async function load() {
     const { default: init, start, transform } = await import("playground-wasm");
     await init();
     start();
@@ -24,12 +39,22 @@ export default dynamic(
       const modelRefs = useRef<Array<any>>([]);
       const [response, setResponse] = useState(initialResponse);
       const highlighter = use(highlighterPromise);
+      const compiledPanelRef = useRef<ImperativePanelHandle>(null);
+      const [component, setComponent] = useState<any>(null);
 
       const updateCode = useCallback(() => {
         const code = modelRefs.current.reduce((acc, model) => {
           acc[model.uri] = model.getValue();
           return acc;
         }, {});
+
+        executeCode(transform, code["file:///index.tsx"], {
+          react: React,
+          "next-yak/internal": NextYakInternal,
+          "./theFile.yak.css!=!./theFile?./theFile.yak.css": {},
+        })
+          .then(setComponent)
+          .catch(console.log);
 
         const result: Record<
           keyof typeof code,
@@ -72,9 +97,17 @@ export default dynamic(
           },
         );
 
-        runLoader(result, transpiledYakFile.code).then((r) =>
-          setResponse(r as any),
-        );
+        runLoader(result, transpiledYakFile.code).then(async (r) => {
+          for (const key in result) {
+            const { transformed } = result[key];
+            result[key].transformed = await prettier.format(transformed, {
+              parser: "babel",
+              plugins: [babelParser, estreePlugin as any],
+            });
+          }
+
+          setResponse(result as any);
+        });
       }, []);
 
       return (
@@ -82,8 +115,8 @@ export default dynamic(
           autoSaveId="horizontal"
           direction="horizontal"
           style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
+            paddingInline: "1rem",
+            fontSize: "14px",
           }}
         >
           <Panel
@@ -92,21 +125,12 @@ export default dynamic(
               borderWidth: "0 0 1px 1px",
             }}
           >
-            <h1
-              style={{
-                textAlign: "center",
-                margin: "1rem 0",
-              }}
-            >
-              Input
-            </h1>
             <Primitive.Tabs
               onValueChange={(v) => setTab(v as keyof typeof files)}
               value={tab}
               style={{
                 borderRadius: "0px",
                 borderWidth: "1px 0 0 0",
-                height: "100%",
                 backgroundColor:
                   themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                 position: "relative",
@@ -134,7 +158,7 @@ export default dynamic(
                 }
                 path={tab}
                 options={{
-                  fontSize: 16,
+                  fontSize: 14,
                   padding: { top: 16 },
                   minimap: { enabled: false },
                   automaticLayout: true,
@@ -188,85 +212,60 @@ export default dynamic(
           <Panel defaultSize={50}>
             <PanelGroup autoSaveId="vertical" direction="vertical">
               <Panel
-                defaultSize={60}
+                defaultSize={100}
                 style={{
-                  borderColor: "hsl(var(--border)/1)",
+                  borderColor: "var(--color-fd-border)",
                   borderWidth: "0 1px 1px 1px",
                 }}
               >
-                <h2
-                  style={{
-                    textAlign: "center",
-                    margin: "1rem 0",
-                  }}
+                <ErrorBoundaryWithFallback
+                // key={response["file:///index.tsx"].transformed ?? "null"}
+                // fallback={<div>Error</div>}
                 >
-                  CSS output
-                </h2>
-                <Primitive.Tabs
-                  onValueChange={(v) => setTab(v as keyof typeof files)}
-                  value={tab}
-                  style={{
-                    borderRadius: "0px",
-                    borderWidth: "1px 0 0 0",
-                    height: "100%",
-                    backgroundColor:
-                      themeConfig.resolvedTheme === "dark"
-                        ? "#121212"
-                        : "#ffffff",
-                  }}
-                >
-                  <Primitive.TabsList>
-                    <Primitive.TabsTrigger value="index.tsx">
-                      index.module.css
-                    </Primitive.TabsTrigger>
-                    <Primitive.TabsTrigger value="other.tsx">
-                      other.module.css
-                    </Primitive.TabsTrigger>
-                  </Primitive.TabsList>
-                  <div
-                    style={{
-                      margin: "16px 1ch",
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: highlighter.codeToHtml(
-                        response?.[`file:///${tab}`].css ?? "",
-                        {
-                          lang: "css",
-                          theme:
-                            themeConfig.resolvedTheme === "dark"
-                              ? "vitesse-dark"
-                              : "vitesse-light",
-                        },
-                      ),
-                    }}
-                  />
-                </Primitive.Tabs>
+                  {component}
+                </ErrorBoundaryWithFallback>
               </Panel>
-              <PanelResizeHandle />
+              <PanelResizeHandle
+                style={{
+                  borderColor: "var(--color-fd-border)",
+                  borderWidth: "0 1px",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    const panel = compiledPanelRef.current;
+                    if (panel) {
+                      if (panel.getSize() > 0) {
+                        panel.collapse();
+                      } else {
+                        panel.expand(66);
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                  }}
+                >
+                  Compiled output
+                </button>
+              </PanelResizeHandle>
               <Panel
                 collapsible
                 collapsedSize={0}
-                defaultSize={40}
+                defaultSize={0}
+                ref={compiledPanelRef}
                 style={{
-                  borderColor: "hsl(var(--border)/1)",
+                  borderColor: "var(--color-fd-border)",
                   borderWidth: "0 1px 1px 1px",
+                  overflowY: "auto",
                 }}
               >
-                <h2
-                  style={{
-                    textAlign: "center",
-                    margin: "1rem 0",
-                  }}
-                >
-                  JS output
-                </h2>
                 <Primitive.Tabs
                   onValueChange={(v) => setTab(v as keyof typeof files)}
                   value={tab}
                   style={{
                     borderRadius: "0px",
                     borderWidth: "1px 0 0 0",
-                    height: "100%",
                     backgroundColor:
                       themeConfig.resolvedTheme === "dark"
                         ? "#121212"
@@ -301,6 +300,34 @@ export default dynamic(
                       ),
                     }}
                   />
+                  <div
+                    style={{
+                      borderRadius: "0px",
+                      borderWidth: "1px 0 0 0",
+                      backgroundColor:
+                        themeConfig.resolvedTheme === "dark"
+                          ? "#121212"
+                          : "#ffffff",
+                    }}
+                  >
+                    <div
+                      style={{
+                        margin: "16px 1ch",
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: highlighter.codeToHtml(
+                          response?.[`file:///${tab}`].css ?? "",
+                          {
+                            lang: "css",
+                            theme:
+                              themeConfig.resolvedTheme === "dark"
+                                ? "vitesse-dark"
+                                : "vitesse-light",
+                          },
+                        ),
+                      }}
+                    />
+                  </div>
                 </Primitive.Tabs>
               </Panel>
             </PanelGroup>
@@ -331,23 +358,19 @@ export const myColor = \`#\${ green }\`;`,
   },
 
   "index.tsx": {
-    value: `import { styled } from "next-yak";
-import { OtherButton } from "./other";
-import { myColor } from "./different.yak";
+    value: `import React from "react";
+import { styled } from "next-yak";
 
 const Button = styled.div\`
-  color: \${myColor};
+  color: red;
 \`;
 
-const Component = () => {
+export default function Component() {
   return (
   <>
     <Button>
       Hello, world!
     </Button>
-    <OtherButton>
-      Hello, world!
-    </OtherButton>
   </>
   );
 };`,

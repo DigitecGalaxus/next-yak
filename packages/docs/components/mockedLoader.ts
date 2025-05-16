@@ -1,4 +1,4 @@
-import type { Compilation } from "webpack";
+import { type Compilation } from "webpack";
 // @ts-ignore
 import cssLoader = require("next-yak/loaders/css-loader");
 
@@ -58,6 +58,19 @@ export async function runLoader(
   }
 
   return result;
+}
+
+export async function runLoaderForSingleFile(input: string): Promise<string> {
+  const mockLoader = new MockLoaderContext(input);
+  mockLoader.fs.setFile("/src/index.tsx", input);
+  mockLoader.fs.setFile("/src/./index.tsx", input);
+
+  mockLoader.resourcePath = "/src/index.tsx";
+
+  const p = createAsyncPromise(mockLoader);
+  // @ts-ignore
+  cssLoader.default.call(mockLoader, "", undefined);
+  return (await p) as string;
 }
 
 function createAsyncPromise(mockLoader: MockLoaderContext) {
@@ -152,6 +165,9 @@ class MockLoaderContext {
 
   getOptions() {
     return {
+      experiments: {
+        transpilationMode: "Css",
+      },
       // experiments: {
       // debug: true,
       // },

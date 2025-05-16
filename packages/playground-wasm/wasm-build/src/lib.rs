@@ -73,6 +73,7 @@ fn yak_pass(comments: SingleThreadedComments) -> impl Pass + use<> {
             false,
             None,
             true,
+            yak_swc::naming_convention::TranspilationMode::Css
         );
         program.visit_mut_with(&mut transformer);
     })

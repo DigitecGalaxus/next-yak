@@ -37,7 +37,7 @@ mod utils {
   pub(crate) mod encode_module_import;
   pub(crate) mod native_elements;
 }
-mod naming_convention;
+pub mod naming_convention;
 use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
