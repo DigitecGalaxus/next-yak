@@ -194,6 +194,7 @@ const TitleRow = styled.div`
   align-items: baseline;
   gap: 1.5rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 `;
 
 const Image = styled(NextImage)`
@@ -394,10 +395,6 @@ const Strong = styled.strong`
 `;
 
 const Title = styled.h1`
-  ${breakpoints.sm} {
-    flex-direction: row;
-    align-items: baseline;
-  }
   position: relative;
   font-size: 5rem;
   font-weight: 400;
