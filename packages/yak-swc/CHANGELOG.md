@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.6.0
+
+### Minor Changes
+
+- 6c859e5: Add new "experiments.transpilationMode" option to transpile to CSS instead of CSS Modules
+
 ## 5.5.0
 
 ### Minor Changes
