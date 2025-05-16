@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 /// This is direct copy-paste from `node-swc/src/types` to support typed
 /// interfaces for @swc/wasm as same as @swc/core.
+/// swc is licensed under Apache-2.0 license.
 ///
 /// While this is redundant, wasm-bindgen does not support to import these types
 /// effeciently (https://github.com/rustwasm/wasm-bindgen/issues/2417). Once there is an upstream support this'll
@@ -16,7 +17,6 @@ export interface Plugin {
   (module: Program): Program;
 }
 
-// TODO:
 export type ParseOptions = ParserConfig & {
   comments?: boolean;
   script?: boolean;
