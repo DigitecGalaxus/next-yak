@@ -2,7 +2,6 @@
 import { theme } from "@/lib/utils/constants";
 import { css, styled } from "next-yak";
 import { useState } from "react";
-import { library } from "webpack";
 
 type Features =
   | "INP optimized"
@@ -411,7 +410,7 @@ export const ComparisonTable = () => {
                     }
                   >
                     {lib[feature] ? (
-                      <SupportedYes
+                      <IconYes
                         title={titleText(
                           feature,
                           Object.keys(libraries[category])[i],
@@ -419,7 +418,7 @@ export const ComparisonTable = () => {
                         )}
                       />
                     ) : (
-                      <SupportedNo
+                      <IconNo
                         title={titleText(
                           feature,
                           Object.keys(libraries[category])[i],
@@ -520,10 +519,10 @@ const ColumnHead = styled.td<{
     `}
 `;
 
-const SupportedYes = styled.span`
+export const IconYes = styled.span`
   color: var(--table-highlight-fg);
   &::before {
-    content: "✔" / "supported";
+    content: "✓" / "supported";
   }
   color: #0f840e;
   ${theme.dark} {
@@ -531,7 +530,7 @@ const SupportedYes = styled.span`
   }
 `;
 
-const SupportedNo = styled.span`
+export const IconNo = styled.span`
   color: var(--table-highlight-fg);
   &::before {
     content: "✘" / "not supported";
