@@ -1,10 +1,5 @@
-import {
-  CSSInterpolation,
-  ComponentStyles,
-  css,
-  yakComponentSymbol,
-} from "./cssLiteral.js";
-import React from "react";
+import { CSSInterpolation, css, yakComponentSymbol } from "./cssLiteral.js";
+import React, { HtmlHTMLAttributes } from "react";
 
 // the following export is not relative as "next-yak/context"
 // links to one file for react server components and
@@ -24,6 +19,8 @@ const noTheme: YakTheme = {};
  * All valid html tags
  */
 type HtmlTags = keyof React.JSX.IntrinsicElements;
+
+type CustomWebComponentTag = `${string}-${string}`;
 
 /**
  * Return type of the provided props merged with the initial props
@@ -55,6 +52,13 @@ type Attrs<
   TOut extends AttrsMerged<TBaseProps, TIn> = AttrsMerged<TBaseProps, TIn>,
 > = Partial<TOut> | AttrsFunction<TBaseProps, TIn, TOut>;
 
+type StyledFactory = {
+  <T>(Component: HtmlTags | React.FunctionComponent<T>): StyledLiteral<T>;
+  <T>(
+    Component: CustomWebComponentTag,
+  ): StyledLiteral<T & HtmlHTMLAttributes<"HTMLElement">>;
+};
+
 //
 // The `styled()` API without `styled.` syntax
 //
@@ -62,15 +66,28 @@ type Attrs<
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/constructors/styled.tsx
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
 //
-const StyledFactory = <T,>(Component: HtmlTags | React.FunctionComponent<T>) =>
-  Object.assign(yakStyled(Component), {
-    attrs: <
-      TAttrsIn extends object = {},
-      TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
-    >(
-      attrs: Attrs<T, TAttrsIn, TAttrsOut>,
-    ) => yakStyled<T, TAttrsIn, TAttrsOut>(Component, attrs),
-  });
+const StyledFactory: StyledFactory = <T,>(
+  Component: HtmlTags | React.FunctionComponent<T> | CustomWebComponentTag,
+) =>
+  Object.assign(
+    yakStyled(
+      // Without typecast React does not allow to use a string as a component
+      // e.g. <Component /> where Component is a string like "custom-element"
+      Component as Exclude<typeof Component, CustomWebComponentTag>,
+    ),
+    {
+      attrs: <
+        TAttrsIn extends object = {},
+        TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
+      >(
+        attrs: Attrs<T, TAttrsIn, TAttrsOut>,
+      ) =>
+        yakStyled<T, TAttrsIn, TAttrsOut>(
+          Component as Exclude<typeof Component, CustomWebComponentTag>,
+          attrs,
+        ),
+    },
+  );
 
 /**
  * A yak component has a special symbol attached to it that allows to
