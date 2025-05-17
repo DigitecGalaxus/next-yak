@@ -1,5 +1,5 @@
 "use client";
-import { use, useCallback, useTransition } from "react";
+import { use, useCallback, useEffect, useTransition } from "react";
 import * as React from "react";
 import * as NextYakInternal from "next-yak/internal";
 import MonacoEditor from "@monaco-editor/react";
@@ -16,14 +16,8 @@ import {
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
-import { runLoader } from "./mockedLoader";
 import { executeCode, transform as transformCode } from "@/lib/execute-code";
-import { ErrorBoundary } from "./errorBoundary";
 
-import * as prettier from "prettier";
-import * as babelParser from "prettier/parser-babel";
-import * as estreePlugin from "prettier/plugins/estree";
-import { useRunner } from "@/lib/useRunner";
 import { ErrorBoundaryWithFallback } from "./errorBoundaryWithFallback";
 
 export default dynamic(
@@ -41,6 +35,67 @@ export default dynamic(
       const highlighter = use(highlighterPromise);
       const compiledPanelRef = useRef<ImperativePanelHandle>(null);
       const [component, setComponent] = useState<any>(null);
+      const workerRef = useRef<Worker | null>(null);
+
+      useEffect(() => {
+        const worker = new Worker(new URL("../workers/plus", import.meta.url));
+
+        worker.onmessage = (event) => {
+          console.log("🍏 Message received from worker: ", event.data);
+
+          const result = executeCode(event.data, {
+            react: React,
+            "next-yak/internal": NextYakInternal,
+            "./index.yak.css!=!./index?./index.yak.css": {},
+            "./other.yak.css!=!./other?./other.yak.css": {},
+          });
+          if (!result) {
+            return;
+          }
+
+          setComponent(result.comp);
+
+          // @ts-expect-error
+          setResponse({
+            "file:///index.tsx": {
+              original: "",
+              transformed: result.transformedCodeToDisplay,
+              css: result.css,
+            },
+            ...result.otherFilesTransformed.reduce(
+              (acc, { name, transformedCodeToDisplay, css }) => {
+                acc[name] = {
+                  original: "",
+                  transformed: transformedCodeToDisplay,
+                  css: css,
+                };
+                return acc;
+              },
+              {} as Record<string, unknown>,
+            ),
+          });
+        };
+
+        // plusWorker.onerror = (event) => {
+        //   if (event instanceof Event) {
+        //     console.log("🍎 Error message received from worker: ", event);
+        //     return event;
+        //   }
+
+        //   console.log("🍎 Unexpected error: ", event);
+        //   throw event;
+        // };
+
+        // plusWorker.postMessage([1, 2]);
+
+        console.log("worker initialized");
+        workerRef.current = worker;
+
+        return () => {
+          workerRef.current?.terminate();
+          workerRef.current = null;
+        };
+      }, []);
 
       const updateCode = useCallback(() => {
         const code = modelRefs.current.reduce((acc, model) => {
@@ -48,53 +103,55 @@ export default dynamic(
           return acc;
         }, {});
 
-        executeCode(
-          transform,
-          code["file:///index.tsx"],
-          {
-            react: React,
-            "next-yak/internal": NextYakInternal,
-            "./index.yak.css!=!./index?./index.yak.css": {},
-            "./other.yak.css!=!./other?./other.yak.css": {},
-          },
-          [
-            {
-              name: "file:///other.tsx",
-              content: code["file:///other.tsx"],
-            },
-            {
-              name: "file:///different.yak.ts",
-              content: code["file:///different.yak.ts"],
-            },
-          ],
-        )
-          .then((result) => {
-            if (!result) {
-              return;
-            }
-            setComponent(result.comp);
+        workerRef.current?.postMessage(code);
 
-            // @ts-expect-error
-            setResponse({
-              "file:///index.tsx": {
-                original: code["file:///index.tsx"],
-                transformed: result.transformedCodeToDisplay,
-                css: result.css,
-              },
-              ...result.otherFilesTransformed.reduce(
-                (acc, { name, transformedCodeToDisplay, css }) => {
-                  acc[name] = {
-                    original: code[name],
-                    transformed: transformedCodeToDisplay,
-                    css: css,
-                  };
-                  return acc;
-                },
-                {} as Record<string, unknown>,
-              ),
-            });
-          })
-          .catch(console.log);
+        // executeCode(
+        //   transform,
+        //   code["file:///index.tsx"],
+        //   {
+        //     react: React,
+        //     "next-yak/internal": NextYakInternal,
+        //     "./index.yak.css!=!./index?./index.yak.css": {},
+        //     "./other.yak.css!=!./other?./other.yak.css": {},
+        //   },
+        //   [
+        //     {
+        //       name: "file:///other.tsx",
+        //       content: code["file:///other.tsx"],
+        //     },
+        //     {
+        //       name: "file:///different.yak.ts",
+        //       content: code["file:///different.yak.ts"],
+        //     },
+        //   ],
+        // )
+        //   .then((result) => {
+        //     if (!result) {
+        //       return;
+        //     }
+        //     setComponent(result.comp);
+
+        //     // @ts-expect-error
+        //     setResponse({
+        //       "file:///index.tsx": {
+        //         original: code["file:///index.tsx"],
+        //         transformed: result.transformedCodeToDisplay,
+        //         css: result.css,
+        //       },
+        //       ...result.otherFilesTransformed.reduce(
+        //         (acc, { name, transformedCodeToDisplay, css }) => {
+        //           acc[name] = {
+        //             original: code[name],
+        //             transformed: transformedCodeToDisplay,
+        //             css: css,
+        //           };
+        //           return acc;
+        //         },
+        //         {} as Record<string, unknown>,
+        //       ),
+        //     });
+        //   })
+        //   .catch(console.log);
       }, []);
 
       return (

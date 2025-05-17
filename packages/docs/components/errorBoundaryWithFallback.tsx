@@ -29,8 +29,9 @@ export class ErrorBoundaryWithFallback extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: unknown) {
-    console.log("here,", { error: error.toString() });
-    return { error: error.toString() };
+    if (error instanceof Error) {
+      return { error: error.toString() };
+    }
   }
 
   captureSnapshot() {
