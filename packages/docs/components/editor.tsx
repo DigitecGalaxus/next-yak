@@ -16,12 +16,14 @@ import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
 import { useTranspile } from "@/lib/transformation/useTranspile";
 import { ErrorBoundaryWithSnapshot } from "./errorBoundaryWithSnapshot";
+import { css } from "next-yak";
 
 export default dynamic(
   async function load() {
     return function Editor() {
       const themeConfig = useTheme();
       const [tab, setTab] = useState<keyof typeof files>("index");
+      const [compiledOutput, setCompiledOutput] = useState<"CSS" | "TS">("CSS");
       // list of refs to keep track of the models
       const modelRefs = useRef<Array<any>>([]);
       const highlighter = use(highlighterPromise);
@@ -181,7 +183,7 @@ export default dynamic(
           <Panel defaultSize={50}>
             <PanelGroup autoSaveId="vertical" direction="vertical">
               <Panel
-                defaultSize={100}
+                defaultSize={70}
                 style={{
                   borderColor: "var(--color-fd-border)",
                   borderWidth: "0 1px 1px 1px",
@@ -194,39 +196,78 @@ export default dynamic(
                   {transpileResult?.renderedMainComponent.component}
                 </ErrorBoundaryWithSnapshot>
               </Panel>
-              <PanelResizeHandle
+              <div
                 style={{
-                  borderColor: "var(--color-fd-border)",
-                  borderWidth: "0 1px",
+                  backgroundColor: "var(--color-fd-secondary)",
                 }}
               >
-                <button
-                  onClick={() => {
-                    const panel = compiledPanelRef.current;
-                    if (panel) {
-                      if (panel.getSize() > 0) {
-                        panel.collapse();
-                      } else {
-                        panel.expand(66);
-                      }
-                    }
-                  }}
+                <PanelResizeHandle></PanelResizeHandle>
+
+                <div
                   style={{
-                    padding: "8px 12px",
+                    borderColor: "var(--color-fd-border)",
+                    borderWidth: "0 1px",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
                   }}
                 >
-                  Compiled output
-                </button>
-              </PanelResizeHandle>
+                  <div
+                    onClick={() => {
+                      const panel = compiledPanelRef.current;
+                      if (panel) {
+                        if (panel.getSize() > 0) {
+                          panel.collapse();
+                        } else {
+                          panel.expand(30);
+                        }
+                      }
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      backgroundColor: "var(--color-fd)",
+                      cursor: "pointer",
+                      textAlign: "start",
+                    }}
+                  >
+                    Compiled output
+                  </div>
+                  <Primitive.Tabs
+                    onValueChange={(v) => setCompiledOutput(v as "CSS" | "TS")}
+                    value={compiledOutput}
+                    style={{
+                      borderRadius: "0px",
+                      borderWidth: "0",
+                      backgroundColor:
+                        themeConfig.resolvedTheme === "dark"
+                          ? "#121212"
+                          : "#ffffff",
+                    }}
+                  >
+                    <Primitive.TabsList>
+                      <Primitive.TabsTrigger value="CSS">
+                        CSS
+                      </Primitive.TabsTrigger>
+                      <Primitive.TabsTrigger value="TS">
+                        TS
+                      </Primitive.TabsTrigger>
+                    </Primitive.TabsList>
+                  </Primitive.Tabs>
+                </div>
+              </div>
               <Panel
                 collapsible
                 collapsedSize={0}
-                defaultSize={0}
+                defaultSize={30}
                 ref={compiledPanelRef}
                 style={{
                   borderColor: "var(--color-fd-border)",
-                  borderWidth: "0 1px 1px 1px",
+                  borderWidth: "0 1px ",
                   overflowY: "auto",
+                  background:
+                    themeConfig.resolvedTheme === "dark"
+                      ? "#121212"
+                      : "#ffffff",
                 }}
               >
                 <Primitive.Tabs
@@ -252,43 +293,46 @@ export default dynamic(
                       different.yak.ts
                     </Primitive.TabsTrigger>
                   </Primitive.TabsList>
-                  <div
-                    style={{
-                      margin: "16px 1ch",
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: highlighter.codeToHtml(
-                        readableTranspiledResult?.[tab]
-                          ?.transpiledReadableContent ?? "",
-                        {
-                          lang: "typescript",
-                          theme:
-                            themeConfig.resolvedTheme === "dark"
-                              ? "vitesse-dark"
-                              : "vitesse-light",
-                        },
-                      ),
-                    }}
-                  />
-                  <div
-                    style={{
-                      borderRadius: "0px",
-                      borderWidth: "1px 0 0 0",
-                      backgroundColor:
-                        themeConfig.resolvedTheme === "dark"
-                          ? "#121212"
-                          : "#ffffff",
-                    }}
-                  >
+                  {compiledOutput === "CSS" ? (
+                    <div
+                      style={{
+                        borderRadius: "0px",
+                        borderWidth: "1px 0 0 0",
+                        backgroundColor:
+                          themeConfig.resolvedTheme === "dark"
+                            ? "#121212"
+                            : "#ffffff",
+                      }}
+                    >
+                      <div
+                        style={{
+                          margin: "16px 1ch",
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: highlighter.codeToHtml(
+                            readableTranspiledResult?.[tab]?.css ?? "",
+                            {
+                              lang: "css",
+                              theme:
+                                themeConfig.resolvedTheme === "dark"
+                                  ? "vitesse-dark"
+                                  : "vitesse-light",
+                            },
+                          ),
+                        }}
+                      />
+                    </div>
+                  ) : compiledOutput === "TS" ? (
                     <div
                       style={{
                         margin: "16px 1ch",
                       }}
                       dangerouslySetInnerHTML={{
                         __html: highlighter.codeToHtml(
-                          readableTranspiledResult?.[tab]?.css ?? "",
+                          readableTranspiledResult?.[tab]
+                            ?.transpiledReadableContent ?? "",
                           {
-                            lang: "css",
+                            lang: "typescript",
                             theme:
                               themeConfig.resolvedTheme === "dark"
                                 ? "vitesse-dark"
@@ -297,7 +341,7 @@ export default dynamic(
                         ),
                       }}
                     />
-                  </div>
+                  ) : null}
                 </Primitive.Tabs>
               </Panel>
             </PanelGroup>
@@ -308,7 +352,16 @@ export default dynamic(
   },
   {
     ssr: false,
-    loading: () => <p>Loading WASM...</p>,
+    loading: () => (
+      <p
+        css={css`
+          text-align: center;
+          margin-top: 20px;
+        `}
+      >
+        Loading Playground...
+      </p>
+    ),
   },
 );
 
