@@ -1,5 +1,5 @@
 "use client";
-import { use, useCallback } from "react";
+import { ComponentProps, use, useCallback } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
@@ -24,6 +24,12 @@ export default dynamic(
       const themeConfig = useTheme();
       const [tab, setTab] = useState<keyof typeof files>("index");
       const [compiledOutput, setCompiledOutput] = useState<"CSS" | "TS">("CSS");
+      const monacoEditorRef = useRef<
+        | Parameters<
+            NonNullable<ComponentProps<typeof MonacoEditor>["onMount"]>
+          >[0]
+        | null
+      >(null);
       // list of refs to keep track of the models
       const modelRefs = useRef<Array<any>>([]);
       const highlighter = use(highlighterPromise);
@@ -111,15 +117,61 @@ export default dynamic(
               className="group"
             >
               <Primitive.TabsList>
-                <Primitive.TabsTrigger value="index">
-                  index.tsx
-                </Primitive.TabsTrigger>
-                <Primitive.TabsTrigger value="other">
-                  other.tsx
-                </Primitive.TabsTrigger>
-                <Primitive.TabsTrigger value="different.yak">
-                  different.yak.ts
-                </Primitive.TabsTrigger>
+                <div
+                  css={css`
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                  `}
+                >
+                  <div
+                    css={css`
+                      display: flex;
+                      gap: 1rem;
+                    `}
+                  >
+                    <Primitive.TabsTrigger value="index">
+                      index.tsx
+                    </Primitive.TabsTrigger>
+                    <Primitive.TabsTrigger value="other">
+                      other.tsx
+                    </Primitive.TabsTrigger>
+                    <Primitive.TabsTrigger value="different.yak">
+                      different.yak.ts
+                    </Primitive.TabsTrigger>
+                  </div>
+                  <button
+                    onClick={() => {
+                      monacoEditorRef.current
+                        ?.getAction("editor.action.formatDocument")
+                        ?.run();
+                    }}
+                    title="format document"
+                    css={css`
+                      cursor: pointer;
+                      &:hover {
+                        color: var(--color-fd-primary);
+                      }
+                    `}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m16 22-1-4" />
+                      <path d="M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1" />
+                      <path d="M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z" />
+                      <path d="m8 22 1-4" />
+                    </svg>
+                  </button>
+                </div>
               </Primitive.TabsList>
               <MonacoEditor
                 height="90vh"
@@ -161,6 +213,19 @@ export default dynamic(
                   });
                 }}
                 onMount={async (editor, monaco) => {
+                  monacoEditorRef.current = editor;
+
+                  editor.addCommand(
+                    monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                    () => {
+                      editor.trigger(
+                        "editor",
+                        "editor.action.formatDocument",
+                        undefined,
+                      );
+                    },
+                  );
+
                   addTypesToMonaco(monaco);
                   monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
                     {
@@ -173,7 +238,7 @@ export default dynamic(
                     },
                   );
                 }}
-                onChange={() => {
+                onChange={(_, editor) => {
                   updateCode();
                 }}
               />
@@ -223,12 +288,18 @@ export default dynamic(
                         }
                       }
                     }}
-                    style={{
-                      padding: "8px 12px",
-                      backgroundColor: "var(--color-fd)",
-                      cursor: "pointer",
-                      textAlign: "start",
-                    }}
+                    css={css`
+                      padding: 8px 12px;
+                      border: none;
+                      background-color: var(--color-fd);
+                      cursor: pointer;
+                      text-align: start;
+                      color: var(--color-fd-muted-foreground);
+
+                      &:hover {
+                        color: var(--color-fd-accent-foreground);
+                      }
+                    `}
                   >
                     Compiled output
                   </div>
