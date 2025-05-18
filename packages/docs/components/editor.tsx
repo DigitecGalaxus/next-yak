@@ -17,6 +17,9 @@ import dynamic from "next/dynamic";
 import { useTranspile } from "@/lib/transformation/useTranspile";
 import { ErrorBoundaryWithSnapshot } from "./errorBoundaryWithSnapshot";
 import { css } from "next-yak";
+import * as prettier from "prettier";
+import * as babelParser from "prettier/parser-babel";
+import * as estreePlugin from "prettier/plugins/estree";
 
 export default dynamic(
   async function load() {
@@ -214,6 +217,31 @@ export default dynamic(
                 }}
                 onMount={async (editor, monaco) => {
                   monacoEditorRef.current = editor;
+
+                  monaco.languages.registerDocumentFormattingEditProvider(
+                    "typescript",
+                    {
+                      async provideDocumentFormattingEdits(
+                        model,
+                        options,
+                        token,
+                      ) {
+                        const text = await prettier.format(model.getValue(), {
+                          embeddedLanguageFormatting: "auto",
+                          parser: "babel-ts",
+                          plugins: [babelParser, estreePlugin as any],
+                          tabWidth: 2,
+                        });
+
+                        return [
+                          {
+                            range: model.getFullModelRange(),
+                            text,
+                          },
+                        ];
+                      },
+                    },
+                  );
 
                   editor.addCommand(
                     monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
@@ -439,34 +467,76 @@ export default dynamic(
 const files = {
   other: `import { styled, css } from "next-yak";
 
-export const OtherButton = styled.div\`
-  color: blue;
-\`;
+export const theme = {
+  dark: "html.dark &",
+  light: "html.light &",
+};
 
-export const Mixin = css\`
-  color: yellow;
+export const Title = styled.h1\`
+  font-size: 5rem;
+  font-weight: 400;
+  text-align: center;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+
+  background: #000;
+  background: radial-gradient(
+    circle farthest-corner at top left,
+    #000 0%,
+    #333 100%
+  );
+  -webkit-text-fill-color: transparent;
+
+  @supports (-webkit-text-stroke: red 1px) {
+    transform: translateY(-4px);
+    padding: 4px 0;
+    \${theme.dark} {
+      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+    -webkit-text-fill-color: initial;
+    -webkit-text-stroke: 4px transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--color-fd-background);
+    letter-spacing: 0.02em;
+  }
+
+  background-clip: text;
+  -webkit-background-clip: text;
 \`;`,
   "different.yak": `const green = "00ff00";
 export const myColor = \`#\${ green }\`;`,
 
-  index: `import { styled } from "next-yak";
-import { OtherButton, Mixin } from "./other";
-import { myColor } from "./different.yak"
-
-const Button = styled.div\`
-  color: red;
-  \${Mixin};
-  color: \${myColor};
-\`;
+  index: `import { styled, css } from "next-yak";
+import { Title } from "./other";
 
 export default function Component() {
   return (
-  <>
-    <Button>
-      Hello, world!
-      </Button>
-    <OtherButton>Test</OtherButton>
-  </>
+    <Center>
+      <div
+        css={css\`
+        max-width: 400px;
+      \`}
+      >
+        <img
+          src="/img/yak-jumping.png"
+          css={css\`
+            max-width: 100%;
+          \`}
+        />
+        <Title>Next-Yak</Title>
+      </div>
+    </Center>
   );
-};`,
+}
+
+const Center = styled.div\`
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+\`;`,
 };

@@ -1,4 +1,5 @@
 "use client";
+import { css } from "next-yak";
 import { Component, ReactNode, createRef } from "react";
 
 interface Props {
@@ -67,7 +68,12 @@ export class ErrorBoundaryWithSnapshot extends Component<Props, State> {
       // If we have a snapshot, use it; otherwise use fallback
       if (this.state.childSnapshot) {
         return (
-          <div>
+          <div
+            css={css`
+              width: 100%;
+              height: 100%;
+            `}
+          >
             <p>{this.state.error}</p>
             <div
               dangerouslySetInnerHTML={{ __html: this.state.childSnapshot }}
@@ -79,6 +85,16 @@ export class ErrorBoundaryWithSnapshot extends Component<Props, State> {
     }
 
     // Render children inside a div to capture HTML
-    return <div ref={this.containerRef}>{this.props.children}</div>;
+    return (
+      <div
+        ref={this.containerRef}
+        css={css`
+          width: 100%;
+          height: 100%;
+        `}
+      >
+        {this.props.children}
+      </div>
+    );
   }
 }
