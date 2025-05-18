@@ -1,7 +1,5 @@
 "use client";
-import { use, useCallback, useEffect, useTransition } from "react";
-import * as React from "react";
-import * as NextYakInternal from "next-yak/internal";
+import { use, useCallback } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
@@ -16,86 +14,34 @@ import {
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
-import { executeCode, transform as transformCode } from "@/lib/execute-code";
-
-import { ErrorBoundaryWithFallback } from "./errorBoundaryWithFallback";
+import { useTranspile } from "@/lib/transformation/useTranspile";
+import { ErrorBoundaryWithSnapshot } from "./errorBoundaryWithSnapshot";
 
 export default dynamic(
   async function load() {
-    const { default: init, start, transform } = await import("playground-wasm");
-    await init();
-    start();
-    console.log("WASM initialized");
     return function Editor() {
       const themeConfig = useTheme();
-      const [tab, setTab] = useState<keyof typeof files>("index.tsx");
+      const [tab, setTab] = useState<keyof typeof files>("index");
       // list of refs to keep track of the models
       const modelRefs = useRef<Array<any>>([]);
-      const [response, setResponse] = useState(initialResponse);
       const highlighter = use(highlighterPromise);
       const compiledPanelRef = useRef<ImperativePanelHandle>(null);
-      const [component, setComponent] = useState<any>(null);
-      const workerRef = useRef<Worker | null>(null);
-
-      useEffect(() => {
-        const worker = new Worker(new URL("../workers/plus", import.meta.url));
-
-        worker.onmessage = (event) => {
-          console.log("🍏 Message received from worker: ", event.data);
-
-          const result = executeCode(event.data, {
-            react: React,
-            "next-yak/internal": NextYakInternal,
-            "./index.yak.css!=!./index?./index.yak.css": {},
-            "./other.yak.css!=!./other?./other.yak.css": {},
-          });
-          if (!result) {
-            return;
-          }
-
-          setComponent(result.comp);
-
-          // @ts-expect-error
-          setResponse({
-            "file:///index.tsx": {
-              original: "",
-              transformed: result.transformedCodeToDisplay,
-              css: result.css,
-            },
-            ...result.otherFilesTransformed.reduce(
-              (acc, { name, transformedCodeToDisplay, css }) => {
-                acc[name] = {
-                  original: "",
-                  transformed: transformedCodeToDisplay,
-                  css: css,
-                };
-                return acc;
-              },
-              {} as Record<string, unknown>,
-            ),
-          });
-        };
-
-        // plusWorker.onerror = (event) => {
-        //   if (event instanceof Event) {
-        //     console.log("🍎 Error message received from worker: ", event);
-        //     return event;
-        //   }
-
-        //   console.log("🍎 Unexpected error: ", event);
-        //   throw event;
-        // };
-
-        // plusWorker.postMessage([1, 2]);
-
-        console.log("worker initialized");
-        workerRef.current = worker;
-
-        return () => {
-          workerRef.current?.terminate();
-          workerRef.current = null;
-        };
-      }, []);
+      const [transpileResult, transpile] = useTranspile({
+        mainFile: {
+          name: "index",
+          content: files["index"],
+        },
+        additionalFiles: [
+          {
+            name: "other",
+            content: files["other"],
+          },
+          {
+            name: "different.yak",
+            content: files["different.yak"],
+          },
+        ],
+      });
 
       const updateCode = useCallback(() => {
         const code = modelRefs.current.reduce((acc, model) => {
@@ -103,56 +49,37 @@ export default dynamic(
           return acc;
         }, {});
 
-        workerRef.current?.postMessage(code);
-
-        // executeCode(
-        //   transform,
-        //   code["file:///index.tsx"],
-        //   {
-        //     react: React,
-        //     "next-yak/internal": NextYakInternal,
-        //     "./index.yak.css!=!./index?./index.yak.css": {},
-        //     "./other.yak.css!=!./other?./other.yak.css": {},
-        //   },
-        //   [
-        //     {
-        //       name: "file:///other.tsx",
-        //       content: code["file:///other.tsx"],
-        //     },
-        //     {
-        //       name: "file:///different.yak.ts",
-        //       content: code["file:///different.yak.ts"],
-        //     },
-        //   ],
-        // )
-        //   .then((result) => {
-        //     if (!result) {
-        //       return;
-        //     }
-        //     setComponent(result.comp);
-
-        //     // @ts-expect-error
-        //     setResponse({
-        //       "file:///index.tsx": {
-        //         original: code["file:///index.tsx"],
-        //         transformed: result.transformedCodeToDisplay,
-        //         css: result.css,
-        //       },
-        //       ...result.otherFilesTransformed.reduce(
-        //         (acc, { name, transformedCodeToDisplay, css }) => {
-        //           acc[name] = {
-        //             original: code[name],
-        //             transformed: transformedCodeToDisplay,
-        //             css: css,
-        //           };
-        //           return acc;
-        //         },
-        //         {} as Record<string, unknown>,
-        //       ),
-        //     });
-        //   })
-        //   .catch(console.log);
+        transpile({
+          mainFile: {
+            name: "index",
+            content: code["file:///index.tsx"],
+          },
+          additionalFiles: [
+            {
+              name: "other",
+              content: code["file:///other.tsx"],
+            },
+            {
+              name: "different.yak",
+              content: code["file:///different.yak.tsx"],
+            },
+          ],
+        });
       }, []);
+
+      const readableTranspiledResult = transpileResult
+        ? {
+            [transpileResult?.transpiledMainFile.name]:
+              transpileResult?.transpiledMainFile,
+            ...transpileResult.transpiledAdditionalFiles.reduce(
+              (acc, file) => ({
+                ...acc,
+                [file.name]: file,
+              }),
+              {} as any,
+            ),
+          }
+        : {};
 
       return (
         <PanelGroup
@@ -182,13 +109,13 @@ export default dynamic(
               className="group"
             >
               <Primitive.TabsList>
-                <Primitive.TabsTrigger value="index.tsx">
+                <Primitive.TabsTrigger value="index">
                   index.tsx
                 </Primitive.TabsTrigger>
-                <Primitive.TabsTrigger value="other.tsx">
+                <Primitive.TabsTrigger value="other">
                   other.tsx
                 </Primitive.TabsTrigger>
-                <Primitive.TabsTrigger value="different.yak.ts">
+                <Primitive.TabsTrigger value="different.yak">
                   different.yak.ts
                 </Primitive.TabsTrigger>
               </Primitive.TabsList>
@@ -200,7 +127,7 @@ export default dynamic(
                     ? "vitesse-dark"
                     : "vitesse-light"
                 }
-                path={tab}
+                path={`${tab}.tsx`}
                 options={{
                   fontSize: 14,
                   padding: { top: 16 },
@@ -222,16 +149,14 @@ export default dynamic(
                   monaco.editor.getModels().forEach((model) => model.dispose());
 
                   // add files from the files object to the editor
-                  Object.entries(files).forEach(
-                    ([path, { value, language }]) => {
-                      const model = monaco.editor.createModel(
-                        value,
-                        language,
-                        monaco.Uri.parse(`file:///${path}`),
-                      );
-                      modelRefs.current.push(model);
-                    },
-                  );
+                  Object.entries(files).forEach(([path, value]) => {
+                    const model = monaco.editor.createModel(
+                      value,
+                      "typescript",
+                      monaco.Uri.parse(`file:///${path}.tsx`),
+                    );
+                    modelRefs.current.push(model);
+                  });
                 }}
                 onMount={async (editor, monaco) => {
                   addTypesToMonaco(monaco);
@@ -262,12 +187,12 @@ export default dynamic(
                   borderWidth: "0 1px 1px 1px",
                 }}
               >
-                <ErrorBoundaryWithFallback
-                // key={response["file:///index.tsx"].transformed ?? "null"}
-                // fallback={<div>Error</div>}
-                >
-                  {component}
-                </ErrorBoundaryWithFallback>
+                <ErrorBoundaryWithSnapshot>
+                  {transpileResult?.renderedMainComponent.error ? (
+                    <div>{transpileResult.renderedMainComponent.error}</div>
+                  ) : null}
+                  {transpileResult?.renderedMainComponent.component}
+                </ErrorBoundaryWithSnapshot>
               </Panel>
               <PanelResizeHandle
                 style={{
@@ -317,13 +242,13 @@ export default dynamic(
                   }}
                 >
                   <Primitive.TabsList>
-                    <Primitive.TabsTrigger value="index.tsx">
+                    <Primitive.TabsTrigger value="index">
                       index.tsx
                     </Primitive.TabsTrigger>
-                    <Primitive.TabsTrigger value="other.tsx">
+                    <Primitive.TabsTrigger value="other">
                       other.tsx
                     </Primitive.TabsTrigger>
-                    <Primitive.TabsTrigger value="different.yak.ts">
+                    <Primitive.TabsTrigger value="different.yak">
                       different.yak.ts
                     </Primitive.TabsTrigger>
                   </Primitive.TabsList>
@@ -333,7 +258,8 @@ export default dynamic(
                     }}
                     dangerouslySetInnerHTML={{
                       __html: highlighter.codeToHtml(
-                        response?.[`file:///${tab}`].transformed ?? "",
+                        readableTranspiledResult?.[tab]
+                          ?.transpiledReadableContent ?? "",
                         {
                           lang: "typescript",
                           theme:
@@ -360,7 +286,7 @@ export default dynamic(
                       }}
                       dangerouslySetInnerHTML={{
                         __html: highlighter.codeToHtml(
-                          response?.[`file:///${tab}`].css ?? "",
+                          readableTranspiledResult?.[tab]?.css ?? "",
                           {
                             lang: "css",
                             theme:
@@ -387,8 +313,7 @@ export default dynamic(
 );
 
 const files = {
-  "other.tsx": {
-    value: `import { styled, css } from "next-yak";
+  other: `import { styled, css } from "next-yak";
 
 export const OtherButton = styled.div\`
   color: blue;
@@ -397,17 +322,10 @@ export const OtherButton = styled.div\`
 export const Mixin = css\`
   color: yellow;
 \`;`,
-    language: "typescript",
-  },
-  "different.yak.ts": {
-    value: `const green = "00ff00";
+  "different.yak": `const green = "00ff00";
 export const myColor = \`#\${ green }\`;`,
-    language: "typescript",
-  },
 
-  "index.tsx": {
-    value: `import React from "react";
-import { styled } from "next-yak";
+  index: `import { styled } from "next-yak";
 import { OtherButton, Mixin } from "./other";
 import { myColor } from "./different.yak"
 
@@ -427,46 +345,4 @@ export default function Component() {
   </>
   );
 };`,
-    language: "typescript",
-  },
-};
-
-const initialResponse = {
-  "file:///index.tsx": {
-    original: files["index.tsx"].value,
-    transformed: `import { styled } from "next-yak/internal";
-import __styleYak from "./index.yak.module.css!=!./index?./index.yak.module.css";
-import { OtherButton } from "./other";
-import { myColor } from "./different.yak";
-const Button = /*YAK Extracted CSS:
-.Button {
-  color: --yak-css-import: url("./different.yak:myColor",mixin);
-}
-*/ /*#__PURE__*/ styled.div(__styleYak.Button);
-const Component = ()=>{
-    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement(Button, null, "Hello, world!"), /*#__PURE__*/ React.createElement(OtherButton, null, "Hello, world!"));
-};`,
-    css: `.Button {
-  color: #00ff00;
-}`,
-  },
-  "file:///other.tsx": {
-    original: files["other.tsx"].value,
-    transformed: `import { styled } from "next-yak/internal";
-import __styleYak from "./index.yak.module.css!=!./index?./index.yak.module.css";
-export const OtherButton = /*YAK Extracted CSS:
-.OtherButton {
-  color: blue;
-}
-*/ /*#__PURE__*/ styled.div(__styleYak.OtherButton);`,
-    css: `.OtherButton {
-  color: blue;
-}`,
-  },
-  "file:///different.yak.ts": {
-    original: files["different.yak.ts"].value,
-    transformed: `const green = "00ff00";
-export const myColor = \`#\${green}\`;`,
-    css: undefined,
-  },
 };

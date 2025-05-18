@@ -1,8 +1,8 @@
-import { runLoaderForSingleFile } from "@/components/mockedLoader";
 import React, { createElement, isValidElement, ReactElement } from "react";
 import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
+import { runLoaderForSingleFile } from "./mockedLoader";
 
 export function executeCode(
   {
@@ -28,15 +28,7 @@ export function executeCode(
     ...dependencies,
     ...otherFilesTransformed.reduce(
       (acc, { name, transformedCodeToExecute }) => {
-        console.log({
-          filename: name
-            .replace("file://", ".")
-            .replace(".tsx", "")
-            .replace(".ts", ""),
-        });
-        acc[
-          name.replace("file://", ".").replace(".tsx", "").replace(".ts", "")
-        ] = createExport(transformedCodeToExecute, dependencies);
+        acc[`./${name}`] = createExport(transformedCodeToExecute, dependencies);
         return acc;
       },
       {} as any,
@@ -49,8 +41,6 @@ export function executeCode(
     return null;
   }
   const OriginalComponent = exports.default;
-
-  // console.log({ transformedCode });
 
   let Comp = OriginalComponent;
   // Create a wrapper component that includes the style
@@ -100,6 +90,62 @@ export function executeCode(
   return null;
 }
 
+export async function transformAll(
+  transformCode: (codeString: string, opts: any) => { code: string },
+  mainFileName: string,
+  mainFileCodeString: string,
+  otherFiles: { name: string; content: string }[],
+) {
+  const otherFilesTransformed: {
+    name: string;
+    content: string;
+    transformedCodeToExecute: string;
+    transformedCodeToDisplay: string;
+    css: string;
+  }[] = [];
+  for (const file of otherFiles) {
+    const { name, content } = file;
+
+    const { transformedCode, transformedCodeToDisplay } = await transform(
+      transformCode,
+      name + ".tsx",
+      content,
+    );
+
+    otherFilesTransformed.push({
+      name,
+      content,
+      transformedCodeToExecute: transformedCode,
+      transformedCodeToDisplay,
+      css: await runLoaderForSingleFile(transformedCode, name),
+    });
+  }
+
+  const { transformedCode, transformedCodeToDisplay } = await transform(
+    transformCode,
+    mainFileName + ".tsx",
+    mainFileCodeString,
+  );
+
+  const css = await runLoaderForSingleFile(
+    transformedCode,
+    mainFileName,
+    otherFilesTransformed.map(
+      ({ name, transformedCodeToExecute: transformedCode }) => ({
+        name,
+        content: transformedCode,
+      }),
+    ),
+  );
+
+  return {
+    css,
+    otherFilesTransformed,
+    transformedCodeToDisplay,
+    transformedCodeToExecute: transformedCode,
+  };
+}
+
 function createExport(
   transformedCode: string,
   dependencies: Record<string, unknown>,
@@ -117,7 +163,7 @@ function createExport(
   return exports;
 }
 
-export async function transform(
+async function transform(
   transformCode: (codeString: string, opts: any) => { code: string },
   fileName: string,
   codeString: string,
@@ -161,64 +207,4 @@ export async function transform(
   });
 
   return { transformedCode, transformedCodeToDisplay };
-}
-
-export async function transformAll(
-  transformCode: (codeString: string, opts: any) => { code: string },
-  codeString: string,
-  otherFiles: { name: string; content: string }[],
-) {
-  const otherFilesTransformed: {
-    name: string;
-    content: string;
-    transformedCodeToExecute: string;
-    transformedCodeToDisplay: string;
-    css: string;
-  }[] = [];
-  for (const file of otherFiles) {
-    const { name, content } = file;
-    // Process each file as needed
-    // For example, you can log the file name and content
-
-    const { transformedCode, transformedCodeToDisplay } = await transform(
-      transformCode,
-      name,
-      content,
-    );
-
-    otherFilesTransformed.push({
-      name,
-      content,
-      transformedCodeToExecute: transformedCode,
-      transformedCodeToDisplay,
-      css: !name.endsWith("yak.ts")
-        ? await runLoaderForSingleFile(transformedCode, name)
-        : "",
-    });
-  }
-
-  console.log({ otherFilesTransformed });
-
-  const { transformedCode, transformedCodeToDisplay } = await transform(
-    transformCode,
-    "index.tsx",
-    codeString,
-  );
-  const css = await runLoaderForSingleFile(
-    transformedCode,
-    undefined,
-    otherFilesTransformed.map(
-      ({ name, transformedCodeToExecute: transformedCode }) => ({
-        name,
-        content: transformedCode,
-      }),
-    ),
-  );
-
-  return {
-    css,
-    otherFilesTransformed,
-    transformedCodeToDisplay,
-    transformedCodeToExecute: transformedCode,
-  };
 }

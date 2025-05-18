@@ -2,83 +2,20 @@ import { type Compilation } from "webpack";
 // @ts-ignore
 import cssLoader = require("next-yak/loaders/css-loader");
 
-export async function runLoader(
-  result: Record<
-    `file:///${string}`,
-    { original: string; transformed: string; css?: string }
-  >,
-  input: string,
-) {
-  const mockLoader = new MockLoaderContext(input);
-  mockLoader.fs.setFile(
-    "/src/index.tsx",
-    result["file:///index.tsx"].transformed,
-  );
-  mockLoader.fs.setFile(
-    "/src/./index.tsx",
-    result["file:///index.tsx"].transformed,
-  );
-  mockLoader.fs.setFile(
-    "/src/other.tsx",
-    result["file:///other.tsx"].transformed,
-  );
-  mockLoader.fs.setFile(
-    "/src/./other.tsx",
-    result["file:///other.tsx"].transformed,
-  );
-  mockLoader.fs.setFile(
-    "/src/different.yak.tsx",
-    result["file:///different.yak.ts"].transformed,
-  );
-  mockLoader.fs.setFile(
-    "/src/./different.yak.tsx",
-    result["file:///different.yak.ts"].transformed,
-  );
-
-  mockLoader.resourcePath = "/src/index.tsx";
-
-  for (const path of ["/src/index.tsx", "/src/other.tsx"]) {
-    mockLoader.resourcePath = path;
-    const p = createAsyncPromise(mockLoader);
-    // @ts-ignore
-    cssLoader.default.call(mockLoader, "", undefined);
-    const x = (await p) as string;
-    if (path === "/src/index.tsx") {
-      result["file:///index.tsx"] = {
-        ...result["file:///index.tsx"],
-        css: x,
-      };
-    }
-    if (path === "/src/other.tsx") {
-      result["file:///other.tsx"] = {
-        ...result["file:///other.tsx"],
-        css: x,
-      };
-    }
-  }
-
-  return result;
-}
-
 export async function runLoaderForSingleFile(
   input: string,
-  fileName: string = "/src/index.tsx",
+  fileName: string,
   additionalFiles: { name: string; content: string }[] = [],
 ): Promise<string> {
+  const entry = `/src/${fileName}.tsx`;
   const mockLoader = new MockLoaderContext("");
-  mockLoader.fs.setFile(fileName, input);
+  mockLoader.fs.setFile(entry, input);
 
   for (const { name, content } of additionalFiles) {
-    console.log(
-      `set mocked file: ${name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx")}`,
-    );
-    mockLoader.fs.setFile(
-      name.replace("file://", "/src/.").replace(/\.ts$/, ".tsx"),
-      content,
-    );
+    mockLoader.fs.setFile(`/src/./${name}.tsx`, content);
   }
 
-  mockLoader.resourcePath = fileName;
+  mockLoader.resourcePath = entry;
 
   const p = createAsyncPromise(mockLoader);
   // @ts-expect-error Types don't add up
@@ -146,10 +83,7 @@ class MockLoaderContext {
   }
 
   async importModule(request: string): Promise<Record<string, unknown>> {
-    console.log("importModule, ", request);
-
     const file = this.fs.files.get(request);
-    console.log({ file });
     const require = (path: string) => {
       if (this.deps[path]) {
         return this.deps[path];
@@ -190,9 +124,6 @@ class MockLoaderContext {
       experiments: {
         transpilationMode: "Css",
       },
-      // experiments: {
-      // debug: true,
-      // },
     };
   }
 }

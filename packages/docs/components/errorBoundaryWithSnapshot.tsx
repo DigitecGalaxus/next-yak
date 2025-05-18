@@ -11,7 +11,7 @@ interface State {
   childSnapshot: string | null;
 }
 
-export class ErrorBoundaryWithFallback extends Component<Props, State> {
+export class ErrorBoundaryWithSnapshot extends Component<Props, State> {
   state: State = {
     error: null,
     childSnapshot: null,
