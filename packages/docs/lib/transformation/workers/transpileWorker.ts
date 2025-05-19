@@ -1,13 +1,17 @@
 import { transformAll } from "@/lib/transformation/execute-code";
 import type { TranspileInput } from "@/lib/transformation/useTranspile";
-import type { transform } from "../../../wasm";
+import type { transform } from "../../../playground-wasm/out";
 
 export type TWorkerMess = number[];
 
 let transformFn: typeof transform;
 
 const initializeWasm = async () => {
-  const { default: init, start, transform } = await import("../../../wasm");
+  const {
+    default: init,
+    start,
+    transform,
+  } = await import("../../../playground-wasm/out");
   await init();
   start();
   transformFn = transform;

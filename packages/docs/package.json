@@ -7,7 +7,7 @@
     "build:next": "next build",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
-    "build:wasm:opt": "wasm-pack build ./playground-wasm --out-dir ../wasm --out-name index --target web",
+    "build:wasm:opt": "wasm-pack build ./playground-wasm --out-dir ./out --out-name index --target web",
     "dev": "next dev",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
