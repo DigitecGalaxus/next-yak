@@ -1,5 +1,18 @@
 # next-yak
 
+## 5.6.0
+
+### Minor Changes
+
+- 6c859e5: Add new "experiments.transpilationMode" option to transpile to CSS instead of CSS Modules
+
+### Patch Changes
+
+- 380cb4e: Improve cross file compilation performance by removing the serialization
+- Updated dependencies [6c859e5]
+- Updated dependencies [a8fce5a]
+  - yak-swc@5.6.0
+
 ## 5.5.0
 
 ### Minor Changes
