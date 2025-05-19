@@ -1,5 +1,5 @@
 [workspace]
-members = ["css_in_js_parser", "yak_swc", "relative_posix_path", "../playground-wasm/wasm-build"]
+members = ["css_in_js_parser", "yak_swc", "relative_posix_path", "../docs/playground-wasm"]
 resolver = "2"
 
 [workspace.dependencies]
