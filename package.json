@@ -10,7 +10,6 @@
     "changeset": "changeset",
     "build": "pnpm run --filter=next-yak build",
     "build:swc": "pnpm run --filter=yak-swc build",
-    "build:wasm-playground": "pnpm run --filter=playground-wasm build:wasm:opt",
     "example": "pnpm --filter=next-yak-example run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "prettier": "pnpm run --recursive --if-present prettier",

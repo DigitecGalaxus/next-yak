@@ -72,9 +72,6 @@ jobs:
       - name: Build with SWC
         run: pnpm run build:swc
 
-      - name: Build WASM Playground
-        run: pnpm run build:wasm-playground
-
       - name: Install Vercel CLI
         run: npm install -g vercel@35
 
