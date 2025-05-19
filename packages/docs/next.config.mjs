@@ -18,26 +18,6 @@ const config = {
       use: "raw-loader",
     });
 
-    // don't throw an error if fs is not available on client
-    config.resolve.fallback = { fs: false };
-
-    // ignore the warnings
-    // (we should use @babel/parser and @babel/traverse instead of @babel/core in our loader)
-    config.ignoreWarnings = [
-      {
-        module: /node_modules[\\/]browserslist[\\/]node\.js/,
-        message: /Critical dependency/,
-      },
-      {
-        module: /node_modules[\\/]@babel[\\/]core/,
-        message: /require\.extensions/,
-      },
-      {
-        module: /node_modules[\\/]@babel[\\/]core/,
-        message: /Critical dependency/,
-      },
-    ];
-
     return config;
   },
 };
