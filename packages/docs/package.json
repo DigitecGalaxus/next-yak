@@ -25,17 +25,18 @@
     "fumadocs-mdx": "catalog:dev",
     "fumadocs-twoslash": "catalog:dev",
     "fumadocs-ui": "catalog:dev",
+    "lz-string": "catalog:dev",
     "next": "catalog:dev",
     "next-themes": "catalog:dev",
     "next-yak": "workspace:*",
+    "playground-wasm": "workspace:*",
     "raw-loader": "catalog:dev",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "react-resizable-panels": "catalog:dev",
     "shiki": "catalog:dev",
     "shiki-magic-move": "catalog:dev",
-    "yak-swc": "workspace:*",
-    "playground-wasm": "workspace:*"
+    "yak-swc": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:dev",

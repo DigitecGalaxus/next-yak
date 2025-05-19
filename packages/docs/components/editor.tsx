@@ -20,12 +20,17 @@ import { css } from "next-yak";
 import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
+import { compressToEncodedURIComponent } from "lz-string";
 
 export default dynamic(
   async function load() {
-    return function Editor() {
+    return function Editor({
+      initialState,
+    }: {
+      initialState: Record<string, string>;
+    }) {
       const themeConfig = useTheme();
-      const [tab, setTab] = useState<keyof typeof files>("index");
+      const [tab, setTab] = useState("index");
       const [compiledOutput, setCompiledOutput] = useState<"CSS" | "TS">("CSS");
       const monacoEditorRef = useRef<
         | Parameters<
@@ -40,16 +45,16 @@ export default dynamic(
       const [transpileResult, transpile] = useTranspile({
         mainFile: {
           name: "index",
-          content: files["index"],
+          content: initialState["index"],
         },
         additionalFiles: [
           {
             name: "other",
-            content: files["other"],
+            content: initialState["other"],
           },
           {
             name: "different.yak",
-            content: files["different.yak"],
+            content: initialState["different.yak"],
           },
         ],
       });
@@ -108,7 +113,7 @@ export default dynamic(
             }}
           >
             <Primitive.Tabs
-              onValueChange={(v) => setTab(v as keyof typeof files)}
+              onValueChange={setTab}
               value={tab}
               style={{
                 borderRadius: "0px",
@@ -143,37 +148,79 @@ export default dynamic(
                       different.yak.ts
                     </Primitive.TabsTrigger>
                   </div>
-                  <button
-                    onClick={() => {
-                      monacoEditorRef.current
-                        ?.getAction("editor.action.formatDocument")
-                        ?.run();
-                    }}
-                    title="format document"
+                  <div
                     css={css`
-                      cursor: pointer;
-                      &:hover {
-                        color: var(--color-fd-primary);
-                      }
+                      display: flex;
+                      gap: 1rem;
                     `}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    <button
+                      onClick={() => {
+                        monacoEditorRef.current
+                          ?.getAction("editor.action.formatDocument")
+                          ?.run();
+                      }}
+                      title="format document"
+                      css={css`
+                        cursor: pointer;
+                        &:hover {
+                          color: var(--color-fd-primary);
+                        }
+                      `}
                     >
-                      <path d="m16 22-1-4" />
-                      <path d="M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1" />
-                      <path d="M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z" />
-                      <path d="m8 22 1-4" />
-                    </svg>
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m16 22-1-4" />
+                        <path d="M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1" />
+                        <path d="M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z" />
+                        <path d="m8 22 1-4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => {
+                        monacoEditorRef.current
+                          ?.getAction("editor.action.formatDocument")
+                          ?.run();
+                        monacoEditorRef.current?.trigger(
+                          "editor",
+                          "share",
+                          undefined,
+                        );
+                      }}
+                      title="share and format document"
+                      css={css`
+                        cursor: pointer;
+                        &:hover {
+                          color: var(--color-fd-primary);
+                        }
+                      `}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 2v13" />
+                        <path d="m16 6-4-4-4 4" />
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </Primitive.TabsList>
               <MonacoEditor
@@ -206,7 +253,7 @@ export default dynamic(
                   monaco.editor.getModels().forEach((model) => model.dispose());
 
                   // add files from the files object to the editor
-                  Object.entries(files).forEach(([path, value]) => {
+                  Object.entries(initialState).forEach(([path, value]) => {
                     const model = monaco.editor.createModel(
                       value,
                       "typescript",
@@ -243,6 +290,40 @@ export default dynamic(
                     },
                   );
 
+                  editor.addAction({
+                    id: "share",
+                    label: "Share",
+                    keybindings: [],
+                    run: () => {
+                      const models = monaco.editor.getModels();
+                      const mapped = models.reduce(
+                        (acc, model) => {
+                          const text = model.getValue();
+                          return {
+                            ...acc,
+                            [model.uri
+                              .toString()
+                              .replace("file:///", "")
+                              .replace(".tsx", "")]: text,
+                          };
+                        },
+                        {} as Record<string, string>,
+                      );
+                      const urlSearchParams = new URLSearchParams();
+                      urlSearchParams.set(
+                        "q",
+                        compressToEncodedURIComponent(JSON.stringify(mapped)),
+                      );
+                      window.history.replaceState(
+                        null,
+                        "",
+                        `?${urlSearchParams.toString()}`,
+                      );
+
+                      navigator.clipboard.writeText(location.href);
+                    },
+                  });
+
                   editor.addCommand(
                     monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
                     () => {
@@ -251,6 +332,8 @@ export default dynamic(
                         "editor.action.formatDocument",
                         undefined,
                       );
+
+                      editor.trigger("editor", "share", undefined);
                     },
                   );
 
@@ -370,7 +453,7 @@ export default dynamic(
                 }}
               >
                 <Primitive.Tabs
-                  onValueChange={(v) => setTab(v as keyof typeof files)}
+                  onValueChange={setTab}
                   value={tab}
                   style={{
                     borderRadius: "0px",
@@ -463,80 +546,3 @@ export default dynamic(
     ),
   },
 );
-
-const files = {
-  other: `import { styled, css } from "next-yak";
-
-export const theme = {
-  dark: "html.dark &",
-  light: "html.light &",
-};
-
-export const Title = styled.h1\`
-  font-size: 5rem;
-  font-weight: 400;
-  text-align: center;
-  text-box-trim: trim-both;
-  text-box-edge: cap alphabetic;
-
-  background: #000;
-  background: radial-gradient(
-    circle farthest-corner at top left,
-    #000 0%,
-    #333 100%
-  );
-  -webkit-text-fill-color: transparent;
-
-  @supports (-webkit-text-stroke: red 1px) {
-    transform: translateY(-4px);
-    padding: 4px 0;
-    \${theme.dark} {
-      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
-    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
-    -webkit-text-fill-color: initial;
-    -webkit-text-stroke: 4px transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: var(--color-fd-background);
-    letter-spacing: 0.02em;
-  }
-
-  background-clip: text;
-  -webkit-background-clip: text;
-\`;`,
-  "different.yak": `const green = "00ff00";
-export const myColor = \`#\${ green }\`;`,
-
-  index: `import { styled, css } from "next-yak";
-import { Title } from "./other";
-
-export default function Component() {
-  return (
-    <Center>
-      <div
-        css={css\`
-        max-width: 400px;
-      \`}
-      >
-        <img
-          src="/img/yak-jumping.png"
-          css={css\`
-            max-width: 100%;
-          \`}
-        />
-        <Title>Next-Yak</Title>
-      </div>
-    </Center>
-  );
-}
-
-const Center = styled.div\`
-  display: grid;
-  width: 100%;
-  height: 100%;
-  place-items: center;
-\`;`,
-};
