@@ -98,7 +98,7 @@ export const LandingPage = ({ version }: { version: string }) => {
         <Link href="/docs/how-does-it-work">
           <Strong>Zero-Runtime</Strong>
         </Link>{" "}
-        approach in the docs or tatke a look at the{" "}
+        approach in the docs or take a look at the{" "}
         <Link href="/docs/comparison">
           <Strong>comparison</Strong>
         </Link>{" "}
