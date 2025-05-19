@@ -1,5 +1,12 @@
 # yak-swc
 
+## 5.6.0
+
+### Minor Changes
+
+- 6c859e5: Add new "experiments.transpilationMode" option to transpile to CSS instead of CSS Modules
+- a8fce5a: Make swc plugin integration an enabled-by-default cargo feature (not used in playground)
+
 ## 5.5.0
 
 ### Minor Changes
