@@ -37,7 +37,7 @@ export const LandingPage = ({ version }: { version: string }) => {
       <Description>
         <p>
           🦀{" "}
-          <Link href="/docs/how-it-works">
+          <Link href="/docs/how-does-it-work">
             <Strong>Zero-Runtime</Strong>
           </Link>{" "}
           CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
@@ -98,7 +98,11 @@ export const LandingPage = ({ version }: { version: string }) => {
         <Link href="/docs/how-does-it-work">
           <Strong>Zero-Runtime</Strong>
         </Link>{" "}
-        approach in the docs
+        approach in the docs or take a look at the{" "}
+        <Link href="/docs/comparison">
+          <Strong>comparison</Strong>
+        </Link>{" "}
+        of 13 popular CSS approaches
       </p>
       <p
         style={{
@@ -178,7 +182,7 @@ const Article = styled.article`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 80ch;
+  max-width: min(80ch, 100%);
   margin-inline: auto;
   padding: 2rem 1rem;
   flex-wrap: wrap;
@@ -190,6 +194,7 @@ const TitleRow = styled.div`
   align-items: baseline;
   gap: 1.5rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 `;
 
 const Image = styled(NextImage)`
@@ -390,10 +395,6 @@ const Strong = styled.strong`
 `;
 
 const Title = styled.h1`
-  ${breakpoints.sm} {
-    flex-direction: row;
-    align-items: baseline;
-  }
   position: relative;
   font-size: 5rem;
   font-weight: 400;

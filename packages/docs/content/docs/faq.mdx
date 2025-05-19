@@ -78,68 +78,6 @@ Yes.
 
 We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/jantimon/next-yak)
 
-## I get an error about selector that are not pure
-
-If you get an error like this:
-
-<Callout type="error">
-Error: The selector "div" is not pure. It is not allowed to use a selector that is not pure.
-</Callout>
-
-You are using the outdated version of postcss-nested, that is automatically bundled with next.js.
-
-You can update the dependency yourself by adding the package to your `package.json`:
-
-<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
-<Tab value="npm">
-```bash
-npm i postcss-nested
-```
-</Tab>
-<Tab value="pnpm">
-```bash
-pnpm i postcss-nested
-```
-</Tab>
-<Tab value="yarn">
-```bash
-yarn add postcss-nested
-```
-</Tab>
-<Tab value="bun">
-```bash
-bun add postcss-nested
-```
-</Tab>
-</Tabs>
-
-and create a `postcss.config.cjs` file in your project root with the following content:
-
-```js title="postcss.config.cjs"
-module.exports = {
-  plugins: {
-    'postcss-nested': {},
-  },
-};
-```
-
-Or you can add an ampersand to the selector:
-
-```jsx title="my-component.tsx"
-import { styled } from 'next-yak';
-
-const Button = styled.button`
-  background: #BF4F74;
-  & div {
-    color: white;
-  }
-`;
-```
-
-so that the old version of postcss-nested does not complain about the selector.
-
-For further information see the [issue on next-yak](https://github.com/jantimon/next-yak/issues/221) and the open [pull request on next.js](https://github.com/vercel/next.js/pull/72622).
-
 ## My styles are not applied
 
 If your styles are not applied, the first thing you should check is the transformed output of your component.
