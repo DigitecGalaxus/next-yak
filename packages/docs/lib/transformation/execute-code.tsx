@@ -3,6 +3,10 @@ import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
 import { runLoaderForSingleFile } from "./mockedLoader";
+import type {
+  Config,
+  transform as WasmTransform,
+} from "../../playground-wasm/out";
 
 export function executeCode(
   {
@@ -91,7 +95,7 @@ export function executeCode(
 }
 
 export async function transformAll(
-  transformCode: (codeString: string, opts: any) => { code: string },
+  transformCode: typeof WasmTransform,
   mainFileName: string,
   mainFileCodeString: string,
   otherFiles: { name: string; content: string }[],
@@ -164,42 +168,52 @@ function createExport(
 }
 
 async function transform(
-  transformCode: (codeString: string, opts: any) => { code: string },
+  transformCode: typeof WasmTransform,
   fileName: string,
   codeString: string,
 ) {
-  const transformedCode = transformCode(codeString, {
-    filename: fileName,
-    jsc: {
-      target: "es2022",
-      loose: false,
-      minify: {
-        compress: false,
-        mangle: false,
+  const transformedCode = transformCode(
+    codeString,
+    {
+      filename: fileName,
+      jsc: {
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: true,
       },
-      preserveAllComments: true,
+      module: {
+        type: "commonjs",
+      },
+      minify: false, // don't minify the react elements
     },
-    module: {
-      type: "commonjs",
+    {
+      minify: true, // minify the class names and don't add display names
     },
-    minify: false,
-    isModule: true,
-  }).code;
+  ).code;
 
-  let transformedCodeToDisplay = transformCode(codeString, {
-    filename: fileName,
-    jsc: {
-      target: "es2022",
-      loose: false,
-      minify: {
-        compress: false,
-        mangle: false,
+  let transformedCodeToDisplay = transformCode(
+    codeString,
+    {
+      filename: fileName,
+      jsc: {
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: false,
       },
-      preserveAllComments: true,
+      minify: false, // don't minify the react elements
     },
-    minify: false,
-    isModule: true,
-  }).code;
+    {
+      minify: true, // minify the class names and don't add display names
+    },
+  ).code;
 
   transformedCodeToDisplay = await prettier.format(transformedCodeToDisplay, {
     parser: "babel",
