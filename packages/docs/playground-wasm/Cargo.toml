@@ -26,6 +26,7 @@ swc_core = { workspace = true, features = [
 wasm-bindgen = "0.2"
 yak_swc = { version = "0.1.0", path = "../../yak-swc/yak_swc", default-features = false }
 either = "1.15.0"
+tsify = "0.5.5"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.50"
