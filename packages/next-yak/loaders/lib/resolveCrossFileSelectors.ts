@@ -514,6 +514,24 @@ function parseObjectExpression(
   return result;
 }
 
+function handleNestedRecordValue(
+  value: any,
+  specifier: string[],
+): ResolvedExport {
+  if (typeof value === "string" || typeof value === "number") {
+    return { type: "constant" as const, value };
+  } else if (value && typeof value === "object") {
+    if ("__yak" in value) {
+      return { type: "mixin", value: value["__yak"] };
+    } else if ("value" in value) {
+      return { type: "constant", value: value["value"] };
+    }
+  }
+  throw new Error(
+    `Error unpacking Record/Array - could not extract final value from \`${specifier.join(".")}\``,
+  );
+}
+
 /**
  * Follows a specifier recursively until it finds its constant value
  * for example here it follows "colors.primary"
@@ -614,15 +632,16 @@ async function resolveModuleSpecifierRecursively(
       return { type: "constant", value: exportValue.value };
     } else if (exportValue.type === "record") {
       let current: any = exportValue.value;
-      let depth = 0;
-      /// Drill down the specifier e.g. colors.primary
-      do {
+      let depth = 1; // Start at 1 since we already consumed specifier[0]
+
+      // Drill down the specifier e.g. colors.primary
+      while (current && depth < specifier.length) {
+        // Check if we can return early with the current value
         if (typeof current === "string" || typeof current === "number") {
-          return {
-            type: "constant" as const,
-            value: current,
-          };
-        } else if (
+          return handleNestedRecordValue(current, specifier);
+        }
+
+        if (
           !current ||
           (typeof current !== "object" && !Array.isArray(current))
         ) {
@@ -632,28 +651,23 @@ async function resolveModuleSpecifierRecursively(
             }" was of type "${typeof current}" but only String and Number are supported`,
           );
         }
-        depth++;
-        // mixins in .yak files are wrapped inside an object with a __yak key
-        if (depth === specifier.length && "__yak" in current) {
-          return { type: "mixin", value: current["__yak"] };
-        } else if (depth === specifier.length && "value" in current) {
-          return { type: "constant", value: current["value"] };
-        } else {
-          current = current[specifier[depth]];
+
+        current = current[specifier[depth]];
+
+        // Handle ParsedExport objects
+        if (current && typeof current === "object" && "type" in current) {
+          if (current.type === "constant") {
+            return { type: "constant", value: current.value };
+          } else if (current.type === "mixin") {
+            return { type: "mixin", value: current.value };
+          } else if (current.type === "record") {
+            current = current.value;
+          }
         }
-      } while (current);
-      if (specifier[depth] === undefined) {
-        throw new Error(
-          `Error unpacking Record/Array - could not extract \`${specifier
-            .slice(0, depth)
-            .join(".")}\` is not a string or number`,
-        );
+
+        depth++;
       }
-      throw new Error(
-        `Error unpacking Record/Array - could not extract \`${
-          specifier[depth]
-        }\` from \`${specifier.slice(0, depth).join(".")}\``,
-      );
+      return handleNestedRecordValue(current, specifier);
     } else if (exportValue.type === "mixin") {
       return { type: "mixin", value: exportValue.value };
     }
