@@ -113,6 +113,8 @@ const MergeTestErrors = () => {
     case "html prop":
       // @ts-expect-error - only valid html attribute values are allowed
       return <Button4 type="submit submit" />;
+    case "html prop2":
+      return <Button4 type="submit" />;
     case "ref":
       // @ts-expect-error - only valid html elements
       return <Button4 ref={(element: HTMLDivElement | null) => {}} />;
@@ -312,4 +314,20 @@ const InferenceShouldWorkWithComplexTypes = () => {
       }
     }}
   `;
+};
+
+const WebComponentsShouldWork = () => {
+  const MyWebComponent = styled("my-web-component")<{ $primary?: boolean }>`
+    color: red;
+  `;
+
+  // @ts-expect-error - web component props should match the defined props
+  <MyWebComponent $primary={42} />;
+
+  // Should allow all valid HTML attributes
+  <MyWebComponent onClick={() => console.log("clicked")} />;
+
+  <MyWebComponent $primary />;
+
+  return <MyWebComponent />;
 };
