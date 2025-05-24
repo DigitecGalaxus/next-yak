@@ -177,7 +177,7 @@ export default function Home() {
         </p>
         <p
           css={css`
-            ${mixins.primary.main}
+            ${mixins.primary.main};
           `}
         >
           Nested constants work if this is light blue{" "}
