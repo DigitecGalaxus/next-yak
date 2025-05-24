@@ -35,7 +35,9 @@ const onmessage = async (event: MessageEvent<TranspileInput>) => {
     postMessage(response);
   } catch (error) {
     if (typeof error === "string") {
-      postMessage(error.split("\n")[0].replace("x ", ""));
+      postMessage(error);
+    } else if (error instanceof Error) {
+      postMessage(error.message);
     }
   }
 };

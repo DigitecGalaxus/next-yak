@@ -3,10 +3,7 @@ import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
 import { runLoaderForSingleFile } from "./mockedLoader";
-import type {
-  Config,
-  transform as WasmTransform,
-} from "../../playground-wasm/out";
+import type { transform as WasmTransform } from "../../playground-wasm/out";
 
 export function executeCode(
   {
@@ -110,44 +107,60 @@ export async function transformAll(
   for (const file of otherFiles) {
     const { name, content } = file;
 
-    const { transformedCode, transformedCodeToDisplay } = await transform(
-      transformCode,
-      name + ".tsx",
-      content,
-    );
+    try {
+      const { transformedCode, transformedCodeToDisplay } = await transform(
+        transformCode,
+        name + ".tsx",
+        content,
+      );
 
-    otherFilesTransformed.push({
-      name,
-      content,
-      transformedCodeToExecute: transformedCode,
-      transformedCodeToDisplay,
-      css: await runLoaderForSingleFile(transformedCode, name),
-    });
+      otherFilesTransformed.push({
+        name,
+        content,
+        transformedCodeToExecute: transformedCode,
+        transformedCodeToDisplay,
+        css: await runLoaderForSingleFile(content, transformedCode, name),
+      });
+    } catch (err) {
+      if (typeof err === "string") {
+        throw `${err.split("\n")[0].replace("x ", "")} in ${file.name}.tsx`;
+      }
+      throw err;
+    }
   }
 
-  const { transformedCode, transformedCodeToDisplay } = await transform(
-    transformCode,
-    mainFileName + ".tsx",
-    mainFileCodeString,
-  );
+  try {
+    const { transformedCode, transformedCodeToDisplay } = await transform(
+      transformCode,
+      mainFileName + ".tsx",
+      mainFileCodeString,
+    );
 
-  const css = await runLoaderForSingleFile(
-    transformedCode,
-    mainFileName,
-    otherFilesTransformed.map(
-      ({ name, transformedCodeToExecute: transformedCode }) => ({
-        name,
-        content: transformedCode,
-      }),
-    ),
-  );
+    const css = await runLoaderForSingleFile(
+      mainFileCodeString,
+      transformedCode,
+      mainFileName,
+      otherFilesTransformed.map(
+        ({ name, transformedCodeToExecute: transformedCode, content }) => ({
+          name,
+          originalContent: content,
+          transpiledContent: transformedCode,
+        }),
+      ),
+    );
 
-  return {
-    css,
-    otherFilesTransformed,
-    transformedCodeToDisplay,
-    transformedCodeToExecute: transformedCode,
-  };
+    return {
+      css,
+      otherFilesTransformed,
+      transformedCodeToDisplay,
+      transformedCodeToExecute: transformedCode,
+    };
+  } catch (err) {
+    if (typeof err === "string") {
+      throw `${err.split("\n")[0].replace("x ", "")} in ${mainFileName}.tsx`;
+    }
+    throw err;
+  }
 }
 
 function createExport(
@@ -191,7 +204,7 @@ async function transform(
       minify: false, // don't minify the react elements
     },
     {
-      minify: true, // minify the class names and don't add display names
+      minify: false, // minify the class names and don't add display names
     },
   ).code;
 
@@ -206,12 +219,12 @@ async function transform(
           compress: false,
           mangle: false,
         },
-        preserveAllComments: false,
+        preserveAllComments: true,
       },
       minify: false, // don't minify the react elements
     },
     {
-      minify: true, // minify the class names and don't add display names
+      minify: false, // minify the class names and don't add display names
     },
   ).code;
 
