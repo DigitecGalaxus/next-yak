@@ -1,5 +1,9 @@
 import { CSSInterpolation, css, yakComponentSymbol } from "./cssLiteral.js";
-import React, { HtmlHTMLAttributes } from "react";
+import React, {
+  HTMLAttributes,
+  HtmlHTMLAttributes,
+  SVGAttributes,
+} from "react";
 
 // the following export is not relative as "next-yak/context"
 // links to one file for react server components and
@@ -52,13 +56,6 @@ type Attrs<
   TOut extends AttrsMerged<TBaseProps, TIn> = AttrsMerged<TBaseProps, TIn>,
 > = Partial<TOut> | AttrsFunction<TBaseProps, TIn, TOut>;
 
-type StyledFactory = {
-  <T>(Component: HtmlTags | React.FunctionComponent<T>): StyledLiteral<T>;
-  <T>(
-    Component: CustomWebComponentTag,
-  ): StyledLiteral<T & HtmlHTMLAttributes<"HTMLElement">>;
-};
-
 //
 // The `styled()` API without `styled.` syntax
 //
@@ -66,28 +63,17 @@ type StyledFactory = {
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/constructors/styled.tsx
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
 //
-const StyledFactory: StyledFactory = <T,>(
+const StyledFactory = <T = HTMLAttributes<{}>,>(
   Component: HtmlTags | React.FunctionComponent<T> | CustomWebComponentTag,
 ) =>
-  Object.assign(
-    yakStyled(
-      // Without typecast React does not allow to use a string as a component
-      // e.g. <Component /> where Component is a string like "custom-element"
-      Component as Exclude<typeof Component, CustomWebComponentTag>,
-    ),
-    {
-      attrs: <
-        TAttrsIn extends object = {},
-        TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
-      >(
-        attrs: Attrs<T, TAttrsIn, TAttrsOut>,
-      ) =>
-        yakStyled<T, TAttrsIn, TAttrsOut>(
-          Component as Exclude<typeof Component, CustomWebComponentTag>,
-          attrs,
-        ),
-    },
-  );
+  Object.assign(yakStyled(Component), {
+    attrs: <
+      TAttrsIn extends object = {},
+      TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
+    >(
+      attrs: Attrs<T, TAttrsIn, TAttrsOut>,
+    ) => yakStyled<T, TAttrsIn, TAttrsOut>(Component, attrs),
+  });
 
 /**
  * A yak component has a special symbol attached to it that allows to
@@ -113,7 +99,8 @@ const yakStyled = <
   Component:
     | React.FunctionComponent<T>
     | YakComponent<T, TAttrsIn, TAttrsOut>
-    | HtmlTags,
+    | HtmlTags
+    | string,
   attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
 ) => {
   const isYakComponent =
