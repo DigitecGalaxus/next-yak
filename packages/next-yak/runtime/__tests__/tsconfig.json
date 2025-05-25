@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2019",
-    "lib": [
-      "DOM"
-    ],
+    "lib": ["DOM"],
     "jsx": "react",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "checkJs": true,
     "maxNodeModuleJsDepth": 0,
@@ -16,8 +13,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": [
-    "./typeTest.tsx",
-    "./cssPropTest.tsx"
-  ],
+  "include": ["./*"]
 }
