@@ -18,6 +18,10 @@ type TranspiledFile = {
 export type TranspileInput = {
   mainFile: File;
   additionalFiles?: File[];
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  };
 };
 
 type TranspileResult = {
@@ -172,7 +176,7 @@ export const useTranspile = (
     if (isWorkerReady && initialProps) {
       transpile(initialProps);
     }
-  }, [isWorkerReady, transpile]);
+  }, [isWorkerReady, transpile, initialProps]);
 
   return [result, transpile];
 };

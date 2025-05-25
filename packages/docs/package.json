@@ -17,6 +17,7 @@
     "@babel/preset-typescript": "catalog:dev",
     "@monaco-editor/react": "catalog:dev",
     "@next/mdx": "catalog:dev",
+    "@radix-ui/react-switch": "catalog:dev",
     "@shikijs/monaco": "catalog:dev",
     "@shikijs/transformers": "catalog:dev",
     "@swc/core": "catalog:dev",

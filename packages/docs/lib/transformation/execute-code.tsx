@@ -96,6 +96,10 @@ export async function transformAll(
   mainFileName: string,
   mainFileCodeString: string,
   otherFiles: { name: string; content: string }[],
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  },
 ) {
   const otherFilesTransformed: {
     name: string;
@@ -112,6 +116,7 @@ export async function transformAll(
         transformCode,
         name + ".tsx",
         content,
+        options,
       );
 
       otherFilesTransformed.push({
@@ -134,6 +139,7 @@ export async function transformAll(
       transformCode,
       mainFileName + ".tsx",
       mainFileCodeString,
+      options,
     );
 
     const css = await runLoaderForSingleFile(
@@ -184,6 +190,10 @@ async function transform(
   transformCode: typeof WasmTransform,
   fileName: string,
   codeString: string,
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  },
 ) {
   const transformedCode = transformCode(
     codeString,
@@ -204,7 +214,7 @@ async function transform(
       minify: false, // don't minify the react elements
     },
     {
-      minify: false, // minify the class names and don't add display names
+      minify: options?.minify ?? false, // minify the class names and don't add display names
     },
   ).code;
 
@@ -219,12 +229,12 @@ async function transform(
           compress: false,
           mangle: false,
         },
-        preserveAllComments: true,
+        preserveAllComments: options?.showComments ?? true,
       },
       minify: false, // don't minify the react elements
     },
     {
-      minify: false, // minify the class names and don't add display names
+      minify: options?.minify ?? false, // minify the class names and don't add display names
     },
   ).code;
 

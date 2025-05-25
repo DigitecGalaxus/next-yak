@@ -19,7 +19,7 @@ const initializeWasm = async () => {
 };
 
 const onmessage = async (event: MessageEvent<TranspileInput>) => {
-  const { mainFile, additionalFiles } = event.data;
+  const { mainFile, additionalFiles, options } = event.data;
 
   try {
     const response = await transformAll(
@@ -31,6 +31,7 @@ const onmessage = async (event: MessageEvent<TranspileInput>) => {
         name,
         content,
       })) ?? [],
+      options,
     );
     postMessage(response);
   } catch (error) {
