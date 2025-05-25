@@ -61,6 +61,9 @@ jobs:
       - name: Add wasm32-wasip1 target
         run: rustup target add wasm32-wasip1
 
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
         with:
@@ -68,6 +71,9 @@ jobs:
 
       - name: Build with SWC
         run: pnpm run build:swc
+
+      - name: Build WASM Playground
+        run: pnpm run build:wasm-playground
 
       - name: Install Vercel CLI
         run: npm install -g vercel@35

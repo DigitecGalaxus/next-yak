@@ -8,9 +8,9 @@ use crate::utils::encode_module_import::encode_percent;
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
+use swc_core::common::errors::HANDLER;
 use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
-use swc_core::plugin::errors::HANDLER;
 
 use crate::naming_convention::{NamingConvention, TranspilationMode};
 

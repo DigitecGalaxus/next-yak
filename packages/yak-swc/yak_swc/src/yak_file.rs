@@ -1,8 +1,11 @@
+//! Handles "yak files". These are special files that are evaluated at build time.
+//! Their transformation is entirely different from the transformation of ordinary files.
+
 use swc_core::atoms::atom;
+use swc_core::common::errors::HANDLER;
 use swc_core::common::Spanned;
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Fold, VisitMut, VisitMutWith};
-use swc_core::plugin::errors::HANDLER;
 
 use crate::yak_imports::{visit_module_imports, YakImports};
 
@@ -143,10 +146,25 @@ impl VisitMut for YakFileVisitor {
 
 impl Fold for YakFileVisitor {}
 
+pub fn is_yak_file(filename: &str) -> bool {
+  // Ignore the valid case of a file with only 7 characters
+  // as it would have only an extension and no filename
+  if filename.len() < 8 {
+    return false;
+  }
+  matches!(
+    &filename[filename.len() - 8..],
+    ".yak.tsx" | ".yak.jsx" | ".yak.mjs"
+  ) || matches!(&filename[filename.len() - 7..], ".yak.ts" | ".yak.js")
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
+  use std::path::PathBuf;
   use swc_core::ecma::{transforms::testing::test_transform, visit::visit_mut_pass};
+  use swc_ecma_parser::{Syntax, TsSyntax};
+  use swc_ecma_transforms_testing::{test_fixture, FixtureTestConfig};
 
   #[test]
   fn test_yak_file_visitor() {
@@ -168,5 +186,23 @@ mod tests {
                 `};
             "#,
     );
+  }
+
+  #[testing::fixture("tests/fixture/**/input.yak.tsx")]
+  fn fixture_yak(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|_| visit_mut_pass(YakFileVisitor::new()),
+      &input,
+      &input.with_file_name("output.yak.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
   }
 }
