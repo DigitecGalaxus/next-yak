@@ -44,16 +44,13 @@ export const useTranspile = (
     (event: MessageEvent<Parameters<typeof executeCode>[0] | string>) => {
       const eventData = event.data;
       if (typeof eventData === "string") {
-        setResult(
-          (result) =>
-            ({
-              ...result,
-              renderedMainComponent: {
-                component: result?.renderedMainComponent.component ?? null,
-                error: eventData,
-              },
-            }),
-        );
+        setResult((result) => ({
+          ...result,
+          renderedMainComponent: {
+            component: result?.renderedMainComponent.component ?? null,
+            error: eventData,
+          },
+        }));
         return;
       }
 
@@ -94,16 +91,13 @@ export const useTranspile = (
           ),
         });
       } catch (error) {
-        setResult(
-          (result) =>
-            ({
-              ...result,
-              renderedMainComponent: {
-                component: result?.renderedMainComponent.component ?? null,
-                error: error instanceof Error ? error.message : String(error),
-              },
-            }),
-        );
+        setResult((result) => ({
+          ...result,
+          renderedMainComponent: {
+            component: result?.renderedMainComponent.component ?? null,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        }));
       }
     },
     [],

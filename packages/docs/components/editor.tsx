@@ -83,14 +83,18 @@ export default dynamic(
         });
       }, []);
 
-     const readableTranspiledResult = transpileResult?.transpiledMainFile?.name 
-      ? {
-          [transpileResult.transpiledMainFile.name]: transpileResult.transpiledMainFile,
-          ...Object.fromEntries(
-            (transpileResult.transpiledAdditionalFiles || []).map(file => [file.name, file])
-          ),
-        }
-      : {};
+      const readableTranspiledResult = transpileResult?.transpiledMainFile?.name
+        ? {
+            [transpileResult.transpiledMainFile.name]:
+              transpileResult.transpiledMainFile,
+            ...Object.fromEntries(
+              (transpileResult.transpiledAdditionalFiles || []).map((file) => [
+                file.name,
+                file,
+              ]),
+            ),
+          }
+        : {};
 
       return (
         <PanelGroup
