@@ -146,10 +146,25 @@ impl VisitMut for VariableVisitor {
   /// Scans the AST for import declarations and extracts the imported names
   fn visit_mut_import_decl(&mut self, import: &mut ImportDecl) {
     import.specifiers.iter_mut().for_each(|specifier| {
-      if let ImportSpecifier::Named(named) = specifier {
-        self
-          .imports
-          .insert(named.local.to_id(), import.src.value.clone());
+      match specifier {
+        // Named imports: import { foo, bar } from "./module"
+        ImportSpecifier::Named(named) => {
+          self
+            .imports
+            .insert(named.local.to_id(), import.src.value.clone());
+        }
+        // Namespace imports: import * as ns from "./module"
+        ImportSpecifier::Namespace(namespace) => {
+          self
+            .imports
+            .insert(namespace.local.to_id(), import.src.value.clone());
+        }
+        // Default imports: import defaultExport from "./module"
+        ImportSpecifier::Default(default) => {
+          self
+            .imports
+            .insert(default.local.to_id(), import.src.value.clone());
+        }
       }
     });
     import.visit_mut_children_with(self);
