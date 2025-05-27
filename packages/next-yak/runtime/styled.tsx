@@ -63,8 +63,10 @@ type Attrs<
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/constructors/styled.tsx
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
 //
-const StyledFactory = <T extends object = React.DOMAttributes<Element> &
-      React.RefAttributes<Element>,>(
+const StyledFactory = <
+  T extends object = React.DOMAttributes<Element> &
+    React.RefAttributes<Element>,
+>(
   Component: HtmlTags | React.FunctionComponent<T> | CustomWebComponentTag,
 ) =>
   Object.assign(yakStyled(Component), {
