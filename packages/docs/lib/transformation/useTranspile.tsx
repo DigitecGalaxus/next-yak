@@ -25,8 +25,8 @@ type TranspileResult = {
     component: ReactNode | null;
     error: string | null;
   };
-  transpiledMainFile: TranspiledFile;
-  transpiledAdditionalFiles: TranspiledFile[];
+  transpiledMainFile?: TranspiledFile;
+  transpiledAdditionalFiles?: TranspiledFile[];
 };
 
 export const useTranspile = (
@@ -42,22 +42,23 @@ export const useTranspile = (
 
   const workerOnMessage = useCallback(
     (event: MessageEvent<Parameters<typeof executeCode>[0] | string>) => {
-      if (typeof event.data === "string") {
+      const eventData = event.data;
+      if (typeof eventData === "string") {
         setResult(
-          (r) =>
+          (result) =>
             ({
-              ...r,
+              ...result,
               renderedMainComponent: {
-                component: r?.renderedMainComponent.component ?? null,
-                error: event.data,
+                component: result?.renderedMainComponent.component ?? null,
+                error: eventData,
               },
-            }) as TranspileResult,
+            }),
         );
         return;
       }
 
       try {
-        const result = executeCode(event.data, {
+        const result = executeCode(eventData, {
           react: React,
           "next-yak/internal": NextYakInternal,
           ...allFilenames.reduce(
@@ -94,14 +95,14 @@ export const useTranspile = (
         });
       } catch (error) {
         setResult(
-          (r) =>
+          (result) =>
             ({
-              ...r,
+              ...result,
               renderedMainComponent: {
-                component: r?.renderedMainComponent.component ?? null,
+                component: result?.renderedMainComponent.component ?? null,
                 error: error instanceof Error ? error.message : String(error),
               },
-            }) as TranspileResult,
+            }),
         );
       }
     },
