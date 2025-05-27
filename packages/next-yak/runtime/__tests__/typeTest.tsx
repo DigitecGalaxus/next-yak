@@ -339,6 +339,7 @@ const WebComponentsShouldWork = () => {
 
   // Should allow refs
   <MyWebComponent
+    $primary
     ref={(el) => {
       if (el) {
         console.log(el.classList.toggle("active"));
