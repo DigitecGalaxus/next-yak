@@ -29,8 +29,8 @@ type TranspileResult = {
     component: ReactNode | null;
     error: string | null;
   };
-  transpiledMainFile?: TranspiledFile;
-  transpiledAdditionalFiles?: TranspiledFile[];
+  transpiledMainFile: TranspiledFile;
+  transpiledAdditionalFiles: TranspiledFile[];
 };
 
 export const useTranspile = (
