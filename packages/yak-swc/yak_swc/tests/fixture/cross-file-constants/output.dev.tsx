@@ -1,10 +1,10 @@
 import { styled } from "next-yak/internal";
-// @ts-ignore
 import { colors } from "./colorDefinitions";
-// @ts-ignore
 import { fonts } from "./fontDefinitions";
-// @ts-ignore
 import { sizes } from "./sizeDefinitions";
+import * as constants from "./otherConstants";
+import { s as renamedSize } from "./moreSizes";
+import defaultImport from "./betterFontSizes";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
@@ -14,6 +14,9 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
   border-color: --yak-css-import: url("./colorDefinitions:colors:shadows:dark:primary",mixin);
   background-color: --yak-css-import: url("./colorDefinitions:colors:light:full%20opacity",mixin);
   height: --yak-css-import: url("./sizeDefinitions:sizes:0",mixin);
+  padding: ;
+  margin: --yak-css-import: url("./moreSizes:renamedSize:medium:top",mixin) --yak-css-import: url("./moreSizes:renamedSize:medium:right",mixin);
+  line-height: ;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"

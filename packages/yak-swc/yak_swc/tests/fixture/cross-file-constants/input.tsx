@@ -1,10 +1,10 @@
 import { styled } from "next-yak";
-// @ts-ignore
 import { colors } from "./colorDefinitions";
-// @ts-ignore
 import { fonts } from "./fontDefinitions";
-// @ts-ignore
 import { sizes } from "./sizeDefinitions";
+import * as constants from "./otherConstants";
+import { s as renamedSize } from "./moreSizes";
+import defaultImport from "./betterFontSizes";
 
 export const Button = styled.button`
   font-size: ${fonts.sm};
@@ -12,4 +12,7 @@ export const Button = styled.button`
   border-color: ${colors.shadows.dark.primary};
   background-color: ${colors.light["full opacity"]};
   height: ${sizes[0]};
+  padding: ${constants.spacing};
+  margin: ${renamedSize.medium.top} ${renamedSize.medium.right};
+  line-height: ${defaultImport.lineHeight[0]};
 `;
