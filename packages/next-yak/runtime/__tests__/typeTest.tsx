@@ -126,6 +126,16 @@ const MergeTestErrors = () => {
   }
 };
 
+// Verify that a ref is not added if the component does not accept it
+const Button5 = (props: { className: string }) => (
+  <button {...props}>Hello World</button>
+);
+const Button6 = styled(Button5)``;
+<Button6
+  // @ts-expect-error - should not allow ref on a component that does not accept it
+  ref={console.log}
+/>;
+
 const CompositionOverridingAndMergingTest = () => {
   const case1 = () => {
     const Child = styled.div<{ $child: boolean }>`
@@ -325,7 +335,16 @@ const WebComponentsShouldWork = () => {
   <MyWebComponent $primary={42} />;
 
   // Should allow all valid HTML attributes
-  <MyWebComponent onClick={() => console.log("clicked")} />;
+  <MyWebComponent onClick={(e) => console.log("clicked", e.target)} />;
+
+  // Should allow refs
+  <MyWebComponent
+    ref={(el) => {
+      if (el) {
+        console.log(el.classList.toggle("active"));
+      }
+    }}
+  />;
 
   <MyWebComponent $primary />;
 
