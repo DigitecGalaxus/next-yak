@@ -6,6 +6,7 @@ import { Clock } from "./Clock";
 import { Inputs } from "@/app/Input";
 import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
+import { mixins, tokens } from "./constants";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -119,6 +120,10 @@ const StyledLink = styled.a`
   }
 `;
 
+const NestedConstantText = styled.span`
+  color: ${tokens.colors.orange};
+`;
+
 export default function Home() {
   return (
     <YakThemeProvider>
@@ -169,6 +174,14 @@ export default function Home() {
             if this is green{" "}
           </span>
           and this is violet
+        </p>
+        <p
+          css={css`
+            ${mixins.primary.main};
+          `}
+        >
+          Nested constants work if this is light blue{" "}
+          <NestedConstantText>and this is orange</NestedConstantText>
         </p>
         <Inputs />
       </main>

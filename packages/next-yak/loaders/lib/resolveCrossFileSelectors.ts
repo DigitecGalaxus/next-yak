@@ -638,6 +638,8 @@ async function resolveModuleSpecifierRecursively(
           return { type: "mixin", value: current["__yak"] };
         } else if (depth === specifier.length && "value" in current) {
           return { type: "constant", value: current["value"] };
+        } else if ("value" in current) {
+          current = current.value[specifier[depth]];
         } else {
           current = current[specifier[depth]];
         }
