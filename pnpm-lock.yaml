@@ -109,6 +109,9 @@ catalogs:
     fast-glob:
       specifier: 3.3.3
       version: 3.3.3
+    fflate:
+      specifier: 0.8.2
+      version: 0.8.2
     fumadocs-core:
       specifier: 15.2.11
       version: 15.2.11
@@ -127,6 +130,9 @@ catalogs:
     jest-environment-jsdom:
       specifier: 29.7.0
       version: 29.7.0
+    js-base64:
+      specifier: 3.7.7
+      version: 3.7.7
     jsdom:
       specifier: 26.1.0
       version: 26.1.0
@@ -319,6 +325,9 @@ importers:
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@15.3.1(@babel/core@7.26.10)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+      fflate:
+        specifier: catalog:dev
+        version: 0.8.2
       fumadocs-core:
         specifier: catalog:dev
         version: 15.2.11(@types/react@19.1.2)(next@15.3.1(@babel/core@7.26.10)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -331,6 +340,9 @@ importers:
       fumadocs-ui:
         specifier: catalog:dev
         version: 15.2.11(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(next@15.3.1(@babel/core@7.26.10)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.4)
+      js-base64:
+        specifier: catalog:dev
+        version: 3.7.7
       lz-string:
         specifier: catalog:dev
         version: 1.5.0
@@ -3566,6 +3578,9 @@ packages:
       picomatch:
         optional: true
 
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
+
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
@@ -4248,6 +4263,9 @@ packages:
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
+
+  js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -9462,6 +9480,8 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.2
 
+  fflate@0.8.2: {}
+
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
@@ -10475,6 +10495,8 @@ snapshots:
   jiti@2.4.2: {}
 
   joycon@3.1.1: {}
+
+  js-base64@3.7.7: {}
 
   js-tokens@4.0.0: {}
 

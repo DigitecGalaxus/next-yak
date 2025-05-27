@@ -1,24 +1,20 @@
 import DynamicEditor from "@/components/editor";
-import { decompressFromEncodedURIComponent } from "lz-string";
 import "./playground.css";
+import { decompressWithDictionary } from "@/components/compress";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function Home(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams;
 
-  let initialState = defaultState;
-
+  let initialState: Record<string, string> = defaultState;
   if (
     searchParams["q"] &&
     typeof searchParams["q"] === "string" &&
     searchParams["q"].length > 0
   ) {
-    initialState = JSON.parse(
-      decompressFromEncodedURIComponent(searchParams["q"]),
-    );
+    initialState = decompressWithDictionary(searchParams["q"]);
   }
-
   return <DynamicEditor initialState={initialState} />;
 }
 

@@ -20,7 +20,7 @@ import { css } from "next-yak";
 import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
-import { compressToEncodedURIComponent } from "lz-string";
+import { compressWithDictionary } from "./compress";
 
 export default dynamic(
   async function load() {
@@ -311,7 +311,7 @@ export default dynamic(
                       const urlSearchParams = new URLSearchParams();
                       urlSearchParams.set(
                         "q",
-                        compressToEncodedURIComponent(JSON.stringify(mapped)),
+                        compressWithDictionary(filterOutNodeModules(mapped)),
                       );
                       window.history.replaceState(
                         null,
@@ -545,3 +545,11 @@ export default dynamic(
     ),
   },
 );
+
+function filterOutNodeModules(
+  code: Record<string, string>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(code).filter(([key]) => !key.includes("node_modules")),
+  );
+}
