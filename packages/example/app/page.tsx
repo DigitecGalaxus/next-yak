@@ -6,7 +6,7 @@ import { Clock } from "./Clock";
 import { Inputs } from "@/app/Input";
 import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
-import { mixins, tokens } from "./constants";
+import * as constants from "./constants";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -121,7 +121,7 @@ const StyledLink = styled.a`
 `;
 
 const NestedConstantText = styled.span`
-  color: ${tokens.colors.orange};
+  color: ${constants.tokens.colors.orange};
 `;
 
 export default function Home() {
@@ -177,7 +177,7 @@ export default function Home() {
         </p>
         <p
           css={css`
-            ${mixins.primary.main};
+            ${constants.mixins.primary.main};
           `}
         >
           Nested constants work if this is light blue{" "}
