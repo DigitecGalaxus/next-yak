@@ -14,8 +14,8 @@ export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
   border-color: --yak-css-import: url("./colorDefinitions:colors:shadows:dark:primary",mixin);
   background-color: --yak-css-import: url("./colorDefinitions:colors:light:full%20opacity",mixin);
   height: --yak-css-import: url("./sizeDefinitions:sizes:0",mixin);
-  padding: --yak-css-import: url("./otherConstants:constants:spacing",mixin);
-  margin: --yak-css-import: url("./moreSizes:renamedSize:medium:top",mixin) --yak-css-import: url("./moreSizes:renamedSize:medium:right",mixin);
-  line-height: --yak-css-import: url("./betterFontSizes:defaultImport:lineHeight:0",mixin);
+  padding: --yak-css-import: url("./otherConstants:spacing",mixin);
+  margin: --yak-css-import: url("./moreSizes:s:medium:top",mixin) --yak-css-import: url("./moreSizes:s:medium:right",mixin);
+  line-height: --yak-css-import: url("./betterFontSizes:default:lineHeight:0",mixin);
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
