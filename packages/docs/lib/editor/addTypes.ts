@@ -1,4 +1,4 @@
-import reactDts from "../../node_modules/@types/react/ts5.0/index.d.ts?raw";
+import reactDts from "../../node_modules/@types/react/index.d.ts?raw";
 import reactJSXDts from "../../node_modules/@types/react/jsx-runtime.d.ts?raw";
 import yakDts from "../../node_modules/next-yak/dist/index.d.ts?raw";
 import yakJSXDts from "../../node_modules/next-yak/dist/jsx-runtime.d.ts?raw";
@@ -17,12 +17,12 @@ export const addTypesToMonaco = (monaco: Monaco) => {
 
   monaco.languages.typescript.typescriptDefaults.addExtraLib(
     reactDts,
-    "file:///node_modules/@types/react/ts5.0/index.d.ts",
+    "file:///node_modules/@types/react/index.d.ts",
   );
 
   monaco.languages.typescript.typescriptDefaults.addExtraLib(
     reactJSXDts,
-    "file:///node_modules/@types/react/ts5.0/jsx-runtime.d.ts",
+    "file:///node_modules/@types/react/jsx-runtime.d.ts",
   );
   monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 };
