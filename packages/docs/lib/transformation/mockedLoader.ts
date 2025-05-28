@@ -3,16 +3,25 @@ import { type Compilation } from "webpack";
 import cssLoader = require("next-yak/loaders/css-loader");
 
 export async function runLoaderForSingleFile(
-  input: string,
+  originalContent: string,
+  transpiledContent: string,
   fileName: string,
-  additionalFiles: { name: string; content: string }[] = [],
+  additionalFiles: {
+    name: string;
+    transpiledContent: string;
+    originalContent: string;
+  }[] = [],
 ): Promise<string> {
   const entry = `/src/${fileName}.tsx`;
   const mockLoader = new MockLoaderContext("");
-  mockLoader.fs.setFile(entry, input);
+  mockLoader.fs.setFile(entry, originalContent, transpiledContent);
 
-  for (const { name, content } of additionalFiles) {
-    mockLoader.fs.setFile(`/src/./${name}.tsx`, content);
+  for (const { name, originalContent, transpiledContent } of additionalFiles) {
+    mockLoader.fs.setFile(
+      `/src/./${name}.tsx`,
+      originalContent,
+      transpiledContent,
+    );
   }
 
   mockLoader.resourcePath = entry;
@@ -36,10 +45,11 @@ function createAsyncPromise(mockLoader: MockLoaderContext) {
 }
 
 class MockFileSystem {
-  files: Map<string, string> = new Map();
+  files: Map<string, { content: string; transpiledContent: string }> =
+    new Map();
 
-  setFile(path: string, content: string) {
-    this.files.set(path, content);
+  setFile(path: string, content: string, transpiledContent: string) {
+    this.files.set(path, { content, transpiledContent });
   }
 
   readFile(
@@ -47,9 +57,9 @@ class MockFileSystem {
     encoding: string,
     callback: (err: Error | null, result: string | null) => void,
   ) {
-    const content = this.files.get(path);
-    if (content) {
-      callback(null, content);
+    const file = this.files.get(path);
+    if (file) {
+      callback(null, file.content);
     } else {
       callback(new Error(`File not found: ${path}`), null);
     }
@@ -91,7 +101,11 @@ class MockLoaderContext {
       throw Error(`Module not found: ${path}.`);
     };
 
-    const result = new Function("exports", "require", file ?? "");
+    const result = new Function(
+      "exports",
+      "require",
+      file?.transpiledContent ?? "",
+    );
 
     const exports: Record<string, unknown> = {};
     result(exports, require);
@@ -102,7 +116,7 @@ class MockLoaderContext {
     request: string,
     callback: (err: Error | null, source: string | null) => void,
   ) {
-    callback(null, this.fs.files.get(request) || null);
+    callback(null, this.fs.files.get(request)?.transpiledContent || null);
   }
 
   addDependency(dependency: string) {

@@ -18,6 +18,10 @@ type TranspiledFile = {
 export type TranspileInput = {
   mainFile: File;
   additionalFiles?: File[];
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  };
 };
 
 type TranspileResult = {
@@ -25,22 +29,34 @@ type TranspileResult = {
     component: ReactNode | null;
     error: string | null;
   };
-  transpiledMainFile?: TranspiledFile;
-  transpiledAdditionalFiles?: TranspiledFile[];
+  transpiledMainFile: TranspiledFile;
+  transpiledAdditionalFiles: TranspiledFile[];
 };
 
 export const useTranspile = (
   initialProps?: TranspileInput,
-): [TranspileResult | null, (props: TranspileInput) => void] => {
+): [TranspileResult, (props: TranspileInput) => void] => {
   const workerRef = useRef<Worker | null>(null);
-  const [result, setResult] = useState<TranspileResult | null>(null);
+  const [result, setResult] = useState<TranspileResult>({
+    renderedMainComponent: {
+      component: null,
+      error: null,
+    },
+    transpiledMainFile: {
+      name: initialProps?.mainFile.name ?? "index",
+      transpiledReadableContent: "",
+      css: "",
+    },
+    transpiledAdditionalFiles: [],
+  });
+  const [isWorkerReady, setIsWorkerReady] = useState(false);
 
   const allFilenames = [
     initialProps?.mainFile.name,
     ...(initialProps?.additionalFiles?.map((file) => file.name) ?? []),
   ];
 
-  const workerOnMessage = useCallback(
+  const workerOnMessagePostInit = useCallback(
     (event: MessageEvent<Parameters<typeof executeCode>[0] | string>) => {
       const eventData = event.data;
       if (typeof eventData === "string") {
@@ -72,13 +88,13 @@ export const useTranspile = (
           return;
         }
 
-        setResult({
+        setResult((r) => ({
           renderedMainComponent: {
             component: result.comp,
             error: null,
           },
           transpiledMainFile: {
-            name: initialProps?.mainFile.name ?? "index",
+            name: r.transpiledMainFile.name,
             transpiledReadableContent: result.transformedCodeToDisplay,
             css: result.css,
           },
@@ -89,7 +105,7 @@ export const useTranspile = (
               css,
             }),
           ),
-        });
+        }));
       } catch (error) {
         setResult((result) => ({
           ...result,
@@ -104,32 +120,63 @@ export const useTranspile = (
   );
 
   const transpile = useCallback((props: TranspileInput) => {
-    workerRef.current?.postMessage(props);
+    if (workerRef.current) {
+      workerRef.current.postMessage(props);
+    } else {
+      console.error(
+        "Attempted to post message to worker before it was created.",
+      );
+      setResult({
+        renderedMainComponent: {
+          component: null,
+          error: "Worker not initialized.",
+        },
+        transpiledMainFile: {
+          name: props.mainFile.name,
+          transpiledReadableContent: "",
+          css: "",
+        },
+        transpiledAdditionalFiles:
+          props.additionalFiles?.map((f) => ({
+            name: f.name,
+            transpiledReadableContent: "",
+            css: "",
+          })) ?? [],
+      });
+    }
   }, []);
+
+  const workerOnMessage = useCallback(
+    (event: MessageEvent) => {
+      if (event.data === "workerReady") {
+        setIsWorkerReady(true); // Set state to true
+      } else {
+        workerOnMessagePostInit(event);
+      }
+    },
+    [workerOnMessagePostInit],
+  );
 
   useEffect(() => {
     const worker = new Worker(
       new URL("./workers/transpileWorker", import.meta.url),
     );
-    worker.onmessage = (event) => {
-      if (event.data === "workerReady") {
-        if (initialProps) {
-          transpile(initialProps); // Transpile after worker is ready
-        }
-      } else {
-        workerOnMessage(event);
-      }
-    };
     workerRef.current = worker;
-    if (initialProps) {
-      transpile(initialProps);
-    }
+    worker.onmessage = workerOnMessage;
+    setIsWorkerReady(false);
 
     return () => {
       workerRef.current?.terminate();
       workerRef.current = null;
+      setIsWorkerReady(false);
     };
-  }, []);
+  }, [workerOnMessage]);
+
+  useEffect(() => {
+    if (isWorkerReady && initialProps) {
+      transpile(initialProps);
+    }
+  }, [isWorkerReady, transpile, initialProps]);
 
   return [result, transpile];
 };
