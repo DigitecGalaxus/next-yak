@@ -24,4 +24,5 @@ export const addTypesToMonaco = (monaco: Monaco) => {
     reactJSXDts,
     "file:///node_modules/@types/react/ts5.0/jsx-runtime.d.ts",
   );
+  monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 };

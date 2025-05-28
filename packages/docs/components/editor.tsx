@@ -49,21 +49,28 @@ export default dynamic(
         () => ({
           mainFile: {
             name: "index",
-            content: initialState["index"],
+            content: initialState["index"] || "",
           },
-          additionalFiles: [
-            {
-              name: "other",
-              content: initialState["other"],
-            },
-            {
-              name: "different.yak",
-              content: initialState["different.yak"],
-            },
-          ],
+          additionalFiles: Object.entries(initialState)
+            .filter(([key]) => key !== "index")
+            .map(([key, value]) => ({
+              name: key,
+              content: value,
+            }))
+            // max 3 additional files
+            .slice(0, 3),
         }),
         [initialState],
       );
+
+      const fileNames = useMemo(
+        () => [
+          "index.tsx",
+          ...initialInput.additionalFiles.map((file) => file.name + ".tsx"),
+        ],
+        [initialInput],
+      );
+
       const [transpileResult, transpile] = useTranspile(initialInput);
 
       const updateCode = useCallback(
@@ -72,22 +79,17 @@ export default dynamic(
             acc[model.uri] = model.getValue();
             return acc;
           }, {});
-
           transpile({
             mainFile: {
               name: "index",
               content: code["file:///index.tsx"],
             },
-            additionalFiles: [
-              {
-                name: "other",
-                content: code["file:///other.tsx"],
-              },
-              {
-                name: "different.yak",
-                content: code["file:///different.yak.tsx"],
-              },
-            ],
+            additionalFiles: Object.entries(code)
+              .filter(([key]) => key !== "file:///index.tsx")
+              .map(([key, value]) => ({
+                name: key.replace("file:///", "").replace(".tsx", ""),
+                content: String(value),
+              })),
             options: {
               minify,
               showComments,
@@ -178,15 +180,14 @@ export default dynamic(
                         gap: 1rem;
                       `}
                     >
-                      <Primitive.TabsTrigger value="index">
-                        index.tsx
-                      </Primitive.TabsTrigger>
-                      <Primitive.TabsTrigger value="other">
-                        other.tsx
-                      </Primitive.TabsTrigger>
-                      <Primitive.TabsTrigger value="different.yak">
-                        different.yak.ts
-                      </Primitive.TabsTrigger>
+                      {fileNames.map((fileName) => (
+                        <Primitive.TabsTrigger
+                          key={fileName}
+                          value={fileName.replace(".tsx", "")}
+                        >
+                          {fileName}
+                        </Primitive.TabsTrigger>
+                      ))}
                     </div>
                     <div
                       css={css`
@@ -296,14 +297,16 @@ export default dynamic(
                       .forEach((model) => model.dispose());
 
                     // add files from the files object to the editor
-                    Object.entries(initialState).forEach(([path, value]) => {
-                      const model = monaco.editor.createModel(
-                        value,
-                        "typescript",
-                        monaco.Uri.parse(`file:///${path}.tsx`),
-                      );
-                      modelRefs.current.push(model);
-                    });
+                    Object.entries(initialState)
+                      .reverse()
+                      .forEach(([path, value]) => {
+                        const model = monaco.editor.createModel(
+                          value,
+                          "typescript",
+                          monaco.Uri.parse(`file:///${path}.tsx`),
+                        );
+                        modelRefs.current.push(model);
+                      });
                   }}
                   onMount={async (editor, monaco) => {
                     monacoEditorRef.current = editor;
@@ -311,11 +314,7 @@ export default dynamic(
                     monaco.languages.registerDocumentFormattingEditProvider(
                       "typescript",
                       {
-                        async provideDocumentFormattingEdits(
-                          model,
-                          options,
-                          token,
-                        ) {
+                        async provideDocumentFormattingEdits(model) {
                           const text = await prettier.format(model.getValue(), {
                             embeddedLanguageFormatting: "auto",
                             parser: "babel-ts",
@@ -510,15 +509,14 @@ export default dynamic(
                     }}
                   >
                     <Primitive.TabsList>
-                      <Primitive.TabsTrigger value="index">
-                        index.tsx
-                      </Primitive.TabsTrigger>
-                      <Primitive.TabsTrigger value="other">
-                        other.tsx
-                      </Primitive.TabsTrigger>
-                      <Primitive.TabsTrigger value="different.yak">
-                        different.yak.ts
-                      </Primitive.TabsTrigger>
+                      {fileNames.map((fileName) => (
+                        <Primitive.TabsTrigger
+                          key={fileName}
+                          value={fileName.replace(".tsx", "")}
+                        >
+                          {fileName}
+                        </Primitive.TabsTrigger>
+                      ))}
                     </Primitive.TabsList>
                     {compiledOutput === "CSS" ? (
                       <div
@@ -601,6 +599,8 @@ function filterOutNodeModules(
   code: Record<string, string>,
 ): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(code).filter(([key]) => !key.includes("node_modules") && !key.endsWith(".d.ts")),
+    Object.entries(code).filter(
+      ([key]) => !key.includes("node_modules") && !key.endsWith(".d.ts"),
+    ),
   );
 }
