@@ -43,7 +43,7 @@ pub fn transform_sync(s: JsValue, opts: JsValue) -> Result<JsValue, JsValue> {
                     // Clones will contribute to the same comment map.
                     let comments = SingleThreadedComments::default();
                     let file_name = real_file_name(&fm);
-                    let before_pass = if file_name.as_ref().is_some_and(|f| is_yak_file(&f)) {
+                    let before_pass = if file_name.as_ref().is_some_and(|f| is_yak_file(f)) {
                         Left(visit_mut_pass(YakFileVisitor::new()))
                     } else {
                         Right(yak_pass(comments.clone(), file_name))

@@ -213,12 +213,14 @@ impl VariableVisitor {
   pub fn get_imported_variable(&mut self, name: &Id) -> Option<(ImportSourceType, &ImportKind)> {
     if let Some(src) = self.imports.get(name) {
       let import_src = src.import_source().to_string();
-      let source_type =
-        if import_src.ends_with(".yak") || import_src.ends_with(".yak.js") || import_src.ends_with(".yak.mjs") {
-          ImportSourceType::Yak
-        } else {
-          ImportSourceType::Normal
-        };
+      let source_type = if import_src.ends_with(".yak")
+        || import_src.ends_with(".yak.js")
+        || import_src.ends_with(".yak.mjs")
+      {
+        ImportSourceType::Yak
+      } else {
+        ImportSourceType::Normal
+      };
       return Some((source_type, src));
     }
     None
@@ -420,10 +422,8 @@ mod tests {
 
   #[test]
   fn test_last_part_zero_parts() {
-    let i = ScopedVariableReference::new(
-      Id::from((Atom::from("f"), SyntaxContext::empty())),
-      vec![]
-    );
+    let i =
+      ScopedVariableReference::new(Id::from((Atom::from("f"), SyntaxContext::empty())), vec![]);
     assert_eq!(i.last_part(), &atom!("f"));
   }
 
@@ -437,11 +437,7 @@ mod tests {
 
     let selector = import_kind.encode_module_import(
       ImportType::Selector,
-      vec![
-        atom!("breakpoints"),
-        atom!("<xs"),
-        atom!("min"),
-      ],
+      vec![atom!("breakpoints"), atom!("<xs"), atom!("min")],
     );
 
     assert_eq!(
@@ -458,10 +454,8 @@ mod tests {
       import_source: atom!("./styles/media"),
     };
 
-    let selector = import_kind.encode_module_import(
-      ImportType::Selector,
-      vec![atom!("breakpoints")],
-    );
+    let selector =
+      import_kind.encode_module_import(ImportType::Selector, vec![atom!("breakpoints")]);
 
     assert_eq!(
       selector,
@@ -508,9 +502,9 @@ mod tests {
   }
 
   #[test]
-    fn test_different_import_types() {
-      let mut visitor = VariableVisitor::new();
-      let code = r#"
+  fn test_different_import_types() {
+    let mut visitor = VariableVisitor::new();
+    let code = r#"
       import defaultExport from "./default-module";
       import * as namespace from "./namespace-module";
       import { named1, named2 as aliased } from "./named-module";
@@ -519,64 +513,70 @@ mod tests {
       import { yak3 } from "./yak-module.yak.mjs";
       "#;
 
-      test_transform(
-        Default::default(),
-        Some(true),
-        |_| visit_mut_pass(&mut visitor),
-        code,
-        code,
-      );
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      code,
+      code,
+    );
 
-      // Test default import
-      let default_id = Id::from((Atom::from("defaultExport"), SyntaxContext::from_u32(0)));
-      let default_import = visitor.get_imported_variable(&default_id).unwrap();
-      assert_eq!(default_import.0, ImportSourceType::Normal);
-      assert!(matches!(default_import.1, ImportKind::Default { .. }));
-      assert_eq!(default_import.1.import_source().as_str(), "./default-module");
+    // Test default import
+    let default_id = Id::from((Atom::from("defaultExport"), SyntaxContext::from_u32(0)));
+    let default_import = visitor.get_imported_variable(&default_id).unwrap();
+    assert_eq!(default_import.0, ImportSourceType::Normal);
+    assert!(matches!(default_import.1, ImportKind::Default { .. }));
+    assert_eq!(
+      default_import.1.import_source().as_str(),
+      "./default-module"
+    );
 
-      // Test namespace import
-      let namespace_id = Id::from((Atom::from("namespace"), SyntaxContext::from_u32(0)));
-      let namespace_import = visitor.get_imported_variable(&namespace_id).unwrap();
-      assert_eq!(namespace_import.0, ImportSourceType::Normal);
-      assert!(matches!(namespace_import.1, ImportKind::Namespace { .. }));
-      assert_eq!(namespace_import.1.import_source().as_str(), "./namespace-module");
+    // Test namespace import
+    let namespace_id = Id::from((Atom::from("namespace"), SyntaxContext::from_u32(0)));
+    let namespace_import = visitor.get_imported_variable(&namespace_id).unwrap();
+    assert_eq!(namespace_import.0, ImportSourceType::Normal);
+    assert!(matches!(namespace_import.1, ImportKind::Namespace { .. }));
+    assert_eq!(
+      namespace_import.1.import_source().as_str(),
+      "./namespace-module"
+    );
 
-      // Test named import
-      let named_id = Id::from((Atom::from("named1"), SyntaxContext::from_u32(0)));
-      let named_import = visitor.get_imported_variable(&named_id).unwrap();
-      assert_eq!(named_import.0, ImportSourceType::Normal);
-      assert!(matches!(named_import.1, ImportKind::Named { .. }));
-      assert_eq!(named_import.1.import_source().as_str(), "./named-module");
+    // Test named import
+    let named_id = Id::from((Atom::from("named1"), SyntaxContext::from_u32(0)));
+    let named_import = visitor.get_imported_variable(&named_id).unwrap();
+    assert_eq!(named_import.0, ImportSourceType::Normal);
+    assert!(matches!(named_import.1, ImportKind::Named { .. }));
+    assert_eq!(named_import.1.import_source().as_str(), "./named-module");
 
-      // Test aliased import
-      let alias_id = Id::from((Atom::from("aliased"), SyntaxContext::from_u32(0)));
-      let alias_import = visitor.get_imported_variable(&alias_id).unwrap();
-      assert_eq!(alias_import.0, ImportSourceType::Normal);
-      if let ImportKind::Named { external_name, .. } = alias_import.1 {
-        assert_eq!(external_name.as_str(), "named2");
-      } else {
-        panic!("Expected Named import");
-      }
-
-      // Test different Yak import file extensions
-      let yak_exts = [
-        ("yak1", "./yak-module.yak"),
-        ("yak2", "./yak-module.yak.js"),
-        ("yak3", "./yak-module.yak.mjs"),
-      ];
-
-      for (name, path) in yak_exts {
-        let yak_id = Id::from((Atom::from(name), SyntaxContext::from_u32(0)));
-        let yak_import = visitor.get_imported_variable(&yak_id).unwrap();
-        assert_eq!(yak_import.0, ImportSourceType::Yak);
-        assert_eq!(yak_import.1.import_source().as_str(), path);
-      }
+    // Test aliased import
+    let alias_id = Id::from((Atom::from("aliased"), SyntaxContext::from_u32(0)));
+    let alias_import = visitor.get_imported_variable(&alias_id).unwrap();
+    assert_eq!(alias_import.0, ImportSourceType::Normal);
+    if let ImportKind::Named { external_name, .. } = alias_import.1 {
+      assert_eq!(external_name.as_str(), "named2");
+    } else {
+      panic!("Expected Named import");
     }
 
-    #[test]
-    fn test_complex_variable_assignments() {
-      let mut visitor = VariableVisitor::new();
-      let code = r#"
+    // Test different Yak import file extensions
+    let yak_exts = [
+      ("yak1", "./yak-module.yak"),
+      ("yak2", "./yak-module.yak.js"),
+      ("yak3", "./yak-module.yak.mjs"),
+    ];
+
+    for (name, path) in yak_exts {
+      let yak_id = Id::from((Atom::from(name), SyntaxContext::from_u32(0)));
+      let yak_import = visitor.get_imported_variable(&yak_id).unwrap();
+      assert_eq!(yak_import.0, ImportSourceType::Yak);
+      assert_eq!(yak_import.1.import_source().as_str(), path);
+    }
+  }
+
+  #[test]
+  fn test_complex_variable_assignments() {
+    let mut visitor = VariableVisitor::new();
+    let code = r#"
       const simpleVar = "simple";
       const numberVar = 42;
       const boolVar = true;
@@ -595,170 +595,188 @@ mod tests {
       ];
       "#;
 
-      test_transform(
-        Default::default(),
-        Some(true),
-        |_| visit_mut_pass(&mut visitor),
-        code,
-        code,
-      );
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      code,
+      code,
+    );
 
-      // Test simple variable
-      let simple_value = get_expr_value(
-        &visitor.get_const_value(&ScopedVariableReference::new(
+    // Test simple variable
+    let simple_value = get_expr_value(
+      &visitor
+        .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("simpleVar"), SyntaxContext::from_u32(0))),
           vec![atom!("simpleVar")],
-        )).unwrap()
-      );
-      assert_eq!(simple_value, Some("simple".to_string()));
+        ))
+        .unwrap(),
+    );
+    assert_eq!(simple_value, Some("simple".to_string()));
 
-      // Test deeply nested object property
-      let nested_value = get_expr_value(
-        &visitor.get_const_value(&ScopedVariableReference::new(
+    // Test deeply nested object property
+    let nested_value = get_expr_value(
+      &visitor
+        .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("objVar"), SyntaxContext::from_u32(0))),
           vec![atom!("objVar"), atom!("b"), atom!("c")],
-        )).unwrap()
-      );
-      assert_eq!(nested_value, Some("nested".to_string()));
+        ))
+        .unwrap(),
+    );
+    assert_eq!(nested_value, Some("nested".to_string()));
 
-      // Test array inside object
-      let array_in_obj_value = get_expr_value(
-        &visitor.get_const_value(&ScopedVariableReference::new(
+    // Test array inside object
+    let array_in_obj_value = get_expr_value(
+      &visitor
+        .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("objVar"), SyntaxContext::from_u32(0))),
           vec![atom!("objVar"), atom!("b"), atom!("d"), atom!("0")],
-        )).unwrap()
-      );
-      assert_eq!(array_in_obj_value, Some("1".to_string()));
+        ))
+        .unwrap(),
+    );
+    assert_eq!(array_in_obj_value, Some("1".to_string()));
 
-      // Test object inside array
-      let obj_in_array_value = get_expr_value(
-        &visitor.get_const_value(&ScopedVariableReference::new(
+    // Test object inside array
+    let obj_in_array_value = get_expr_value(
+      &visitor
+        .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("arrVar"), SyntaxContext::from_u32(0))),
           vec![atom!("arrVar"), atom!("2"), atom!("prop")],
-        )).unwrap()
-      );
-      assert_eq!(obj_in_array_value, Some("object in array".to_string()));
+        ))
+        .unwrap(),
+    );
+    assert_eq!(obj_in_array_value, Some("object in array".to_string()));
 
-      // Test nested array
-      let nested_array_value = get_expr_value(
-        &visitor.get_const_value(&ScopedVariableReference::new(
+    // Test nested array
+    let nested_array_value = get_expr_value(
+      &visitor
+        .get_const_value(&ScopedVariableReference::new(
           Id::from((Atom::from("arrVar"), SyntaxContext::from_u32(0))),
           vec![atom!("arrVar"), atom!("3"), atom!("0")],
-        )).unwrap()
-      );
-      assert_eq!(nested_array_value, Some("nested".to_string()));
-    }
+        ))
+        .unwrap(),
+    );
+    assert_eq!(nested_array_value, Some("nested".to_string()));
+  }
 
-    #[test]
-    fn test_scoped_variable_reference_to_string() {
-      let simple_ref = ScopedVariableReference::new(
-        Id::from((Atom::from("variable"), SyntaxContext::empty())),
-        vec![atom!("variable")]
-      );
-      assert_eq!(simple_ref.to_readable_string(), "variable");
+  #[test]
+  fn test_scoped_variable_reference_to_string() {
+    let simple_ref = ScopedVariableReference::new(
+      Id::from((Atom::from("variable"), SyntaxContext::empty())),
+      vec![atom!("variable")],
+    );
+    assert_eq!(simple_ref.to_readable_string(), "variable");
 
-      let complex_ref = ScopedVariableReference::new(
-        Id::from((Atom::from("obj"), SyntaxContext::empty())),
-        vec![atom!("obj"), atom!("nested"), atom!("deep"), atom!("property")]
-      );
-      assert_eq!(complex_ref.to_readable_string(), "obj.nested.deep.property");
-    }
+    let complex_ref = ScopedVariableReference::new(
+      Id::from((Atom::from("obj"), SyntaxContext::empty())),
+      vec![
+        atom!("obj"),
+        atom!("nested"),
+        atom!("deep"),
+        atom!("property"),
+      ],
+    );
+    assert_eq!(complex_ref.to_readable_string(), "obj.nested.deep.property");
+  }
 
-    #[test]
-    fn test_import_kind_methods() {
-      // Test Default import
-      let default_import = ImportKind::Default {
-        import_source: atom!("./default-module"),
-      };
+  #[test]
+  fn test_import_kind_methods() {
+    // Test Default import
+    let default_import = ImportKind::Default {
+      import_source: atom!("./default-module"),
+    };
 
-      assert_eq!(default_import.external_name().as_str(), "default");
-      assert_eq!(default_import.import_source().as_str(), "./default-module");
+    assert_eq!(default_import.external_name().as_str(), "default");
+    assert_eq!(default_import.import_source().as_str(), "./default-module");
 
-      // Test Named import
-      let named_import = ImportKind::Named {
-        external_name: atom!("externalName"),
-        import_source: atom!("./named-module"),
-      };
+    // Test Named import
+    let named_import = ImportKind::Named {
+      external_name: atom!("externalName"),
+      import_source: atom!("./named-module"),
+    };
 
-      assert_eq!(named_import.external_name().as_str(), "externalName");
-      assert_eq!(named_import.import_source().as_str(), "./named-module");
+    assert_eq!(named_import.external_name().as_str(), "externalName");
+    assert_eq!(named_import.import_source().as_str(), "./named-module");
 
-      // Test Namespace import
-      let namespace_import = ImportKind::Namespace {
-        local_name: Id::from((Atom::from("nsImport"), SyntaxContext::empty())),
-        import_source: atom!("./namespace-module"),
-      };
+    // Test Namespace import
+    let namespace_import = ImportKind::Namespace {
+      local_name: Id::from((Atom::from("nsImport"), SyntaxContext::empty())),
+      import_source: atom!("./namespace-module"),
+    };
 
-      assert_eq!(namespace_import.external_name().as_str(), "nsImport");
-      assert_eq!(namespace_import.import_source().as_str(), "./namespace-module");
-    }
+    assert_eq!(namespace_import.external_name().as_str(), "nsImport");
+    assert_eq!(
+      namespace_import.import_source().as_str(),
+      "./namespace-module"
+    );
+  }
 
-    #[test]
-    fn test_encode_module_import_with_mixin() {
-      // Create an ImportKind instance to test with
-      let import_kind = ImportKind::Named {
-        external_name: atom!("mixin"),
-        import_source: atom!("./styles/mixins"),
-      };
+  #[test]
+  fn test_encode_module_import_with_mixin() {
+    // Create an ImportKind instance to test with
+    let import_kind = ImportKind::Named {
+      external_name: atom!("mixin"),
+      import_source: atom!("./styles/mixins"),
+    };
 
-      let mixin = import_kind.encode_module_import(
-        ImportType::Mixin,
-        vec![atom!("mixin"), atom!("rotate"), atom!("90deg")],
-      );
+    let mixin = import_kind.encode_module_import(
+      ImportType::Mixin,
+      vec![atom!("mixin"), atom!("rotate"), atom!("90deg")],
+    );
 
-      assert_eq!(
-        mixin,
-        "--yak-css-import: url(\"./styles/mixins:mixin:rotate:90deg\",mixin)"
-      );
-    }
+    assert_eq!(
+      mixin,
+      "--yak-css-import: url(\"./styles/mixins:mixin:rotate:90deg\",mixin)"
+    );
+  }
 
-    #[test]
-    fn test_encode_module_import_with_namespace() {
-      // Create a namespace ImportKind
-      let import_kind = ImportKind::Namespace {
-        local_name: Id::from((Atom::from("utils"), SyntaxContext::empty())),
-        import_source: atom!("./utils-module"),
-      };
+  #[test]
+  fn test_encode_module_import_with_namespace() {
+    // Create a namespace ImportKind
+    let import_kind = ImportKind::Namespace {
+      local_name: Id::from((Atom::from("utils"), SyntaxContext::empty())),
+      import_source: atom!("./utils-module"),
+    };
 
-      let selector = import_kind.encode_module_import(
-        ImportType::Selector,
-        vec![atom!("utils"), atom!("styles"), atom!("button")],
-      );
+    let selector = import_kind.encode_module_import(
+      ImportType::Selector,
+      vec![atom!("utils"), atom!("styles"), atom!("button")],
+    );
 
-      assert_eq!(
-        selector,
-        "--yak-css-import: url(\"./utils-module:styles:button\",selector)"
-      );
-    }
+    assert_eq!(
+      selector,
+      "--yak-css-import: url(\"./utils-module:styles:button\",selector)"
+    );
+  }
 
-    #[test]
-    fn test_get_imported_variable_not_found() {
-      let mut visitor = VariableVisitor::new();
-      let code = "const x = 5;"; // No imports
+  #[test]
+  fn test_get_imported_variable_not_found() {
+    let mut visitor = VariableVisitor::new();
+    let code = "const x = 5;"; // No imports
 
-      test_transform(
-        Default::default(),
-        Some(true),
-        |_| visit_mut_pass(&mut visitor),
-        code,
-        code,
-      );
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      code,
+      code,
+    );
 
-      let non_existent_id = Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0)));
-      let result = visitor.get_imported_variable(&non_existent_id);
-      assert!(result.is_none());
-    }
+    let non_existent_id = Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0)));
+    let result = visitor.get_imported_variable(&non_existent_id);
+    assert!(result.is_none());
+  }
 
-    #[test]
-    fn test_get_const_value_not_found() {
-      let visitor = VariableVisitor::new(); // Empty visitor
+  #[test]
+  fn test_get_const_value_not_found() {
+    let visitor = VariableVisitor::new(); // Empty visitor
 
-      let non_existent_ref = ScopedVariableReference::new(
-        Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0))),
-        vec![atom!("nonExistent")]
-      );
+    let non_existent_ref = ScopedVariableReference::new(
+      Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0))),
+      vec![atom!("nonExistent")],
+    );
 
-      let result = visitor.get_const_value(&non_existent_ref);
-      assert!(result.is_none());
-    }
+    let result = visitor.get_const_value(&non_existent_ref);
+    assert!(result.is_none());
+  }
 }

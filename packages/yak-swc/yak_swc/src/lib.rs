@@ -301,7 +301,8 @@ where
                 // e.g. styled.button`${colors.primary}`
                 None => ImportType::Mixin,
               };
-            let cross_file_import_token = import_kind.encode_module_import(import_type, scoped_name.parts);
+            let cross_file_import_token =
+              import_kind.encode_module_import(import_type, scoped_name.parts);
 
             // TODO Track Dynamic Mixins as runtime dependency to pass props: `runtime_expressions.push(*expr.clone());`
             let (new_state, _) = parse_css(&cross_file_import_token, css_state);
