@@ -3,6 +3,7 @@ import * as prettier from "prettier";
 import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
 import { runLoaderForSingleFile } from "./mockedLoader";
+import type { transform as WasmTransform } from "../../playground-wasm/out";
 
 export function executeCode(
   {
@@ -91,10 +92,14 @@ export function executeCode(
 }
 
 export async function transformAll(
-  transformCode: (codeString: string, opts: any) => { code: string },
+  transformCode: typeof WasmTransform,
   mainFileName: string,
   mainFileCodeString: string,
   otherFiles: { name: string; content: string }[],
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  },
 ) {
   const otherFilesTransformed: {
     name: string;
@@ -106,44 +111,62 @@ export async function transformAll(
   for (const file of otherFiles) {
     const { name, content } = file;
 
-    const { transformedCode, transformedCodeToDisplay } = await transform(
-      transformCode,
-      name + ".tsx",
-      content,
-    );
+    try {
+      const { transformedCode, transformedCodeToDisplay } = await transform(
+        transformCode,
+        name + ".tsx",
+        content,
+        options,
+      );
 
-    otherFilesTransformed.push({
-      name,
-      content,
-      transformedCodeToExecute: transformedCode,
-      transformedCodeToDisplay,
-      css: await runLoaderForSingleFile(transformedCode, name),
-    });
+      otherFilesTransformed.push({
+        name,
+        content,
+        transformedCodeToExecute: transformedCode,
+        transformedCodeToDisplay,
+        css: await runLoaderForSingleFile(content, transformedCode, name),
+      });
+    } catch (err) {
+      if (typeof err === "string") {
+        throw `${err.split("\n")[0].replace("x ", "")} in ${file.name}.tsx`;
+      }
+      throw err;
+    }
   }
 
-  const { transformedCode, transformedCodeToDisplay } = await transform(
-    transformCode,
-    mainFileName + ".tsx",
-    mainFileCodeString,
-  );
+  try {
+    const { transformedCode, transformedCodeToDisplay } = await transform(
+      transformCode,
+      mainFileName + ".tsx",
+      mainFileCodeString,
+      options,
+    );
 
-  const css = await runLoaderForSingleFile(
-    transformedCode,
-    mainFileName,
-    otherFilesTransformed.map(
-      ({ name, transformedCodeToExecute: transformedCode }) => ({
-        name,
-        content: transformedCode,
-      }),
-    ),
-  );
+    const css = await runLoaderForSingleFile(
+      mainFileCodeString,
+      transformedCode,
+      mainFileName,
+      otherFilesTransformed.map(
+        ({ name, transformedCodeToExecute: transformedCode, content }) => ({
+          name,
+          originalContent: content,
+          transpiledContent: transformedCode,
+        }),
+      ),
+    );
 
-  return {
-    css,
-    otherFilesTransformed,
-    transformedCodeToDisplay,
-    transformedCodeToExecute: transformedCode,
-  };
+    return {
+      css,
+      otherFilesTransformed,
+      transformedCodeToDisplay,
+      transformedCodeToExecute: transformedCode,
+    };
+  } catch (err) {
+    if (typeof err === "string") {
+      throw `${err.split("\n")[0].replace("x ", "")} in ${mainFileName}.tsx`;
+    }
+    throw err;
+  }
 }
 
 function createExport(
@@ -164,42 +187,56 @@ function createExport(
 }
 
 async function transform(
-  transformCode: (codeString: string, opts: any) => { code: string },
+  transformCode: typeof WasmTransform,
   fileName: string,
   codeString: string,
+  options?: {
+    minify?: boolean;
+    showComments?: boolean;
+  },
 ) {
-  const transformedCode = transformCode(codeString, {
-    filename: fileName,
-    jsc: {
-      target: "es2022",
-      loose: false,
-      minify: {
-        compress: false,
-        mangle: false,
+  const transformedCode = transformCode(
+    codeString,
+    {
+      filename: fileName,
+      jsc: {
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: true,
       },
-      preserveAllComments: true,
+      module: {
+        type: "commonjs",
+      },
+      minify: false, // don't minify the react elements
     },
-    module: {
-      type: "commonjs",
+    {
+      minify: options?.minify ?? false, // minify the class names and don't add display names
     },
-    minify: false,
-    isModule: true,
-  }).code;
+  ).code;
 
-  let transformedCodeToDisplay = transformCode(codeString, {
-    filename: fileName,
-    jsc: {
-      target: "es2022",
-      loose: false,
-      minify: {
-        compress: false,
-        mangle: false,
+  let transformedCodeToDisplay = transformCode(
+    codeString,
+    {
+      filename: fileName,
+      jsc: {
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: options?.showComments ?? true,
       },
-      preserveAllComments: true,
+      minify: false, // don't minify the react elements
     },
-    minify: false,
-    isModule: true,
-  }).code;
+    {
+      minify: options?.minify ?? false, // minify the class names and don't add display names
+    },
+  ).code;
 
   transformedCodeToDisplay = await prettier.format(transformedCodeToDisplay, {
     parser: "babel",

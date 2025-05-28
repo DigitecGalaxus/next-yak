@@ -13,6 +13,7 @@ catalogs:
     "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 15.3.1
     "@next/mdx": 15.3.1
+    "@radix-ui/react-switch": 1.2.5
     "@shikijs/monaco": 3.3.0
     "@shikijs/transformers": 3.3.0
     "@swc/core": 1.11.22

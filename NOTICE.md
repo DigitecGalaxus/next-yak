@@ -3,4 +3,4 @@
 # [swc](https://github.com/swc-project/swc)
 Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
- - `packages/playground-wasm/wasm-build/src/types.rs`
+ - `packages/docs/playground-wasm/src/types.rs`

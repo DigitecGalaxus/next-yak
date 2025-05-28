@@ -1,13 +1,17 @@
 import { transformAll } from "@/lib/transformation/execute-code";
 import type { TranspileInput } from "@/lib/transformation/useTranspile";
-import type { transform } from "playground-wasm";
+import type { transform } from "../../../playground-wasm/out";
 
 export type TWorkerMess = number[];
 
 let transformFn: typeof transform;
 
 const initializeWasm = async () => {
-  const { default: init, start, transform } = await import("playground-wasm");
+  const {
+    default: init,
+    start,
+    transform,
+  } = await import("../../../playground-wasm/out");
   await init();
   start();
   transformFn = transform;
@@ -15,7 +19,7 @@ const initializeWasm = async () => {
 };
 
 const onmessage = async (event: MessageEvent<TranspileInput>) => {
-  const { mainFile, additionalFiles } = event.data;
+  const { mainFile, additionalFiles, options } = event.data;
 
   try {
     const response = await transformAll(
@@ -27,11 +31,14 @@ const onmessage = async (event: MessageEvent<TranspileInput>) => {
         name,
         content,
       })) ?? [],
+      options,
     );
     postMessage(response);
   } catch (error) {
     if (typeof error === "string") {
-      postMessage(error.split("\n")[0].replace("x ", ""));
+      postMessage(error);
+    } else if (error instanceof Error) {
+      postMessage(error.message);
     }
   }
 };
