@@ -593,10 +593,14 @@ export default dynamic(
   },
 );
 
+/**
+ * Prevents node_modules and .d.ts files from being included in the code object.
+ * E.g. lib.dom.d.ts is several mb in size
+ */
 function filterOutNodeModules(
   code: Record<string, string>,
 ): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(code).filter(([key]) => !key.includes("node_modules")),
+    Object.entries(code).filter(([key]) => !key.includes("node_modules") && !key.endsWith(".d.ts")),
   );
 }
