@@ -337,7 +337,7 @@ export default dynamic(
                       label: "Share",
                       keybindings: [],
                       run: () => {
-                        const models = monaco.editor.getModels();
+                        const models = monaco.editor.getModels().reverse();
                         const mapped = models.reduce(
                           (acc, model) => {
                             const text = model.getValue();
