@@ -321,6 +321,10 @@ async function parseExports(
   sourceContents: string,
 ): Promise<Record<string, ParsedExport>> {
   let exports: Record<string, ParsedExport> = {};
+  // Track variable declarations for lookup
+  const variableDeclarations: Record<string, babel.types.Expression> = {};
+  // Track default export identifier if present
+  let defaultIdentifier: string | null = null;
 
   try {
     const ast = parse(sourceContents, {
@@ -329,6 +333,13 @@ async function parseExports(
     });
 
     traverse.default(ast, {
+      // Track all variable declarations in the file
+      VariableDeclarator({ node }) {
+        if (node.id.type === "Identifier" && node.init) {
+          variableDeclarations[node.id.name] = node.init;
+        }
+      },
+
       ExportNamedDeclaration({ node }) {
         if (node.source) {
           node.specifiers.forEach((specifier) => {
@@ -372,6 +383,27 @@ async function parseExports(
           });
         }
       },
+      ExportDefaultDeclaration({ node }) {
+        if (node.declaration.type === "Identifier") {
+          // e.g. export default variableName;
+          // Save the identifier name to look up later
+          defaultIdentifier = node.declaration.name;
+        } else if (
+          node.declaration.type === "FunctionDeclaration" ||
+          node.declaration.type === "ClassDeclaration"
+        ) {
+          // e.g. export default function() {...} or export default class {...}
+          exports["default"] = {
+            type: "unsupported",
+            hint: node.declaration.type,
+          };
+        } else {
+          // e.g. export default { ... } or export default "value"
+          exports["default"] = parseExportValueExpression(
+            node.declaration as babel.types.Expression,
+          );
+        }
+      },
       ExportAllDeclaration({ node }) {
         if (Object.keys(exports).length === 0) {
           exports["*"] ||= {
@@ -385,6 +417,12 @@ async function parseExports(
         }
       },
     });
+    // If we found a default export that's an identifier, look up its value
+    if (defaultIdentifier && variableDeclarations[defaultIdentifier]) {
+      exports["default"] = parseExportValueExpression(
+        variableDeclarations[defaultIdentifier],
+      );
+    }
 
     return exports;
   } catch (error) {
