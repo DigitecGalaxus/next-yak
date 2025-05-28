@@ -1,5 +1,6 @@
+import { examples } from "@/app/(home)/playground/examples";
+import { compressSync, decompressSync, strFromU8, strToU8 } from "fflate";
 import { fromUint8Array, toUint8Array } from "js-base64";
-import { strToU8, strFromU8, compressSync, decompressSync } from "fflate";
 import { decompressFromEncodedURIComponent } from "lz-string";
 
 const DICTIONARY_VERSION = "0";
@@ -11,11 +12,7 @@ const convertDictionaryIndexToToken = (n: number) => {
   return "\x00" + String.fromCharCode(97 + n);
 };
 
-const DELIMITER = convertDictionaryIndexToToken(0);
-
 const dictionary = [
-  // Delimiter to separate code parts
-  DELIMITER,
   // Common Imports (next-yak and react)
   `import { styled, css } from "next-yak";`,
   `import { styled } from "next-yak";`,
@@ -80,7 +77,24 @@ const dictionary = [
   "other",
   "index",
   "/img/yak-jumping.png",
-] as const;
+  // For the case that you change only the main file
+  // This is kind of dangerous as the dictionary points
+  // always to the latest version of example
+  examples.base.files.other,
+  examples.base.files["different.yak"],
+]
+  // Sorting the dictionary by length in descending order
+  // to ensure that longer tokens are replaced first
+  // e.g. `import { styled, css } from "next-yak";` before `import`
+  .sort((a, b) => b.length - a.length);
+
+// The delimiter is a special token that is used to separate
+// the different parts of the compressed string
+const DELIMITER = convertDictionaryIndexToToken(0);
+
+// It is important that the DELIMITER is the first token in the dictionary,
+// so that the index 0 matches the value
+dictionary.unshift(DELIMITER);
 
 export const compressWithDictionary = (
   code: Record<string, string>,
@@ -97,6 +111,7 @@ export const compressWithDictionary = (
       convertDictionaryIndexToToken(index),
     );
   });
+  console.log(compressed);
   const compressedBytes = strToU8(compressed);
   const compressedFlate = compressSync(compressedBytes, { level: 9, mem: 12 });
   // Log into console for the curious users
