@@ -111,7 +111,6 @@ export const compressWithDictionary = (
       convertDictionaryIndexToToken(index),
     );
   });
-  console.log(compressed);
   const compressedBytes = strToU8(compressed);
   const compressedFlate = compressSync(compressedBytes, { level: 9, mem: 12 });
   // Log into console for the curious users
