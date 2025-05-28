@@ -1,5 +1,6 @@
 import { fromUint8Array, toUint8Array } from "js-base64";
 import { strToU8, strFromU8, compressSync, decompressSync } from "fflate";
+import { decompressFromEncodedURIComponent } from "lz-string";
 
 const DICTIONARY_VERSION = "0";
 
@@ -115,8 +116,17 @@ export const compressWithDictionary = (
 export const decompressWithDictionary = (
   compressed: string,
 ): Record<string, string> => {
-  let decompressed = strFromU8(decompressSync(toUint8Array(compressed)));
+  let decompressed = "";
+  try {
+    decompressed = strFromU8(decompressSync(toUint8Array(compressed)));
+  } catch {}
   if (!decompressed) {
+    // Backwards compatibility for old versions with JSON parsing
+    // Feel free to remove after August 2025
+    decompressed = decompressFromEncodedURIComponent(compressed);
+    if (decompressed.startsWith("{")) {
+      return JSON.parse(decompressed) as Record<string, string>;
+    }
     throw new Error("Decompression failed");
   }
   dictionary.forEach((token, index) => {
@@ -126,10 +136,6 @@ export const decompressWithDictionary = (
     );
   });
   const [version, ...code] = decompressed.split(DELIMITER);
-  // Backwards compatibility for old versions with JSON parsing
-  if (version.startsWith("{")) {
-    return JSON.parse(version) as Record<string, string>;
-  }
   if (version !== DICTIONARY_VERSION) {
     throw new Error(`Unsupported dictionary version: ${version}`);
   }
