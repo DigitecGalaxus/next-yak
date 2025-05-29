@@ -1,5 +1,5 @@
 import { css, CSSInterpolation, yakComponentSymbol } from "./cssLiteral.js";
-import React, { ComponentProps } from "react";
+import React from "react";
 import type {
   Attrs,
   AttrsMerged,
@@ -32,7 +32,7 @@ const noTheme: YakTheme = {};
 //
 const styledFactory: StyledFn = (Component) =>
   Object.assign(yakStyled(Component), {
-    attrs: (attrs: any) => yakStyled(Component, attrs),
+    attrs: (attrs: Attrs<any>) => yakStyled(Component, attrs),
   });
 
 /**
@@ -71,7 +71,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       styles,
       ...(values as CSSInterpolation<unknown>[]),
     );
-    const yak = (props: ComponentProps<Exclude<typeof Component, string>>) => {
+    const yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
       // it can be called without arguments and we skip calling useTheme()
       //
@@ -127,7 +127,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         !isYakComponent
           ? removeNonDomProperties(propsBeforeFiltering)
           : propsBeforeFiltering
-      ) as typeof props & {
+      ) as {
         className?: string;
         style?: React.CSSProperties;
       };
@@ -150,14 +150,18 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         parentYakComponent(filteredProps)
       ) : (
         // if the final component is a string component e.g. styled("div") or a custom non yak fn e.g. styled(MyComponent)
-        <Component {...filteredProps} />
+        <Component
+          {...(filteredProps as React.ComponentProps<
+            Exclude<typeof Component, string>
+          >)}
+        />
       );
     };
 
     // Assign the yakComponentSymbol directly without forwardRef
     return Object.assign(yak, {
-      [yakComponentSymbol]: [yak, mergedAttrsFn],
-    }) as YakComponent<unknown>;
+      [yakComponentSymbol]: [yak, mergedAttrsFn] as [unknown, unknown],
+    });
   };
 };
 
