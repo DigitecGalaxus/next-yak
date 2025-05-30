@@ -297,6 +297,11 @@ export default dynamic(
                       .forEach((model) => model.dispose());
 
                     // add files from the files object to the editor
+                    // models are the files in the editor and they are in reverse order
+                    // so that all dependencies of the main index.tsx files are initialized
+                    // before the main file tries to resolve its imports
+                    // otherwise Monaco will sometimes add a red squiggly line for a short time
+                    // during the initialization
                     Object.entries(initialState)
                       .reverse()
                       .forEach(([path, value]) => {
@@ -337,6 +342,11 @@ export default dynamic(
                       label: "Share",
                       keybindings: [],
                       run: () => {
+                        // Models are the files in the editor and they are in reverse order
+                        // so that all dependencies of the main index.tsx files are initialized
+                        // before the main file tries to resolve its imports
+                        //
+                        // To share them in correct order we reverse them again
                         const models = monaco.editor.getModels().reverse();
                         const mapped = models.reduce(
                           (acc, model) => {

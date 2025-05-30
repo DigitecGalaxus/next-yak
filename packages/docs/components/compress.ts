@@ -56,12 +56,12 @@ const dictionary = [
   "font-size",
   "font-weight",
   "border-radius",
-  "position: ",
-  "transition: ",
+  "position:",
+  "transition:",
   "cursor: pointer",
+  "animation:",
   // JS
   "function ",
-  "Component",
   "\n  return ",
   "return ",
   "const ",
@@ -73,6 +73,7 @@ const dictionary = [
   "useCallback",
   "useMemo",
   // Demo Constants
+  "Component()",
   "different.yak",
   "other",
   "index",
