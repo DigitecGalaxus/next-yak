@@ -2,4 +2,4 @@
 "yak-swc": patch
 ---
 
-Fix cross file imports that use default or namespace imports
+Add cross file constant supports also for default or namespace imports

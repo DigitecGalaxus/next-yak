@@ -1,3 +1,3 @@
-const red = "teal";
+const teal = "teal";
 
-export default red;
+export default teal;
