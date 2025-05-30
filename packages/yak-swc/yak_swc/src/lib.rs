@@ -16,9 +16,10 @@ use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::css_prop::HasCSSProp;
+use utils::cross_file_selectors::ImportType;
 
 mod variable_visitor;
-use variable_visitor::{ImportType, ScopedVariableReference, VariableVisitor};
+use variable_visitor::{ScopedVariableReference, VariableVisitor};
 mod yak_imports;
 use yak_imports::{visit_module_imports, YakImports};
 mod math_evaluate;
@@ -33,6 +34,7 @@ mod utils {
   pub(crate) mod ast_helper;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
+  pub(crate) mod cross_file_selectors;
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;

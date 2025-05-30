@@ -4,7 +4,8 @@ use swc_core::atoms::Atom;
 use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
-use crate::variable_visitor::{encode_percent, ScopedVariableReference};
+use crate::utils::cross_file_selectors::encode_percent;
+use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
 use swc_core::common::errors::HANDLER;
