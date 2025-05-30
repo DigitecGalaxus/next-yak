@@ -7,9 +7,10 @@ import type {
   YakComponent,
   AttrsFunction,
   StyledFn,
-  ExtractAttrsFunction,
-  StyledInternal,
-} from "./types.js";
+  HtmlTags,
+  Substitute,
+  StyledLiteral,
+} from "./publicStyledApi.js";
 
 // the following export is not relative as "next-yak/context"
 // links to one file for react server components and
@@ -269,3 +270,20 @@ const buildRuntimeAttrsProcessor = <
 
   return ownAttrsFn || parentAttrsFn;
 };
+
+/**
+ * Internal function where attrs are passed to be processed
+ */
+export type StyledInternal = <
+  T extends object,
+  TAttrsIn extends object = {},
+  TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
+>(
+  Component: React.FunctionComponent<T> | YakComponent<T> | HtmlTags | string,
+  attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
+) => StyledLiteral<Substitute<T, TAttrsIn>>;
+
+/**
+ * Utility type to extract the AttrsFunction from the Attrs type
+ */
+export type ExtractAttrsFunction<T> = T extends (p: any) => any ? T : never;

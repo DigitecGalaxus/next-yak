@@ -1,5 +1,6 @@
+// This is the public facing API for the styled object.
 import React from "react";
-import type { YakTheme } from "./context/index.d.ts";
+import type { YakTheme } from "./context/index.js";
 import { CSSInterpolation, yakComponentSymbol } from "./cssLiteral.js";
 
 /**
@@ -25,23 +26,12 @@ export interface StyledFn {
 }
 
 /**
- * Internal function where attrs are passed to be processed
- */
-export type StyledInternal = <
-  T extends object,
-  TAttrsIn extends object = {},
-  TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
->(
-  Component: React.FunctionComponent<T> | YakComponent<T> | HtmlTags | string,
-  attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
-) => StyledLiteral<Substitute<T, TAttrsIn>>;
-
-/**
  * A yak component with a special symbol that allows component targeting
  * and proper attrs function handling.
  * @example styled.svg`${Button}:hover & { fill: red; }` or styled(Button)`color: red;`
  */
 export interface YakComponent<T> extends React.FunctionComponent<T> {
+  // This is intentionally typed to hide the internal implementation details.
   [yakComponentSymbol]: [unknown, unknown];
 }
 
@@ -77,6 +67,27 @@ export interface StyledLiteral<T> {
 }
 
 /**
+ * Function variant of attrs that receives current props and returns additional props.
+ * Allows for dynamic prop generation based on component state.
+ */
+export interface AttrsFunction<
+  TBaseProps,
+  TIn extends object = {},
+  TOut extends AttrsMerged<TBaseProps, TIn> = AttrsMerged<TBaseProps, TIn>,
+> {
+  (p: Substitute<TBaseProps & { theme: YakTheme }, TIn>): Partial<TOut>;
+}
+
+/**
+ * Merges provided props with initial props, making specified props optional.
+ * Includes theme support for styled components.
+ */
+export type AttrsMerged<TBaseProps, TIn extends object = {}> = Substitute<
+  TBaseProps & { theme?: YakTheme },
+  TIn
+>;
+
+/**
  * Maps all HTML tag names to their corresponding styled component types with attributes support.
  * Provides typed access to all standard HTML elements through the styled interface.
  */
@@ -95,30 +106,6 @@ export type Attrs<
 > = Partial<TOut> | AttrsFunction<TBaseProps, TIn, TOut>;
 
 /**
- * Function variant of attrs that receives current props and returns additional props.
- * Allows for dynamic prop generation based on component state.
- */
-export type AttrsFunction<
-  TBaseProps,
-  TIn extends object = {},
-  TOut extends AttrsMerged<TBaseProps, TIn> = AttrsMerged<TBaseProps, TIn>,
-> = (p: Substitute<TBaseProps & { theme: YakTheme }, TIn>) => Partial<TOut>;
-
-/**
- * Utility type to extract the AttrsFunction from the Attrs type
- */
-export type ExtractAttrsFunction<T> = T extends (p: any) => any ? T : never;
-
-/**
- * Merges provided props with initial props, making specified props optional.
- * Includes theme support for styled components.
- */
-export type AttrsMerged<TBaseProps, TIn extends object = {}> = Substitute<
-  TBaseProps & { theme?: YakTheme },
-  TIn
->;
-
-/**
  * Utility type to merge two object types, with properties from B taking precedence.
  * If a property exists in both A and B, the property from B is used.
  */
@@ -132,18 +119,18 @@ export type Substitute<A extends object, B extends object> = FastOmit<
  * Union type of all valid HTML element tag names.
  * Derived from React's JSX intrinsic elements.
  */
-type HtmlTags = keyof React.JSX.IntrinsicElements;
+export type HtmlTags = keyof React.JSX.IntrinsicElements;
 
 /**
  * Custom web component tag pattern that must contain at least one hyphen.
  * Follows the web component naming convention.
  */
-type CustomWebComponentTag = `${string}-${string}`;
+export type CustomWebComponentTag = `${string}-${string}`;
 
 /**
  * Utility type to efficiently remove properties from an object type.
  * More performant than the built-in Omit type for large object types.
  */
-type FastOmit<T extends object, U extends string | number | symbol> = {
+export type FastOmit<T extends object, U extends string | number | symbol> = {
   [K in keyof T as K extends U ? never : K]: T[K];
 };
