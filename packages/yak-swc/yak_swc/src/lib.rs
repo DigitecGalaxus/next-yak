@@ -15,8 +15,8 @@ use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
+use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
-use utils::encode_module_import::{encode_module_import, ImportKind};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -32,9 +32,9 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
+  pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
-  pub(crate) mod encode_module_import;
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
@@ -278,33 +278,33 @@ where
           // e.g.:
           // import { colors } from "./theme";
           // styled.button`color: ${colors.primary};`
-          else if let Some((_import_source_type, module_path)) =
+          else if let Some((_import_source_type, import_kind)) =
             self.variables.get_imported_variable(&scoped_name.id)
           {
             let code_after_expression = &quasis[pair.index + 1..]
               .iter()
               .map(|quasi| quasi.raw.as_str())
               .collect::<String>();
-            let import_kind: ImportKind =
+            let import_type: ImportType =
               match find_char(code_after_expression, &[';', '{', '}', '@']) {
                 Some((char, _)) =>
                 // e.g. styled.button`${Icon} { ... }`
                 {
                   if char == '{' {
-                    ImportKind::Selector
+                    ImportType::Selector
                   }
                   // e.g. styled.button`${colors.primary} @media { ... }`
                   // e.g. styled.button`.foo { ${colors.primary} }`
                   // e.g. styled.button`${colors.primary};`
                   else {
-                    ImportKind::Mixin
+                    ImportType::Mixin
                   }
                 }
                 // e.g. styled.button`${colors.primary}`
-                None => ImportKind::Mixin,
+                None => ImportType::Mixin,
               };
             let cross_file_import_token =
-              encode_module_import(module_path.as_str(), scoped_name.parts, import_kind);
+              import_kind.encode_module_import(import_type, scoped_name.parts);
 
             // TODO Track Dynamic Mixins as runtime dependency to pass props: `runtime_expressions.push(*expr.clone());`
             let (new_state, _) = parse_css(&cross_file_import_token, css_state);

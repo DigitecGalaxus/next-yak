@@ -7,6 +7,7 @@ import { Inputs } from "@/app/Input";
 import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
 import { mixins, tokens } from "./constants";
+import defaultColor from "./constantColors";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -181,7 +182,14 @@ export default function Home() {
           `}
         >
           Nested constants work if this is light blue{" "}
-          <NestedConstantText>and this is orange</NestedConstantText>
+          <NestedConstantText>this is orange </NestedConstantText>
+          <span
+            css={css`
+              color: ${defaultColor};
+            `}
+          >
+            and this is teal
+          </span>
         </p>
         <Inputs />
       </main>

@@ -1,5 +1,12 @@
 # next-yak
 
+## 5.6.1
+
+### Patch Changes
+
+- Updated dependencies [cb02484]
+  - yak-swc@5.6.1
+
 ## 5.6.0
 
 ### Minor Changes

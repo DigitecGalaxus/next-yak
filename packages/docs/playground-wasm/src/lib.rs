@@ -49,7 +49,7 @@ pub fn transform_sync(
                     // Clones will contribute to the same comment map.
                     let comments = SingleThreadedComments::default();
                     let file_name = real_file_name(&fm);
-                    let before_pass = if file_name.as_ref().is_some_and(|f| is_yak_file(&f)) {
+                    let before_pass = if file_name.as_ref().is_some_and(|f| is_yak_file(f)) {
                         Left(visit_mut_pass(YakFileVisitor::new()))
                     } else {
                         Right(yak_pass(comments.clone(), file_name, yak_opts))
@@ -88,7 +88,7 @@ fn yak_pass(
     yak_opts: Option<YakConfig>,
 ) -> impl Pass + use<> {
     let file_name = file_name.unwrap_or("anon.ts".into()).to_string();
-    let config = yak_opts.unwrap_or(YakConfig::default());
+    let config = yak_opts.unwrap_or_default();
 
     fn_pass(move |program: &mut Program| {
         let mut transformer = yak_swc::TransformVisitor::new(
@@ -130,9 +130,9 @@ pub enum TranspilationMode {
     Css,
 }
 
-impl Into<yak_swc::naming_convention::TranspilationMode> for TranspilationMode {
-    fn into(self) -> yak_swc::naming_convention::TranspilationMode {
-        match self {
+impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
+    fn from(val: TranspilationMode) -> Self {
+        match val {
             TranspilationMode::Css => yak_swc::naming_convention::TranspilationMode::Css,
             TranspilationMode::CssModule => {
                 yak_swc::naming_convention::TranspilationMode::CssModule
