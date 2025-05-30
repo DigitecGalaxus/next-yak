@@ -360,6 +360,7 @@ const VersionLink = styled.a`
   padding: 0.2rem 0.7rem;
   translate: 0 -0.7rem;
   border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
   ${colors.secondary};
 
   ${breakpoints.sm} {

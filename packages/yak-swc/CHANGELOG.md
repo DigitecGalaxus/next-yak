@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.6.1
+
+### Patch Changes
+
+- cb02484: Add cross file constant supports also for default or namespace imports
+
 ## 5.6.0
 
 ### Minor Changes

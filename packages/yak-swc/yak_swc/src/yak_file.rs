@@ -17,6 +17,12 @@ pub struct YakFileVisitor {
 /// A vistor which transform the AST of a .yak.tsx .yak.ts or .yak.js file
 /// by removing the next-yak imports and converting tagged template literals
 /// so that it can evaluated as a pure nodejs module
+impl Default for YakFileVisitor {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl YakFileVisitor {
   pub fn new() -> Self {
     Self {
