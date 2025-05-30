@@ -15,8 +15,8 @@ use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
-use utils::css_prop::HasCSSProp;
 use utils::cross_file_selectors::ImportType;
+use utils::css_prop::HasCSSProp;
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -32,9 +32,9 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
+  pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
-  pub(crate) mod cross_file_selectors;
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
