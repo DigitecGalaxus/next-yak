@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.6.2
+
+### Patch Changes
+
+- 938bca4: Improve typings
+
 ## 5.6.1
 
 ### Patch Changes
