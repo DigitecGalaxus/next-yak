@@ -31,17 +31,16 @@ pub enum ImportKind {
     import_source: Atom,
   },
   Namespace {
-    local_name: Id,
     import_source: Atom,
   },
 }
 
 impl ImportKind {
-  fn external_name(&self) -> Atom {
+  fn external_name(&self) -> Option<Atom> {
     match self {
-      ImportKind::Default { .. } => atom!("default"),
-      ImportKind::Named { external_name, .. } => external_name.clone(),
-      ImportKind::Namespace { local_name, .. } => local_name.0.clone(),
+      ImportKind::Default { .. } => Some(atom!("default")),
+      ImportKind::Named { external_name, .. } => Some(external_name.clone()),
+      ImportKind::Namespace { .. } => None,
     }
   }
 
@@ -80,11 +79,11 @@ impl ImportKind {
     let first_entry = match &self {
       // Don't encode the namespace, as that's just used internally, but the loader needs the exported names
       ImportKind::Namespace { .. } => None,
-      _ => Some(self.external_name()),
+      _ => self.external_name(),
     };
 
     let mut encoded_parts = match first_entry {
-      Some(entry) => vec![encode_percent(&entry)],
+      Some(entry) => vec![encode_percent(&entry.clone())],
       None => vec![],
     };
 
@@ -270,7 +269,6 @@ impl VisitMut for VariableVisitor {
           self.imports.insert(
             namespace.local.to_id(),
             ImportKind::Namespace {
-              local_name: namespace.local.to_id(),
               import_source: import.src.value.clone(),
             },
           );
@@ -686,7 +684,7 @@ mod tests {
       import_source: atom!("./default-module"),
     };
 
-    assert_eq!(default_import.external_name().as_str(), "default");
+    assert_eq!(default_import.external_name().unwrap().as_str(), "default");
     assert_eq!(default_import.import_source().as_str(), "./default-module");
 
     // Test Named import
@@ -695,16 +693,18 @@ mod tests {
       import_source: atom!("./named-module"),
     };
 
-    assert_eq!(named_import.external_name().as_str(), "externalName");
+    assert_eq!(
+      named_import.external_name().unwrap().as_str(),
+      "externalName"
+    );
     assert_eq!(named_import.import_source().as_str(), "./named-module");
 
     // Test Namespace import
     let namespace_import = ImportKind::Namespace {
-      local_name: Id::from((Atom::from("nsImport"), SyntaxContext::empty())),
       import_source: atom!("./namespace-module"),
     };
 
-    assert_eq!(namespace_import.external_name().as_str(), "nsImport");
+    assert_eq!(namespace_import.external_name(), None);
     assert_eq!(
       namespace_import.import_source().as_str(),
       "./namespace-module"
@@ -734,7 +734,6 @@ mod tests {
   fn test_encode_module_import_with_namespace() {
     // Create a namespace ImportKind
     let import_kind = ImportKind::Namespace {
-      local_name: Id::from((Atom::from("utils"), SyntaxContext::empty())),
       import_source: atom!("./utils-module"),
     };
 
