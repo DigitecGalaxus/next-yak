@@ -84,6 +84,12 @@ const dictionary = [
   // For the case that you change only the main file
   // This is kind of dangerous as the dictionary points
   // always to the latest version of example
+  `const Center = styled.div\`
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+`,
   examples.base.files.other,
   examples.base.files["different.yak"],
 ]
