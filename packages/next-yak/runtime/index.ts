@@ -27,6 +27,8 @@
 export { useTheme, YakThemeProvider } from "next-yak/context";
 export type { YakTheme } from "./context/index.d.ts";
 
+export type { GenericYakComponentOf } from "./publicStyledApi.ts";
+
 export { atoms } from "./atoms.js";
 export { css } from "./mocks/cssLiteral.js";
 export { keyframes } from "./mocks/keyframes.js";

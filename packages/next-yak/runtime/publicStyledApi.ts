@@ -134,3 +134,8 @@ export type CustomWebComponentTag = `${string}-${string}`;
 export type FastOmit<T extends object, U extends string | number | symbol> = {
   [K in keyof T as K extends U ? never : K]: T[K];
 };
+
+/**
+ * Utility type to keep the generic API of a component while still being able to use it in a selector
+ */
+export type GenericYakComponentOf<T> = T & YakComponent<unknown>;
