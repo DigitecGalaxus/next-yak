@@ -79,7 +79,9 @@ impl VariableVisitor {
               PropOrSpread::Prop(prop) => match &**prop {
                 Prop::KeyValue(kv) => match &kv.key {
                   PropName::Ident(ident) if ident.sym == *part => Some(&kv.value),
-                  _ => None,
+                  PropName::Str(str_lit) if str_lit.value == *part => Some(&kv.value),
+                  PropName::Num(num_lit) if num_lit.value.to_string() == part.as_str() => Some(&kv.value),
+                  _ => None
                 },
                 _ => None,
               },
