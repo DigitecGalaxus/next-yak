@@ -44,28 +44,19 @@ impl CSSProp {
     let result: Result<_, TransformError> = (|| {
       let value = opening_element.attrs.remove(self.index);
 
-      let (merge_call, insert_index) = if self.relevant_props_indices.is_empty() {
-        (
-          Self::extract_css_expr(&value, opening_element.span)?,
-          self.index,
-        )
-      } else {
-        let removed_attrs: Vec<_> = self
-          .relevant_props_indices
-          .iter()
-          .rev()
-          .map(|&index| {
-            let adjusted_index = if index > self.index { index - 1 } else { index };
-            opening_element.attrs.remove(adjusted_index)
-          })
-          .collect();
-        let mapped_props = Self::map_props(&removed_attrs)?;
-        let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
-        (
-          Self::create_merge_call(&mapped_props, css_expr, merge_ident),
-          opening_element.attrs.len(),
-        )
-      };
+      let removed_attrs: Vec<_> = self
+        .relevant_props_indices
+        .iter()
+        .rev()
+        .map(|&index| {
+          let adjusted_index = if index > self.index { index - 1 } else { index };
+          opening_element.attrs.remove(adjusted_index)
+        })
+        .collect();
+      let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
+      let merge_call =
+        Self::create_merge_call(&Self::map_props(&removed_attrs)?, css_expr, merge_ident);
+      let insert_index = opening_element.attrs.len();
 
       let spread_attr = JSXAttrOrSpread::SpreadElement(SpreadElement {
         dot3_token: DUMMY_SP,
@@ -83,8 +74,6 @@ impl CSSProp {
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.
-  /// Returns the expression wrapped in a function call with an empty object argument.
-  /// e.g. `css\`color: red\`` becomes `css\`color: red\`({})`
   fn extract_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
     match attr {
       JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
@@ -93,19 +82,7 @@ impl CSSProp {
         .ok_or(TransformError::InvalidCSSAttribute(span))
         .and_then(|value| match value {
           JSXAttrValue::JSXExprContainer(container) => match &container.expr {
-            JSXExpr::Expr(expr) => Ok(Box::new(Expr::Call(CallExpr {
-              span: DUMMY_SP,
-              callee: Callee::Expr(expr.clone()),
-              args: vec![ExprOrSpread {
-                spread: None,
-                expr: Box::new(Expr::Object(ObjectLit {
-                  span: DUMMY_SP,
-                  props: vec![],
-                })),
-              }],
-              ctxt: SyntaxContext::empty(),
-              type_args: None,
-            }))),
+            JSXExpr::Expr(expr) => Ok(expr.clone()),
             _ => Err(TransformError::InvalidCSSAttribute(container.span)),
           },
           _ => Err(TransformError::InvalidCSSAttribute(span)),

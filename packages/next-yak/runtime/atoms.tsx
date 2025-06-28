@@ -1,3 +1,5 @@
+import { css } from "./cssLiteral.js";
+
 /**
  * Allows to use atomic CSS classes in a styled or css block
  *
