@@ -68,10 +68,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
   return (styles, ...values) => {
-    const getRuntimeStyles = css(
-      styles,
-      ...(values as CSSInterpolation<unknown>[]),
-    );
+    const getRuntimeStyles: (
+      props: unknown,
+      classNames: Set<string>,
+      style: Record<string, string>,
+    ) => void = css(styles, ...(values as CSSInterpolation<unknown>[]));
     const yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
       // it can be called without arguments and we skip calling useTheme()
@@ -110,9 +111,12 @@ const yakStyled: StyledInternal = (Component, attrs) => {
               },
               mergedAttrsFn?.({ theme, ...(props as any) }),
             );
+
+      const classNames = new Set<string>();
+      const styles = {};
       // execute all functions inside the style literal
       // e.g. styled.button`color: ${props => props.color};`
-      const runtimeStyles = getRuntimeStyles(combinedProps);
+      getRuntimeStyles(combinedProps, classNames, styles);
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
@@ -135,15 +139,15 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
       filteredProps.className = mergeClassNames(
         filteredProps.className,
-        runtimeStyles.className,
+        [...classNames].join(" "),
       );
       filteredProps.style =
         "style" in filteredProps
           ? {
               ...filteredProps.style,
-              ...runtimeStyles.style,
+              ...styles,
             }
-          : runtimeStyles.style;
+          : styles;
 
       return parentYakComponent ? (
         // if the styled(Component) syntax is used and the component is a yak component

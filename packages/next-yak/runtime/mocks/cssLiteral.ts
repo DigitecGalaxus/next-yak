@@ -51,9 +51,9 @@ function executeDynamicExpressionRecursively(
   props: unknown,
   expression: PropsToClassNameFn,
 ) {
-  let result = expression(props);
+  let result = expression(props, new Set(), {});
   while (typeof result === "function") {
-    result = result(props);
+    result = result(props, new Set(), {});
   }
   return result;
 }

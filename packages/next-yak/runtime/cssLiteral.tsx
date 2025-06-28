@@ -32,11 +32,16 @@ type CSSFunction = <TProps = {}>(
   ...values: CSSInterpolation<TProps & { theme: YakTheme }>[]
 ) => ComponentStyles<TProps>;
 
-export type PropsToClassNameFn = (props: unknown) =>
+export type PropsToClassNameFn = (
+  props: unknown,
+  classNames: Set<string>,
+  style: Record<string, string>,
+) =>
   | {
       className?: string;
       style?: Record<string, string>;
     }
+  | void
   | PropsToClassNameFn;
 
 /**
@@ -55,8 +60,14 @@ export function css<TProps>(
   styles: TemplateStringsArray,
   ...values: CSSInterpolation<NoInfer<TProps> & { theme: YakTheme }>[]
 ): ComponentStyles<TProps>;
-export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
-  const classNames: string[] = [];
+export function css<TProps>(
+  ...args: Array<any>
+): (
+  props: TProps,
+  classNames: Set<string>,
+  style: Record<string, string>,
+) => void {
+  let className: string | undefined;
   const dynamicCssFunctions: PropsToClassNameFn[] = [];
   const style: Record<string, string> = {};
   for (const arg of args as Array<string | CSSFunction | CSSStyles<any>>) {
@@ -64,7 +75,7 @@ export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
     // e.g. css`color: red;`
     // compiled -> css("yak31e4")
     if (typeof arg === "string") {
-      classNames.push(arg);
+      className = arg;
     }
     // Dynamic CSS e.g.
     // css`${props => props.active && css`color: red;`}`
@@ -99,20 +110,21 @@ export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
 
   // Non Dynamic CSS
   if (dynamicCssFunctions.length === 0) {
-    const className = classNames.join(" ");
-    return () => ({ className, style });
+    return (_, classNames, allStyles) => {
+      if (className) {
+        classNames.add(className);
+      }
+      unwrapProps({}, () => ({ className, style }), classNames, allStyles);
+    };
   }
 
-  return (props: unknown) => {
-    const allClassNames: string[] = [...classNames];
-    const allStyles: Record<string, string> = { ...style };
-    for (let i = 0; i < dynamicCssFunctions.length; i++) {
-      unwrapProps(props, dynamicCssFunctions[i], allClassNames, allStyles);
+  return (props, classNames, allStyles) => {
+    if (className) {
+      classNames.add(className);
     }
-    return {
-      className: allClassNames.join(" "),
-      style: allStyles,
-    };
+    for (let i = 0; i < dynamicCssFunctions.length; i++) {
+      unwrapProps(props, dynamicCssFunctions[i], classNames, allStyles);
+    }
   };
 }
 
@@ -120,17 +132,17 @@ export function css<TProps>(...args: Array<any>): ComponentStyles<TProps> {
 const unwrapProps = (
   props: unknown,
   fn: PropsToClassNameFn,
-  classNames: string[],
+  classNames: Set<string>,
   style: Record<string, string>,
 ) => {
-  let result = fn(props);
+  let result = fn(props, classNames, style);
   while (result) {
     if (typeof result === "function") {
-      result = result(props);
+      result = result(props, classNames, style);
       continue;
     } else if (typeof result === "object") {
       if ("className" in result && result.className) {
-        classNames.push(result.className);
+        classNames.add(result.className);
       }
       if ("style" in result && result.style) {
         for (const key in result.style) {

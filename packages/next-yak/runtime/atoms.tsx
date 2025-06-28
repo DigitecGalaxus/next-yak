@@ -12,7 +12,9 @@
  * `;
  * ```
  */
-export const atoms = (...atoms: string[]) => {
+export const atoms = (...atoms: (string | Fn)[]) => {
   const className = atoms.join(" ");
   return () => ({ className });
 };
+
+type Fn = (userSuppliedFn: () => void) => void;
