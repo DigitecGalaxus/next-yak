@@ -14,9 +14,23 @@ import { css } from "./cssLiteral.js";
  * `;
  * ```
  */
-export const atoms = (...atoms: (string | Fn)[]) => {
-  const className = atoms.join(" ");
-  return () => ({ className });
+export const atoms = (...atoms: (string | Fn | false)[]) => {
+  const classes = atoms.filter((atom) => typeof atom === "string");
+  const dynamicFunctions: Fn[] = [
+    (_: unknown, classNames: Set<string>, style: Record<string, string>) => {
+      for (const singleClass of classes) {
+        classNames.add(singleClass);
+      }
+    },
+    ...atoms.filter((atom) => typeof atom === "function"),
+  ];
+
+  // @ts-expect-error wip
+  return css(...dynamicFunctions);
 };
 
-type Fn = (userSuppliedFn: () => void) => void;
+type Fn = (
+  props: unknown,
+  classNames: Set<string>,
+  style: Record<string, string>,
+) => void;

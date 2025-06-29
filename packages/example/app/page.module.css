@@ -6,3 +6,15 @@
   padding: 6rem;
   gap: 2rem;
 }
+
+.small {
+  font-size: 0.8rem;
+}
+
+.large {
+  font-size: 1.2rem;
+}
+
+.red {
+  color: red;
+}

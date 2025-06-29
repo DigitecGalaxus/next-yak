@@ -1,5 +1,5 @@
 /** @jsxImportSource next-yak */
-import { YakThemeProvider, css, styled } from "next-yak";
+import { YakThemeProvider, atoms, css, styled } from "next-yak";
 import styles from "./page.module.css";
 import { queries, colors } from "@/theme/constants.yak";
 import { Clock } from "./Clock";
@@ -189,6 +189,40 @@ export default function Home() {
             `}
           >
             and this is teal
+          </span>
+        </p>
+        <p
+          css={atoms(
+            styles.small,
+            (
+              props: unknown,
+              classNames: Set<string>,
+              style: Record<string, string>,
+            ) => {
+              style["color"] = "black";
+            },
+          )}
+        >
+          Atoms work if this is small{" "}
+          <span
+            css={css`
+              color: black;
+              ${atoms(
+                styles.small,
+                true && styles.red,
+                (
+                  props: unknown,
+                  classNames: Set<string>,
+                  style: Record<string, string>,
+                ) => {
+                  classNames.delete(styles.red);
+                  classNames.delete(styles.small);
+                  classNames.add(styles.large);
+                },
+              )}
+            `}
+          >
+            and this is large
           </span>
         </p>
         <Inputs />

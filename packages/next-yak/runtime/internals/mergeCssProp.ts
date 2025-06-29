@@ -19,13 +19,21 @@ export const mergeCssProp = (
     style: Record<string, string>,
   ) => void,
 ) => {
-  const classNames = new Set<string>();
-  const style = {};
+  const classNames = new Set<string>(
+    (relevantProps.className as string | undefined)?.split(" "),
+  );
+  const style = (relevantProps.style as Record<string, string>) ?? {};
   cssProp({}, classNames, style);
-  return {
-    className: relevantProps.className
-      ? relevantProps.className + " " + [...classNames].join(" ")
-      : [...classNames].join(" "),
-    style: { ...(relevantProps.style ?? {}), ...style },
-  };
+
+  const result: { className?: string; style?: Record<string, string> } = {};
+
+  if (Object.keys(style).length > 0) {
+    result.style = style;
+  }
+
+  if (classNames.size > 0) {
+    result.className = [...classNames].join(" ");
+  }
+
+  return result;
 };
