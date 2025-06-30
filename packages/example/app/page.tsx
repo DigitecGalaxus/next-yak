@@ -125,6 +125,25 @@ const NestedConstantText = styled.span`
   color: ${tokens.colors.orange};
 `;
 
+const ToBeWrapped = styled.div<{ $primary: boolean }>`
+  ${atoms(
+    styles.green,
+    false && styles.large,
+    (_, classNames) => {
+      classNames.delete(styles.blue);
+      classNames.add(styles.yellow);
+    },
+    () => {},
+  )}
+`;
+
+const Wrap = styled(ToBeWrapped)<{ $secondary: boolean }>`
+  ${atoms((_, classNames) => {
+    classNames.delete(styles.yellow);
+    classNames.add(styles.italic);
+  })}
+`;
+
 export default function Home() {
   return (
     <YakThemeProvider>
@@ -192,29 +211,18 @@ export default function Home() {
           </span>
         </p>
         <p
-          css={atoms(
-            styles.small,
-            (
-              props: unknown,
-              classNames: Set<string>,
-              style: Record<string, string>,
-            ) => {
-              style["color"] = "black";
-            },
-          )}
+          css={atoms(styles.small, (props, classNames, style) => {
+            style["color"] = "black";
+          })}
         >
-          Atoms work if this is small{" "}
+          Atoms in css props work if this is small{" "}
           <span
             css={css`
               color: black;
               ${atoms(
                 styles.small,
                 true && styles.red,
-                (
-                  props: unknown,
-                  classNames: Set<string>,
-                  style: Record<string, string>,
-                ) => {
+                (props, classNames, style) => {
                   classNames.delete(styles.red);
                   classNames.delete(styles.small);
                   classNames.add(styles.large);
@@ -225,6 +233,13 @@ export default function Home() {
             and this is large
           </span>
         </p>
+        <Wrap
+          className={`${styles.small} ${styles.blue}`}
+          $primary={true}
+          $secondary={true}
+        >
+          Atoms in styled components work if this is small, green and italic
+        </Wrap>
         <Inputs />
       </main>
     </YakThemeProvider>

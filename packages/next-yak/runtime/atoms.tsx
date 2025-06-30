@@ -1,4 +1,5 @@
-import { css } from "./cssLiteral.js";
+import { ComponentStyles, css } from "./cssLiteral.js";
+import { RuntimeStylesFunction } from "./publicStyledApi.js";
 
 /**
  * Allows to use atomic CSS classes in a styled or css block
@@ -14,10 +15,14 @@ import { css } from "./cssLiteral.js";
  * `;
  * ```
  */
-export const atoms = (...atoms: (string | Fn | false)[]) => {
-  const classes = atoms.filter((atom) => typeof atom === "string");
-  const dynamicFunctions: Fn[] = [
-    (_: unknown, classNames: Set<string>, style: Record<string, string>) => {
+export const atoms = <T,>(
+  ...atoms: (string | RuntimeStylesFunction<T> | false)[]
+): ComponentStyles<T> => {
+  const classes = atoms
+    .filter((atom) => typeof atom === "string")
+    .flatMap((atom) => atom.split(" "));
+  const dynamicFunctions: RuntimeStylesFunction<T>[] = [
+    (_, classNames) => {
       for (const singleClass of classes) {
         classNames.add(singleClass);
       }
@@ -25,12 +30,6 @@ export const atoms = (...atoms: (string | Fn | false)[]) => {
     ...atoms.filter((atom) => typeof atom === "function"),
   ];
 
-  // @ts-expect-error wip
+  // @ts-expect-error the internal implementation of css is not typed
   return css(...dynamicFunctions);
 };
-
-type Fn = (
-  props: unknown,
-  classNames: Set<string>,
-  style: Record<string, string>,
-) => void;

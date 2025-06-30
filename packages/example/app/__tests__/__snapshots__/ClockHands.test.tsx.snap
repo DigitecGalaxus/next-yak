@@ -3,15 +3,15 @@
 exports[`renders ClockHands component 1`] = `
 <DocumentFragment>
   <div
-    class="ClockHands_SecondHand_cN6khQ ClockHands_SecondHand__theme_highContrast_cN6khQ-01 ClockHands_ClockHand_cN6khQ"
+    class="ClockHands_ClockHand_cN6khQ ClockHands_SecondHand_cN6khQ ClockHands_SecondHand__theme_highContrast_cN6khQ-01"
     style="--ClockHands_ClockHand__transform_cN6khQ: 0deg;"
   />
   <div
-    class="ClockHands_MinuteHand_cN6khQ ClockHands_ClockHand_cN6khQ"
+    class="ClockHands_ClockHand_cN6khQ ClockHands_MinuteHand_cN6khQ"
     style="--ClockHands_ClockHand__transform_cN6khQ: 0deg;"
   />
   <div
-    class="ClockHands_HourHand_cN6khQ ClockHands_ClockHand_cN6khQ"
+    class="ClockHands_ClockHand_cN6khQ ClockHands_HourHand_cN6khQ"
     style="--ClockHands_ClockHand__transform_cN6khQ: 450deg;"
   />
 </DocumentFragment>

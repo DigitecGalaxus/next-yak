@@ -10,6 +10,7 @@ import type {
   HtmlTags,
   Substitute,
   StyledLiteral,
+  RuntimeStylesFunction,
 } from "./publicStyledApi.js";
 
 // the following export is not relative as "next-yak/context"
@@ -58,21 +59,28 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   // if the component that is wrapped is a yak component, we can extract it to render the underlying component directly
   // and we can also extract the attrs function to merge it with the current attrs function so that the sequence of
   // the attrs functions is preserved
-  const [parentYakComponent, parentAttrsFn] = isYakComponent
-    ? (Component[yakComponentSymbol] as [
-        YakComponent<unknown>,
-        ExtractAttrsFunction<typeof attrs>,
-      ])
-    : [];
+  const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] =
+    isYakComponent
+      ? (Component[yakComponentSymbol] as [
+          YakComponent<unknown>,
+          ExtractAttrsFunction<typeof attrs>,
+          RuntimeStylesFunction<unknown>,
+        ])
+      : [];
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
   return (styles, ...values) => {
-    const getRuntimeStyles: (
-      props: unknown,
-      classNames: Set<string>,
-      style: Record<string, string>,
-    ) => void = css(styles, ...(values as CSSInterpolation<unknown>[]));
+    // combine all interpolated logic into a single function
+    // e.g. styled.button`color: ${props => props.color}; margin: ${props => props.margin};`
+    const getRuntimeStyles = css(
+      styles,
+      ...(values as CSSInterpolation<unknown>[]),
+    ) as RuntimeStylesFunction<unknown>;
+    const mergedRuntimeStylesFn = buildRuntimeStylesProcessor(
+      getRuntimeStyles,
+      parentRuntimeStylesFn,
+    );
     const yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
       // it can be called without arguments and we skip calling useTheme()
@@ -112,11 +120,20 @@ const yakStyled: StyledInternal = (Component, attrs) => {
               mergedAttrsFn?.({ theme, ...(props as any) }),
             );
 
-      const classNames = new Set<string>();
-      const styles = {};
-      // execute all functions inside the style literal
+      const classNames = new Set<string>(
+        "className" in combinedProps ? combinedProps.className?.split(" ") : [],
+      );
+      const styles = {
+        ...("style" in combinedProps ? combinedProps.style : {}),
+      };
+
+      // execute all functions inside the style literal if not already executed
       // e.g. styled.button`color: ${props => props.color};`
-      getRuntimeStyles(combinedProps, classNames, styles);
+      if (!("$__runtimeStylesProcessed" in combinedProps)) {
+        mergedRuntimeStylesFn(combinedProps, classNames, styles);
+        // @ts-expect-error this is not typed correctly
+        combinedProps.$__runtimeStylesProcessed = true;
+      }
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
@@ -137,17 +154,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         style?: React.CSSProperties;
       };
 
-      filteredProps.className = mergeClassNames(
-        filteredProps.className,
-        [...classNames].join(" "),
-      );
+      filteredProps.className = [...classNames].join(" ") || undefined;
       filteredProps.style =
-        "style" in filteredProps
-          ? {
-              ...filteredProps.style,
-              ...styles,
-            }
-          : styles;
+        Object.keys(styles).length > 0 ? styles : filteredProps.style;
 
       return parentYakComponent ? (
         // if the styled(Component) syntax is used and the component is a yak component
@@ -165,7 +174,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
     // Assign the yakComponentSymbol directly without forwardRef
     return Object.assign(yak, {
-      [yakComponentSymbol]: [yak, mergedAttrsFn] as [unknown, unknown],
+      [yakComponentSymbol]: [yak, mergedAttrsFn, mergedRuntimeStylesFn] as [
+        unknown,
+        unknown,
+        unknown,
+      ],
     });
   };
 };
@@ -273,6 +286,20 @@ const buildRuntimeAttrsProcessor = <
   }
 
   return ownAttrsFn || parentAttrsFn;
+};
+
+const buildRuntimeStylesProcessor = <T,>(
+  runtimeStylesFn: RuntimeStylesFunction<T>,
+  parentRuntimeStylesFn?: RuntimeStylesFunction<T>,
+) => {
+  if (runtimeStylesFn && parentRuntimeStylesFn) {
+    const combined: RuntimeStylesFunction<T> = (props, classNames, style) => {
+      parentRuntimeStylesFn(props, classNames, style);
+      runtimeStylesFn(props, classNames, style);
+    };
+    return combined;
+  }
+  return runtimeStylesFn || parentRuntimeStylesFn;
 };
 
 /**

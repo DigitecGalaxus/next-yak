@@ -55,6 +55,10 @@ export type PropsToClassNameFn = (
  *
  * Therefore this is only an internal function only and it must be cast to any
  * before exported to the user.
+ *
+ * The internal functioning of css`` is to return a single callback function that runs all functions
+ * (or creates new ones if needed) that are passed as arguments. These functions receive the props, classNames, and style object as arguments
+ * and operate directly on the classNames and style objects.
  */
 export function css<TProps>(
   styles: TemplateStringsArray,
