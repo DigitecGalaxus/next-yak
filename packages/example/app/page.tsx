@@ -211,7 +211,7 @@ export default function Home() {
           </span>
         </p>
         <p
-          css={atoms(styles.small, (props, classNames, style) => {
+          css={atoms(styles.small, (_, __, style) => {
             style["color"] = "black";
           })}
         >
@@ -219,15 +219,11 @@ export default function Home() {
           <span
             css={css`
               color: black;
-              ${atoms(
-                styles.small,
-                true && styles.red,
-                (props, classNames, style) => {
-                  classNames.delete(styles.red);
-                  classNames.delete(styles.small);
-                  classNames.add(styles.large);
-                },
-              )}
+              ${atoms(styles.small, true && styles.red, (_, classNames) => {
+                classNames.delete(styles.red);
+                classNames.delete(styles.small);
+                classNames.add(styles.large);
+              })}
             `}
           >
             and this is large
