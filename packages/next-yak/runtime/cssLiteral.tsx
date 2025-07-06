@@ -68,6 +68,8 @@ export function css<TProps>(
 export function css<TProps>(
   ...args: Array<any>
 ): RuntimeStyleProcessor<TProps> {
+  // Normally this  could be an array of strings passed, but as we transpile the usage of css`` ourselves, we control the arguments
+  // and ensure that only the first argument is a string (class name of the non-dynamic styles)
   let className: string | undefined;
   const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
   const style: Record<string, string> = {};
