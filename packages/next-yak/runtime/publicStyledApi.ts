@@ -138,4 +138,7 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 /**
  * Utility type to keep the generic API of a component while still being able to use it in a selector
  */
-export type GenericYakComponentOf<T> = T & YakComponent<unknown>;
+export type GenericYakComponentOf<T, P = {}> = T &
+  YakComponent<P> & {
+    <G = {}>(props: P & G): React.ReactElement | null;
+  };

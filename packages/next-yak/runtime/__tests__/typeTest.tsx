@@ -361,7 +361,16 @@ const GenericYakComponentShouldWork = () => {
   const StyledComponent = styled(Component)`` as GenericYakComponentOf<
     typeof Component
   >;
+  const StyledComponentWithAdditionalProps = styled(
+    Component,
+  )`` as GenericYakComponentOf<
+    typeof Component,
+    {
+      $primary?: boolean;
+    }
+  >;
   <StyledComponent<{ TEST: "ME" }> TEST="ME" />;
+  <StyledComponentWithAdditionalProps<{ TEST: "ME" }> TEST="ME" $primary />;
 
   const shouldBeSelectable = styled.div`
     ${StyledComponent} {
