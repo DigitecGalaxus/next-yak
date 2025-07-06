@@ -10,7 +10,7 @@ import type {
   HtmlTags,
   Substitute,
   StyledLiteral,
-  RuntimeStylesFunction,
+  RuntimeStyleProcessor,
 } from "./publicStyledApi.js";
 
 // the following export is not relative as "next-yak/context"
@@ -57,14 +57,14 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     typeof Component !== "string" && yakComponentSymbol in Component;
 
   // if the component that is wrapped is a yak component, we can extract it to render the underlying component directly
-  // and we can also extract the attrs function to merge it with the current attrs function so that the sequence of
-  // the attrs functions is preserved
+  // and we can also extract the attrs function and the dynamic style function to merge it with the current attrs function (or dynamic style function)
+  // so that the sequence of the attrs functions is preserved
   const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] =
     isYakComponent
       ? (Component[yakComponentSymbol] as [
           YakComponent<unknown>,
           ExtractAttrsFunction<typeof attrs>,
-          RuntimeStylesFunction<unknown>,
+          RuntimeStyleProcessor<unknown>,
         ])
       : [];
 
@@ -73,12 +73,12 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
     // e.g. styled.button`color: ${props => props.color}; margin: ${props => props.margin};`
-    const getRuntimeStyles = css(
+    const runtimeStylesFn = css(
       styles,
       ...(values as CSSInterpolation<unknown>[]),
-    ) as RuntimeStylesFunction<unknown>;
-    const mergedRuntimeStylesFn = buildRuntimeStylesProcessor(
-      getRuntimeStyles,
+    ) as RuntimeStyleProcessor<unknown>;
+    const runtimeStyleProcessor = buildRuntimeStylesProcessor(
+      runtimeStylesFn,
       parentRuntimeStylesFn,
     );
     const yak: React.FunctionComponent = (props) => {
@@ -96,7 +96,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
       //       ^ must be have access to theme, so we call useTheme()
       const theme =
-        mergedAttrsFn || getRuntimeStyles.length ? useTheme() : noTheme;
+        mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
@@ -130,7 +130,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // execute all functions inside the style literal if not already executed
       // e.g. styled.button`color: ${props => props.color};`
       if (!("$__runtimeStylesProcessed" in combinedProps)) {
-        mergedRuntimeStylesFn(combinedProps, classNames, styles);
+        runtimeStyleProcessor(combinedProps, classNames, styles);
         // @ts-expect-error this is not typed correctly
         combinedProps.$__runtimeStylesProcessed = true;
       }
@@ -174,7 +174,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
     // Assign the yakComponentSymbol directly without forwardRef
     return Object.assign(yak, {
-      [yakComponentSymbol]: [yak, mergedAttrsFn, mergedRuntimeStylesFn] as [
+      [yakComponentSymbol]: [yak, mergedAttrsFn, runtimeStyleProcessor] as [
         unknown,
         unknown,
         unknown,
@@ -288,12 +288,19 @@ const buildRuntimeAttrsProcessor = <
   return ownAttrsFn || parentAttrsFn;
 };
 
+/**
+ * Merges the runtime style function of the current component with the runtime style function of the parent component
+ * in order to preserve the sequence of the attrs functions.
+ * @param runtimeStylesFn The current runtime styles function
+ * @param parentRuntimeStylesFn The parent runtime styles function
+ * @returns The merged runtime styles function
+ */
 const buildRuntimeStylesProcessor = <T,>(
-  runtimeStylesFn: RuntimeStylesFunction<T>,
-  parentRuntimeStylesFn?: RuntimeStylesFunction<T>,
+  runtimeStylesFn: RuntimeStyleProcessor<T>,
+  parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
 ) => {
   if (runtimeStylesFn && parentRuntimeStylesFn) {
-    const combined: RuntimeStylesFunction<T> = (props, classNames, style) => {
+    const combined: RuntimeStyleProcessor<T> = (props, classNames, style) => {
       parentRuntimeStylesFn(props, classNames, style);
       runtimeStylesFn(props, classNames, style);
     };

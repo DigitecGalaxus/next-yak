@@ -138,7 +138,7 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 /**
  * Type of all functions that can be passed to manipulate styles
  */
-export type RuntimeStylesFunction<T> = (
+export type RuntimeStyleProcessor<T> = (
   props: T,
   classNames: Set<string>,
   style: React.CSSProperties,

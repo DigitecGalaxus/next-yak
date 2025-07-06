@@ -1,4 +1,7 @@
-import type { css as cssInternal, PropsToClassNameFn } from "../cssLiteral.js";
+import type {
+  css as cssInternal,
+  NestedRuntimeStyleProcessor,
+} from "../cssLiteral.js";
 
 export type { ComponentStyles, CSSInterpolation } from "../cssLiteral.js";
 
@@ -18,13 +21,13 @@ export const css: typeof cssInternal = (
   styles: TemplateStringsArray,
   ...args: unknown[]
 ) => {
-  const dynamicCssFunctions: PropsToClassNameFn[] = [];
+  const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
   for (const arg of args as Array<string | Function | object>) {
     // Dynamic CSS e.g.
     // css`${props => props.active && css`color: red;`}`
     // compiled -> css((props: { active: boolean }) => props.active && css("yak31e4"))
     if (typeof arg === "function") {
-      dynamicCssFunctions.push(arg as unknown as PropsToClassNameFn);
+      dynamicCssFunctions.push(arg as unknown as NestedRuntimeStyleProcessor);
     }
   }
   if (dynamicCssFunctions.length === 0) {
@@ -49,11 +52,13 @@ export const css: typeof cssInternal = (
 
 function executeDynamicExpressionRecursively(
   props: unknown,
-  expression: PropsToClassNameFn,
+  expression: NestedRuntimeStyleProcessor,
 ) {
-  let result = expression(props, new Set(), {});
+  const classNames = new Set<string>();
+  const style = {};
+  let result = expression(props, classNames, style);
   while (typeof result === "function") {
-    result = result(props, new Set(), {});
+    result = result(props, classNames, style);
   }
   return result;
 }

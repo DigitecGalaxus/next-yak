@@ -1,5 +1,5 @@
 import { ComponentStyles, css } from "./cssLiteral.js";
-import { RuntimeStylesFunction } from "./publicStyledApi.js";
+import { RuntimeStyleProcessor as RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 /**
  * Allows to use atomic CSS classes in a styled or css block
@@ -16,20 +16,29 @@ import { RuntimeStylesFunction } from "./publicStyledApi.js";
  * ```
  */
 export const atoms = <T,>(
-  ...atoms: (string | RuntimeStylesFunction<T> | false)[]
+  ...atoms: (string | RuntimeStyleProcessor<T> | false)[]
 ): ComponentStyles<T> => {
-  const classes = atoms
-    .filter((atom) => typeof atom === "string")
-    .flatMap((atom) => atom.split(" "));
-  const dynamicFunctions: RuntimeStylesFunction<T>[] = [
-    (_, classNames) => {
-      for (const singleClass of classes) {
-        classNames.add(singleClass);
-      }
-    },
-    ...atoms.filter((atom) => typeof atom === "function"),
-  ];
+  const staticClasses: string[] = [];
+  const dynamicFunctions: RuntimeStyleProcessor<T>[] = [];
+
+  for (const atom of atoms) {
+    if (typeof atom === "string") {
+      staticClasses.push(...atom.split(" "));
+    } else if (typeof atom === "function") {
+      dynamicFunctions.push(atom);
+    }
+  }
+
+  const runtimeFunctions: RuntimeStyleProcessor<T>[] =
+    staticClasses.length > 0
+      ? [
+          (_, classNames) => {
+            staticClasses.forEach((cls) => classNames.add(cls));
+          },
+          ...dynamicFunctions,
+        ]
+      : dynamicFunctions;
 
   // @ts-expect-error the internal implementation of css is not typed
-  return css(...dynamicFunctions);
+  return css(...runtimeFunctions);
 };

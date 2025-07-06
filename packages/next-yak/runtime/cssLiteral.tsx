@@ -1,4 +1,5 @@
 import type { YakTheme } from "./index.d.ts";
+import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 export const yakComponentSymbol = Symbol("yak");
 
@@ -32,17 +33,17 @@ type CSSFunction = <TProps = {}>(
   ...values: CSSInterpolation<TProps & { theme: YakTheme }>[]
 ) => ComponentStyles<TProps>;
 
-export type PropsToClassNameFn = (
+export type NestedRuntimeStyleProcessor = (
   props: unknown,
   classNames: Set<string>,
-  style: Record<string, string>,
+  style: React.CSSProperties,
 ) =>
   | {
       className?: string;
-      style?: Record<string, string>;
+      style?: React.CSSProperties;
     }
   | void
-  | PropsToClassNameFn;
+  | NestedRuntimeStyleProcessor;
 
 /**
  * css() runtime factory of css``
@@ -66,13 +67,9 @@ export function css<TProps>(
 ): ComponentStyles<TProps>;
 export function css<TProps>(
   ...args: Array<any>
-): (
-  props: TProps,
-  classNames: Set<string>,
-  style: Record<string, string>,
-) => void {
+): RuntimeStyleProcessor<TProps> {
   let className: string | undefined;
-  const dynamicCssFunctions: PropsToClassNameFn[] = [];
+  const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
   const style: Record<string, string> = {};
   for (const arg of args as Array<string | CSSFunction | CSSStyles<any>>) {
     // A CSS-module class name which got auto generated during build from static css
@@ -85,7 +82,7 @@ export function css<TProps>(
     // css`${props => props.active && css`color: red;`}`
     // compiled -> css((props: { active: boolean }) => props.active && css("yak31e4"))
     else if (typeof arg === "function") {
-      dynamicCssFunctions.push(arg as unknown as PropsToClassNameFn);
+      dynamicCssFunctions.push(arg as unknown as NestedRuntimeStyleProcessor);
     }
     // Dynamic CSS with css variables e.g.
     // css`transform: translate(${props => props.x}, ${props => props.y});`
@@ -113,12 +110,13 @@ export function css<TProps>(
   }
 
   // Non Dynamic CSS
+  // This is just an optimization for the common case where there are no dynamic css functions
   if (dynamicCssFunctions.length === 0) {
-    return (_, classNames, allStyles) => {
+    return (_, classNames) => {
       if (className) {
         classNames.add(className);
       }
-      unwrapProps({}, () => ({ className, style }), classNames, allStyles);
+      return () => {};
     };
   }
 
@@ -135,9 +133,9 @@ export function css<TProps>(
 // Dynamic CSS with runtime logic
 const unwrapProps = (
   props: unknown,
-  fn: PropsToClassNameFn,
+  fn: NestedRuntimeStyleProcessor,
   classNames: Set<string>,
-  style: Record<string, string>,
+  style: React.CSSProperties,
 ) => {
   let result = fn(props, classNames, style);
   while (result) {
@@ -150,7 +148,10 @@ const unwrapProps = (
       }
       if ("style" in result && result.style) {
         for (const key in result.style) {
-          style[key] = result.style[key];
+          // This is hard for typescript to infer
+          style[key as keyof React.CSSProperties] = result.style[
+            key as keyof React.CSSProperties
+          ] as any;
         }
       }
     }

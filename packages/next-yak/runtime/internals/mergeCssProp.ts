@@ -1,3 +1,5 @@
+import { RuntimeStyleProcessor } from "../publicStyledApi.js";
+
 /**
  * This is an internal helper function to merge relevant props of a native element with a css prop.
  * It's automatically added when using the `css` prop in a JSX element.
@@ -12,17 +14,20 @@
  * />
  */
 export const mergeCssProp = (
-  relevantProps: Record<string, unknown>,
-  cssProp: (
-    props: unknown,
-    classNames: Set<string>,
-    style: Record<string, string>,
-  ) => void,
+  relevantProps: {
+    className?: string;
+    style?: Record<string, string>;
+  } & Record<string, unknown>,
+  cssProp: RuntimeStyleProcessor<unknown>,
 ) => {
-  const classNames = new Set<string>(
-    (relevantProps.className as string | undefined)?.split(" "),
-  );
-  const style = (relevantProps.style as Record<string, string>) ?? {};
+  const existingClassName = relevantProps.className;
+  const classNames = existingClassName
+    ? new Set(existingClassName.split(" "))
+    : new Set<string>();
+
+  const existingStyle = relevantProps.style;
+  const style = existingStyle ? { ...existingStyle } : {};
+
   cssProp({}, classNames, style);
 
   const result: { className?: string; style?: Record<string, string> } = {};
@@ -30,9 +35,8 @@ export const mergeCssProp = (
   if (Object.keys(style).length > 0) {
     result.style = style;
   }
-
   if (classNames.size > 0) {
-    result.className = [...classNames].join(" ");
+    result.className = Array.from(classNames).join(" ");
   }
 
   return result;
