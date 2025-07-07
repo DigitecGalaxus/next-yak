@@ -102,10 +102,14 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // starting from the innermost yak component to the outermost yak component (itself)
       const combinedProps =
         "$__attrs" in props
-          ? {
+          ? ({
               theme,
               ...props,
-            }
+            } as {
+              theme: YakTheme;
+              className?: string;
+              style?: React.CSSProperties;
+            })
           : // overwrite and merge the current props with the processed attrs
             combineProps(
               {
@@ -135,6 +139,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         combinedProps.$__runtimeStylesProcessed = true;
       }
 
+      combinedProps.className = Array.from(classNames).join(" ") || undefined;
+      combinedProps.style = styles;
+
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
       // prevents passing the theme prop to the DOM element of a styled component
@@ -145,18 +152,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
       // remove all props that start with a $ sign for string components e.g. "button" or "div"
       // so that they are not passed to the DOM element
-      const filteredProps = (
-        !isYakComponent
-          ? removeNonDomProperties(propsBeforeFiltering)
-          : propsBeforeFiltering
-      ) as {
-        className?: string;
-        style?: React.CSSProperties;
-      };
-
-      filteredProps.className = [...classNames].join(" ") || undefined;
-      filteredProps.style =
-        Object.keys(styles).length > 0 ? styles : filteredProps.style;
+      const filteredProps = !isYakComponent
+        ? removeNonDomProperties(propsBeforeFiltering)
+        : propsBeforeFiltering;
 
       return parentYakComponent ? (
         // if the styled(Component) syntax is used and the component is a yak component
