@@ -112,17 +112,8 @@ export function css<TProps>(
     }
   }
 
-  // Non Dynamic CSS
-  // This is just an optimization for the common case where there are no dynamic css functions
-  if (dynamicCssFunctions.length === 0) {
-    return (_, classNames) => {
-      if (className) {
-        classNames.add(className);
-      }
-      return noop;
-    };
-  }
-
+  // Return the function which will be called once props are available at runtime
+  // to generate the classNames and styles
   return (props, classNames, allStyles) => {
     if (className) {
       classNames.add(className);
