@@ -155,7 +155,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         style?: React.CSSProperties;
       };
 
-      filteredProps.className = setJoin(classNames, " ") || undefined;
+      filteredProps.className = Array.from(classNames).join(" ") || undefined;
       filteredProps.style =
         Object.keys(styles).length > 0 ? styles : filteredProps.style;
 
@@ -182,17 +182,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       ],
     });
   };
-};
-
-const setJoin = (set: Set<string>, delimiter: string): string => {
-  let result = "";
-  for (const item of set) {
-    if (result) {
-      result += delimiter;
-    }
-    result += item;
-  }
-  return result;
 };
 
 /**
