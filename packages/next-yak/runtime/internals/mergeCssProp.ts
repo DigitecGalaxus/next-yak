@@ -30,11 +30,10 @@ export const mergeCssProp = (
 
   cssProp({}, classNames, style);
 
-  const result: { className?: string; style?: Record<string, string> } = {};
+  const result: { className?: string; style?: Record<string, string> } = {
+    style,
+  };
 
-  if (Object.keys(style).length > 0) {
-    result.style = style;
-  }
   if (classNames.size > 0) {
     result.className = Array.from(classNames).join(" ");
   }
