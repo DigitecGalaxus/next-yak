@@ -143,3 +143,11 @@ export type RuntimeStyleProcessor<T> = (
   classNames: Set<string>,
   style: React.CSSProperties,
 ) => void;
+
+/**
+ * Utility type to keep the generic API of a component while still being able to use it in a selector
+ */
+export type GenericYakComponentOf<T, P = {}> = T &
+  YakComponent<P> & {
+    <G = {}>(props: P & G): React.ReactElement | null;
+  };

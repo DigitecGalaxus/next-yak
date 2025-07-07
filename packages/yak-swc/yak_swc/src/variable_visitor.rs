@@ -78,7 +78,14 @@ impl VariableVisitor {
             if let Some(prop) = obj.props.iter().find_map(|prop| match prop {
               PropOrSpread::Prop(prop) => match &**prop {
                 Prop::KeyValue(kv) => match &kv.key {
+                  // Regular identifiers like e.g. foo.bar
                   PropName::Ident(ident) if ident.sym == *part => Some(&kv.value),
+                  // String literals like e.g. foo["bar"]
+                  PropName::Str(str_lit) if str_lit.value == *part => Some(&kv.value),
+                  // Numeric literals like e.g. foo[1]
+                  PropName::Num(num_lit) if num_lit.value.to_string() == part.as_str() => {
+                    Some(&kv.value)
+                  }
                   _ => None,
                 },
                 _ => None,

@@ -1,5 +1,5 @@
-import { css, styled, keyframes } from "next-yak";
-import React from "react";
+import { css, styled, keyframes, GenericYakComponentOf } from "next-yak";
+import React, { ReactElement } from "react";
 import { useRef } from "react";
 
 declare module "next-yak" {
@@ -350,4 +350,33 @@ const WebComponentsShouldWork = () => {
   <MyWebComponent $primary />;
 
   return <MyWebComponent />;
+};
+
+const GenericYakComponentShouldWork = () => {
+  const Component: <T extends object>(props: T) => ReactElement<T> = (
+    props,
+  ) => <div {...props}>hello</div>;
+  <Component<{ TEST: "ME" }> TEST="ME" />;
+
+  const StyledComponent = styled(Component)`` as GenericYakComponentOf<
+    typeof Component
+  >;
+  const StyledComponentWithAdditionalProps = styled(
+    Component,
+  )`` as GenericYakComponentOf<
+    typeof Component,
+    {
+      $primary?: boolean;
+    }
+  >;
+  <StyledComponent<{ TEST: "ME" }> TEST="ME" />;
+  <StyledComponentWithAdditionalProps<{ TEST: "ME" }> TEST="ME" $primary />;
+
+  const shouldBeSelectable = styled.div`
+    ${StyledComponent} {
+      &:hover {
+        color: blue;
+      }
+    }
+  `;
 };

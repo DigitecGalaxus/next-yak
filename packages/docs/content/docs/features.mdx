@@ -577,3 +577,47 @@ Or just add this to your `tsconfig.json` and all your css props will have the co
   }
 }
 ```
+
+## Generic Yak Component
+
+If you use `next-yak` to wrap a generic component, you can use the `GenericYakComponentOf` component to preserve the type of your component while still being able to use it as a regular yak component.
+
+```tsx title="my-generic-component.tsx" twoslash
+import { type ReactElement } from "react";
+import { type GenericYakComponentOf, styled } from "next-yak";
+
+type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
+
+const MyGenericComponent: GenericComponentType = (props) =>
+  <div {...props}>hello</div>;
+
+const StyledComponent = styled(MyGenericComponent)`
+  color: red;
+` as GenericYakComponentOf<GenericComponentType>;
+
+// usage
+<StyledComponent<{myProp: string}> myProp="test" />
+```
+
+This also works for cases where you want to add properties that are not part of the generic component's props.
+
+```tsx title="my-generic-component.tsx" twoslash
+import { type ReactElement } from "react";
+import { type GenericYakComponentOf, styled } from "next-yak";
+
+type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
+
+const MyGenericComponent: GenericComponentType = (props) =>
+  <div {...props}>hello</div>;
+
+type MyAdditionalProps = {
+  additionalProp: string;
+};
+
+const StyledComponent = styled(MyGenericComponent)`
+  color: red;
+` as GenericYakComponentOf<GenericComponentType, MyAdditionalProps>;
+
+// usage
+<StyledComponent<{myProp: string}> myProp="test" additionalProp="me" />
+```
