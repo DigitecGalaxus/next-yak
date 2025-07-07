@@ -64,7 +64,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       ? (Component[yakComponentSymbol] as [
           YakComponent<unknown>,
           ExtractAttrsFunction<typeof attrs>,
-          RuntimeStyleProcessor<unknown>,
+          RuntimeStyleProcessor<unknown>[],
         ])
       : [];
 
@@ -77,10 +77,10 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       styles,
       ...(values as CSSInterpolation<unknown>[]),
     ) as RuntimeStyleProcessor<unknown>;
-    const runtimeStyleProcessor = buildRuntimeStylesProcessor(
-      runtimeStylesFn,
-      parentRuntimeStylesFn,
-    );
+    const runtimeStyleProcessors = parentRuntimeStylesFn
+      ? [...parentRuntimeStylesFn, runtimeStylesFn]
+      : [runtimeStylesFn];
+
     const yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
       // it can be called without arguments and we skip calling useTheme()
@@ -123,14 +123,19 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       const classNames = new Set<string>(
         "className" in combinedProps ? combinedProps.className?.split(" ") : [],
       );
-      const styles = {
-        ...("style" in combinedProps ? combinedProps.style : {}),
-      };
+      const styles =
+        "style" in combinedProps
+          ? {
+              ...combinedProps.style,
+            }
+          : {};
 
       // execute all functions inside the style literal if not already executed
       // e.g. styled.button`color: ${props => props.color};`
       if (!("$__runtimeStylesProcessed" in combinedProps)) {
-        runtimeStyleProcessor(combinedProps, classNames, styles);
+        for (const runtimeStylesFn of runtimeStyleProcessors) {
+          runtimeStylesFn(combinedProps, classNames, styles);
+        }
         // @ts-expect-error this is not typed correctly
         combinedProps.$__runtimeStylesProcessed = true;
       }
@@ -174,7 +179,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
     // Assign the yakComponentSymbol directly without forwardRef
     return Object.assign(yak, {
-      [yakComponentSymbol]: [yak, mergedAttrsFn, runtimeStyleProcessor] as [
+      [yakComponentSymbol]: [yak, mergedAttrsFn, runtimeStyleProcessors] as [
         unknown,
         unknown,
         unknown,
@@ -286,27 +291,6 @@ const buildRuntimeAttrsProcessor = <
   }
 
   return ownAttrsFn || parentAttrsFn;
-};
-
-/**
- * Merges the runtime style function of the current component with the runtime style function of the parent component
- * in order to preserve the sequence of the attrs functions.
- * @param runtimeStylesFn The current runtime styles function
- * @param parentRuntimeStylesFn The parent runtime styles function
- * @returns The merged runtime styles function
- */
-const buildRuntimeStylesProcessor = <T,>(
-  runtimeStylesFn: RuntimeStyleProcessor<T>,
-  parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
-) => {
-  if (runtimeStylesFn && parentRuntimeStylesFn) {
-    const combined: RuntimeStyleProcessor<T> = (props, classNames, style) => {
-      parentRuntimeStylesFn(props, classNames, style);
-      runtimeStylesFn(props, classNames, style);
-    };
-    return combined;
-  }
-  return runtimeStylesFn || parentRuntimeStylesFn;
 };
 
 /**
