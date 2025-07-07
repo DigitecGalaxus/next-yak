@@ -205,6 +205,42 @@ const Header = styled.nav`
 </Tab>
 </Tabs>
 
+You can even define your own functions that manipulate the styles of your components based on props:
+
+<Tabs groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
+  ${atoms("mx-auto", (props, classNames, style) => {
+    if(props.$variant === "primary"){
+      classNames.add("flex");
+    } else {
+      classNames.add("bg-white");
+    }
+  })};
+`
+```
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav`
+  ${atoms("mx-auto", (props, classNames, style) => {
+    if(props.$variant === "primary"){
+      return "flex max-w-7xl items-center justify-between p-6 lg:px-8";
+    }
+    else{
+      return "bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow";
+    }
+  })};
+`
+```
+</Tab>
+</Tabs>
+
 <details>
 <summary>See transformed output</summary>
 
@@ -553,6 +589,16 @@ const Component = () => {
 It's meant for simple styling requirements, where you don't have to think about a name for a specialized component.
 
 The `css` prop is allowed on any element that can accept `className` and `style`.
+
+If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
+
+```jsx title="my-component.tsx"
+import { css } from 'next-yak';
+
+const Component = (props) => {
+  return <div css={atoms('bg-red-500', props.primary && 'bg-blue-500')}>Hello there!</div>
+}
+```
 
 ### TypeScript
 
