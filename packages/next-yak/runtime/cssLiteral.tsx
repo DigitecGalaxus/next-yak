@@ -2,7 +2,6 @@ import type { YakTheme } from "./index.d.ts";
 import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 export const yakComponentSymbol = Symbol("yak");
-const noop = () => {};
 
 export type ComponentStyles<TProps> = (props: TProps) => {
   className: string;
@@ -112,8 +111,17 @@ export function css<TProps>(
     }
   }
 
-  // Return the function which will be called once props are available at runtime
-  // to generate the classNames and styles
+  // Non Dynamic CSS
+  // This is just an optimization for the common case where there are no dynamic css functions
+  if (dynamicCssFunctions.length === 0) {
+    return (_, classNames) => {
+      if (className) {
+        classNames.add(className);
+      }
+      return () => {};
+    };
+  }
+
   return (props, classNames, allStyles) => {
     if (className) {
       classNames.add(className);

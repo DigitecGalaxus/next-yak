@@ -71,8 +71,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
   return (styles, ...values) => {
-    const isStatic = values.length === 0 && typeof styles === "string";
-
     // combine all interpolated logic into a single function
     // e.g. styled.button`color: ${props => props.color}; margin: ${props => props.margin};`
     const runtimeStylesFn = css(
@@ -97,7 +95,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       //
       // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
       //       ^ must be have access to theme, so we call useTheme()
-      const theme = mergedAttrsFn || !isStatic ? useTheme() : noTheme;
+      const theme =
+        mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
@@ -155,7 +154,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         style?: React.CSSProperties;
       };
 
-      filteredProps.className = Array.from(classNames).join(" ") || undefined;
+      filteredProps.className = [...classNames].join(" ") || undefined;
       filteredProps.style =
         Object.keys(styles).length > 0 ? styles : filteredProps.style;
 
@@ -300,14 +299,14 @@ const buildRuntimeStylesProcessor = <T,>(
   runtimeStylesFn: RuntimeStyleProcessor<T>,
   parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
 ) => {
-  if (parentRuntimeStylesFn) {
+  if (runtimeStylesFn && parentRuntimeStylesFn) {
     const combined: RuntimeStyleProcessor<T> = (props, classNames, style) => {
       parentRuntimeStylesFn(props, classNames, style);
       runtimeStylesFn(props, classNames, style);
     };
     return combined;
   }
-  return runtimeStylesFn;
+  return runtimeStylesFn || parentRuntimeStylesFn;
 };
 
 /**
