@@ -19,7 +19,7 @@ const styled = Object.assign(styledFn, {
 }) as typeof styledFn;
 
 it("should render a literal element", () => {
-  const Component = styled.input``;
+  const Component = styled.input("");
 
   const { container } = render(<Component />);
 
@@ -60,7 +60,7 @@ it("should forward properties", () => {
 });
 
 it("should forward children", () => {
-  const Component = styled.div``;
+  const Component = styled.div("");
 
   const { container } = render(
     <Component>
@@ -80,7 +80,7 @@ it("should forward children", () => {
 });
 
 it("should filter out properties starting with $", () => {
-  const Component = styled.input``;
+  const Component = styled.input("");
 
   const { container } = render(<Component $forwardedProp="notForwarded" />);
 
@@ -134,7 +134,7 @@ it("should concatenate classNames", () => {
 });
 
 it("should concatenate styles", () => {
-  const Component = styled.input``;
+  const Component = styled.input("");
 
   const { container } = render(<Component style={{ color: "red" }} />);
 

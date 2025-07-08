@@ -1,4 +1,9 @@
-import { css, CSSInterpolation, yakComponentSymbol } from "./cssLiteral.js";
+import {
+  ComponentStyles,
+  css,
+  CSSInterpolation,
+  yakComponentSymbol,
+} from "./cssLiteral.js";
 import React from "react";
 import type {
   Attrs,
@@ -67,6 +72,72 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
+  const calculatedDynamicProps = (
+    props: Record<string, unknown>,
+    getRuntimeStyles: ComponentStyles<unknown>,
+  ) => {
+    // Non dynamic components do not need access to the theme
+    //
+    // for example
+    //
+    // const Button = styled.button`color: red;`
+    //       ^ does not need to have access to theme, so we skip calling useTheme()
+    //
+    // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
+    //       ^ must be have access to theme, so we call useTheme()
+    const theme = useTheme();
+
+    // The first components which is not wrapped in a yak component will execute all attrs functions
+    // starting from the innermost yak component to the outermost yak component (itself)
+    const combinedProps =
+      "$__attrs" in props
+        ? {
+            theme,
+            ...props,
+          }
+        : // overwrite and merge the current props with the processed attrs
+          combineProps(
+            {
+              theme,
+              ...(props as {
+                className?: string;
+                style?: React.CSSProperties;
+              }),
+              // mark the props as processed
+              $__attrs: true,
+            },
+            mergedAttrsFn?.({ theme, ...(props as any) }),
+          );
+    // execute all functions inside the style literal
+    // e.g. styled.button`color: ${props => props.color};`
+    const runtimeStyles = getRuntimeStyles(combinedProps);
+
+    // delete the yak theme from the props
+    // this must happen after the runtimeStyles are calculated
+    // prevents passing the theme prop to the DOM element of a styled component
+    const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } =
+      combinedProps;
+    const propsWithoutYakTheme: {
+      className?: string;
+      style?: React.CSSProperties;
+      [key: string]: unknown;
+    } = themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
+
+    propsWithoutYakTheme.className = mergeClassNames(
+      propsWithoutYakTheme.className,
+      runtimeStyles.className,
+    );
+    propsWithoutYakTheme.style =
+      "style" in propsWithoutYakTheme
+        ? {
+            ...propsWithoutYakTheme.style,
+            ...runtimeStyles.style,
+          }
+        : runtimeStyles.style;
+
+    return propsWithoutYakTheme;
+  };
+
   return (...values) => {
     const getRuntimeStyles = css.apply(
       null,
@@ -85,83 +156,31 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // The lenght check is measuring the argument count of `getRuntimeStyles` which is
       // a hack as it is tightly coupled to the css literal function
       const isDynamic = mergedAttrsFn || getRuntimeStyles.length;
-      // Non dynamic components do not need access to the theme
-      //
-      // for example
-      //
-      // const Button = styled.button`color: red;`
-      //       ^ does not need to have access to theme, so we skip calling useTheme()
-      //
-      // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
-      //       ^ must be have access to theme, so we call useTheme()
-      const theme = isDynamic ? useTheme() : noTheme;
 
-      // The first components which is not wrapped in a yak component will execute all attrs functions
-      // starting from the innermost yak component to the outermost yak component (itself)
-      const combinedProps =
-        "$__attrs" in props
-          ? {
-              theme,
-              ...props,
-            }
-          : // overwrite and merge the current props with the processed attrs
-            combineProps(
-              {
-                theme,
-                ...(props as {
-                  className?: string;
-                  style?: React.CSSProperties;
-                }),
-                // mark the props as processed
-                $__attrs: true,
-              },
-              mergedAttrsFn?.({ theme, ...(props as any) }),
-            );
-      // execute all functions inside the style literal
-      // e.g. styled.button`color: ${props => props.color};`
-      const runtimeStyles = getRuntimeStyles(combinedProps);
-
-      // delete the yak theme from the props
-      // this must happen after the runtimeStyles are calculated
-      // prevents passing the theme prop to the DOM element of a styled component
-      const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } =
-        combinedProps;
-      const propsBeforeFiltering =
-        themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
-
-      // remove all props that start with a $ sign for string components e.g. "button" or "div"
-      // so that they are not passed to the DOM element
-      const filteredProps = (
-        !isYakComponent
-          ? removeNonDomProperties(propsBeforeFiltering)
-          : propsBeforeFiltering
-      ) as {
-        className?: string;
-        style?: React.CSSProperties;
-      };
-
-      filteredProps.className = mergeClassNames(
-        filteredProps.className,
-        runtimeStyles.className,
-      );
-      filteredProps.style =
-        "style" in filteredProps
-          ? {
-              ...filteredProps.style,
-              ...runtimeStyles.style,
-            }
-          : runtimeStyles.style;
+      const processedProps = isDynamic
+        ? calculatedDynamicProps(props, getRuntimeStyles)
+        : {
+          ...props,
+          className: mergeClassNames(
+            (props as any).className,
+            (values as any)[0]
+          ),
+        };
 
       return parentYakComponent ? (
         // if the styled(Component) syntax is used and the component is a yak component
         // we can call the yak function directly without running through react createElement
-        parentYakComponent(filteredProps)
+        parentYakComponent(processedProps)
       ) : (
         // if the final component is a string component e.g. styled("div") or a custom non yak fn e.g. styled(MyComponent)
         <Component
-          {...(filteredProps as React.ComponentProps<
-            Exclude<typeof Component, string>
-          >)}
+          {
+            // remove all props that start with a $ sign for string components e.g. "button" or "div"
+            // so that they are not passed to the DOM element
+            ...(removeNonDomProperties(processedProps) as React.ComponentProps<
+              Exclude<typeof Component, string>
+            >)
+          }
         />
       );
     };

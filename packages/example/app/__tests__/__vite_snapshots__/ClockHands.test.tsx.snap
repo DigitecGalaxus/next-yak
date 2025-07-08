@@ -3,7 +3,21 @@
 exports[`renders ClockHands component 1`] = `
 <DocumentFragment>
   <div />
-  <div />
-  <div />
+  <div
+    class="
+  width: 4px;
+  height: 40%;
+  background: black;
+  translate: 0 0 40px;
+"
+  />
+  <div
+    class="
+  width: 6px;
+  height: 30%;
+  background: black;
+  translate: 0 0 40px;
+"
+  />
 </DocumentFragment>
 `;
