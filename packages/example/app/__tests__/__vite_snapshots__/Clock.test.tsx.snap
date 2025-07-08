@@ -2,9 +2,43 @@
 
 exports[`renders Clock component 1`] = `
 <DocumentFragment>
-  <div>
-    <div>
-      <div />
+  <div
+    class="
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  margin: 10px auto;
+  perspective: 1000px;
+"
+  >
+    <div
+      class="
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 2s ease-in-out;
+  &:hover {
+    transform: rotateX(55deg);
+  }
+"
+    >
+      <div
+        class="
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: black;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  translate: 0 0 40px;
+"
+      />
       <div
         index="0"
       >
@@ -66,8 +100,22 @@ exports[`renders Clock component 1`] = `
         11
       </div>
       <div />
-      <div />
-      <div />
+      <div
+        class="
+  width: 4px;
+  height: 40%;
+  background: black;
+  translate: 0 0 40px;
+"
+      />
+      <div
+        class="
+  width: 6px;
+  height: 30%;
+  background: black;
+  translate: 0 0 40px;
+"
+      />
     </div>
   </div>
 </DocumentFragment>
