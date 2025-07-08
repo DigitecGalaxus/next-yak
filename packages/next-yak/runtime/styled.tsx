@@ -67,10 +67,13 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
-  return (styles, ...values) => {
-    const getRuntimeStyles = css(
-      styles,
-      ...(values as CSSInterpolation<unknown>[]),
+  return (...values) => {
+    const getRuntimeStyles = css.apply(
+      null,
+      values as unknown[] as [
+        styles: TemplateStringsArray,
+        ...values: CSSInterpolation<{ theme: YakTheme }>[],
+      ],
     );
     const yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
@@ -79,6 +82,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // `attrsFn || getRuntimeStyles.length` is NOT against the rule of hooks as
       // getRuntimeStyles and attrsFn are constants defined outside of the component
       //
+      // The lenght check is measuring the argument count of `getRuntimeStyles` which is
+      // a hack as it is tightly coupled to the css literal function
+      const isDynamic = mergedAttrsFn || getRuntimeStyles.length;
+      // Non dynamic components do not need access to the theme
+      //
       // for example
       //
       // const Button = styled.button`color: red;`
@@ -86,8 +94,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       //
       // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
       //       ^ must be have access to theme, so we call useTheme()
-      const theme =
-        mergedAttrsFn || getRuntimeStyles.length ? useTheme() : noTheme;
+      const theme = isDynamic ? useTheme() : noTheme;
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
