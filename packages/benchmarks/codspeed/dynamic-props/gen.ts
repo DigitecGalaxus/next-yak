@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 // Function to generate 1000 dynamic prop components
 async function generateDynamicPropsComponentsFile() {
   const componentCount = 1000;
-  
+
   const libs = {
     "next-yak": "styledYak",
     "styled-components": "styled",
@@ -35,7 +35,7 @@ interface DynamicProps {
 }
 
 ${Array.from({ length: componentCount }, (_, index) => {
-  const baseColor = `#${(index + 1).toString(16).padStart(6, '0')}`;
+  const baseColor = `#${(index + 1).toString(16).padStart(6, "0")}`;
   return `const DynamicComponent${index + 1} = ${styled}.div<DynamicProps>\`
   color: \${props => props.$primary ? '${baseColor}' : '#666'};
   background-color: \${props => {
@@ -79,7 +79,7 @@ ${Array.from({ length: componentCount }, (_, index) => {
     transform: \${props => props.$disabled ? 'none' : 'translateY(0)'};
   }
 \`;`;
-}).join('\n\n')}
+}).join("\n\n")}
 
 export const DynamicPropsComponents${
       lib === "next-yak" ? "Yak" : "Styled"
@@ -92,13 +92,13 @@ export const DynamicPropsComponents${
         Toggle State ({state})
       </button>
       ${Array.from({ length: componentCount }, (_, index) => {
-        const variants = ['solid', 'outline', 'ghost'];
-        const sizes = ['small', 'medium', 'large'];
+        const variants = ["solid", "outline", "ghost"];
+        const sizes = ["small", "medium", "large"];
         const variant = variants[index % variants.length];
         const size = sizes[index % sizes.length];
         const isPrimary = index % 2 === 0;
         const isDisabled = index % 10 === 0;
-        
+
         return `<DynamicComponent${index + 1}
         $primary={${isPrimary}}
         $size="${size}"
@@ -107,7 +107,7 @@ export const DynamicPropsComponents${
       >
         Dynamic {${index + 1}} {state % 2 === 0 ? 'A' : 'B'}
       </DynamicComponent${index + 1}>`;
-      }).join('\n      ')}
+      }).join("\n      ")}
     </div>
   );
 };

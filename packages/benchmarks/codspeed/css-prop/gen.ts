@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 // Function to generate 1000 css prop components
 async function generateCssPropComponentsFile() {
   const componentCount = 1000;
-  
+
   const libs = {
     "next-yak": "next-yak",
     "styled-components": "styled-components",
@@ -28,10 +28,9 @@ export const CssPropComponents${
     }: FunctionComponent = () => {
   return (
     <div>
-      ${Array.from({ length: componentCount }, (_, index) => 
-        {
-          const colorValue = `#${((index * 123456) % 16777215).toString(16).padStart(6, '0')}`;
-          return `<div css={ css\`
+      ${Array.from({ length: componentCount }, (_, index) => {
+        const colorValue = `#${((index * 123456) % 16777215).toString(16).padStart(6, "0")}`;
+        return `<div css={ css\`
   color: ${colorValue};
   background-color: ${colorValue}33;
   padding: 8px 16px;
@@ -52,8 +51,7 @@ export const CssPropComponents${
     transform: translateY(0);
   }
 \`}>CSS ${index + 1}</div>`;
-        }
-      ).join('\n      ')}
+      }).join("\n      ")}
     </div>
   );
 };

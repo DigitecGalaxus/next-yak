@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 // Function to generate nested styled components
 async function generateNestedComponentsFile() {
   const componentCount = 200; // Reduced since we have 5 levels of nesting
-  
+
   const libs = {
     "next-yak": "styledYak",
     "styled-components": "styled",
@@ -40,7 +40,7 @@ const BaseCard = ${styled}.div\`
 \`;
 
 ${Array.from({ length: componentCount }, (_, index) => {
-  const baseColor = `#${(index + 1).toString(16).padStart(6, '0')}`;
+  const baseColor = `#${(index + 1).toString(16).padStart(6, "0")}`;
   return `
 // Level 1 - extends BaseCard
 const Level1Component${index + 1} = ${styled}(BaseCard)\`
@@ -87,20 +87,22 @@ const NestedComponent${index + 1} = ${styled}(Level4Component${index + 1})\`
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 \`;`;
-}).join('')}
+}).join("")}
 
 export const NestedComponents${
       lib === "next-yak" ? "Yak" : "Styled"
     }: FunctionComponent = () => {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', maxWidth: '1200px', margin: '0 auto' }}>
-      ${Array.from({ length: componentCount }, (_, index) => 
-        `<NestedComponent${index + 1}>
+      ${Array.from(
+        { length: componentCount },
+        (_, index) =>
+          `<NestedComponent${index + 1}>
         <h3>Nested ${index + 1}</h3>
         <p>This component extends through 5 levels of inheritance</p>
         <small>Level 1 → Level 2 → Level 3 → Level 4 → Level 5</small>
-      </NestedComponent${index + 1}>`
-      ).join('\n      ')}
+      </NestedComponent${index + 1}>`,
+      ).join("\n      ")}
     </div>
   );
 };
