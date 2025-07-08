@@ -8,6 +8,7 @@
     "build:next": "next build",
     "build:yak": "pnpm run --dir ../.. build",
     "start": "next start",
+    "prettier": "npx prettier --write \"./{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
     "generate:letters": "npx tsx ./letters/gen.js",
     "generate:codspeed": "pnpm run generate:codspeed:pure-components && pnpm run generate:codspeed:attrs-components && pnpm run generate:codspeed:css-prop && pnpm run generate:codspeed:dynamic-props && pnpm run generate:codspeed:nested-components",
     "generate:codspeed:pure-components": "npx tsx ./codspeed/pure-components/gen.ts",

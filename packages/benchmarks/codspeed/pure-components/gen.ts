@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 // Function to generate 1000 pure styled components
 async function generatePureComponentsFile() {
   const componentCount = 1000;
-  
+
   const libs = {
     "next-yak": "styledYak",
     "styled-components": "styled",
@@ -28,7 +28,7 @@ import ${
     } from '${lib}';
 
 ${Array.from({ length: componentCount }, (_, index) => {
-  const colorValue = `#${(index + 1).toString(16).padStart(6, '0')}`;
+  const colorValue = `#${(index + 1).toString(16).padStart(6, "0")}`;
   return `const Component${index + 1} = ${styled}.div\`
   color: ${colorValue};
   background-color: ${colorValue}11;
@@ -38,16 +38,18 @@ ${Array.from({ length: componentCount }, (_, index) => {
   font-size: 12px;
   display: inline-block;
 \`;`;
-}).join('\n\n')}
+}).join("\n\n")}
 
 export const PureComponents${
       lib === "next-yak" ? "Yak" : "Styled"
     }: FunctionComponent = () => {
   return (
     <div>
-      ${Array.from({ length: componentCount }, (_, index) => 
-        `<Component${index + 1}>Item ${index + 1}</Component${index + 1}>`
-      ).join('\n      ')}
+      ${Array.from(
+        { length: componentCount },
+        (_, index) =>
+          `<Component${index + 1}>Item ${index + 1}</Component${index + 1}>`,
+      ).join("\n      ")}
     </div>
   );
 };
@@ -59,9 +61,7 @@ export const PureComponents${
       fileContent,
       (err) => {
         if (err) throw err;
-        console.log(
-          `PureComponents.${lib}.tsx has been created successfully.`,
-        );
+        console.log(`PureComponents.${lib}.tsx has been created successfully.`);
       },
     );
 

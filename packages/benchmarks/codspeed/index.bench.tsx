@@ -46,7 +46,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     // Pure Components (1000 basic styled components)
     .add("render PureComponentsStyled", () => {
       try {
@@ -64,7 +64,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     // Attrs Components (1000 components with .attrs())
     .add("render AttrsComponentsStyled", () => {
       try {
@@ -82,7 +82,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     // CSS Prop Components (1000 css prop usage)
     .add("render CssPropComponentsStyled", () => {
       try {
@@ -100,7 +100,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     // Dynamic Props Components (1000 components with dynamic styling)
     .add("render DynamicPropsComponentsStyled", () => {
       try {
@@ -118,7 +118,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     // Nested Components (200 components with 5 levels of inheritance)
     .add("render NestedComponentsStyled", () => {
       try {
@@ -136,7 +136,7 @@ import { NestedComponentsStyled } from "./generated/NestedComponents.styled-comp
         throw e;
       }
     })
-    
+
     .on("cycle", function (event: Benchmark.Event) {
       console.log(String(event.target));
     });

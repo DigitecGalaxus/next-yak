@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 // Function to generate 1000 .attrs styled components
 async function generateAttrsComponentsFile() {
   const componentCount = 1000;
-  
+
   const libs = {
     "next-yak": "styledYak",
     "styled-components": "styled",
@@ -28,7 +28,7 @@ import ${
     } from '${lib}';
 
 ${Array.from({ length: componentCount }, (_, index) => {
-  const colorValue = `#${(index + 1).toString(16).padStart(6, '0')}`;
+  const colorValue = `#${(index + 1).toString(16).padStart(6, "0")}`;
   const className = `attrs-component-${index + 1}`;
   return `const AttrsComponent${index + 1} = ${styled}.div.attrs({
   className: '${className}',
@@ -56,16 +56,18 @@ ${Array.from({ length: componentCount }, (_, index) => {
     outline-offset: 2px;
   }
 \`;`;
-}).join('\n\n')}
+}).join("\n\n")}
 
 export const AttrsComponents${
       lib === "next-yak" ? "Yak" : "Styled"
     }: FunctionComponent = () => {
   return (
     <div>
-      ${Array.from({ length: componentCount }, (_, index) => 
-        `<AttrsComponent${index + 1}>Attrs ${index + 1}</AttrsComponent${index + 1}>`
-      ).join('\n      ')}
+      ${Array.from(
+        { length: componentCount },
+        (_, index) =>
+          `<AttrsComponent${index + 1}>Attrs ${index + 1}</AttrsComponent${index + 1}>`,
+      ).join("\n      ")}
     </div>
   );
 };
