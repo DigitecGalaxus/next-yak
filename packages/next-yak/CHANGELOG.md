@@ -1,5 +1,20 @@
 # next-yak
 
+## 5.7.0
+
+### Minor Changes
+
+- eeaae8f: Added support for atoms in CSS prop & enhanced atoms function to manipulate class names and styles in a callback
+
+### Patch Changes
+
+- 938bca4: Improve typings
+- 2088124: Added a new type 'GenericYakComponentOf<>' to be used for generic components
+- Updated dependencies [938bca4]
+- Updated dependencies [ab58a54]
+- Updated dependencies [eeaae8f]
+  - yak-swc@5.7.0
+
 ## 5.6.1
 
 ### Patch Changes

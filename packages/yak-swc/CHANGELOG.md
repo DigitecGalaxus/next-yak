@@ -1,5 +1,16 @@
 # yak-swc
 
+## 5.7.0
+
+### Minor Changes
+
+- eeaae8f: Added support for atoms in CSS prop & enhanced atoms function to manipulate class names and styles in a callback
+
+### Patch Changes
+
+- 938bca4: Improve typings
+- ab58a54: Added support for constant string and number keys of object in the same file
+
 ## 5.6.1
 
 ### Patch Changes
