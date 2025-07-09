@@ -1,5 +1,12 @@
 # next-yak
 
+## 5.7.1
+
+### Patch Changes
+
+- 3d1f3ef: Fixed css variables not being applied
+  - yak-swc@5.7.1
+
 ## 5.7.0
 
 ### Minor Changes
