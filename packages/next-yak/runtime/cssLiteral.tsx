@@ -72,7 +72,6 @@ export function css<TProps>(
   // and ensure that only the first argument is a string (class name of the non-dynamic styles)
   let className: string | undefined;
   const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
-  const style: Record<string, string> = {};
   for (const arg of args as Array<string | CSSFunction | CSSStyles<any>>) {
     // A CSS-module class name which got auto generated during build from static css
     // e.g. css`color: red;`
@@ -90,24 +89,24 @@ export function css<TProps>(
     // css`transform: translate(${props => props.x}, ${props => props.y});`
     // compiled -> css("yak31e4", { style: { "--yakVarX": props => props.x }, "--yakVarY": props => props.y }})
     else if (typeof arg === "object" && "style" in arg) {
-      for (const key in arg.style) {
-        const value = arg.style[key];
-        if (typeof value === "function") {
-          dynamicCssFunctions.push((props: unknown) => ({
-            style: {
-              [key]: String(
-                // The value for a css value can be a theme dependent function e.g.:
-                // const borderColor = (props: { theme: { mode: "dark" | "light" } }) => props.theme === "dark" ? "black" : "white";
-                // css`border-color: ${borderColor};`
-                // Therefore the value has to be extracted recursively
-                recursivePropExecution(props, value),
-              ),
-            },
-          }));
-        } else {
-          style[key] = value;
+      dynamicCssFunctions.push((props, _, style) => {
+        for (const key in arg.style) {
+          const value = arg.style[key];
+          if (typeof value === "function") {
+            // @ts-expect-error CSSProperties don't allow css variables
+            style[key] = String(
+              // The value for a css value can be a theme dependent function e.g.:
+              // const borderColor = (props: { theme: { mode: "dark" | "light" } }) => props.theme === "dark" ? "black" : "white";
+              // css`border-color: ${borderColor};`
+              // Therefore the value has to be extracted recursively
+              recursivePropExecution(props, value),
+            );
+          } else {
+            // @ts-expect-error CSSProperties don't allow css variables
+            style[key] = String(value);
+          }
         }
-      }
+      });
     }
   }
 
