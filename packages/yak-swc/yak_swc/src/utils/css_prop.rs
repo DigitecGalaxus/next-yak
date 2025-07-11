@@ -44,6 +44,8 @@ impl CSSProp {
     let result: Result<_, TransformError> = (|| {
       let value = opening_element.attrs.remove(self.index);
 
+      println!("Value: {:?}", value);
+
       let removed_attrs: Vec<_> = self
         .relevant_props_indices
         .iter()

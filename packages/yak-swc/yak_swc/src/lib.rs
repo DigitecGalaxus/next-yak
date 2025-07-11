@@ -551,8 +551,8 @@ where
     module.visit_mut_children_with(self);
 
     // Add the css module import to the top of the file
-    // if any css-in-js expressions has been used
-    if !self.variable_name_selector_mapping.is_empty() {
+    // if any yak imports are used
+    if self.yak_library_imports.is_some() {
       for item in module.body.iter_mut() {
         if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_declaration)) = item {
           if import_declaration.src.value == "next-yak/internal" {
@@ -565,47 +565,49 @@ where
         }
       }
 
-      // search for the last import statement as position to insert the css module import
-      // it has to be the last import to ensure that the css module is loaded after the other imports
-      // and therefore the css is added to the end of the bundle css file
-      // see https://github.com/jantimon/next-yak/issues/202
-      let mut last_import_index = 0;
-      for (i, item) in module.body.iter_mut().enumerate() {
-        if matches!(item, ModuleItem::ModuleDecl(ModuleDecl::Import(_))) {
-          last_import_index = i + 1;
+      if !self.variable_name_selector_mapping.is_empty() {
+        // search for the last import statement as position to insert the css module import
+        // it has to be the last import to ensure that the css module is loaded after the other imports
+        // and therefore the css is added to the end of the bundle css file
+        // see https://github.com/jantimon/next-yak/issues/202
+        let mut last_import_index = 0;
+        for (i, item) in module.body.iter_mut().enumerate() {
+          if matches!(item, ModuleItem::ModuleDecl(ModuleDecl::Import(_))) {
+            last_import_index = i + 1;
+          }
         }
-      }
 
-      if let Some(module_decl) = self.yak_imports().get_yak_component_import_declaration() {
-        module
-          .body
-          .insert(last_import_index, ModuleItem::ModuleDecl(module_decl));
-        last_import_index += 1;
-      }
+        if let Some(module_decl) = self.yak_imports().get_yak_component_import_declaration() {
+          module
+            .body
+            .insert(last_import_index, ModuleItem::ModuleDecl(module_decl));
+          last_import_index += 1;
+        }
 
-      module.body.insert(
-        last_import_index,
-        ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
-          phase: Default::default(),
-          span: DUMMY_SP,
-          specifiers: vec![],
-          src: Box::new(Str {
+        module.body.insert(
+          last_import_index,
+          ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
+            phase: Default::default(),
             span: DUMMY_SP,
-            value: match &self.transpilation_mode {
-              TranspilationMode::CssModule => {
-                format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
+            specifiers: vec![],
+            src: Box::new(Str {
+              span: DUMMY_SP,
+              value: match &self.transpilation_mode {
+                TranspilationMode::CssModule => {
+                  format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
+                }
+                TranspilationMode::Css => {
+                  format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+                }
               }
-              TranspilationMode::Css => {
-                format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
-              }
-            }
-            .into(),
-            raw: None,
-          }),
-          type_only: false,
-          with: None,
-        })),
-      );
+              .into(),
+              raw: None,
+            }),
+            type_only: false,
+            with: None,
+          })),
+        );
+      }
     }
   }
 
@@ -685,6 +687,7 @@ where
       return;
     }
     let css_prop = n.has_css_prop();
+    println!("CSS prop: {:?}", css_prop);
     if let Some(css_prop) = css_prop {
       let previous_inside_css_attribute = self.inside_element_with_css_attribute;
       self.inside_element_with_css_attribute = true;

@@ -1,7 +1,0 @@
-  x Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression. Example: css={css`color: red;`}
-   ,-[input.js:3:1]
- 2 | 
- 3 | const Elem = () => <div css="invalid" />;
-   :                    ^^^^^^^^^^^^^^^^^^^^^
- 4 | const Elem2 = (props: any) => <div css={props} />;
-   `----
