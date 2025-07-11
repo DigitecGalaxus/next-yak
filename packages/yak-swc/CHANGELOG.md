@@ -1,5 +1,11 @@
 # yak-swc
 
+## 5.7.2
+
+### Patch Changes
+
+- 460a5da: Fixed an issue when only `atoms` are used
+
 ## 5.7.1
 
 ## 5.7.0

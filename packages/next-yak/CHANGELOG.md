@@ -1,5 +1,12 @@
 # next-yak
 
+## 5.7.2
+
+### Patch Changes
+
+- Updated dependencies [460a5da]
+  - yak-swc@5.7.2
+
 ## 5.7.1
 
 ### Patch Changes
