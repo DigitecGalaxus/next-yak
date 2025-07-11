@@ -687,7 +687,6 @@ where
       return;
     }
     let css_prop = n.has_css_prop();
-    println!("CSS prop: {:?}", css_prop);
     if let Some(css_prop) = css_prop {
       let previous_inside_css_attribute = self.inside_element_with_css_attribute;
       self.inside_element_with_css_attribute = true;
