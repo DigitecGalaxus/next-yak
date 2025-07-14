@@ -620,22 +620,6 @@ where
     self.current_exported = false;
   }
 
-  /// To store the current export state for default exports  
-  /// e.g. export default styled.button`color: red;`
-  fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
-    self.current_exported = true;
-    n.visit_mut_children_with(self);
-    self.current_exported = false;
-  }
-
-  /// To store the current export state for default export expressions
-  /// e.g. export default styled.button`color: red;`
-  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    self.current_exported = true;
-    n.visit_mut_children_with(self);
-    self.current_exported = false;
-  }
-
   /// Visit variable declarations
   /// To store the current name which can be used for class names
   /// e.g. Button for const Button = styled.button`color: red;`
@@ -660,7 +644,6 @@ where
         }
         
         decl.init.visit_mut_with(self);
-        
         self.current_variable_name = previous_variable_name;
       }
     }
