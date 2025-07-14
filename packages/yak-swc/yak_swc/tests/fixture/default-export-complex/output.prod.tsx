@@ -13,13 +13,18 @@ const Title = /*YAK Extracted CSS:
   font-size: 24px;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu1");
-const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu2*//*YAK Extracted CSS:
+const Container = /*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   padding: 20px;
   background: yellow;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
 // Only Container is default exported
-export default Container;
+/*YAK EXPORTED STYLED:default:ym7uBBu2*//*YAK Extracted CSS:
+:global(.ym7uBBu2) {
+  padding: 20px;
+  background: yellow;
+}
+*/ export default Container;
 // Button is named exported
 export { Button };

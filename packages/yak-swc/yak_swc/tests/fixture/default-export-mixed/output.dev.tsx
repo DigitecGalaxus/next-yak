@@ -20,7 +20,7 @@ export const Input = /*YAK EXPORTED STYLED:Input:input_Input_m7uBBu*//*YAK Extra
     "displayName": "Input"
 });
 // Default export
-const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK Extracted CSS:
+const Container = /*YAK Extracted CSS:
 :global(.input_Container_m7uBBu) {
   background: yellow;
   padding: 20px;
@@ -28,4 +28,9 @@ const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK 
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Container_m7uBBu"), {
     "displayName": "Container"
 });
-export default Container;
+/*YAK EXPORTED STYLED:default:input_Container_m7uBBu*//*YAK Extracted CSS:
+:global(.input_Container_m7uBBu) {
+  background: yellow;
+  padding: 20px;
+}
+*/ export default Container;

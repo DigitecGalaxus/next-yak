@@ -98,6 +98,11 @@ export async function resolveCrossFileConstant(
       const { position, size, importKind, specifier, semicolon } = matches[i];
       const resolved = resolvedValues[i];
 
+      if (resolved.value === undefined) {
+        throw new Error(
+          `Could not resolve ${importKind} "${specifier.join(".")}" from "${(resolved as unknown as { from: string }).from}"`,
+        );
+      }
       if (importKind === "selector") {
         if (
           resolved.type !== "styled-component" &&

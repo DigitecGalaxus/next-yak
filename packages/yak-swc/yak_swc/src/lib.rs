@@ -124,6 +124,9 @@ where
   /// e.g. const Button = styled.button`...` -> Button\
   /// Used to replace expressions with the actual class name or keyframes name
   variable_name_selector_mapping: FxHashMap<ScopedVariableReference, String>,
+  /// Track styled components that will be default exported (variable_name -> class_name)
+  /// This is used to add export comments at the export default statement instead of variable declaration
+  default_export_styled_components: FxHashMap<String, String>,
   /// Naming convention to generate unique css identifiers
   naming_convention: NamingConvention,
   /// Expression replacement to replace a yak library call with the transformed one
@@ -159,6 +162,7 @@ where
       yak_library_imports: None,
       naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
       variable_name_selector_mapping: FxHashMap::default(),
+      default_export_styled_components: FxHashMap::default(),
       expression_replacement: None,
       inside_element_with_css_attribute: false,
       comments,
@@ -620,6 +624,40 @@ where
     self.current_exported = false;
   }
 
+  /// To store the current export state for default exports  
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
+    self.current_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+  }
+
+  /// To store the current export state for default export expressions
+  /// e.g. export default styled.button`color: red;`
+  /// Also handles adding export comments for default-exported styled components
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    // Check if we're exporting a variable that contains a styled component
+    if let Expr::Ident(ident) = &*n.expr {
+      let variable_name = ident.sym.to_string();
+      
+      // If this variable has a stored styled component comment, add it to the export statement
+      if let Some(stored_comment) = self.default_export_styled_components.get(&variable_name) {
+        self.comments.add_leading(
+          n.span.lo,
+          Comment {
+            kind: swc_core::common::comments::CommentKind::Block,
+            span: DUMMY_SP,
+            text: stored_comment.clone().into(),
+          },
+        );
+      }
+    }
+    
+    self.current_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+  }
+
   /// Visit variable declarations
   /// To store the current name which can be used for class names
   /// e.g. Button for const Button = styled.button`color: red;`
@@ -898,14 +936,54 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
-        self.comments.add_leading(
-          result_span.lo,
-          Comment {
-            kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
-          },
-        );
+        let current_variable_id = self.get_current_component_id();
+        
+        // Check if this is a default-exported styled component or mixin
+        let is_default_export = self.current_exported 
+          && self.variables.is_default_exported(&current_variable_id.id)
+          && (comment_prefix.contains("YAK EXPORTED STYLED:") || comment_prefix.contains("YAK EXPORTED MIXIN:"));
+        
+        if is_default_export {
+          // Store the comment info for later use at export default statement
+          let default_comment_prefix = if comment_prefix.contains("YAK EXPORTED STYLED:") {
+            // Replace the variable name with "default" in the comment prefix for styled components
+            comment_prefix.replace(
+              &format!("YAK EXPORTED STYLED:{}:", current_variable_id.to_readable_string()),
+              "YAK EXPORTED STYLED:default:"
+            )
+          } else if comment_prefix.contains("YAK EXPORTED MIXIN:") {
+            // Replace the mixin name with "default" for mixins
+            format!("YAK EXPORTED MIXIN:default")
+          } else {
+            comment_prefix.clone()
+          };
+          
+          self.default_export_styled_components.insert(
+            current_variable_id.id.0.to_string(),
+            format!("{}\n{}\n", default_comment_prefix, css_code.trim())
+          );
+          
+          // Add only the CSS comment without the export prefix for the variable declaration
+          let css_only_comment = format!("YAK Extracted CSS:\n{}\n", css_code.trim());
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: css_only_comment.into(),
+            },
+          );
+        } else {
+          // Normal case: add the full comment
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            },
+          );
+        }
       }
     }
     self.comments.add_leading(result_span.lo, pure_annotation());

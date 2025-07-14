@@ -16,10 +16,15 @@ export const Input = /*YAK EXPORTED STYLED:Input:ym7uBBu1*//*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ __yak.__yak_input("ym7uBBu1");
 // Default export
-const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu2*//*YAK Extracted CSS:
+const Container = /*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   background: yellow;
   padding: 20px;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
-export default Container;
+/*YAK EXPORTED STYLED:default:ym7uBBu2*//*YAK Extracted CSS:
+:global(.ym7uBBu2) {
+  background: yellow;
+  padding: 20px;
+}
+*/ export default Container;
