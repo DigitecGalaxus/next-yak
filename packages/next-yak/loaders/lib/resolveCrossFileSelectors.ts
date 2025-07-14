@@ -98,6 +98,11 @@ export async function resolveCrossFileConstant(
       const { position, size, importKind, specifier, semicolon } = matches[i];
       const resolved = resolvedValues[i];
 
+      if (resolved.value === undefined) {
+        throw new Error(
+          `Could not resolve ${importKind} "${specifier.join(".")}" from "${(resolved as unknown as { from: string }).from}"`,
+        );
+      }
       if (importKind === "selector") {
         if (
           resolved.type !== "styled-component" &&
@@ -462,25 +467,54 @@ function parseStyledComponents(
   transpilationMode?: NonNullable<
     YakConfigOptions["experiments"]
   >["transpilationMode"],
-): Record<string, { type: "styled-component"; value: string }> {
+): Record<string, ParsedExport> {
   // cross-file Styled Components are always in the following format:
   // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
+  // or for object properties:
+  // /*YAK EXPORTED STYLED:ObjectName.PropertyName:ClassName*/
   const styledParts = sourceContents.split("/*YAK EXPORTED STYLED:");
-  let styledComponents: Record<
-    string,
-    { type: "styled-component"; value: string }
-  > = {};
+  let styledComponents: Record<string, ParsedExport> = {};
 
   for (let i = 1; i < styledParts.length; i++) {
     const [comment] = styledParts[i].split("*/", 1);
     const [componentName, className] = comment.split(":");
-    styledComponents[componentName] = {
-      type: "styled-component",
-      value:
-        transpilationMode === "Css"
-          ? `.${className}`
-          : `:global(.${className})`,
-    };
+    
+    // Handle object property exports (e.g., "UIComponents.Title")
+    if (componentName.includes(".")) {
+      const parts = componentName.split(".");
+      let current = styledComponents;
+      
+      // Navigate/create the nested structure
+      for (let j = 0; j < parts.length - 1; j++) {
+        const part = parts[j];
+        if (!current[part]) {
+          current[part] = { type: "record", value: {} };
+        }
+        if (current[part].type !== "record") {
+          throw new Error(`Expected record type for ${part} in ${componentName}`);
+        }
+        current = current[part].value as Record<string, ParsedExport>;
+      }
+      
+      // Set the final styled component
+      const finalPart = parts[parts.length - 1];
+      current[finalPart] = {
+        type: "styled-component",
+        value:
+          transpilationMode === "Css"
+            ? `.${className}`
+            : `:global(.${className})`,
+      };
+    } else {
+      // Handle regular exports (e.g., "ComponentName")
+      styledComponents[componentName] = {
+        type: "styled-component",
+        value:
+          transpilationMode === "Css"
+            ? `.${className}`
+            : `:global(.${className})`,
+      };
+    }
   }
 
   return styledComponents;
