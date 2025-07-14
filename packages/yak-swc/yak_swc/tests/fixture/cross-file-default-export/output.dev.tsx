@@ -12,6 +12,6 @@ export const TestCard = /*YAK EXPORTED STYLED:TestCard:input_TestCard_m7uBBu*//*
     color: white;
   }
 }
-*//*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_TestCard_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_TestCard_m7uBBu"), {
     "displayName": "TestCard"
 });

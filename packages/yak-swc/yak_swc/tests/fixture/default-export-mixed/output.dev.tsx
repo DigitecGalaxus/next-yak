@@ -7,7 +7,7 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
   background: green;
   padding: 10px;
 }
-*//*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"
 });
 // Another named export
@@ -16,16 +16,16 @@ export const Input = /*YAK EXPORTED STYLED:Input:input_Input_m7uBBu*//*YAK Extra
   border: 2px solid blue;
   padding: 5px;
 }
-*//*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_input("input_Input_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_input("input_Input_m7uBBu"), {
     "displayName": "Input"
 });
 // Default export
-const Container = /*YAK EXPORTED STYLED:default:input_default_m7uBBu*//*YAK Extracted CSS:
-:global(.input_default_m7uBBu) {
+const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK Extracted CSS:
+:global(.input_Container_m7uBBu) {
   background: yellow;
   padding: 20px;
 }
-*//*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_default_m7uBBu"), {
-    "displayName": "default"
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Container_m7uBBu"), {
+    "displayName": "Container"
 });
 export default Container;
