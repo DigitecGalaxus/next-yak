@@ -110,8 +110,6 @@ where
   current_condition: Vec<String>,
   /// Current css expression is exported
   current_exported: bool,
-  /// Current css expression is a default export
-  current_default_exported: bool,
   /// SWC comments proxy to add extracted css as comments
   comments: Option<GenericComments>,
   /// Extracted variables from the AST
@@ -157,7 +155,6 @@ where
       current_variable_name: None,
       current_condition: vec![],
       current_exported: false,
-      current_default_exported: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
       naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
@@ -627,20 +624,16 @@ where
   /// e.g. export default styled.button`color: red;`
   fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
     self.current_exported = true;
-    self.current_default_exported = true;
     n.visit_mut_children_with(self);
     self.current_exported = false;
-    self.current_default_exported = false;
   }
 
   /// To store the current export state for default export expressions
   /// e.g. export default styled.button`color: red;`
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
     self.current_exported = true;
-    self.current_default_exported = true;
     n.visit_mut_children_with(self);
     self.current_exported = false;
-    self.current_default_exported = false;
   }
 
   /// Visit variable declarations
@@ -664,7 +657,6 @@ where
         
         if will_be_default_exported {
           self.current_exported = true;
-          self.current_default_exported = true;
         }
         
         decl.init.visit_mut_with(self);
