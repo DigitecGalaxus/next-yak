@@ -17,6 +17,9 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
+use utils::yak_constants::{
+  YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX
+};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -36,6 +39,7 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod native_elements;
+  pub(crate) mod yak_constants;
 }
 pub mod naming_convention;
 use naming_convention::{NamingConvention, TranspilationMode};
@@ -941,19 +945,19 @@ where
         // Check if this is a default-exported styled component or mixin
         let is_default_export = self.current_exported 
           && self.variables.is_default_exported(&current_variable_id.id)
-          && (comment_prefix.contains("YAK EXPORTED STYLED:") || comment_prefix.contains("YAK EXPORTED MIXIN:"));
+          && (comment_prefix.contains(YAK_EXPORTED_STYLED_PREFIX) || comment_prefix.contains(YAK_EXPORTED_MIXIN_PREFIX));
         
         if is_default_export {
           // Store the comment info for later use at export default statement
-          let default_comment_prefix = if comment_prefix.contains("YAK EXPORTED STYLED:") {
+          let default_comment_prefix = if comment_prefix.contains(YAK_EXPORTED_STYLED_PREFIX) {
             // Replace the variable name with "default" in the comment prefix for styled components
             comment_prefix.replace(
-              &format!("YAK EXPORTED STYLED:{}:", current_variable_id.to_readable_string()),
-              "YAK EXPORTED STYLED:default:"
+              &format!("{}{}:", YAK_EXPORTED_STYLED_PREFIX, current_variable_id.to_readable_string()),
+              &format!("{}default:", YAK_EXPORTED_STYLED_PREFIX)
             )
-          } else if comment_prefix.contains("YAK EXPORTED MIXIN:") {
+          } else if comment_prefix.contains(YAK_EXPORTED_MIXIN_PREFIX) {
             // Replace the mixin name with "default" for mixins
-            format!("YAK EXPORTED MIXIN:default")
+            format!("{}default", YAK_EXPORTED_MIXIN_PREFIX)
           } else {
             comment_prefix.clone()
           };
@@ -964,7 +968,7 @@ where
           );
           
           // Add only the CSS comment without the export prefix for the variable declaration
-          let css_only_comment = format!("YAK Extracted CSS:\n{}\n", css_code.trim());
+          let css_only_comment = format!("{}\n{}\n", YAK_EXTRACTED_CSS_PREFIX, css_code.trim());
           self.comments.add_leading(
             result_span.lo,
             Comment {

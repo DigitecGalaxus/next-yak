@@ -5,6 +5,7 @@ use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
 use crate::utils::cross_file_selectors::encode_percent;
+use crate::utils::yak_constants::{YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX};
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
@@ -224,10 +225,11 @@ impl YakTransform for TransformCssMixin {
         }))
         .into(),
       );
-      Some("YAK Extracted CSS:".to_string())
+      Some(YAK_EXTRACTED_CSS_PREFIX.to_string())
     } else if self.is_exported {
       Some(format!(
-        "YAK EXPORTED MIXIN:{}",
+        "{}{}",
+        YAK_EXPORTED_MIXIN_PREFIX,
         self
           .export_name
           .parts
@@ -481,12 +483,14 @@ impl YakTransform for TransformStyled {
     // extract the generated class name
     let css_prefix = if self.is_exported {
       Some(format!(
-        "YAK EXPORTED STYLED:{}:{}*//*YAK Extracted CSS:",
+        "{}{}:{}*//*{}",
+        YAK_EXPORTED_STYLED_PREFIX,
         self.declaration_name.to_readable_string(),
-        self.class_name
+        self.class_name,
+        YAK_EXTRACTED_CSS_PREFIX
       ))
     } else {
-      Some("YAK Extracted CSS:".to_string())
+      Some(YAK_EXTRACTED_CSS_PREFIX.to_string())
     };
 
     YakTransformResult {
