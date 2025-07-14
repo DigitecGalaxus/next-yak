@@ -110,6 +110,8 @@ where
   current_condition: Vec<String>,
   /// Current css expression is exported
   current_exported: bool,
+  /// Current css expression is a default export
+  current_default_exported: bool,
   /// SWC comments proxy to add extracted css as comments
   comments: Option<GenericComments>,
   /// Extracted variables from the AST
@@ -155,6 +157,7 @@ where
       current_variable_name: None,
       current_condition: vec![],
       current_exported: false,
+      current_default_exported: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
       naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
@@ -620,6 +623,26 @@ where
     self.current_exported = false;
   }
 
+  /// To store the current export state for default exports  
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
+    self.current_exported = true;
+    self.current_default_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+    self.current_default_exported = false;
+  }
+
+  /// To store the current export state for default export expressions
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    self.current_exported = true;
+    self.current_default_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+    self.current_default_exported = false;
+  }
+
   /// Visit variable declarations
   /// To store the current name which can be used for class names
   /// e.g. Button for const Button = styled.button`color: red;`
@@ -630,11 +653,22 @@ where
     for decl in &mut n.decls {
       if let Pat::Ident(BindingIdent { id, .. }) = &decl.name {
         let previous_variable_name = self.current_variable_name.clone();
+        
+        // Check if this variable will be default-exported
+        let will_be_default_exported = self.variables.is_default_exported(&id.to_id());
+        
         self.current_variable_name = Some(ScopedVariableReference::new(
           id.to_id(),
           vec![id.sym.clone()],
         ));
+        
+        if will_be_default_exported {
+          self.current_exported = true;
+          self.current_default_exported = true;
+        }
+        
         decl.init.visit_mut_with(self);
+        
         self.current_variable_name = previous_variable_name;
       }
     }
