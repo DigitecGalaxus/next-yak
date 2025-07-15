@@ -17,9 +17,6 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
-use utils::yak_constants::{
-  YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX
-};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -557,6 +554,29 @@ where
     let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
+    
+    // After processing all nodes, add export comments for default-exported styled components
+    // This handles the case where export default comes before the variable declaration (hoisted)
+    if !self.default_export_styled_components.is_empty() {
+      if let Some(export_span) = self.variables.get_default_export_span() {
+        if let Some(default_var) = self.variables.get_default_exported_variable() {
+          let var_name = default_var.0.to_string();
+          if let Some(comment) = self.default_export_styled_components.get(&var_name) {
+            
+            // Add the comment directly since it's already properly formatted
+            self.comments.add_leading(
+              export_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: export_span,
+                text: comment.clone().into(),
+              },
+            );
+          }
+        }
+      }
+    }
+    
 
     // Add the css module import to the top of the file
     // if any yak imports are used
@@ -640,26 +660,30 @@ where
   /// e.g. export default styled.button`color: red;`
   /// Also handles adding export comments for default-exported styled components
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    // Check if we're exporting a variable that contains a styled component
+    self.current_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+    
+    // Add export comment if this is a default-exported styled component
+    // This handles the normal case where variable declaration comes before export default
     if let Expr::Ident(ident) = &*n.expr {
-      let variable_name = ident.sym.to_string();
-      
-      // If this variable has a stored styled component comment, add it to the export statement
-      if let Some(stored_comment) = self.default_export_styled_components.get(&variable_name) {
+      let var_name = ident.sym.to_string();
+      if let Some(comment) = self.default_export_styled_components.get(&var_name) {
+        
+        // Add the comment directly since it's already properly formatted
         self.comments.add_leading(
           n.span.lo,
           Comment {
             kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: stored_comment.clone().into(),
+            span: n.span,
+            text: comment.clone().into(),
           },
         );
+        
+        // Remove the comment from the map so it won't be processed again in visit_mut_module
+        self.default_export_styled_components.remove(&var_name);
       }
     }
-    
-    self.current_exported = true;
-    n.visit_mut_children_with(self);
-    self.current_exported = false;
   }
 
   /// Visit variable declarations
@@ -945,36 +969,34 @@ where
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
         let current_variable_id = self.get_current_component_id();
         
-        // Check if this is a default-exported styled component or mixin
-        let is_default_export = self.current_exported 
-          && self.variables.is_default_exported(&current_variable_id.id)
-          && (comment_prefix.contains(YAK_EXPORTED_STYLED_PREFIX) || comment_prefix.contains(YAK_EXPORTED_MIXIN_PREFIX));
-        
-        if is_default_export {
-          // Store the comment info for later use at export default statement
+        // Check if this is a default-exported styled component or mixin with separated comments
+        if let Some(css_only_comment) = transform_result.css.css_only_comment.clone() {
+          // Store the full comment for later use at export default statement
+          let full_comment = format!("{}\n{}\n", comment_prefix, css_code.trim());
           self.default_export_styled_components.insert(
             current_variable_id.id.0.to_string(),
-            format!("{}\n{}\n", comment_prefix, css_code.trim())
+            full_comment
           );
           
-          // Add only the CSS comment without the export prefix for the variable declaration
-          let css_only_comment = format!("{}\n{}\n", YAK_EXTRACTED_CSS_PREFIX, css_code.trim());
+          // Add only the CSS comment for the variable declaration
+          let css_comment = format!("{}\n{}\n", css_only_comment, css_code.trim());
           self.comments.add_leading(
             result_span.lo,
             Comment {
               kind: swc_core::common::comments::CommentKind::Block,
               span: DUMMY_SP,
-              text: css_only_comment.into(),
+              text: css_comment.into(),
             },
           );
         } else {
-          // Normal case: add the full comment
+          // Normal case: add the full comment directly
+          let full_comment = format!("{}\n{}\n", comment_prefix, css_code.trim());
           self.comments.add_leading(
             result_span.lo,
             Comment {
               kind: swc_core::common::comments::CommentKind::Block,
               span: DUMMY_SP,
-              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+              text: full_comment.into(),
             },
           );
         }
