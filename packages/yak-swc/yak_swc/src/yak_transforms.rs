@@ -146,6 +146,7 @@ pub struct TransformCssMixin {
   /// ClassName of the mixin
   export_name: ScopedVariableReference,
   is_exported: bool,
+  is_default_export: bool,
   is_within_jsx_attribute: bool,
   class_name: String,
   transpilation_mode: TranspilationMode,
@@ -156,6 +157,7 @@ impl TransformCssMixin {
     naming_convention: &mut NamingConvention,
     declaration_name: ScopedVariableReference,
     is_exported: bool,
+    is_default_export: bool,
     is_within_jsx_attribute: bool,
     transpilation_mode: TranspilationMode,
   ) -> TransformCssMixin {
@@ -164,6 +166,7 @@ impl TransformCssMixin {
     TransformCssMixin {
       export_name: declaration_name,
       is_exported,
+      is_default_export,
       is_within_jsx_attribute,
       class_name,
       transpilation_mode,
@@ -227,15 +230,20 @@ impl YakTransform for TransformCssMixin {
       );
       Some(YAK_EXTRACTED_CSS_PREFIX.to_string())
     } else if self.is_exported {
-      Some(format!(
-        "{}{}",
-        YAK_EXPORTED_MIXIN_PREFIX,
+      let export_name = if self.is_default_export {
+        "default".to_string()
+      } else {
         self
           .export_name
           .parts
           .iter()
           .map(|atom| encode_percent(atom.as_str()))
           .join(":")
+      };
+      Some(format!(
+        "{}{}",
+        YAK_EXPORTED_MIXIN_PREFIX,
+        export_name
       ))
     } else {
       None
@@ -279,6 +287,7 @@ pub struct TransformStyled {
   declaration_name: ScopedVariableReference,
   assign_display_name: bool,
   is_exported: bool,
+  is_default_export: bool,
   transpilation_mode: TranspilationMode,
 }
 
@@ -288,6 +297,7 @@ impl TransformStyled {
     declaration_name: ScopedVariableReference,
     assign_display_name: bool,
     is_exported: bool,
+    is_default_export: bool,
     transpilation_mode: TranspilationMode,
   ) -> TransformStyled {
     let class_name =
@@ -297,6 +307,7 @@ impl TransformStyled {
       declaration_name,
       assign_display_name,
       is_exported,
+      is_default_export,
       transpilation_mode,
     }
   }
@@ -482,10 +493,15 @@ impl YakTransform for TransformStyled {
     // Add the class name For cross file selectors to allow the css loader to
     // extract the generated class name
     let css_prefix = if self.is_exported {
+      let export_name = if self.is_default_export {
+        "default".to_string()
+      } else {
+        self.declaration_name.to_readable_string()
+      };
       Some(format!(
         "{}{}:{}*//*{}",
         YAK_EXPORTED_STYLED_PREFIX,
-        self.declaration_name.to_readable_string(),
+        export_name,
         self.class_name,
         YAK_EXTRACTED_CSS_PREFIX
       ))

@@ -851,6 +851,7 @@ where
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
+    let is_default_export = self.current_exported && self.variables.is_default_exported(&current_variable_id.id);
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
@@ -859,6 +860,7 @@ where
         current_variable_id.clone(),
         self.display_names,
         self.current_exported,
+        is_default_export,
         self.transpilation_mode,
       )),
       // Keyframes transform works only on top level
@@ -879,6 +881,7 @@ where
         &mut self.naming_convention,
         current_variable_id.clone(),
         self.current_exported,
+        is_default_export,
         self.inside_element_with_css_attribute,
         self.transpilation_mode,
       )),
@@ -949,22 +952,9 @@ where
         
         if is_default_export {
           // Store the comment info for later use at export default statement
-          let default_comment_prefix = if comment_prefix.contains(YAK_EXPORTED_STYLED_PREFIX) {
-            // Replace the variable name with "default" in the comment prefix for styled components
-            comment_prefix.replace(
-              &format!("{}{}:", YAK_EXPORTED_STYLED_PREFIX, current_variable_id.to_readable_string()),
-              &format!("{}default:", YAK_EXPORTED_STYLED_PREFIX)
-            )
-          } else if comment_prefix.contains(YAK_EXPORTED_MIXIN_PREFIX) {
-            // Replace the mixin name with "default" for mixins
-            format!("{}default", YAK_EXPORTED_MIXIN_PREFIX)
-          } else {
-            comment_prefix.clone()
-          };
-          
           self.default_export_styled_components.insert(
             current_variable_id.id.0.to_string(),
-            format!("{}\n{}\n", default_comment_prefix, css_code.trim())
+            format!("{}\n{}\n", comment_prefix, css_code.trim())
           );
           
           // Add only the CSS comment without the export prefix for the variable declaration

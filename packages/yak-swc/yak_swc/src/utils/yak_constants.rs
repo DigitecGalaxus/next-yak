@@ -6,6 +6,6 @@ pub const YAK_EXPORTED_STYLED_PREFIX: &str = "YAK EXPORTED STYLED:";
 /// Format: "YAK EXPORTED MIXIN:{export_name}"
 pub const YAK_EXPORTED_MIXIN_PREFIX: &str = "YAK EXPORTED MIXIN:";
 
-/// Prefix for extracted CSS without export metadata
-/// Used for non-exported components and as fallback
+/// Prefix for extracted CSS at build time
+/// Used for all types of build time CSS extraction
 pub const YAK_EXTRACTED_CSS_PREFIX: &str = "YAK Extracted CSS:";
