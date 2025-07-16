@@ -2,4 +2,7 @@
 [alias]
 # Alias to build actual plugin binary for the specified target.
 build-wasip1 = "build --target wasm32-wasip1"
-build-wasm32 = "build --target wasm32-unknown-unknown --cfg getrandom_backend=\"wasm_js\""
+build-wasm32 = "build --target wasm32-unknown-unknown"
+
+[build]
+rustflags = ["--cfg", "getrandom_backend=\"wasm_js\""]
