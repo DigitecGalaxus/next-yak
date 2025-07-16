@@ -1011,9 +1011,9 @@ mod tests {
   use super::*;
   use std::path::PathBuf;
   use swc_core::ecma::{
+    parser::{Syntax, TsSyntax},
     transforms::testing::{test_fixture, test_transform, FixtureTestConfig},
     visit::visit_mut_pass,
-    parser::{Syntax, TsSyntax},
   };
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
