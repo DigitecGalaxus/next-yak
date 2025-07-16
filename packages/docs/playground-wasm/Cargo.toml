@@ -18,7 +18,7 @@ js-sys = "0.3.77"
 serde = { version = "1.0.219", features = ["derive"] }
 serde-wasm-bindgen = {version = "0.6.5"}
 # enable the js flag for the getrandom transitive dependency
-getrandom = { version = "*", features = ["js"] }
+getrandom = { version = "*", features = ["js", ""wasm_js"] }
 swc_core = { workspace = true, features = [
     "ecma_ast_serde",
     "binding_macro_wasm",
