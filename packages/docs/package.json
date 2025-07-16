@@ -22,13 +22,13 @@
     "@shikijs/transformers": "catalog:dev",
     "@swc/core": "catalog:dev",
     "@vercel/analytics": "^1.5.0",
-    "js-base64": "catalog:dev",
+    "fflate": "catalog:dev",
     "fumadocs-core": "catalog:dev",
     "fumadocs-mdx": "catalog:dev",
     "fumadocs-twoslash": "catalog:dev",
     "fumadocs-ui": "catalog:dev",
+    "js-base64": "catalog:dev",
     "lz-string": "catalog:dev",
-    "fflate": "catalog:dev",
     "next": "catalog:dev",
     "next-themes": "catalog:dev",
     "next-yak": "workspace:*",
@@ -50,6 +50,7 @@
     "autoprefixer": "catalog:dev",
     "postcss": "catalog:dev",
     "tailwindcss": "catalog:dev",
-    "typescript": "catalog:dev"
+    "typescript": "catalog:dev",
+    "wasm-pack": "catalog:dev"
   }
 }
