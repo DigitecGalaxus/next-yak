@@ -42,7 +42,7 @@ pub fn transform_sync(
                         } else {
                             wasm::FileName::Real(opts.filename.clone().into()).into()
                         },
-                        s.into(),
+                        s.as_string().unwrap(),
                     );
 
                     // Note: SingleThreadedComments uses Rc internally.

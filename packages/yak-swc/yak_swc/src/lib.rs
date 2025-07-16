@@ -1011,11 +1011,10 @@ mod tests {
   use super::*;
   use std::path::PathBuf;
   use swc_core::ecma::{
-    transforms::testing::{test_fixture, test_transform},
+    transforms::testing::{test_fixture, test_transform, FixtureTestConfig},
     visit::visit_mut_pass,
+    parser::{Syntax, TsSyntax},
   };
-  use swc_ecma_parser::{Syntax, TsSyntax};
-  use swc_ecma_transforms_testing::FixtureTestConfig;
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {

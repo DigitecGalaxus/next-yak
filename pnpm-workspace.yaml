@@ -11,8 +11,8 @@ catalogs:
     "@changesets/cli": 2.29.2
     "@codspeed/benchmark.js-plugin": 4.0.1
     "@monaco-editor/react": 4.7.0
-    "@next/eslint-plugin-next": 15.3.1
-    "@next/mdx": 15.3.1
+    "@next/eslint-plugin-next": 15.4.1
+    "@next/mdx": 15.4.1
     "@radix-ui/react-switch": 1.2.5
     "@shikijs/monaco": 3.3.0
     "@shikijs/transformers": 3.3.0
@@ -37,7 +37,7 @@ catalogs:
     js-base64: 3.7.7
     benchmark: 2.1.4
     eslint: 9.25.1
-    eslint-config-next: 15.3.1
+    eslint-config-next: 15.4.1
     eslint-doc-generator: 2.1.2
     fast-glob: 3.3.3
     fflate: 0.8.2
@@ -50,7 +50,7 @@ catalogs:
     jsdom: 26.1.0
     lz-string: 1.5.0
     memfs: 4.17.0
-    next: 15.3.1
+    next: 15.4.1
     next-themes: 0.4.6
     postcss: 8.5.3
     postcss-nested: 7.0.2

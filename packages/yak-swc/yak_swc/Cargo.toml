@@ -14,7 +14,7 @@ plugin = ["swc_core/ecma_plugin_transform"]
 lazy_static.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-swc_core = { workspace = true, features = ["common", "ecma_ast", "ecma_visit"]}
+swc_core = { workspace = true, features = ["common", "ecma_ast", "ecma_visit", "ecma_parser"]}
 css_in_js_parser = { path = "../css_in_js_parser" }
 relative_posix_path = { path = "../relative_posix_path" }
 itertools.workspace = true

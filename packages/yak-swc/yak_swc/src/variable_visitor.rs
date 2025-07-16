@@ -220,7 +220,7 @@ impl VisitMut for VariableVisitor {
 mod tests {
   use super::*;
   use swc_core::{atoms::atom, common::SyntaxContext, ecma::visit::visit_mut_pass};
-  use swc_ecma_transforms_testing::test_transform;
+  use swc_core::ecma::transforms::testing::test_transform;
 
   fn get_expr_value(expr: &Expr) -> Option<String> {
     match expr {
