@@ -1,5 +1,11 @@
 # yak-swc
 
+## 6.0.0
+
+### Major Changes
+
+- 9835170: Update swc_core to be compatible with Next.js 15.4
+
 ## 5.7.2
 
 ### Patch Changes
