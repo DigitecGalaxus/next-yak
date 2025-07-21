@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use swc_core::atoms::Atom;
 use swc_core::common::util::move_map::MoveMap;
@@ -233,13 +232,22 @@ impl YakTransform for TransformCssMixin {
       );
       (Some(YAK_EXTRACTED_CSS_PREFIX.to_string()), None)
     } else if self.is_exported {
-      // For separated default exports, use the variable name, not "default"
-      let export_name = self
-        .export_name
-        .parts
-        .iter()
-        .map(|atom| encode_percent(atom.as_str()))
-        .join(":");
+      // For inline default exports (export default css`...`), use "default"
+      // For separated default exports (const X = css; export default X), use the variable name
+      let raw_export_name = self.export_name.to_readable_string();
+      let export_name_parts = if self.is_default_export && raw_export_name.starts_with("yak") {
+        // This is an inline default export with a synthetic variable name
+        vec!["default".to_string()]
+      } else {
+        // This is a named export or separated default export - use the actual variable name
+        self
+          .export_name
+          .parts
+          .iter()
+          .map(|atom| encode_percent(atom.as_str()))
+          .collect()
+      };
+      let export_name = export_name_parts.join(":");
       let full_comment = Some(format!(
         "{}{}",
         YAK_EXPORTED_MIXIN_PREFIX,
@@ -499,9 +507,16 @@ impl YakTransform for TransformStyled {
     // Add the class name For cross file selectors to allow the css loader to
     // extract the generated class name
     let (css_prefix, css_only_comment) = if self.is_exported {
-      // For separated default exports (const X = styled; export default X), 
-      // use the variable name, not "default"
-      let export_name = self.declaration_name.to_readable_string();
+      // For inline default exports (export default styled.div`...`), use "default"
+      // For separated default exports (const X = styled; export default X), use the variable name
+      let declaration_name_str = self.declaration_name.to_readable_string();
+      let export_name = if self.is_default_export && declaration_name_str.starts_with("yak") {
+        // This is an inline default export with a synthetic variable name
+        "default".to_string()
+      } else {
+        // This is a named export or separated default export - use the actual variable name
+        declaration_name_str
+      };
       let full_comment = Some(format!(
         "{}{}:{}*/ /*{}",
         YAK_EXPORTED_STYLED_PREFIX,

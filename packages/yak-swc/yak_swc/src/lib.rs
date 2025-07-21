@@ -16,9 +16,6 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
-use utils::yak_constants::{
-  YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX
-};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -113,6 +110,8 @@ where
   current_condition: Vec<String>,
   /// Current css expression is exported
   current_exported: bool,
+  /// Current css expression is being default exported
+  current_default_export: bool,
   /// SWC comments proxy to add extracted css as comments
   comments: Option<GenericComments>,
   /// Extracted variables from the AST
@@ -160,6 +159,7 @@ where
       current_variable_name: None,
       current_condition: vec![],
       current_exported: false,
+      current_default_export: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
       naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
@@ -650,8 +650,10 @@ where
     }
     
     self.current_exported = true;
+    self.current_default_export = true;
     n.visit_mut_children_with(self);
     self.current_exported = false;
+    self.current_default_export = false;
   }
 
   /// Visit variable declarations
@@ -839,7 +841,7 @@ where
       // Styled Components transform works only on top level
       "styled" if is_top_level => {
         let is_exported = self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
-        let is_default_export = self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export || self.variables.is_default_exported(&current_variable_id.id);
         Box::new(TransformStyled::new(
           &mut self.naming_convention,
           current_variable_id.clone(),
@@ -865,7 +867,7 @@ where
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => {
         let is_exported = self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
-        let is_default_export = self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export || self.variables.is_default_exported(&current_variable_id.id);
         Box::new(TransformCssMixin::new(
           &mut self.naming_convention,
           current_variable_id.clone(),
