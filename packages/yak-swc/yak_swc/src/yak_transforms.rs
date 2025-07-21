@@ -5,6 +5,7 @@ use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
 use crate::utils::cross_file_selectors::encode_percent;
+use crate::utils::yak_constants::{YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX};
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
@@ -18,6 +19,8 @@ use crate::naming_convention::{NamingConvention, TranspilationMode};
 #[derive(Debug)]
 pub struct YakCss {
   pub comment_prefix: Option<String>,
+  /// For default exports, this contains only the CSS comment without export prefix
+  pub css_only_comment: Option<String>,
   /// The generated CSS code
   pub declarations: Vec<Declaration>,
 }
@@ -123,6 +126,7 @@ impl YakTransform for TransformNestedCss {
     YakTransformResult {
       css: YakCss {
         comment_prefix: None,
+        css_only_comment: None,
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {
@@ -145,6 +149,7 @@ pub struct TransformCssMixin {
   /// ClassName of the mixin
   export_name: ScopedVariableReference,
   is_exported: bool,
+  is_default_export: bool,
   is_within_jsx_attribute: bool,
   class_name: String,
   transpilation_mode: TranspilationMode,
@@ -155,6 +160,7 @@ impl TransformCssMixin {
     naming_convention: &mut NamingConvention,
     declaration_name: ScopedVariableReference,
     is_exported: bool,
+    is_default_export: bool,
     is_within_jsx_attribute: bool,
     transpilation_mode: TranspilationMode,
   ) -> TransformCssMixin {
@@ -163,6 +169,7 @@ impl TransformCssMixin {
     TransformCssMixin {
       export_name: declaration_name,
       is_exported,
+      is_default_export,
       is_within_jsx_attribute,
       class_name,
       transpilation_mode,
@@ -214,7 +221,7 @@ impl YakTransform for TransformCssMixin {
         .into(),
       );
     }
-    let css_prefix = if self.is_within_jsx_attribute {
+    let (css_prefix, css_only_comment) = if self.is_within_jsx_attribute {
       // Add the class name to the arguments, to be created by the CSS loader
       arguments.push(
         Expr::Lit(Lit::Str(Str {
@@ -224,24 +231,33 @@ impl YakTransform for TransformCssMixin {
         }))
         .into(),
       );
-      Some("YAK Extracted CSS:".to_string())
+      (Some(YAK_EXTRACTED_CSS_PREFIX.to_string()), None)
     } else if self.is_exported {
-      Some(format!(
-        "YAK EXPORTED MIXIN:{}",
-        self
-          .export_name
-          .parts
-          .iter()
-          .map(|atom| encode_percent(atom.as_str()))
-          .join(":")
-      ))
+      // For separated default exports, use the variable name, not "default"
+      let export_name = self
+        .export_name
+        .parts
+        .iter()
+        .map(|atom| encode_percent(atom.as_str()))
+        .join(":");
+      let full_comment = Some(format!(
+        "{}{}",
+        YAK_EXPORTED_MIXIN_PREFIX,
+        export_name
+      ));
+      
+      // For now, don't separate comments for mixins
+      let css_only = None;
+      
+      (full_comment, css_only)
     } else {
-      None
+      (None, None)
     };
 
     YakTransformResult {
       css: YakCss {
         comment_prefix: css_prefix,
+        css_only_comment: css_only_comment,
         declarations: declarations.to_vec().move_map(|mut declaration| {
           // TODO: Fix nested mixins
           if !self.is_within_jsx_attribute {
@@ -277,6 +293,7 @@ pub struct TransformStyled {
   declaration_name: ScopedVariableReference,
   assign_display_name: bool,
   is_exported: bool,
+  is_default_export: bool,
   transpilation_mode: TranspilationMode,
 }
 
@@ -286,6 +303,7 @@ impl TransformStyled {
     declaration_name: ScopedVariableReference,
     assign_display_name: bool,
     is_exported: bool,
+    is_default_export: bool,
     transpilation_mode: TranspilationMode,
   ) -> TransformStyled {
     let class_name =
@@ -295,6 +313,7 @@ impl TransformStyled {
       declaration_name,
       assign_display_name,
       is_exported,
+      is_default_export,
       transpilation_mode,
     }
   }
@@ -479,19 +498,30 @@ impl YakTransform for TransformStyled {
 
     // Add the class name For cross file selectors to allow the css loader to
     // extract the generated class name
-    let css_prefix = if self.is_exported {
-      Some(format!(
-        "YAK EXPORTED STYLED:{}:{}*//*YAK Extracted CSS:",
-        self.declaration_name.to_readable_string(),
-        self.class_name
-      ))
+    let (css_prefix, css_only_comment) = if self.is_exported {
+      // For separated default exports (const X = styled; export default X), 
+      // use the variable name, not "default"
+      let export_name = self.declaration_name.to_readable_string();
+      let full_comment = Some(format!(
+        "{}{}:{}*/ /*{}",
+        YAK_EXPORTED_STYLED_PREFIX,
+        export_name,
+        self.class_name,
+        YAK_EXTRACTED_CSS_PREFIX
+      ));
+      
+      // For now, don't separate comments - keep them together at variable declaration
+      let css_only = None;
+      
+      (full_comment, css_only)
     } else {
-      Some("YAK Extracted CSS:".to_string())
+      (Some(YAK_EXTRACTED_CSS_PREFIX.to_string()), None)
     };
 
     YakTransformResult {
       css: YakCss {
         comment_prefix: css_prefix,
+        css_only_comment: css_only_comment,
         declarations: declarations.to_vec(),
       },
       expression: result_expr,
@@ -568,6 +598,7 @@ impl YakTransform for TransformKeyframes {
     YakTransformResult {
       css: YakCss {
         comment_prefix: Some("YAK Extracted CSS:".to_string()),
+        css_only_comment: None,
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {

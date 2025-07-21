@@ -22,6 +22,8 @@ pub enum ImportSourceType {
 pub struct VariableVisitor {
   variables: FxHashMap<Id, Box<Expr>>,
   imports: FxHashMap<Id, ImportKind>,
+  /// Variable name that will be default-exported (only one per module)
+  default_exported_variable: Option<Id>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -60,6 +62,7 @@ impl VariableVisitor {
     Self {
       variables: FxHashMap::default(),
       imports: FxHashMap::default(),
+      default_exported_variable: None,
     }
   }
 
@@ -138,6 +141,11 @@ impl VariableVisitor {
     }
     None
   }
+
+  /// Returns true if the given variable name will be default-exported
+  pub fn is_default_exported(&self, name: &Id) -> bool {
+    self.default_exported_variable.as_ref().map_or(false, |var| var == name)
+  }
 }
 
 impl Fold for VariableVisitor {}
@@ -153,6 +161,24 @@ impl VisitMut for VariableVisitor {
       }
     });
     var.visit_mut_children_with(self);
+  }
+
+  /// Scans the AST for default export declarations to identify which variables will be default-exported
+  fn visit_mut_module_decl(&mut self, module_decl: &mut ModuleDecl) {
+    match module_decl {
+      ModuleDecl::ExportDefaultDecl(_) => {
+        // Direct export default declarations (e.g., export default function/class)
+        // These don't reference variables, so nothing to track
+      }
+      ModuleDecl::ExportDefaultExpr(export_default_expr) => {
+        // Check if it's an identifier (e.g., export default Title)
+        if let Expr::Ident(ident) = &*export_default_expr.expr {
+          self.default_exported_variable = Some(ident.to_id());
+        }
+      }
+      _ => {}
+    }
+    module_decl.visit_mut_children_with(self);
   }
   /// Scans the AST for import declarations and extracts the imported names
   fn visit_mut_import_decl(&mut self, import: &mut ImportDecl) {
