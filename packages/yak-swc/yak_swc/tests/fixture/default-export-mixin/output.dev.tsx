@@ -1,6 +1,6 @@
 import { css } from "next-yak/internal";
 // Test default exported CSS mixin
-const highlight = /*YAK EXPORTED MIXIN:highlight
+const highlight = /*YAK EXPORTED MIXIN:default
 color: red;
 background: yellow;
 font-weight: bold;

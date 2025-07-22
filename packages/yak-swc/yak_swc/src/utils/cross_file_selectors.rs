@@ -65,6 +65,8 @@ impl ImportKind {
     let first_entry = match &self {
       // Don't encode the namespace, as that's just used internally, but the loader needs the exported names
       ImportKind::Namespace { .. } => None,
+      // For default imports, use "default" as the external name for proper resolution
+      ImportKind::Default { .. } => self.external_name(),
       _ => self.external_name(),
     };
 
@@ -73,9 +75,16 @@ impl ImportKind {
       None => vec![],
     };
 
-    if import_chain.len() > 1 {
+    // For default imports, skip the local variable name since we already have "default" as first entry
+    // For other imports, skip the first element as it's redundant
+    let chain_start_index = match &self {
+      ImportKind::Default { .. } => 1, // Skip local variable name for default imports
+      _ => 1, // Skip first element for named/namespace imports as usual
+    };
+    
+    if import_chain.len() > chain_start_index {
       encoded_parts.extend(
-        import_chain[1..]
+        import_chain[chain_start_index..]
           .iter()
           .map(|part| encode_percent(part))
           .collect::<Vec<String>>(),

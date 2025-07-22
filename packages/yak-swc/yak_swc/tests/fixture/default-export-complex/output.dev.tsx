@@ -16,7 +16,7 @@ const Title = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_h1("input_Title_m7uBBu"), {
     "displayName": "Title"
 });
-const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*/ /*YAK Extracted CSS:
+const Container = /*YAK Extracted CSS:
 :global(.input_Container_m7uBBu) {
   padding: 20px;
   background: yellow;
@@ -25,6 +25,6 @@ const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*/ /*YAK
     "displayName": "Container"
 });
 // Only Container is default exported
-export default Container;
+/*YAK EXPORTED STYLED:default:input_Container_m7uBBu*/ export default Container;
 // Button is named exported
 export { Button };

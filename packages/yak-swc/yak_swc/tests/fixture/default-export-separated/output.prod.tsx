@@ -2,10 +2,10 @@ import { styled } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Test separated declaration and default export pattern
-const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu*//*YAK Extracted CSS:
+const Title = /*YAK Extracted CSS:
 :global(.ym7uBBu) {
   color: blue;
   font-size: 24px;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu");
-export default Title;
+/*YAK EXPORTED STYLED:default:ym7uBBu*/ export default Title;

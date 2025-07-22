@@ -1,5 +1,6 @@
 use rustc_hash::FxHashMap;
 use swc_core::atoms::Atom;
+use swc_core::common::Span;
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 
@@ -24,6 +25,8 @@ pub struct VariableVisitor {
   imports: FxHashMap<Id, ImportKind>,
   /// Variable name that will be default-exported (only one per module)
   default_exported_variable: Option<Id>,
+  /// Span of the default export statement (for adding comments)
+  default_export_span: Option<Span>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -63,6 +66,7 @@ impl VariableVisitor {
       variables: FxHashMap::default(),
       imports: FxHashMap::default(),
       default_exported_variable: None,
+      default_export_span: None,
     }
   }
 
@@ -146,6 +150,16 @@ impl VariableVisitor {
   pub fn is_default_exported(&self, name: &Id) -> bool {
     self.default_exported_variable.as_ref().map_or(false, |var| var == name)
   }
+
+  /// Returns the span of the default export statement
+  pub fn get_default_export_span(&self) -> Option<Span> {
+    self.default_export_span
+  }
+
+  /// Returns the variable name that will be default-exported
+  pub fn get_default_exported_variable(&self) -> Option<&Id> {
+    self.default_exported_variable.as_ref()
+  }
 }
 
 impl Fold for VariableVisitor {}
@@ -174,6 +188,7 @@ impl VisitMut for VariableVisitor {
         // Check if it's an identifier (e.g., export default Title)
         if let Expr::Ident(ident) = &*export_default_expr.expr {
           self.default_exported_variable = Some(ident.to_id());
+          self.default_export_span = Some(export_default_expr.span);
         }
       }
       _ => {}

@@ -555,6 +555,28 @@ where
     let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
+    
+    // After processing all nodes, add export comments for default-exported styled components
+    // This handles the case where export default comes before the variable declaration (hoisted)
+    if !self.default_export_styled_components.is_empty() {
+      if let Some(export_span) = self.variables.get_default_export_span() {
+        if let Some(default_var) = self.variables.get_default_exported_variable() {
+          let var_name = default_var.0.to_string();
+          if let Some(comment) = self.default_export_styled_components.get(&var_name) {
+            
+            // Add the comment directly since it's already properly formatted
+            self.comments.add_leading(
+              export_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: export_span,
+                text: comment.clone().into(),
+              },
+            );
+          }
+        }
+      }
+    }
 
     // Add the css module import to the top of the file
     // if any yak imports are used
@@ -626,6 +648,14 @@ where
     self.current_exported = false;
   }
 
+  /// To store the current export state for default exports  
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
+    self.current_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+  }
+
   /// To store the current export state for default export expressions
   /// e.g. export default styled.button`color: red;`
   /// Also handles adding export comments for default-exported styled components
@@ -635,14 +665,14 @@ where
       let variable_name = ident.sym.to_string();
       
       // If this variable has a stored styled component comment, add it to the export statement
-      if let Some(stored_comment) = self.default_export_styled_components.get(&variable_name) {
+      if let Some(stored_comment) = self.default_export_styled_components.remove(&variable_name) {
         if let Some(ref mut comments) = self.comments {
           comments.add_leading(
             n.span.lo,
             Comment {
               kind: swc_core::common::comments::CommentKind::Block,
               span: DUMMY_SP,
-              text: stored_comment.clone().into(),
+              text: stored_comment.into(),
             },
           );
         }
@@ -939,23 +969,36 @@ where
         
         // Check if this is a default-exported styled component or mixin with separated comments
         if let Some(css_only_comment) = transform_result.css.css_only_comment.clone() {
-          // Store the full comment for later use at export default statement
-          let full_comment = format!("{}\n{}\n", comment_prefix, css_code.trim());
-          self.default_export_styled_components.insert(
-            current_variable_id.id.0.to_string(),
-            full_comment
-          );
-          
-          // Add only the CSS comment for the variable declaration
-          let css_comment = format!("{}\n{}\n", css_only_comment, css_code.trim());
-          self.comments.add_leading(
-            result_span.lo,
-            Comment {
-              kind: swc_core::common::comments::CommentKind::Block,
-              span: DUMMY_SP,
-              text: css_comment.into(),
-            },
-          );
+          // For inline default exports (no variable declaration), combine comments and place on export statement
+          if self.current_variable_name.is_none() && self.current_default_export {
+            // Inline default export: combine export and CSS comments
+            let full_comment = format!("{}\n{}\n", comment_prefix, css_code.trim());
+            self.comments.add_leading(
+              result_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: full_comment.into(),
+              },
+            );
+          } else {
+            // Separated default export: store export comment and add CSS comment to variable declaration
+            self.default_export_styled_components.insert(
+              current_variable_id.id.0.to_string(),
+              comment_prefix.clone()
+            );
+            
+            // Add only the CSS comment for the variable declaration
+            let css_comment = format!("{}\n{}\n", css_only_comment, css_code.trim());
+            self.comments.add_leading(
+              result_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: css_comment.into(),
+              },
+            );
+          }
         } else {
           // Normal case: add the full comment
           self.comments.add_leading(
