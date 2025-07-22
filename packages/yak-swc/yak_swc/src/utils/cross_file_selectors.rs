@@ -79,9 +79,9 @@ impl ImportKind {
     // For other imports, skip the first element as it's redundant
     let chain_start_index = match &self {
       ImportKind::Default { .. } => 1, // Skip local variable name for default imports
-      _ => 1, // Skip first element for named/namespace imports as usual
+      _ => 1,                          // Skip first element for named/namespace imports as usual
     };
-    
+
     if import_chain.len() > chain_start_index {
       encoded_parts.extend(
         import_chain[chain_start_index..]

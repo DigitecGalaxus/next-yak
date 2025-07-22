@@ -148,7 +148,10 @@ impl VariableVisitor {
 
   /// Returns true if the given variable name will be default-exported
   pub fn is_default_exported(&self, name: &Id) -> bool {
-    self.default_exported_variable.as_ref().map_or(false, |var| var == name)
+    self
+      .default_exported_variable
+      .as_ref()
+      .map_or(false, |var| var == name)
   }
 
   /// Returns the span of the default export statement

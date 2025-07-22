@@ -555,7 +555,7 @@ where
     let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
-    
+
     // After processing all nodes, add export comments for default-exported styled components
     // This handles the case where export default comes before the variable declaration (hoisted)
     if !self.default_export_styled_components.is_empty() {
@@ -563,7 +563,6 @@ where
         if let Some(default_var) = self.variables.get_default_exported_variable() {
           let var_name = default_var.0.to_string();
           if let Some(comment) = self.default_export_styled_components.get(&var_name) {
-            
             // Add the comment directly since it's already properly formatted
             self.comments.add_leading(
               export_span.lo,
@@ -663,7 +662,7 @@ where
     // Check if we're exporting a variable that contains a styled component
     if let Expr::Ident(ident) = &*n.expr {
       let variable_name = ident.sym.to_string();
-      
+
       // If this variable has a stored styled component comment, add it to the export statement
       if let Some(stored_comment) = self.default_export_styled_components.remove(&variable_name) {
         if let Some(ref mut comments) = self.comments {
@@ -678,7 +677,7 @@ where
         }
       }
     }
-    
+
     self.current_exported = true;
     self.current_default_export = true;
     n.visit_mut_children_with(self);
@@ -870,8 +869,10 @@ where
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
       "styled" if is_top_level => {
-        let is_exported = self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
-        let is_default_export = self.current_default_export || self.variables.is_default_exported(&current_variable_id.id);
+        let is_exported =
+          self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export
+          || self.variables.is_default_exported(&current_variable_id.id);
         Box::new(TransformStyled::new(
           &mut self.naming_convention,
           current_variable_id.clone(),
@@ -880,7 +881,7 @@ where
           is_default_export,
           self.transpilation_mode,
         ))
-      },
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -896,8 +897,10 @@ where
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => {
-        let is_exported = self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
-        let is_default_export = self.current_default_export || self.variables.is_default_exported(&current_variable_id.id);
+        let is_exported =
+          self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export
+          || self.variables.is_default_exported(&current_variable_id.id);
         Box::new(TransformCssMixin::new(
           &mut self.naming_convention,
           current_variable_id.clone(),
@@ -906,7 +909,7 @@ where
           self.inside_element_with_css_attribute,
           self.transpilation_mode,
         ))
-      },
+      }
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
@@ -966,7 +969,7 @@ where
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
         let current_variable_id = self.get_current_component_id();
-        
+
         // Check if this is a default-exported styled component or mixin with separated comments
         if let Some(css_only_comment) = transform_result.css.css_only_comment.clone() {
           // For inline default exports (no variable declaration), combine comments and place on export statement
@@ -983,11 +986,10 @@ where
             );
           } else {
             // Separated default export: store export comment and add CSS comment to variable declaration
-            self.default_export_styled_components.insert(
-              current_variable_id.id.0.to_string(),
-              comment_prefix.clone()
-            );
-            
+            self
+              .default_export_styled_components
+              .insert(current_variable_id.id.0.to_string(), comment_prefix.clone());
+
             // Add only the CSS comment for the variable declaration
             let css_comment = format!("{}\n{}\n", css_only_comment, css_code.trim());
             self.comments.add_leading(

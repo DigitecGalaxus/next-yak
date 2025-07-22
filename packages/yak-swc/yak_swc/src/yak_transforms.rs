@@ -4,7 +4,9 @@ use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
 use crate::utils::cross_file_selectors::encode_percent;
-use crate::utils::yak_constants::{YAK_EXPORTED_STYLED_PREFIX, YAK_EXPORTED_MIXIN_PREFIX, YAK_EXTRACTED_CSS_PREFIX};
+use crate::utils::yak_constants::{
+  YAK_EXPORTED_MIXIN_PREFIX, YAK_EXPORTED_STYLED_PREFIX, YAK_EXTRACTED_CSS_PREFIX,
+};
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
@@ -232,7 +234,7 @@ impl YakTransform for TransformCssMixin {
       );
       (Some(YAK_EXTRACTED_CSS_PREFIX.to_string()), None)
     } else if self.is_exported {
-      // For default exports (both inline and separated), always use "default"  
+      // For default exports (both inline and separated), always use "default"
       // For named exports, use the variable name
       let export_name_parts = if self.is_default_export {
         vec!["default".to_string()]
@@ -247,21 +249,13 @@ impl YakTransform for TransformCssMixin {
       let export_name = export_name_parts.join(":");
       if self.is_default_export {
         // For default exports, separate the comments:
-        // - Export comment goes on export default statement  
+        // - Export comment goes on export default statement
         // - No CSS comment for mixins (CSS is embedded in the mixin comment)
-        let export_comment = Some(format!(
-          "{}{}",
-          YAK_EXPORTED_MIXIN_PREFIX,
-          export_name
-        ));
+        let export_comment = Some(format!("{}{}", YAK_EXPORTED_MIXIN_PREFIX, export_name));
         (export_comment, None)
       } else {
         // For named exports, keep comment at variable declaration
-        let full_comment = Some(format!(
-          "{}{}",
-          YAK_EXPORTED_MIXIN_PREFIX,
-          export_name
-        ));
+        let full_comment = Some(format!("{}{}", YAK_EXPORTED_MIXIN_PREFIX, export_name));
         (full_comment, None)
       }
     } else {
@@ -513,7 +507,7 @@ impl YakTransform for TransformStyled {
     // Add the class name For cross file selectors to allow the css loader to
     // extract the generated class name
     let (css_prefix, css_only_comment) = if self.is_exported {
-      // For default exports (both inline and separated), always use "default" 
+      // For default exports (both inline and separated), always use "default"
       // For named exports, use the variable name
       let declaration_name_str = self.declaration_name.to_readable_string();
       let export_name = if self.is_default_export {
@@ -528,19 +522,14 @@ impl YakTransform for TransformStyled {
         let css_only = Some(YAK_EXTRACTED_CSS_PREFIX.to_string());
         let export_comment = Some(format!(
           "{}{}:{}",
-          YAK_EXPORTED_STYLED_PREFIX,
-          export_name,
-          self.class_name
+          YAK_EXPORTED_STYLED_PREFIX, export_name, self.class_name
         ));
         (export_comment, css_only)
       } else {
         // For named exports, keep comments together at variable declaration
         let full_comment = Some(format!(
           "{}{}:{}*/ /*{}",
-          YAK_EXPORTED_STYLED_PREFIX,
-          export_name,
-          self.class_name,
-          YAK_EXTRACTED_CSS_PREFIX
+          YAK_EXPORTED_STYLED_PREFIX, export_name, self.class_name, YAK_EXTRACTED_CSS_PREFIX
         ));
         (full_comment, None)
       }
