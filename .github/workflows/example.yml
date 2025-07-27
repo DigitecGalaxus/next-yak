@@ -27,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          ref: ${{ github.event.pull_request_target.head.sha || github.ref }}
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
@@ -70,31 +70,31 @@ jobs:
 
       # Preview deployment (for pull requests and non-main pushes)
       - name: Pull Vercel environment information (Preview)
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
       - name: Build project artifacts (Preview)
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Preview)
         id: deploy-preview
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         run: |
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
       - name: Find Documentation Comment
         uses: peter-evans/find-comment@v3
         id: find-comment
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         with:
-          issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          issue-number: ${{ github.event.pull_request_target.number || github.event.inputs.pr_number }}
           comment-author: "github-actions[bot]"
           body-includes: "🧪 Example App Preview Deployed!"
       - name: Create or Update Documentation Comment
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          issue-number: ${{ github.event.pull_request_target.number || github.event.inputs.pr_number }}
           body: |
             ## 🧪 Example App Preview Deployed!
 
