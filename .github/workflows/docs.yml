@@ -34,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request_target.head.sha || github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -94,17 +94,17 @@ jobs:
       - name: Find Documentation Comment
         uses: peter-evans/find-comment@v3
         id: find-comment
-        if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
         with:
-          issue-number: ${{ github.event.pull_request_target.number || github.event.inputs.pr_number }}
+          issue-number: ${{ github.event.number || github.event.inputs.pr_number }}
           comment-author: "github-actions[bot]"
           body-includes: "📚 Documentation Preview Deployed!"
       - name: Create or Update Documentation Comment
-        if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request_target.number || github.event.inputs.pr_number }}
+          issue-number: ${{ github.event.number || github.event.inputs.pr_number }}
           body: |
             ## 📚 Documentation Preview Deployed!
 
