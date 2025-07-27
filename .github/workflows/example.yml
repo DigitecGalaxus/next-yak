@@ -11,7 +11,7 @@ on:
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/example.yml"
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths:
@@ -24,7 +24,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
