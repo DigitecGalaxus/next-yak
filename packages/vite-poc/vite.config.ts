@@ -75,7 +75,19 @@ function customTransformPlugin(): Plugin {
 
         const callbacks: ResolverCallbacks = {
           resolveModule: async (moduleSpecifier: string, context: string) => {
-            const resolved = await this.resolve(moduleSpecifier, originalId);
+            let importer = context;
+
+            // These workarounds are necessary because webpacks resolution is more advanced
+            if (context.endsWith("/src")) {
+              // add virtual file path that the import comes from
+              importer = context + "/index.tsx";
+            } else if (!context.includes(".")) {
+              // add a virtual extension to the path if it's not present
+              importer = context + ".tsx"; // or '/package.json'
+            }
+
+            const resolved = await this.resolve(moduleSpecifier, importer);
+
             if (!resolved) {
               throw new Error(
                 `Could not resolve ${moduleSpecifier} from ${context}`,
@@ -88,6 +100,7 @@ function customTransformPlugin(): Plugin {
             const file = await fs.readFile(filePath, "utf-8");
             return file;
           },
+
           importModule: async (filePath: string) => {
             const fileUrl = pathToFileURL(filePath).href;
 
@@ -97,8 +110,73 @@ function customTransformPlugin(): Plugin {
               return result;
             }
 
+            // Build mode: execute .yak files (very limited, as we don't track imported modules from yak files)
+            if (
+              filePath.endsWith(".yak.ts") ||
+              filePath.endsWith(".yak.tsx") ||
+              filePath.endsWith(".yak.js") ||
+              filePath.endsWith(".yak.jsx")
+            ) {
+              const sourceCode = await fs.readFile(filePath, "utf-8");
+              const result = transformSync(sourceCode, {
+                filename: filePath,
+                jsc: {
+                  parser: {
+                    syntax:
+                      filePath.endsWith(".ts") || filePath.endsWith(".tsx")
+                        ? "typescript"
+                        : "ecmascript",
+                    tsx: filePath.endsWith(".tsx"),
+                    jsx: filePath.endsWith(".jsx"),
+                  },
+                  transform: {
+                    react: {
+                      runtime: "automatic",
+                    },
+                  },
+                  experimental: {
+                    plugins: [
+                      ["yak-swc", { basePath: "/", transpilationMode: "Css" }],
+                    ],
+                  },
+                },
+                module: {
+                  type: "commonjs",
+                },
+              });
+
+              const moduleExports = {};
+              const moduleScope = {
+                exports: moduleExports,
+                module: { exports: moduleExports },
+                require: () => ({}),
+                __filename: filePath,
+                __dirname: nodeResolve(filePath, ".."),
+              };
+
+              const moduleFunction = new Function(
+                "exports",
+                "module",
+                "require",
+                "__filename",
+                "__dirname",
+                result.code,
+              );
+
+              moduleFunction(
+                moduleScope.exports,
+                moduleScope.module,
+                moduleScope.require,
+                moduleScope.__filename,
+                moduleScope.__dirname,
+              );
+
+              return moduleScope.module.exports || moduleScope.exports;
+            }
+
             return {};
           },
+
           loadModule: async (filePath: string) => {
             if (mode === "dev") {
               await server.transformRequest(filePath);
@@ -110,7 +188,31 @@ function customTransformPlugin(): Plugin {
               return code;
             }
 
-            return "";
+            const sourceCode = await fs.readFile(filePath, "utf-8");
+            const result = transformSync(sourceCode, {
+              filename: filePath,
+              jsc: {
+                parser: {
+                  syntax:
+                    filePath.endsWith(".ts") || filePath.endsWith(".tsx")
+                      ? "typescript"
+                      : "ecmascript",
+                  tsx: filePath.endsWith(".tsx"),
+                  jsx: filePath.endsWith(".jsx"),
+                },
+                transform: {
+                  react: {
+                    runtime: "automatic",
+                  },
+                },
+                experimental: {
+                  plugins: [
+                    ["yak-swc", { basePath: "/", transpilationMode: "Css" }],
+                  ],
+                },
+              },
+            });
+            return result.code;
           },
 
           addDependency: () => {
