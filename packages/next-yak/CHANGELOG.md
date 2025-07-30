@@ -1,5 +1,15 @@
 # next-yak
 
+## 6.1.0-next.0
+
+### Minor Changes
+
+- a5e730d: extract the cross-file resolution logic to make it reusable with different bundlers
+
+### Patch Changes
+
+- yak-swc@6.1.0-next.0
+
 ## 6.0.0
 
 ### Patch Changes

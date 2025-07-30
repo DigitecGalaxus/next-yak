@@ -1,5 +1,7 @@
 # yak-swc
 
+## 6.1.0-next.0
+
 ## 6.0.0
 
 ### Major Changes
