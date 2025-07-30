@@ -1,7 +1,7 @@
 import { styled, keyframes } from "next-yak";
 import styles from "../page.module.css";
 import { Clock } from "../Clock";
-import { ClockHand } from "../ClockHands";
+import { ClockHand, maxWidthMixin } from "../ClockHands";
 import { verySlow } from "./durationStar";
 
 const rotate = keyframes`
@@ -31,6 +31,7 @@ const MyWrapper = styled.div`
     background: #ffb134;
     animation: ${colorRotation} ${verySlow} linear infinite;
   }
+  ${maxWidthMixin};
 `;
 
 export default function Home() {

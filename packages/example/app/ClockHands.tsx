@@ -44,6 +44,7 @@ export const ClockHand = styled.div<{ $angle: number }>`
   transform-origin: 50% 100%;
   transform: translate(-50%, -100%) rotate(${({ $angle }) => $angle}deg);
 `;
+
 const SecondHand = styled(ClockHand)`
   width: 2px;
   height: 45%;
@@ -68,4 +69,8 @@ const HourHand = styled(ClockHand)`
   height: 30%;
   background: black;
   translate: 0 0 40px;
+`;
+
+export const maxWidthMixin = css`
+  max-width: 300px;
 `;

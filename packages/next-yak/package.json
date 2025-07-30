@@ -71,7 +71,7 @@
     "test:types:code": "tsc -p tsconfig.json",
     "test:types:test": "tsc -p ./runtime/__tests__/tsconfig.json",
     "test:watch": "vitest --watch",
-    "prettier": "npx prettier --write \"./{loaders,runtime,withYak}/**/*.{ts,tsx,js,jsx}\""
+    "prettier": "npx prettier --write \"./{loaders,cross-file-resolver,runtime,withYak}/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
     "@babel/parser": "catalog:core",
