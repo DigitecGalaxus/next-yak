@@ -10,5 +10,8 @@
     "next-yak": "6.0.0",
     "yak-swc": "6.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "dirty-masks-serve",
+    "proud-bananas-beam"
+  ]
 }
