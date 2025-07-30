@@ -1,0 +1,14 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "benchmarks": "0.1.0",
+    "cross-file-tests": "1.0.0",
+    "docs": "0.0.0",
+    "eslint-plugin-yak": "1.0.1",
+    "next-yak-example": "0.1.0",
+    "next-yak": "6.0.0",
+    "yak-swc": "6.0.0"
+  },
+  "changesets": []
+}
