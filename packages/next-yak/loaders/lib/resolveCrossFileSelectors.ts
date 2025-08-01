@@ -1,18 +1,16 @@
-import {
-  ParseContext,
-  parseModule,
-  ParsedModule,
-  ModuleExports,
-  ModuleExport,
-} from "../../cross-file-resolver/parseModule.js";
-import {
-  ResolveContext,
-  resolveCrossFileConstant as genericResolveCrossFileConstant,
-} from "../../cross-file-resolver/resolveCrossFileConstant.js";
-import type { Compilation, LoaderContext } from "webpack";
-import { YakConfigOptions } from "../../withYak/index.js";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
+import {
+  resolveCrossFileConstant as genericResolveCrossFileConstant,
+  ModuleExport,
+  ModuleExports,
+  ParseContext,
+  ParsedModule,
+  parseModule,
+  ResolveContext,
+} from "cross-file-yak";
+import type { Compilation, LoaderContext } from "webpack";
+import { YakConfigOptions } from "../../withYak/index.js";
 
 const compilationCache = new WeakMap<
   Compilation,

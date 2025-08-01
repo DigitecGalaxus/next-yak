@@ -8,8 +8,9 @@
   ],
   "scripts": {
     "changeset": "changeset",
-    "build": "pnpm run --filter=next-yak build",
+    "build": "pnpm run --filter=next-yak... build",
     "build:swc": "pnpm run --filter=yak-swc build",
+    "build:cross-file-yak": "pnpm run --filter=cross-file-yak build",
     "example": "pnpm --filter=next-yak-example run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "prettier": "pnpm run --recursive --if-present prettier",

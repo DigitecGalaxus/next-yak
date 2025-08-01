@@ -3,6 +3,7 @@ node_modules
 packages/docs/docs/dist
 packages/next-yak/dist
 packages/eslint-plugin-yak/dist
+packages/cross-file-yak/dist
 target
 .vercel
 .swc
