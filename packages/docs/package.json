@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "pnpm run build:yak && pnpm run build:wasm:opt && pnpm run build:next",
-    "build:next": "next build",
+    "build": "pnpm run --filter=docs^... build && pnpm run build:wasm:opt && next build",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
     "build:wasm:opt": "wasm-pack build ./playground-wasm --out-dir ./out --out-name index --target web",

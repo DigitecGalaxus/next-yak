@@ -5,10 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm run build:yak && pnpm run build:next",
-    "build:next": "next build",
-    "build:yak": "pnpm run --filter next-yak build",
-    "build:swc": "pnpm run --filter yak-swc build",
+    "build": "pnpm run --filter=next-yak-example^... build && next build",
     "start": "next start",
     "lint": "eslint .",
     "test": "pnpm run test:vitest && pnpm run test:jest",
