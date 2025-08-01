@@ -97,6 +97,9 @@
     "vite": "catalog:dev",
     "vitest": "catalog:dev"
   },
+  "peerDependencies": {
+    "cross-file-yak": "workspace:*"
+  },
   "files": [
     "dist",
     "loaders",

@@ -1,0 +1,66 @@
+{
+  "name": "cross-file-yak",
+  "version": "0.0.1",
+  "type": "module",
+  "types": "./dist/",
+  "sideEffects": false,
+  "license": "MIT",
+  "description": "Cross-file utility for next-yak that enables resolution of constants, mixins, and styled components across module boundaries",
+  "homepage": "https://yak.js.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jantimon/next-yak.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jantimon/next-yak/issues"
+  },
+  "keywords": [
+    "next.js",
+    "css-in-js",
+    "styled-components",
+    "react",
+    "typescript",
+    "cross-file",
+    "mixins",
+    "constants",
+    "resolver"
+  ],
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "prettier": "npx prettier --write \"./**/*.{ts,tsx}\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@testing-library/jest-dom": "catalog:dev",
+    "@types/jest": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "jsdom": "catalog:dev",
+    "tsup": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
+  ],
+  "author": {
+    "name": "Jan Nicklas"
+  }
+}
