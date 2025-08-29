@@ -582,7 +582,7 @@ const Button = styled.button`
 
 ### Important Note for Next.js 15.0.0+
 
-Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (read this blog post about it)[https://nextjs.org/blog/next-15#async-request-apis-breaking-change]. This creates a limitation when using server-side dynamic values in `getYakThemeContext()`:
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous <a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>. This creates a limitation when using server-side dynamic values in `getYakThemeContext()`:
 
 ```tsx
 // This won't work in Next.js 15.0.0+ because cookies() is async
