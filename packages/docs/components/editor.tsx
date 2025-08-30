@@ -3,7 +3,6 @@ import { ComponentProps, use, useCallback, useMemo } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
-import { Primitive } from "fumadocs-ui/components/tabs";
 import { useTheme } from "next-themes";
 import {
   PanelGroup,
@@ -22,6 +21,11 @@ import * as babelParser from "prettier/parser-babel";
 import * as estreePlugin from "prettier/plugins/estree";
 import { compressWithDictionary } from "./compress";
 import { Toggle } from "./toggle";
+import {
+  CodeBlockTabs,
+  CodeBlockTabsList,
+  CodeBlockTabsTrigger,
+} from "fumadocs-ui/components/codeblock";
 
 export default dynamic(
   async function load() {
@@ -149,44 +153,54 @@ export default dynamic(
             <Panel
               defaultSize={50}
               style={{
-                borderWidth: "0 0 1px 1px",
+                borderWidth: "1px",
               }}
             >
-              <Primitive.Tabs
+              <CodeBlockTabs
                 onValueChange={setTab}
                 value={tab}
                 style={{
                   borderRadius: "0px",
-                  borderWidth: "1px 0 0 0",
+                  border: "none",
                   backgroundColor:
                     themeConfig.resolvedTheme === "dark"
                       ? "#121212"
                       : "#ffffff",
                   position: "relative",
+                  marginBlock: "0",
                 }}
                 className="group"
               >
-                <Primitive.TabsList>
+                <CodeBlockTabsList
+                  css={css`
+                    border-bottom: 1px solid var(--color-fd-border);
+                    & > :last-child {
+                      display: none;
+                    }
+                  `}
+                >
                   <div
                     css={css`
                       display: flex;
                       justify-content: space-between;
                       width: 100%;
+                      padding-inline: 1rem;
+                      margin-inline-start: 0;
                     `}
                   >
                     <div
                       css={css`
                         display: flex;
-                        gap: 1rem;
+                        gap: 0.5rem;
                       `}
                     >
                       {fileNames.map((fileName) => (
-                        <Primitive.TabsTrigger
+                        <CodeBlockTabsTrigger
                           key={fileName}
                           value={fileName.replace(".tsx", "")}
                         >
                           {fileName}
-                        </Primitive.TabsTrigger>
+                        </CodeBlockTabsTrigger>
                       ))}
                     </div>
                     <div
@@ -263,7 +277,7 @@ export default dynamic(
                       </button>
                     </div>
                   </div>
-                </Primitive.TabsList>
+                </CodeBlockTabsList>
                 <MonacoEditor
                   key={initialInput.mainFile.content}
                   height="90vh"
@@ -405,9 +419,33 @@ export default dynamic(
                     updateCode();
                   }}
                 />
-              </Primitive.Tabs>
+              </CodeBlockTabs>
             </Panel>
-            <PanelResizeHandle />
+            <PanelResizeHandle
+              id="horizontal"
+              css={css`
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                background-color: var(--color-fd-secondary);
+              `}
+            >
+              <svg
+                css={css`
+                  fill: currentColor;
+                  flex: 0 0 1rem;
+                  width: 1rem;
+                  height: 1rem;
+                `}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="currentColor"
+                  d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                ></path>
+              </svg>
+            </PanelResizeHandle>
             <Panel defaultSize={50}>
               <PanelGroup autoSaveId="vertical" direction="vertical">
                 <Panel
@@ -424,20 +462,45 @@ export default dynamic(
                     {transpileResult?.renderedMainComponent.component}
                   </ErrorBoundaryWithSnapshot>
                 </Panel>
-                <div
-                  style={{
-                    backgroundColor: "var(--color-fd-secondary)",
-                  }}
-                >
-                  <PanelResizeHandle></PanelResizeHandle>
+                <div>
+                  <PanelResizeHandle
+                    id="vertical"
+                    css={css`
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+
+                      background-color: var(--color-fd-secondary);
+                    `}
+                  >
+                    <svg
+                      css={css`
+                        fill: currentColor;
+                        flex: 0 0 1rem;
+                        width: 1rem;
+                        height: 1rem;
+                        rotate: 90deg;
+                      `}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                      ></path>
+                    </svg>
+                  </PanelResizeHandle>
 
                   <div
                     style={{
                       borderColor: "var(--color-fd-border)",
-                      borderWidth: "0 1px",
+                      borderWidth: "1px 1px 0px",
                       display: "flex",
                       flexDirection: "row",
                       justifyContent: "space-between",
+                      backgroundColor:
+                        themeConfig.resolvedTheme === "dark"
+                          ? "#121212"
+                          : "#ffffff",
                     }}
                   >
                     <div
@@ -452,9 +515,8 @@ export default dynamic(
                         }
                       }}
                       css={css`
-                        padding: 8px 12px;
+                        padding: 6px 12px;
                         border: none;
-                        background-color: var(--color-fd);
                         cursor: pointer;
                         text-align: start;
                         color: var(--color-fd-muted-foreground);
@@ -466,7 +528,7 @@ export default dynamic(
                     >
                       Compiled output
                     </div>
-                    <Primitive.Tabs
+                    <CodeBlockTabs
                       onValueChange={(v) =>
                         setCompiledOutput(v as "CSS" | "TS")
                       }
@@ -478,17 +540,24 @@ export default dynamic(
                           themeConfig.resolvedTheme === "dark"
                             ? "#121212"
                             : "#ffffff",
+                        marginBlock: 0,
                       }}
                     >
-                      <Primitive.TabsList>
-                        <Primitive.TabsTrigger value="CSS">
+                      <CodeBlockTabsList
+                        css={css`
+                          & > :last-child {
+                            display: none;
+                          }
+                        `}
+                      >
+                        <CodeBlockTabsTrigger value="CSS">
                           CSS
-                        </Primitive.TabsTrigger>
-                        <Primitive.TabsTrigger value="TS">
+                        </CodeBlockTabsTrigger>
+                        <CodeBlockTabsTrigger value="TS">
                           TS
-                        </Primitive.TabsTrigger>
-                      </Primitive.TabsList>
-                    </Primitive.Tabs>
+                        </CodeBlockTabsTrigger>
+                      </CodeBlockTabsList>
+                    </CodeBlockTabs>
                   </div>
                 </div>
                 <Panel
@@ -498,7 +567,7 @@ export default dynamic(
                   ref={compiledPanelRef}
                   style={{
                     borderColor: "var(--color-fd-border)",
-                    borderWidth: "0 1px ",
+                    borderWidth: "0 1px 1px 1px",
                     overflowY: "auto",
                     background:
                       themeConfig.resolvedTheme === "dark"
@@ -506,7 +575,7 @@ export default dynamic(
                         : "#ffffff",
                   }}
                 >
-                  <Primitive.Tabs
+                  <CodeBlockTabs
                     onValueChange={setTab}
                     value={tab}
                     style={{
@@ -516,18 +585,26 @@ export default dynamic(
                         themeConfig.resolvedTheme === "dark"
                           ? "#121212"
                           : "#ffffff",
+
+                      marginBlock: 0,
                     }}
                   >
-                    <Primitive.TabsList>
+                    <CodeBlockTabsList
+                      css={css`
+                        & > :last-child {
+                          display: none;
+                        }
+                      `}
+                    >
                       {fileNames.map((fileName) => (
-                        <Primitive.TabsTrigger
+                        <CodeBlockTabsTrigger
                           key={fileName}
                           value={fileName.replace(".tsx", "")}
                         >
                           {fileName}
-                        </Primitive.TabsTrigger>
+                        </CodeBlockTabsTrigger>
                       ))}
-                    </Primitive.TabsList>
+                    </CodeBlockTabsList>
                     {compiledOutput === "CSS" ? (
                       <div
                         style={{
@@ -577,7 +654,7 @@ export default dynamic(
                         }}
                       />
                     ) : null}
-                  </Primitive.Tabs>
+                  </CodeBlockTabs>
                 </Panel>
               </PanelGroup>
             </Panel>

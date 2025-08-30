@@ -1,5 +1,4 @@
 import DynamicEditor from "@/components/editor";
-import "./playground.css";
 import { decompressWithDictionary } from "@/components/compress";
 import { examples } from "./examples";
 
