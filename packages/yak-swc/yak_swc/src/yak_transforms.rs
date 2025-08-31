@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use swc_core::atoms::Atom;
 use swc_core::common::util::move_map::MoveMap;
@@ -17,7 +16,7 @@ use crate::naming_convention::{NamingConvention, TranspilationMode};
 /// Represents a CSS result after the transformation
 #[derive(Debug)]
 pub struct YakCss {
-  pub comment_prefix: Option<String>,
+  pub comment_prefix: Option<YakCommentPrefix>,
   /// The generated CSS code
   pub declarations: Vec<Declaration>,
 }
@@ -26,6 +25,17 @@ pub struct YakCss {
 pub struct YakTransformResult {
   pub expression: Box<Expr>,
   pub css: YakCss,
+}
+
+#[derive(Debug)]
+pub struct YakCommentPrefix {
+  pub export_marker: Option<String>,
+  pub parts: Vec<String>,
+  pub css_start_marker: Option<String>,
+}
+
+pub trait ToCommentPrefix {
+  fn to_comment_prefix(&self, is_default_export: bool) -> String;
 }
 
 pub trait YakTransform {
@@ -214,7 +224,7 @@ impl YakTransform for TransformCssMixin {
         .into(),
       );
     }
-    let css_prefix = if self.is_within_jsx_attribute {
+    let comment_prefix: Option<YakCommentPrefix> = if self.is_within_jsx_attribute {
       // Add the class name to the arguments, to be created by the CSS loader
       arguments.push(
         Expr::Lit(Lit::Str(Str {
@@ -224,24 +234,29 @@ impl YakTransform for TransformCssMixin {
         }))
         .into(),
       );
-      Some("YAK Extracted CSS:".to_string())
+      Some(YakCommentPrefix {
+        export_marker: None,
+        parts: vec![],
+        css_start_marker: Some("YAK Extracted CSS:".to_string()),
+      })
     } else if self.is_exported {
-      Some(format!(
-        "YAK EXPORTED MIXIN:{}",
-        self
+      Some(YakCommentPrefix {
+        export_marker: Some("YAK EXPORTED MIXIN:".to_string()),
+        parts: self
           .export_name
           .parts
           .iter()
           .map(|atom| encode_percent(atom.as_str()))
-          .join(":")
-      ))
+          .collect::<Vec<String>>(),
+        css_start_marker: None,
+      })
     } else {
       None
     };
 
     YakTransformResult {
       css: YakCss {
-        comment_prefix: css_prefix,
+        comment_prefix,
         declarations: declarations.to_vec().move_map(|mut declaration| {
           // TODO: Fix nested mixins
           if !self.is_within_jsx_attribute {
@@ -479,19 +494,26 @@ impl YakTransform for TransformStyled {
 
     // Add the class name For cross file selectors to allow the css loader to
     // extract the generated class name
-    let css_prefix = if self.is_exported {
-      Some(format!(
-        "YAK EXPORTED STYLED:{}:{}*//*YAK Extracted CSS:",
-        self.declaration_name.to_readable_string(),
-        self.class_name
-      ))
+    let comment_prefix = if self.is_exported {
+      Some(YakCommentPrefix {
+        export_marker: Some("YAK EXPORTED STYLED:".to_string()),
+        parts: vec![self.declaration_name.to_readable_string()],
+        css_start_marker: Some(format!(
+          ":{}*//*YAK Extracted CSS:",
+          self.class_name.clone()
+        )),
+      })
     } else {
-      Some("YAK Extracted CSS:".to_string())
+      Some(YakCommentPrefix {
+        export_marker: None,
+        parts: vec![],
+        css_start_marker: Some("YAK Extracted CSS:".to_string()),
+      })
     };
 
     YakTransformResult {
       css: YakCss {
-        comment_prefix: css_prefix,
+        comment_prefix,
         declarations: declarations.to_vec(),
       },
       expression: result_expr,
@@ -567,7 +589,11 @@ impl YakTransform for TransformKeyframes {
     }
     YakTransformResult {
       css: YakCss {
-        comment_prefix: Some("YAK Extracted CSS:".to_string()),
+        comment_prefix: Some(YakCommentPrefix {
+          export_marker: None,
+          parts: vec![],
+          css_start_marker: Some("YAK Extracted CSS:".to_string()),
+        }),
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {
@@ -586,5 +612,23 @@ impl YakTransform for TransformKeyframes {
       TranspilationMode::CssModule => format!("global({})", self.animation_name),
       TranspilationMode::Css => self.animation_name.clone(),
     })
+  }
+}
+
+impl ToCommentPrefix for YakCommentPrefix {
+  fn to_comment_prefix(&self, is_default_export: bool) -> String {
+    let export_marker = self.export_marker.as_deref().unwrap_or_default();
+    let css_start_marker = self.css_start_marker.as_deref().unwrap_or_default();
+
+    let parts = if is_default_export && !self.parts.is_empty() {
+      // replace first part with "default"
+      let mut parts = vec!["default".to_string()];
+      parts.extend(self.parts.iter().skip(1).cloned());
+      parts
+    } else {
+      self.parts.clone()
+    };
+
+    format!("{}{}{}", export_marker, parts.join(":"), css_start_marker)
   }
 }

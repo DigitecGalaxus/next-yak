@@ -12,11 +12,16 @@ export const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu1*//*YAK Extracted CSS:
   font-size: 24px;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu1");
-const Container = /*YAK Extracted CSS:
+const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu2*//*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   padding: 20px;
   background: yellow;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
-export default Container;
+export default /*YAK EXPORTED STYLED:default:ym7uBBu2*//*YAK Extracted CSS:
+:global(.ym7uBBu2) {
+  padding: 20px;
+  background: yellow;
+}
+*/ Container;
 export { Button };
