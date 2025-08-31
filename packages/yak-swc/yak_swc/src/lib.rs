@@ -136,7 +136,6 @@ where
   display_names: bool,
   /// Transpilation mode to determine how to transpile the code
   transpilation_mode: TranspilationMode,
-  default_export_comment: Option<String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -166,7 +165,6 @@ where
       comments,
       display_names,
       transpilation_mode,
-      default_export_comment: None,
     }
   }
 
@@ -195,7 +193,7 @@ where
 
   fn is_default_exported(&self, current_variable_id: &ScopedVariableReference) -> bool {
     match self.variables.get_default_export() {
-      Some(default_expr) => &default_expr == current_variable_id,
+      Some(default_expr) => default_expr.id == current_variable_id.id,
       _ => false,
     }
   }
@@ -631,34 +629,25 @@ where
   }
 
   /// Visit export default expressions
-  /// To store the current export state
+  /// Set name to default for direct references to tagged templates
   /// e.g. export default styled.button`color: red;`
+  /// The other cases are handled directly by the referenced identifier
+  /// e.g. export default button;
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    match n.expr.as_ref() {
-      Expr::Ident(ident) => match self.default_export_comment.as_ref() {
-        Some(comment) => {
-          self.comments.add_leading(
-            ident.span_lo(),
-            Comment {
-              kind: swc_core::common::comments::CommentKind::Block,
-              span: DUMMY_SP,
-              text: comment.clone().into(),
-            },
-          );
-        }
-        None => {}
-      },
-      _ => {}
+    if matches!(n.expr.as_ref(), Expr::TaggedTpl(_)) {
+      self.current_exported = true;
+      self.current_variable_name = Some(ScopedVariableReference::new(
+        Id::from((atom!("default"), SyntaxContext::empty())),
+        vec![atom!("default")],
+      ));
     }
 
-    self.current_exported = true;
-    self.current_variable_name = Some(ScopedVariableReference::new(
-      Id::from((atom!("default"), SyntaxContext::empty())),
-      vec![atom!("default")],
-    ));
     n.visit_mut_children_with(self);
-    self.current_variable_name = None;
-    self.current_exported = false;
+
+    if matches!(n.expr.as_ref(), Expr::TaggedTpl(_)) {
+      self.current_variable_name = None;
+      self.current_exported = false;
+    }
   }
 
   /// Visit variable declarations
@@ -933,14 +922,22 @@ where
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
         if self.is_default_exported(&current_variable_id) {
-          self.default_export_comment = Some(
-            format!(
-              "{}\n{}\n",
-              comment_prefix.to_comment_prefix(true),
-              css_code.trim()
-            )
-            .into(),
-          );
+          if let Some(referenced_variable) = self.variables.get_default_export() {
+            // Add comment to default export
+            self.comments.add_leading(
+              referenced_variable.span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: format!(
+                  "{}\n{}\n",
+                  comment_prefix.to_comment_prefix(true),
+                  css_code.trim()
+                )
+                .into(),
+              },
+            );
+          }
         }
         self.comments.add_leading(
           result_span.lo,
