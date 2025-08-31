@@ -232,7 +232,7 @@ where
         if final_quasi.ends_with(';') || final_quasi.ends_with('}') {
           quasi.raw.to_string()
         } else {
-          format!("{};", final_quasi).to_string()
+          format!("{final_quasi};").to_string()
         }
       } else {
         quasi.raw.to_string()
@@ -264,7 +264,7 @@ where
         if let Some(evaluated_math_calculation) = try_evaluate(expr, &self.variables) {
           // Format to 4 decimal places
           let (new_state, new_declarations) = parse_css(
-            format!("{:.4}", evaluated_math_calculation)
+            format!("{evaluated_math_calculation:.4}")
               .trim_end_matches('0')
               .trim_end_matches('.'),
             css_state,
@@ -355,7 +355,7 @@ where
                   .insert(scoped_name.clone(), keyframe_name.clone());
                 let (new_state, _) = match &self.transpilation_mode {
                   TranspilationMode::CssModule => {
-                    parse_css(&format!("global({})", keyframe_name), css_state)
+                    parse_css(&format!("global({keyframe_name})"), css_state)
                   }
                   TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
@@ -502,7 +502,7 @@ ${{() => {var}}};\n",
               format!("--{}", css_variable_name.clone()),
               css_variable_runtime_expr,
             );
-            let (new_state, _) = parse_css(&format!("var(--{})", css_variable_name), css_state);
+            let (new_state, _) = parse_css(&format!("var(--{css_variable_name})"), css_state);
             css_state = Some(new_state);
           }
 
@@ -629,25 +629,21 @@ where
   }
 
   /// Visit export default expressions
-  /// Set name to default for direct references to tagged templates
+  /// Set name to default if it's not a variable reference
+  /// otherwise it gets overridden by the variable name while visiting the declaration
   /// e.g. export default styled.button`color: red;`
-  /// The other cases are handled directly by the referenced identifier
-  /// e.g. export default button;
+  /// or export default { title: styled.h1`font-size: 16px;` }
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    if matches!(n.expr.as_ref(), Expr::TaggedTpl(_)) {
-      self.current_exported = true;
-      self.current_variable_name = Some(ScopedVariableReference::new(
-        Id::from((atom!("default"), SyntaxContext::empty())),
-        vec![atom!("default")],
-      ));
-    }
+    self.current_exported = true;
+    self.current_variable_name = Some(ScopedVariableReference::new(
+      Id::from((atom!("default"), SyntaxContext::empty())),
+      vec![atom!("default")],
+    ));
 
     n.visit_mut_children_with(self);
 
-    if matches!(n.expr.as_ref(), Expr::TaggedTpl(_)) {
-      self.current_variable_name = None;
-      self.current_exported = false;
-    }
+    self.current_variable_name = None;
+    self.current_exported = false;
   }
 
   /// Visit variable declarations
@@ -882,10 +878,7 @@ where
           });
           return;
         }
-        panic!(
-          "Invalid context for next-yak function {:?}",
-          yak_library_function_name
-        )
+        panic!("Invalid context for next-yak function {yak_library_function_name:?}")
       }
     };
 
@@ -997,8 +990,8 @@ where
 fn condition_to_string(expr: &Expr, negate: bool) -> String {
   let prefix = if negate { "not_" } else { "" };
   match expr {
-    Expr::Ident(Ident { sym, .. }) => format!("{}{}", prefix, sym),
-    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{}{}", prefix, value),
+    Expr::Ident(Ident { sym, .. }) => format!("{prefix}{sym}"),
+    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{prefix}{value}"),
     Expr::Member(MemberExpr { obj, prop, .. }) => {
       let obj = condition_to_string(obj, false);
       let prop = match prop {
@@ -1008,7 +1001,7 @@ fn condition_to_string(expr: &Expr, negate: bool) -> String {
       if prop.is_empty() || obj.is_empty() {
         return "".to_string();
       }
-      format!("{}.{}", obj, prop)
+      format!("{obj}.{prop}")
     }
     _ => "".to_string(),
   }
