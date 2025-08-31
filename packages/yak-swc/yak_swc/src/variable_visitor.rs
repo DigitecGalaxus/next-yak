@@ -22,6 +22,7 @@ pub enum ImportSourceType {
 pub struct VariableVisitor {
   variables: FxHashMap<Id, Box<Expr>>,
   imports: FxHashMap<Id, ImportKind>,
+  default_export: Option<ScopedVariableReference>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -60,6 +61,7 @@ impl VariableVisitor {
     Self {
       variables: FxHashMap::default(),
       imports: FxHashMap::default(),
+      default_export: None,
     }
   }
 
@@ -138,11 +140,28 @@ impl VariableVisitor {
     }
     None
   }
+
+  pub fn get_default_export(&self) -> Option<ScopedVariableReference> {
+    self.default_export.clone()
+  }
 }
 
 impl Fold for VariableVisitor {}
 
 impl VisitMut for VariableVisitor {
+  /// Visit export default expressions to store the variable name
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    match n.expr.as_ref() {
+      Expr::Ident(ident) => {
+        self.default_export = Some(ScopedVariableReference::new(
+          ident.to_id(),
+          vec![ident.sym.clone()],
+        ));
+      }
+      _ => {}
+    }
+    n.visit_mut_children_with(self);
+  }
   /// Scans the AST for variable declarations and extracts the variable names
   fn visit_mut_var_decl(&mut self, var: &mut VarDecl) {
     var.decls.iter_mut().for_each(|decl| {

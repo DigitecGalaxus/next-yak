@@ -16,7 +16,7 @@ export const Title = /*YAK EXPORTED STYLED:Title:input_Title_m7uBBu*//*YAK Extra
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_h1("input_Title_m7uBBu"), {
     "displayName": "Title"
 });
-const Container = /*YAK Extracted CSS:
+const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Container_m7uBBu) {
   padding: 20px;
   background: yellow;
@@ -24,5 +24,10 @@ const Container = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Container_m7uBBu"), {
     "displayName": "Container"
 });
-export default Container;
+export default /*YAK EXPORTED STYLED:default:input_Container_m7uBBu*//*YAK Extracted CSS:
+:global(.input_Container_m7uBBu) {
+  padding: 20px;
+  background: yellow;
+}
+*/ Container;
 export { Button };

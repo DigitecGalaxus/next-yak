@@ -42,7 +42,8 @@ use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
+  ToCommentPrefix, TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled,
+  YakTransform,
 };
 
 /// Static plugin configuration.
@@ -135,6 +136,7 @@ where
   display_names: bool,
   /// Transpilation mode to determine how to transpile the code
   transpilation_mode: TranspilationMode,
+  default_export_comment: Option<String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -164,6 +166,7 @@ where
       comments,
       display_names,
       transpilation_mode,
+      default_export_comment: None,
     }
   }
 
@@ -188,6 +191,13 @@ where
         vec![atom!("yak")],
       )
     })
+  }
+
+  fn is_default_exported(&self, current_variable_id: &ScopedVariableReference) -> bool {
+    match self.variables.get_default_export() {
+      Some(default_expr) => &default_expr == current_variable_id,
+      _ => false,
+    }
   }
 
   /// Iterate over the quasi and expressions of a tagged template literal
@@ -624,6 +634,23 @@ where
   /// To store the current export state
   /// e.g. export default styled.button`color: red;`
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    match n.expr.as_ref() {
+      Expr::Ident(ident) => match self.default_export_comment.as_ref() {
+        Some(comment) => {
+          self.comments.add_leading(
+            ident.span_lo(),
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: comment.clone().into(),
+            },
+          );
+        }
+        None => {}
+      },
+      _ => {}
+    }
+
     self.current_exported = true;
     self.current_variable_name = Some(ScopedVariableReference::new(
       Id::from((atom!("default"), SyntaxContext::empty())),
@@ -814,6 +841,7 @@ where
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
+    let is_default_exported = self.is_default_exported(&current_variable_id);
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
@@ -821,7 +849,7 @@ where
         &mut self.naming_convention,
         current_variable_id.clone(),
         self.display_names,
-        self.current_exported,
+        self.current_exported || is_default_exported,
         self.transpilation_mode,
       )),
       // Keyframes transform works only on top level
@@ -837,11 +865,12 @@ where
           }),
         self.transpilation_mode,
       )),
+
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => Box::new(TransformCssMixin::new(
         &mut self.naming_convention,
         current_variable_id.clone(),
-        self.current_exported,
+        self.current_exported || is_default_exported,
         self.inside_element_with_css_attribute,
         self.transpilation_mode,
       )),
@@ -882,7 +911,7 @@ where
     if let Some(css_reference_name) = transform.get_css_reference_name() {
       self
         .variable_name_selector_mapping
-        .insert(current_variable_id, css_reference_name);
+        .insert(current_variable_id.clone(), css_reference_name);
     }
 
     let (runtime_expressions, runtime_css_variables) =
@@ -902,13 +931,28 @@ where
     let css_code = to_css(&transform_result.css.declarations);
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
-      if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
+      if let Some(comment_prefix) = transform_result.css.comment_prefix {
+        if self.is_default_exported(&current_variable_id) {
+          self.default_export_comment = Some(
+            format!(
+              "{}\n{}\n",
+              comment_prefix.to_comment_prefix(true),
+              css_code.trim()
+            )
+            .into(),
+          );
+        }
         self.comments.add_leading(
           result_span.lo,
           Comment {
             kind: swc_core::common::comments::CommentKind::Block,
             span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            text: format!(
+              "{}\n{}\n",
+              comment_prefix.to_comment_prefix(false),
+              css_code.trim()
+            )
+            .into(),
           },
         );
       }
