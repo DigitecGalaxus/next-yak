@@ -620,6 +620,20 @@ where
     self.current_exported = false;
   }
 
+  /// Visit export default expressions
+  /// To store the current export state
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    self.current_exported = true;
+    self.current_variable_name = Some(ScopedVariableReference::new(
+      Id::from((atom!("default"), SyntaxContext::empty())),
+      vec![atom!("default")],
+    ));
+    n.visit_mut_children_with(self);
+    self.current_variable_name = None;
+    self.current_exported = false;
+  }
+
   /// Visit variable declarations
   /// To store the current name which can be used for class names
   /// e.g. Button for const Button = styled.button`color: red;`
