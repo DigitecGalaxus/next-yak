@@ -1,18 +1,18 @@
+import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
+import type { Compilation, LoaderContext } from "webpack";
 import {
-  ParseContext,
-  parseModule,
-  ParsedModule,
-  ModuleExports,
   ModuleExport,
+  ModuleExports,
+  ParseContext,
+  ParsedModule,
+  parseModule,
 } from "../../cross-file-resolver/parseModule.js";
 import {
   ResolveContext,
   resolveCrossFileConstant as genericResolveCrossFileConstant,
 } from "../../cross-file-resolver/resolveCrossFileConstant.js";
-import type { Compilation, LoaderContext } from "webpack";
 import { YakConfigOptions } from "../../withYak/index.js";
-import { parse } from "@babel/parser";
-import traverse from "@babel/traverse";
 
 const compilationCache = new WeakMap<
   Compilation,
@@ -87,6 +87,7 @@ function getParseContext(
     async evaluateYakModule(modulePath) {
       return loader.importModule(modulePath);
     },
+    transpilationMode: loader.getOptions().experiments?.transpilationMode,
   };
 }
 
