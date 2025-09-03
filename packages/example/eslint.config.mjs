@@ -16,6 +16,7 @@ export default defineConfig([
       "next.config.mjs",
       "postcss.config.js",
       "jest.config.cjs",
+      "next-env.d.ts",
     ],
   },
   yakPlugin.configs.recommended,
