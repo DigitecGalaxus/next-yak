@@ -528,7 +528,7 @@ Use the context approach described below when you need dynamic theming that chan
 // @noErrors
 export function getYakThemeContext() {
     return {
-        brandColor: process.env.NEXT_PUBLIC_BRAND_COLOR || '#009688',
+        brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'myDefaultBrand',
         featureFlags: {
             newDesign: process.env.NEXT_PUBLIC_NEW_DESIGN === 'true'
         }
@@ -548,7 +548,7 @@ Once this context file is in place, you can access the theme props on every comp
 //@noErrors
 function getYakThemeContext() {
     return {
-        brandColor: process.env.NEXT_PUBLIC_BRAND_COLOR || '#009688',
+        brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'myDefaultBrand',
         featureFlags: {
             newDesign: process.env.NEXT_PUBLIC_NEW_DESIGN === 'true'
         }
@@ -574,6 +574,14 @@ import { styled, css } from 'next-yak';
 
 const Button = styled.button`
   display: block;
+  ${({theme}) => theme.brandName === 'myFancyBrand' 
+  ? css`
+    color: black;
+    background-color: white;
+  ` : css`
+    color: blue;
+    background-color: white;
+  `}
   background-color: ${(props) => props.theme.brandColor};
 `;
 ```
@@ -597,12 +605,7 @@ export function getYakThemeContext() {
 }
 ```
 
-**Workarounds:**
-
-- Use client-side state - Handle dynamic theming with React state and useEffect in client components
-- Use static design tokens - For values that don't change at runtime (recommended for performance)
-
-If you need server-side cookie-based theming, consider implementing it at the component level rather than in the global theme context.
+We've created an [RFC to address this issue](https://github.com/DigitecGalaxus/next-yak/issues/403) and to provide a possible solution for it.
 
 ## CSS Prop
 
