@@ -526,11 +526,15 @@ Use the context approach described below when you need dynamic theming that chan
 
 ```tsx twoslash title="yak.context.ts"
 // @noErrors
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
+
+// ---cut---
 export function getYakThemeContext() {
     return {
-        brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'myDefaultBrand',
+        brandName: getMyBrandName() ?? 'myDefaultBrand',
         featureFlags: {
-            newDesign: process.env.NEXT_PUBLIC_NEW_DESIGN === 'true'
+            newDesign: isNewDesign() ?? false
         }
     }
 }
@@ -546,11 +550,14 @@ Once this context file is in place, you can access the theme props on every comp
 <Tab value="typescript">
 ```tsx twoslash
 //@noErrors
-function getYakThemeContext() {
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
+
+export function getYakThemeContext() {
     return {
-        brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'myDefaultBrand',
+        brandName: getMyBrandName() ?? 'myDefaultBrand',
         featureFlags: {
-            newDesign: process.env.NEXT_PUBLIC_NEW_DESIGN === 'true'
+            newDesign: isNewDesign() ?? false
         }
     }
 }
@@ -564,7 +571,15 @@ import { styled, css } from 'next-yak';
 
 const Button = styled.button`
   display: block;
-  background-color: ${(props) => props.theme.brandColor};
+  ${({theme}) => theme.brandName === 'myFancyBrand' 
+    ? css`
+      color: black;
+      background-color: white;
+    ` 
+    : css`
+      color: blue;
+      background-color: white;
+    `}
 `;
 ```
 </Tab>
@@ -578,11 +593,11 @@ const Button = styled.button`
   ? css`
     color: black;
     background-color: white;
-  ` : css`
+  ` 
+  : css`
     color: blue;
     background-color: white;
   `}
-  background-color: ${(props) => props.theme.brandColor};
 `;
 ```
 </Tab>
@@ -605,7 +620,7 @@ export function getYakThemeContext() {
 }
 ```
 
-We've created an [RFC to address this issue](https://github.com/DigitecGalaxus/next-yak/issues/403) and to provide a possible solution for it.
+We've created an <a href="https://github.com/DigitecGalaxus/next-yak/issues/403">RFC to address this issue</a> and to provide a possible solution for it.
 
 ## CSS Prop
 
