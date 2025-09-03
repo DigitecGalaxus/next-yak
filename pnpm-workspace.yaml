@@ -10,6 +10,7 @@ catalogs:
     '@babel/preset-typescript': 7.27.1
     '@changesets/cli': 2.29.6
     '@codspeed/benchmark.js-plugin': 4.0.1
+    '@eslint/eslintrc': 3.3.1
     '@monaco-editor/react': 4.7.0
     '@next/eslint-plugin-next': 15.5.2
     '@next/mdx': 15.5.2

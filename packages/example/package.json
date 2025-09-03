@@ -29,6 +29,7 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "catalog:dev",
     "@next/eslint-plugin-next": "catalog:dev",
     "@testing-library/dom": "catalog:dev",
     "@testing-library/jest-dom": "catalog:dev",
