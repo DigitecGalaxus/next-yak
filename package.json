@@ -20,14 +20,14 @@
     "release": "pnpm run --filter=next-yak build && pnpm run --filter=yak-swc build && changeset publish"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "pnpm": {
     "overrides": {
       "yak-swc": "workspace:*"
     }
   },
-  "packageManager": "pnpm@9.12.3",
+  "packageManager": "pnpm@10.15.0",
   "author": "Jan Nicklas",
   "license": "MIT",
   "devDependencies": {

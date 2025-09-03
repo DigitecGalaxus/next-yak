@@ -17,7 +17,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -33,7 +33,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-          version: 9.12.3
+          version: 10.15.0
           run_install: false
 
       - name: Get pnpm store directory
@@ -61,4 +61,4 @@ jobs:
       - name: Benchmarks
         run: npx prettier --write "packages/benchmarks/**/*.{ts,tsx}" --ignore-path "packages/benchmarks/.prettierignore"
 
-      - uses: autofix-ci/action@d3e591514b99d0fca6779455ff8338516663f7cc
+      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
