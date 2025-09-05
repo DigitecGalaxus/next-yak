@@ -484,27 +484,58 @@ const Box = styled.div('.Box', {
 ## Theming
 
 <Callout type="warn">
-  As of next.js >15.0.0, this feature doesn't work with server components anymore.
+  As of Next.js ≥15.0.0, the `cookies()` function is async, which affects how you can use it within `getYakThemeContext`. See the note below for details.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
-Next-yak integrates it in a hassle free manner that works for both Server Components and Client Components without
-a difference in usage for you. Wrap your root with the ThemeProvider and add a `yak.context.ts` file to your root directory
-and you're ready to go.
+
+### Static Design Tokens vs Dynamic Context
+
+For static design tokens like colors, spacing, typography, and other unchanging design values, you often don't need a context at all. You can simply declare and import them anywhere in your application:
+
+```tsx
+// theme.ts
+export const colors = {
+  primary: '#009688',
+  secondary: '#ff5722',
+  background: '#ffffff'
+}
+
+export const spacing = {
+  xs: '4px',
+  sm: '8px',
+  md: '16px',
+  lg: '32px'
+}
+
+// Button.tsx
+import { styled } from 'next-yak'
+import { colors, spacing } from './theme'
+
+const Button = styled.button`
+  background: ${colors.primary};
+  padding: ${spacing.md};
+`
+```
+
+This approach has better performance because these values can be extracted and optimized during build time, whereas context values are resolved at runtime.
+
+### Dynamic Theming with Context
+
+Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it in a hassle free manner that works for both Server Components and Client Components without a difference in usage for you. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
 
 ```tsx twoslash title="yak.context.ts"
 // @noErrors
-import { cookies } from 'next/headers'
-import { cache } from "react";
-const hasHighContrast = cache(() => {
-    const cookieStore = cookies()
-    return cookieStore.get("highContrast")?.value === "true"
-});
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
 
+// ---cut---
 export function getYakThemeContext() {
     return {
-        // here we provide a hightContrast to all components
-        highContrast: hasHighContrast()
+        brandName: getMyBrandName() ?? 'myDefaultBrand',
+        featureFlags: {
+            newDesign: isNewDesign() ?? false
+        }
     }
 }
 
@@ -519,17 +550,15 @@ Once this context file is in place, you can access the theme props on every comp
 <Tab value="typescript">
 ```tsx twoslash
 //@noErrors
-import { cookies } from 'next/headers'
-import { cache } from "react";
-const hasHighContrast = cache(() => {
-    const cookieStore = cookies()
-    return cookieStore.get("highContrast")?.value === "true"
-});
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
 
 export function getYakThemeContext() {
     return {
-        // here we provide a hightContrast to all components
-        highContrast: hasHighContrast() as boolean
+        brandName: getMyBrandName() ?? 'myDefaultBrand',
+        featureFlags: {
+            newDesign: isNewDesign() ?? false
+        }
     }
 }
 
@@ -542,14 +571,15 @@ import { styled, css } from 'next-yak';
 
 const Button = styled.button`
   display: block;
-  ${(props) =>
-    props.theme.highContrast
-      ? css`
-          color: #000;
-        `
-      : css`
-          color: #009688;
-        `}
+  ${({theme}) => theme.brandName === 'myFancyBrand' 
+    ? css`
+      color: black;
+      background-color: white;
+    ` 
+    : css`
+      color: blue;
+      background-color: white;
+    `}
 `;
 ```
 </Tab>
@@ -559,18 +589,38 @@ import { styled, css } from 'next-yak';
 
 const Button = styled.button`
   display: block;
-  ${(props) =>
-    props.theme.highContrast
-      ? css`
-          color: #000;
-        `
-      : css`
-          color: #009688;
-        `}
+  ${({theme}) => theme.brandName === 'myFancyBrand' 
+  ? css`
+    color: black;
+    background-color: white;
+  ` 
+  : css`
+    color: blue;
+    background-color: white;
+  `}
 `;
 ```
 </Tab>
 </Tabs>
+
+### Important Note for Next.js 15.0.0+
+
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous <a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>. This creates a limitation when using server-side dynamic values in `getYakThemeContext()`:
+
+```tsx
+// This won't work in Next.js 15.0.0+ because cookies() is async
+// but getYakThemeContext() must be synchronous
+import { cookies } from 'next/headers'
+
+export function getYakThemeContext() {
+    const cookieStore = cookies() // Error: cookies() is async but not awaited
+    return {
+        highContrast: cookieStore.get("highContrast")?.value === "true"
+    }
+}
+```
+
+We've created an <a href="https://github.com/DigitecGalaxus/next-yak/issues/403">RFC to address this issue</a> and to provide a possible solution for it.
 
 ## CSS Prop
 
