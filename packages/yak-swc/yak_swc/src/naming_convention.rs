@@ -110,7 +110,7 @@ impl NamingConvention {
       if base_name.is_empty() {
         String::from("animation_")
       } else {
-        format!("{}_", base_name)
+        format!("{base_name}_")
       }
     } else {
       "".to_string()

@@ -42,7 +42,8 @@ use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
+  ToCommentPrefix, TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled,
+  YakTransform,
 };
 
 /// Static plugin configuration.
@@ -190,6 +191,13 @@ where
     })
   }
 
+  fn is_default_exported(&self, current_variable_id: &ScopedVariableReference) -> bool {
+    match self.variables.get_default_export() {
+      Some(default_expr) => default_expr.id == current_variable_id.id,
+      _ => false,
+    }
+  }
+
   /// Iterate over the quasi and expressions of a tagged template literal
   /// and process the css code and expressions
   fn process_yak_literal(
@@ -224,7 +232,7 @@ where
         if final_quasi.ends_with(';') || final_quasi.ends_with('}') {
           quasi.raw.to_string()
         } else {
-          format!("{};", final_quasi).to_string()
+          format!("{final_quasi};").to_string()
         }
       } else {
         quasi.raw.to_string()
@@ -256,7 +264,7 @@ where
         if let Some(evaluated_math_calculation) = try_evaluate(expr, &self.variables) {
           // Format to 4 decimal places
           let (new_state, new_declarations) = parse_css(
-            format!("{:.4}", evaluated_math_calculation)
+            format!("{evaluated_math_calculation:.4}")
               .trim_end_matches('0')
               .trim_end_matches('.'),
             css_state,
@@ -347,7 +355,7 @@ where
                   .insert(scoped_name.clone(), keyframe_name.clone());
                 let (new_state, _) = match &self.transpilation_mode {
                   TranspilationMode::CssModule => {
-                    parse_css(&format!("global({})", keyframe_name), css_state)
+                    parse_css(&format!("global({keyframe_name})"), css_state)
                   }
                   TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
@@ -494,7 +502,7 @@ ${{() => {var}}};\n",
               format!("--{}", css_variable_name.clone()),
               css_variable_runtime_expr,
             );
-            let (new_state, _) = parse_css(&format!("var(--{})", css_variable_name), css_state);
+            let (new_state, _) = parse_css(&format!("var(--{css_variable_name})"), css_state);
             css_state = Some(new_state);
           }
 
@@ -617,6 +625,24 @@ where
   fn visit_mut_export_decl(&mut self, n: &mut ExportDecl) {
     self.current_exported = true;
     n.visit_mut_children_with(self);
+    self.current_exported = false;
+  }
+
+  /// Visit export default expressions
+  /// Set name to default if it's not a variable reference
+  /// otherwise it gets overridden by the variable name while visiting the declaration
+  /// e.g. export default styled.button`color: red;`
+  /// or export default { title: styled.h1`font-size: 16px;` }
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    self.current_exported = true;
+    self.current_variable_name = Some(ScopedVariableReference::new(
+      Id::from((atom!("default"), SyntaxContext::empty())),
+      vec![atom!("default")],
+    ));
+
+    n.visit_mut_children_with(self);
+
+    self.current_variable_name = None;
     self.current_exported = false;
   }
 
@@ -800,6 +826,7 @@ where
 
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
+    let is_default_exported = self.is_default_exported(&current_variable_id);
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
@@ -807,7 +834,7 @@ where
         &mut self.naming_convention,
         current_variable_id.clone(),
         self.display_names,
-        self.current_exported,
+        self.current_exported || is_default_exported,
         self.transpilation_mode,
       )),
       // Keyframes transform works only on top level
@@ -823,11 +850,12 @@ where
           }),
         self.transpilation_mode,
       )),
+
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => Box::new(TransformCssMixin::new(
         &mut self.naming_convention,
         current_variable_id.clone(),
-        self.current_exported,
+        self.current_exported || is_default_exported,
         self.inside_element_with_css_attribute,
         self.transpilation_mode,
       )),
@@ -850,10 +878,7 @@ where
           });
           return;
         }
-        panic!(
-          "Invalid context for next-yak function {:?}",
-          yak_library_function_name
-        )
+        panic!("Invalid context for next-yak function {yak_library_function_name:?}")
       }
     };
 
@@ -868,7 +893,7 @@ where
     if let Some(css_reference_name) = transform.get_css_reference_name() {
       self
         .variable_name_selector_mapping
-        .insert(current_variable_id, css_reference_name);
+        .insert(current_variable_id.clone(), css_reference_name);
     }
 
     let (runtime_expressions, runtime_css_variables) =
@@ -888,13 +913,36 @@ where
     let css_code = to_css(&transform_result.css.declarations);
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
-      if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
+      if let Some(comment_prefix) = transform_result.css.comment_prefix {
+        if self.is_default_exported(&current_variable_id) {
+          if let Some(referenced_variable) = self.variables.get_default_export() {
+            // Add comment to default export
+            self.comments.add_leading(
+              referenced_variable.span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: format!(
+                  "{}\n{}\n",
+                  comment_prefix.to_comment_prefix(true),
+                  css_code.trim()
+                )
+                .into(),
+              },
+            );
+          }
+        }
         self.comments.add_leading(
           result_span.lo,
           Comment {
             kind: swc_core::common::comments::CommentKind::Block,
             span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            text: format!(
+              "{}\n{}\n",
+              comment_prefix.to_comment_prefix(false),
+              css_code.trim()
+            )
+            .into(),
           },
         );
       }
@@ -942,8 +990,8 @@ where
 fn condition_to_string(expr: &Expr, negate: bool) -> String {
   let prefix = if negate { "not_" } else { "" };
   match expr {
-    Expr::Ident(Ident { sym, .. }) => format!("{}{}", prefix, sym),
-    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{}{}", prefix, value),
+    Expr::Ident(Ident { sym, .. }) => format!("{prefix}{sym}"),
+    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{prefix}{value}"),
     Expr::Member(MemberExpr { obj, prop, .. }) => {
       let obj = condition_to_string(obj, false);
       let prop = match prop {
@@ -953,7 +1001,7 @@ fn condition_to_string(expr: &Expr, negate: bool) -> String {
       if prop.is_empty() || obj.is_empty() {
         return "".to_string();
       }
-      format!("{}.{}", obj, prop)
+      format!("{obj}.{prop}")
     }
     _ => "".to_string(),
   }
