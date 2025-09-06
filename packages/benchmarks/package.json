@@ -5,21 +5,22 @@
   "scripts": {
     "dev": "pnpm run generate:letters && next dev",
     "build": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next",
-    "build:next": "next build",
+    "build:next": "cd runtime && next build",
     "build:yak": "pnpm run --dir ../.. build",
-    "start": "next start",
-    "prettier": "npx prettier --write \"./{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
-    "generate:letters": "npx tsx ./letters/gen.js",
+    "start": "cd runtime && next start",
+    "prettier": "npx prettier --write \"./runtime/{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
+    "generate:letters": "npx tsx ./runtime/letters/gen.js",
     "generate:codspeed": "pnpm run generate:codspeed:pure-components && pnpm run generate:codspeed:attrs-components && pnpm run generate:codspeed:css-prop && pnpm run generate:codspeed:dynamic-props && pnpm run generate:codspeed:nested-components",
-    "generate:codspeed:pure-components": "npx tsx ./codspeed/pure-components/gen.ts",
-    "generate:codspeed:attrs-components": "npx tsx ./codspeed/attrs-components/gen.ts",
-    "generate:codspeed:css-prop": "npx tsx ./codspeed/css-prop/gen.ts",
-    "generate:codspeed:dynamic-props": "npx tsx ./codspeed/dynamic-props/gen.ts",
-    "generate:codspeed:nested-components": "npx tsx ./codspeed/nested-components/gen.ts",
-    "lighthouse": "node ./lighthouse/lighthouse.mjs",
+    "generate:codspeed:pure-components": "npx tsx ./runtime/codspeed/pure-components/gen.ts",
+    "generate:codspeed:attrs-components": "npx tsx ./runtime/codspeed/attrs-components/gen.ts",
+    "generate:codspeed:css-prop": "npx tsx ./runtime/codspeed/css-prop/gen.ts",
+    "generate:codspeed:dynamic-props": "npx tsx ./runtime/codspeed/dynamic-props/gen.ts",
+    "generate:codspeed:nested-components": "npx tsx ./runtime/codspeed/nested-components/gen.ts",
+    "lighthouse": "node ./runtime/lighthouse/lighthouse.mjs",
     "codspeed": "pnpm run generate:letters && pnpm run generate:codspeed && pnpm run codspeed:build && pnpm run codspeed:run",
-    "codspeed:build": "tsup ./codspeed/index.bench.tsx --sourcemap inline --format esm --target node20 --clean --outDir ./codspeed/dist --external benchmark --external react --external next-yak --external styled-components --external react-dom --external @codspeed/benchmark.js-plugin",
-    "codspeed:run": "NODE_ENV=production node ./codspeed/dist/index.bench.mjs"
+    "codspeed:build": "tsup ./runtime/codspeed/index.bench.tsx --sourcemap inline --format esm --target node20 --clean --outDir ./runtime/codspeed/dist --external benchmark --external react --external next-yak --external styled-components --external react-dom --external @codspeed/benchmark.js-plugin",
+    "codspeed:run": "NODE_ENV=production node ./runtime/codspeed/dist/index.bench.mjs",
+    "run:benchmarks:build": "vitest bench --run"
   },
   "dependencies": {
     "@swc/core": "catalog:dev",
@@ -33,11 +34,15 @@
   "devDependencies": {
     "@codspeed/benchmark.js-plugin": "catalog:dev",
     "@types/benchmark": "catalog:dev",
+    "@types/cross-spawn": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "benchmark": "catalog:dev",
+    "cross-spawn": "catalog:dev",
     "tree-kill": "catalog:dev",
     "tsup": "catalog:dev",
-    "typescript": "catalog:dev"
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev"
   }
 }

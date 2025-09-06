@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "filepath": "/Users/luca/personal/next-yak/packages/benchmarks/build-performance/build.bench.ts",
+      "groups": [
+        {
+          "fullName": "build-performance/build.bench.ts > small project",
+          "benchmarks": [
+            {
+              "id": "-752556805_0_0",
+              "name": "baseline",
+              "rank": 1,
+              "rme": 0,
+              "samples": [],
+              "totalTime": 6313.974584,
+              "min": 6313.974584,
+              "max": 6313.974584,
+              "hz": 0.15837884468747493,
+              "period": 6313.974584,
+              "mean": 6313.974584,
+              "variance": 0,
+              "sd": 0,
+              "sem": 0,
+              "df": 0,
+              "critical": 12.71,
+              "moe": 0,
+              "p75": 6313.974584,
+              "p99": 6313.974584,
+              "p995": 6313.974584,
+              "p999": 6313.974584,
+              "sampleCount": 1,
+              "median": 6313.974584
+            },
+            {
+              "id": "-752556805_0_1",
+              "name": "with-yak",
+              "rank": 2,
+              "rme": 0,
+              "samples": [],
+              "totalTime": 6687.883667000001,
+              "min": 6687.883667000001,
+              "max": 6687.883667000001,
+              "hz": 0.14952413196633432,
+              "period": 6687.883667000001,
+              "mean": 6687.883667000001,
+              "variance": 0,
+              "sd": 0,
+              "sem": 0,
+              "df": 0,
+              "critical": 12.71,
+              "moe": 0,
+              "p75": 6687.883667000001,
+              "p99": 6687.883667000001,
+              "p995": 6687.883667000001,
+              "p999": 6687.883667000001,
+              "sampleCount": 1,
+              "median": 6687.883667000001
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
