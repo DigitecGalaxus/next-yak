@@ -1,0 +1,29 @@
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.post {
+  display: grid;
+  gap: 8px;
+  max-width: 70ch;
+}
+
+.meta {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .item {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+  .meta {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

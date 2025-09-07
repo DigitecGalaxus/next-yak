@@ -1,0 +1,11 @@
+.toggle {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  border-radius: var(--radius-full);
+  height: 32px;
+  padding: 0 10px;
+}
+.toggle:hover {
+  background: var(--color-surface-hover);
+}

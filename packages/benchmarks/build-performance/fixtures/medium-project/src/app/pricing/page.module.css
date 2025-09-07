@@ -1,0 +1,22 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.note {
+  color: rgba(0, 0, 0, 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  .note {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

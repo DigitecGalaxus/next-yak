@@ -7,7 +7,8 @@ export default defineConfig({
   test: {
     benchmark: {
       include: ["./build-performance/**/*.{bench,benchmark}.?(c|m)[jt]s?(x)"],
-      outputJson: "./build-performance.json",
+      outputJson:
+        process.env.UPDATE === "1" ? "./build-performance.json" : undefined,
       compare: "./build-performance.json",
     },
   },

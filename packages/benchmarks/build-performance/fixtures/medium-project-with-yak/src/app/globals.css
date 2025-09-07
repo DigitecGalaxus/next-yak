@@ -1,0 +1,55 @@
+:root {
+  /* base */
+  --background: #ffffff;
+  --foreground: #171717;
+  /* semantic tokens */
+  --color-bg: var(--background);
+  --color-fg: var(--foreground);
+  --color-muted-fg: rgba(0, 0, 0, 0.6);
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-surface: #f7f7f8;
+  --color-surface-hover: #f0f0f1;
+  --color-primary: #0a7cff;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #eaeaea;
+  --color-secondary-fg: #111111;
+  --color-success: #17c964;
+  --color-warning: #f5a524;
+  --color-danger: #f31260;
+  /* radius & spacing */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+/* Prefer system dark if no explicit theme is set */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --color-fg: var(--foreground);
+    --color-muted-fg: rgba(255, 255, 255, 0.8);
+    --color-border: rgba(255, 255, 255, 0.12);
+    --color-surface: #111213;
+    --color-surface-hover: #1a1b1c;
+    --color-primary: #4099ff;
+    --color-primary-fg: #081018;
+    --color-secondary: #1f1f20;
+    --color-secondary-fg: #e7e7e7;
+    --color-success: #2ecc71;
+    --color-warning: #f5a524;
+    --color-danger: #ff477e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

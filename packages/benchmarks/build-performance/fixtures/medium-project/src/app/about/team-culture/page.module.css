@@ -1,0 +1,21 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+}
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  .badge {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}

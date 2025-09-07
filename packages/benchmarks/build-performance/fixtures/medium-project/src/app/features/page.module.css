@@ -1,0 +1,17 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+.gridNote {
+  color: rgba(0, 0, 0, 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  .gridNote {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

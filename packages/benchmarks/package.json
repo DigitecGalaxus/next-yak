@@ -20,7 +20,8 @@
     "codspeed": "pnpm run generate:letters && pnpm run generate:codspeed && pnpm run codspeed:build && pnpm run codspeed:run",
     "codspeed:build": "tsup ./runtime/codspeed/index.bench.tsx --sourcemap inline --format esm --target node20 --clean --outDir ./runtime/codspeed/dist --external benchmark --external react --external next-yak --external styled-components --external react-dom --external @codspeed/benchmark.js-plugin",
     "codspeed:run": "NODE_ENV=production node ./runtime/codspeed/dist/index.bench.mjs",
-    "run:benchmarks:build": "vitest bench --run"
+    "run:benchmarks:build": "vitest bench --run",
+    "update:benchmarks:build": "UPDATE=1 vitest bench --run"
   },
   "dependencies": {
     "@swc/core": "catalog:dev",

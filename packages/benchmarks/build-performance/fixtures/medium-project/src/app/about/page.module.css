@@ -1,0 +1,18 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+.lead {
+  color: rgba(0, 0, 0, 0.7);
+  max-width: 70ch;
+}
+@media (prefers-color-scheme: dark) {
+  .lead {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

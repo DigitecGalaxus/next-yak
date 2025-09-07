@@ -1,0 +1,13 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+.content {
+  max-width: 70ch;
+  line-height: 1.6;
+}

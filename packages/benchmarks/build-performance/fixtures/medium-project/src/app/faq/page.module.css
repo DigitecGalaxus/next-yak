@@ -1,0 +1,20 @@
+.container {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+.qa {
+  display: grid;
+  gap: 8px;
+}
+.q {
+  font-weight: 600;
+}
+.a {
+  color: rgba(0, 0, 0, 0.75);
+}
+@media (prefers-color-scheme: dark) {
+  .a {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
