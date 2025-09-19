@@ -21,7 +21,7 @@
 
 ## Compatibility
 
-| next-yak         | Next.js         | react            | swc_core         | 
+| next-yak         | Next.js         | react            | swc_core         |
 |------------------|-----------------|------------------|------------------|
 | 6.x              | >= 15.4.1       | 19.x             | 27.0.6           |
 | 5.x              | >= 15.2.1       | 19.x             | 16.0.0           |
@@ -35,7 +35,7 @@
 # For Next.js >= 15.2.1
 npm install next-yak
 
-# For Next.js 14.x 
+# For Next.js 14.x
 npm install next-yak@2
 ```
 
@@ -220,7 +220,7 @@ next-yak converts css-in-js into css modules. This allows to use the full power 
 ## Atomic CSS
 
 `next-yak` ships with atomic css support
-So you can use [tailwind](https://tailwindcss.com/) out of the box without additonal configuration.
+So you can use [tailwind](https://tailwindcss.com/) out of the box without additional configuration.
 
 ```tsx
 import { styled, atoms } from "next-yak";
@@ -276,7 +276,7 @@ const Container = styled.div`
 
 ## Yak shaving
 
-While trying to get next-yak to work properly we stumbled accross several bugs.
+While trying to get next-yak to work properly we stumbled across several bugs.
 Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 
 <details>

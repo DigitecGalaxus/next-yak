@@ -64,7 +64,7 @@ function getParseContext(
       return parseExports(await sourceContents);
     },
     async getTransformed(modulePath) {
-      const tranformedSource = new Promise<string>((resolve, reject) => {
+      const transformedSource = new Promise<string>((resolve, reject) => {
         loader.loadModule(modulePath, (err, source) => {
           if (err) return reject(err);
           let sourceString: string;
@@ -82,7 +82,7 @@ function getParseContext(
           resolve(sourceString || "");
         });
       });
-      return { code: await tranformedSource };
+      return { code: await transformedSource };
     },
     async evaluateYakModule(modulePath) {
       return loader.importModule(modulePath);

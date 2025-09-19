@@ -1,5 +1,5 @@
 import { css, styled } from "next-yak/internal";
-import { typogaphyMixin } from "./typography";
+import { typographyMixin } from "./typography";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css();
@@ -11,7 +11,7 @@ border-radius: 5px;
 cursor: pointer;
 font-size: 16px;
 color: black;
---yak-css-import: url("./typography:typogaphyMixin",mixin);
+--yak-css-import: url("./typography:typographyMixin",mixin);
 */ /*#__PURE__*/ css();
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu3*//*YAK Extracted CSS:
 :global(.ym7uBBu3) {

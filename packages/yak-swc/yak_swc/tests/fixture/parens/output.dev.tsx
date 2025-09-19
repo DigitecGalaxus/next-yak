@@ -6,7 +6,7 @@ export const Card = /*YAK EXPORTED STYLED:Card:input_Card_m7uBBu*//*YAK Extracte
   background: url("/card-bg.jpg") no-repeat;
 }
 :global(.input_Card__\$active_m7uBBu) {
-  backgorund: url(/card-bg-active.jpg) no-repeat;
+  background: url(/card-bg-active.jpg) no-repeat;
 }
 :global(.input_Card_m7uBBu) {
   transform: translate(-50%, -50%) rotate(var(--input_Card__transform_m7uBBu))

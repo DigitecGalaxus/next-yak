@@ -163,7 +163,7 @@ fn escape_css_identifier(input: &str) -> String {
 /// This helper function escapes the class name to be valid in css
 /// basically a more strict version of the escape_css_identifier
 ///
-/// The class attribute of dom elements accepts characters like $ or emotjis without escaping
+/// The class attribute of dom elements accepts characters like $ or emojis without escaping
 /// However inside css class names these characters must be escaped with a backslash
 ///
 /// For example the following code is valid:
