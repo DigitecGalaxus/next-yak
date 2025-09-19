@@ -23,7 +23,7 @@ export const getFixtures = async (): Promise<
     fixtureEntries.map(async (entry) => ({
       name: path.basename(path.dirname(entry)),
       directory: path.dirname(entry),
-      // all tsx files exept the entry file and ./output/*
+      // all tsx files except the entry file and ./output/*
       files: await fastGlob(["**/*.(ts|tsx)", "!output/**"], {
         cwd: path.dirname(entry),
         absolute: true,

@@ -1,7 +1,7 @@
 use css_in_js_parser::{parse_css, to_css};
 
 // This example demonstrates how to resume parsing from a previous state.
-// This is usefull when processing styled-components style css-in-js code
+// This is useful when processing styled-components style css-in-js code
 // from a Template Literal.
 //
 // In this example, we parse three incomplete CSS snippets, and merge them
