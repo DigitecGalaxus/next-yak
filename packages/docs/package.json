@@ -41,6 +41,7 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
+    "@swc/helpers": "catalog:dev",
     "@tailwindcss/postcss": "catalog:dev",
     "@types/mdx": "catalog:dev",
     "@types/node": "catalog:dev",
