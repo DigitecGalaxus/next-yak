@@ -1,4 +1,8 @@
-name: Build packages/docs
+name: Build and Deploy packages/docs
+env:
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
 on:
   push:
     branches:
@@ -8,27 +12,27 @@ on:
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/docs.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "packages/docs/**"
-      - "packages/yak-swc/**"
-      - "packages/next-yak/**"
-      - ".github/workflows/docs.yml"
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number"
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      IS_PRODUCTION: ${{ github.event_name == 'push' }}
+      PR_NUMBER: ${{ github.event.inputs.pr_number }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -61,28 +65,38 @@ jobs:
       - name: Build with SWC
         run: pnpm run build:swc
 
-      - name: Build docs
-        run: cd packages/docs && pnpm build
+      - name: Install Vercel CLI
+        run: npm install -g vercel@35
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs-build
-          path: |
-            packages/docs/.next/
-            packages/docs/package.json
-            packages/docs/next.config.mjs
-            packages/docs/public/
-          retention-days: 1
+      - name: Link Vercel project
+        run: vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Save PR info
-        if: github.event_name == 'pull_request'
-        run: echo "${{ github.event.number }}" > pr-number.txt
+      # Preview deployment (for pull requests, manual triggers, and non-main pushes)
+      - name: Pull Vercel environment information (Preview)
+        if: env.IS_PRODUCTION == 'false'
+        run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Upload PR info
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-info
-          path: pr-number.txt
-          retention-days: 1
+      - name: Build project artifacts (Preview)
+        if: env.IS_PRODUCTION == 'false'
+        run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy-preview
+        if: env.IS_PRODUCTION == 'false'
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Preview deployment URL: $DEPLOYMENT_URL"
+
+      # Production deployment (for main branch pushes)
+      - name: Pull Vercel environment information (Production)
+        if: env.IS_PRODUCTION == 'true'
+        run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project artifacts (Production)
+        if: env.IS_PRODUCTION == 'true'
+        run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (Production)
+        if: env.IS_PRODUCTION == 'true'
+        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}

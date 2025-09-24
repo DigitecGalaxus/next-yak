@@ -40,9 +40,13 @@ jobs:
           run_install: false
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rs/toolchain@v1
         with:
-          targets: wasm32-wasip1
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Add wasm32-wasip1 target
+        run: rustup target add wasm32-wasip1
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
         with:
