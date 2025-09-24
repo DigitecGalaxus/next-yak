@@ -16,6 +16,9 @@ on:
       - "packages/yak-swc/**"
       - ".github/workflows/node.js.yml"
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,13 +39,9 @@ jobs:
           run_install: false
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - name: Add wasm32-wasip1 target
-        run: rustup target add wasm32-wasip1
+          targets: wasm32-wasip1
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
         with:

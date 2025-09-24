@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  autofix:
+  autofix-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,11 +20,7 @@ jobs:
           node-version: 22
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+        uses: dtolnay/rust-toolchain@stable
       - name: Enable caching
         uses: Swatinem/rust-cache@v2
         with:
@@ -58,7 +54,12 @@ jobs:
       - name: Prettier Examples
         run: npx prettier --write "packages/example/app/**/*.{ts,tsx,js,jsx}"
 
-      - name: Benchmarks
+      - name: Prettier Benchmarks
         run: npx prettier --write "packages/benchmarks/**/*.{ts,tsx}" --ignore-path "packages/benchmarks/.prettierignore"
 
-      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-files
+          path: .
+          retention-days: 1
