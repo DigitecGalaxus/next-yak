@@ -8,6 +8,12 @@ on:
     workflows: ["Build packages/example"]
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build workflow run id (from Actions → Build packages/example)"
+        required: true
+        type: string
 
 permissions:
   contents: read

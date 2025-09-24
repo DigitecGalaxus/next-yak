@@ -4,6 +4,7 @@ on:
     branches-ignore: ["changeset-release/main"]
   push:
     branches: ["main"]
+  workflow_dispatch:
 permissions:
   contents: read
 
