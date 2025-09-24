@@ -4,12 +4,6 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
 on:
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: "Pull Request Number"
-        required: true
-        type: string
   push:
     branches:
       - main
@@ -18,23 +12,27 @@ on:
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/docs.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "packages/docs/**"
-      - "packages/yak-swc/**"
-      - "packages/next-yak/**"
-      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number"
+        required: true
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      IS_PRODUCTION: ${{ github.event_name == 'push' }}
+      PR_NUMBER: ${{ github.event.inputs.pr_number }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -52,14 +50,9 @@ jobs:
         run: pnpm install
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
-
-      - name: Add wasm32-wasip1 target
-        run: rustup target add wasm32-wasip1
+          targets: wasm32-wasip1
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -80,48 +73,30 @@ jobs:
 
       # Preview deployment (for pull requests, manual triggers, and non-main pushes)
       - name: Pull Vercel environment information (Preview)
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: env.IS_PRODUCTION == 'false'
         run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Build project artifacts (Preview)
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: env.IS_PRODUCTION == 'false'
         run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel (Preview)
         id: deploy-preview
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        if: env.IS_PRODUCTION == 'false'
         run: |
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-      - name: Find Documentation Comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-        with:
-          issue-number: ${{ github.event.number || github.event.inputs.pr_number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "📚 Documentation Preview Deployed!"
-      - name: Create or Update Documentation Comment
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.number || github.event.inputs.pr_number }}
-          body: |
-            ## 📚 Documentation Preview Deployed!
-
-            A preview of the documentation changes in this PR has been deployed to Vercel:
-
-            🔗 [View Documentation Preview](${{ steps.deploy-preview.outputs.deployment_url }})
-
-            This preview will update automatically with new commits to this PR.
-          edit-mode: replace
+          echo "Preview deployment URL: $DEPLOYMENT_URL"
 
       # Production deployment (for main branch pushes)
       - name: Pull Vercel environment information (Production)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.IS_PRODUCTION == 'true'
         run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Build project artifacts (Production)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.IS_PRODUCTION == 'true'
         run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel (Production)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.IS_PRODUCTION == 'true'
         run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}

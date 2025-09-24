@@ -15,6 +15,10 @@ on:
       - "packages/next-yak/**"
       - "packages/yak-swc/**"
       - ".github/workflows/node.js.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
