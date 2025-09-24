@@ -217,7 +217,7 @@ next-yak converts css-in-js into css modules. This allows to use the full power 
 ## Atomic CSS
 
 `next-yak` ships with atomic css support  
-So you can use [tailwind](https://tailwindcss.com/) out of the box without additonal configuration.
+So you can use [tailwind](https://tailwindcss.com/) out of the box without additional configuration.
 
 ```tsx
 import { styled, atoms } from "next-yak";
@@ -275,7 +275,7 @@ const Container = styled.div`
 
 ## Yak shaving
 
-While trying to get next-yak to work properly we stumbled accross several bugs.  
+While trying to get next-yak to work properly we stumbled across several bugs.  
 Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 
 <details>

@@ -1,7 +1,7 @@
 // @ts-nocheck
 // We are testing internal functionality which does not match
 // 1:1 the API exposed to the user before compilation.
-// Therfefore types are not matching and need to be ignored.
+// Therefore types are not matching and need to be ignored.
 import { render } from "@testing-library/react";
 import React from "react";
 import { expect, it } from "vitest";

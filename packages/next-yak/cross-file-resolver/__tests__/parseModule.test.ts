@@ -423,7 +423,7 @@ test("parse .yak module", async () => {
   });
 });
 
-test("parse .yak module extendsions", async () => {
+test("parse .yak module extensions", async () => {
   const parseContext = {
     evaluateYakModule() {
       return {};

@@ -54,7 +54,7 @@ pub struct Config {
   #[serde(default = "Config::minify_default")]
   pub minify: bool,
   /// The hash for a css-variable depends on the file name including createVar().
-  /// To ensure that the hash is consistent accross multiple systems the relative path
+  /// To ensure that the hash is consistent across multiple systems the relative path
   /// from the base dir to the source file is used.
   pub base_path: String,
   /// Prefix for the generated css identifier
@@ -99,7 +99,7 @@ where
   // @see https://stackoverflow.com/questions/78709909/injecting-comments-with-a-swc-rust-plugin
   GenericComments: Comments,
 {
-  /// Last css parser state to contiue parsing the next css code from a quasi
+  /// Last css parser state to continue parsing the next css code from a quasi
   /// in the same scope
   current_css_state: Option<ParserState>,
   /// All css declarations of the current root css expression
@@ -117,7 +117,7 @@ where
   variables: VariableVisitor,
   /// Visitor to gather all imports from the current program
   /// Used to check if the current program is using next-yak
-  /// to idenftify css-in-js expressions
+  /// to identify css-in-js expressions
   yak_library_imports: Option<YakImports>,
   /// Variable Name to Unique CSS Identifier Mapping\
   /// e.g. const Rotation = keyframes`...` -> Rotation\
@@ -231,7 +231,7 @@ where
       };
       // The offset value is set by a previous expression when a unit is moved into a css variable
       // e.g. styled.button`left: ${({$x}) => $x}px;` -> `left: var(--left);`
-      // The escapping of the css code is removed as a slash requires escaling in js string literals
+      // The escaping of the css code is removed as a slash requires escaping in js string literals
       // e.g. styled.button`content: "\\2022"` -> `content: "\2022"`
       let quasi_css_code = &css_code[css_code_offset..].replace("\\\\", "\\");
       let (new_state, new_declarations) = parse_css(quasi_css_code, css_state);

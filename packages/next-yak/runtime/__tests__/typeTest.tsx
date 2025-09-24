@@ -107,9 +107,9 @@ const MergeTestErrors = () => {
     case "$primary":
       // @ts-expect-error - primary must only allow booleans
       return <Button4 $primary="true" />;
-    case "$secondard":
-      // @ts-expect-error - secondard must only allow booleans
-      return <Button4 $secondard="true" />;
+    case "$secondary":
+      // @ts-expect-error - secondary must only allow booleans
+      return <Button4 $secondary="true" />;
     case "html prop":
       // @ts-expect-error - only valid html attribute values are allowed
       return <Button4 type="submit submit" />;

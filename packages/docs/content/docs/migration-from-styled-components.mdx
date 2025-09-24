@@ -499,9 +499,9 @@ const RADIUS = 5; // [!code ++]
 export const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // [!code ++]
 ```
 
-A general rule of thumb is that next-yak doesn't run any JavaScript code to figure out any interpolated values except the code recides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
+A general rule of thumb is that next-yak doesn't run any JavaScript code to figure out any interpolated values except the code resides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
 
-Everything except calculations and string contatinations, or more generally, values that don't need a runtime in order to have a value, should
+Everything except calculations and string concatenations, or more generally, values that don't need a runtime in order to have a value, should
 work out of the box without any yak files and should be the preferred way to write your styles to keep your build times as fast as possible.
 
 ## Troubleshooting

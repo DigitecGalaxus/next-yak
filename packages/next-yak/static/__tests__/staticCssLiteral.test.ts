@@ -10,7 +10,7 @@ it("render static strings unchanged", () => {
   expect(styles).toBe(".test {\n      color: red;\n    }");
 });
 
-it("filter out null, undifined and false", () => {
+it("filter out null, undefined and false", () => {
   const styles = css`
     .test {
       color: red;

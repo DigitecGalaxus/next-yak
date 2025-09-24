@@ -13,7 +13,7 @@ export async function parseModule(
 
     // handle yak file by evaluating and mapping exported value to the
     // `ModuleExport` format. This operation is not cached to always get a fresh
-    // value from thoses modules
+    // value from those modules
     if (isYak && context.evaluateYakModule) {
       const yakModule = await context.evaluateYakModule(modulePath);
       const yakExports = objectToModuleExport(yakModule);

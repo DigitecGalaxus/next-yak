@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use rustc_hash::FxHashSet;
 
-// All currenctly directly supported html elements
+// All currently directly supported html elements
 lazy_static! {
   pub static ref VALID_ELEMENTS: FxHashSet<String> = FxHashSet::from_iter(
     vec![

@@ -126,7 +126,7 @@ impl YakTransform for TransformNestedCss {
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {
-        // Use a sepcial span as this expression might be cloned as part
+        // Use a special span as this expression might be cloned as part
         // of a parent expression and therefore needs a unique span to
         // avoid collisions for the comments
         span: Span::dummy_with_cmt(),

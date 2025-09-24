@@ -5,11 +5,11 @@ use wasm_bindgen::prelude::wasm_bindgen;
 /// swc is licensed under Apache-2.0 license.
 ///
 /// While this is redundant, wasm-bindgen does not support to import these types
-/// effeciently (https://github.com/rustwasm/wasm-bindgen/issues/2417). Once there is an upstream support this'll
+/// efficiently (https://github.com/rustwasm/wasm-bindgen/issues/2417). Once there is an upstream support this'll
 /// be removed.
 ///
 /// Note while these options being accepted by `@swc/wasm`, this doesn't mean
-/// all of runtime feature parity is gauranteed. There will be some improvement
+/// all of runtime feature parity is guaranteed. There will be some improvement
 /// to handle those differences.
 #[wasm_bindgen(typescript_custom_section)]
 const SWC_TYPES_DEFINITION: &'static str = r#"

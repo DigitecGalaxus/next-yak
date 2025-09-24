@@ -184,7 +184,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 /**
  * Remove all entries that start with a $ sign
  *
- * This allows to have props that are used for internal stylingen purposes
+ * This allows to have props that are used for internal styling purposes
  * but are not be passed to the DOM element
  */
 const removeNonDomProperties = <T extends Record<string, unknown>>(

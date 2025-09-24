@@ -8,7 +8,7 @@ Thank you for your interest in contributing to next-yak! This document provides 
   - [Prerequisites](#prerequisites)
   - [Initial setup](#initial-setup)
   - [Project structure](#project-structure)
-- [Developping `next-yak` TypeScript/JavaScript](#developping-next-yak-typescriptjavascript)
+- [Developing `next-yak` TypeScript/JavaScript](#developing-next-yak-typescriptjavascript)
 - [Developing `yak-swc` Rust](#developing-yak-swc-rust)
   - [Running the example app](#running-the-example-app)
 - [Submitting a pull request](#submitting-a-pull-request)
@@ -77,7 +77,7 @@ Additional packages
 - [example](./packages/example) - Demo Next.js application, featuring various use cases
 - [docs](./packages/docs) - Documentation and playground, hosted at [yak.js.org](https://yak.js.org/)
 
-## Developping `next-yak` TypeScript/JavaScript
+## Developing `next-yak` TypeScript/JavaScript
 
 The main package is written in TypeScript. The package is responsible for transforming components and serving styles to the module CSS system of Next.js. The TypeScript/JavaScript code is located in the `./packages/next-yak` directory.
 
