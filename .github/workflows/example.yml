@@ -59,10 +59,11 @@ jobs:
         run: pnpm --filter next-yak-example lint
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@5d458579430fc14a04a08a1e7d3694f545e91ce6 # stable
+        uses: dtolnay/rust-toolchain@6d653acede28d24f02e3cd41383119e8b1b35921 # master
         with:
           toolchain: stable
           targets: wasm32-wasip1
+          components: clippy, rustfmt
 
       - name: Enable caching
         uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2
