@@ -24,6 +24,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@5d458579430fc14a04a08a1e7d3694f545e91ce6 # stable
         with:
+          toolchain: stable
           targets: wasm32-wasip1
       - name: Enable caching
         uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2
