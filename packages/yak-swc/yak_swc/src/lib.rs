@@ -7,8 +7,7 @@ use std::vec;
 use swc_core::atoms::atom;
 use swc_core::atoms::Atom;
 
-use swc_core::common::comments::Comment;
-use swc_core::common::comments::Comments;
+use swc_core::common::comments::{Comment, Comments};
 use swc_core::common::errors::HANDLER;
 use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
@@ -36,6 +35,7 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod native_elements;
+  pub(crate) mod yak_constants;
 }
 pub mod naming_convention;
 use naming_convention::{NamingConvention, TranspilationMode};
@@ -110,6 +110,8 @@ where
   current_condition: Vec<String>,
   /// Current css expression is exported
   current_exported: bool,
+  /// Current css expression is being default exported
+  current_default_export: bool,
   /// SWC comments proxy to add extracted css as comments
   comments: Option<GenericComments>,
   /// Extracted variables from the AST
@@ -135,6 +137,8 @@ where
   display_names: bool,
   /// Transpilation mode to determine how to transpile the code
   transpilation_mode: TranspilationMode,
+  /// Storage for default export styled components that need special comment handling
+  default_export_styled_components: FxHashMap<String, String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -155,6 +159,7 @@ where
       current_variable_name: None,
       current_condition: vec![],
       current_exported: false,
+      current_default_export: false,
       variables: VariableVisitor::new(),
       yak_library_imports: None,
       naming_convention: NamingConvention::new(filename.as_ref(), minify, prefix),
@@ -164,6 +169,7 @@ where
       comments,
       display_names,
       transpilation_mode,
+      default_export_styled_components: FxHashMap::default(),
     }
   }
 
@@ -550,6 +556,27 @@ where
 
     module.visit_mut_children_with(self);
 
+    // After processing all nodes, add export comments for default-exported styled components
+    // This handles the case where export default comes before the variable declaration (hoisted)
+    if !self.default_export_styled_components.is_empty() {
+      if let Some(export_span) = self.variables.get_default_export_span() {
+        if let Some(default_var) = self.variables.get_default_exported_variable() {
+          let var_name = default_var.0.to_string();
+          if let Some(comment) = self.default_export_styled_components.get(&var_name) {
+            // Add the comment directly since it's already properly formatted
+            self.comments.add_leading(
+              export_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: export_span,
+                text: comment.clone().into(),
+              },
+            );
+          }
+        }
+      }
+    }
+
     // Add the css module import to the top of the file
     // if any yak imports are used
     if self.yak_library_imports.is_some() {
@@ -618,6 +645,44 @@ where
     self.current_exported = true;
     n.visit_mut_children_with(self);
     self.current_exported = false;
+  }
+
+  /// To store the current export state for default exports  
+  /// e.g. export default styled.button`color: red;`
+  fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
+    self.current_exported = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+  }
+
+  /// To store the current export state for default export expressions
+  /// e.g. export default styled.button`color: red;`
+  /// Also handles adding export comments for default-exported styled components
+  fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
+    // Check if we're exporting a variable that contains a styled component
+    if let Expr::Ident(ident) = &*n.expr {
+      let variable_name = ident.sym.to_string();
+
+      // If this variable has a stored styled component comment, add it to the export statement
+      if let Some(stored_comment) = self.default_export_styled_components.remove(&variable_name) {
+        if let Some(ref mut comments) = self.comments {
+          comments.add_leading(
+            n.span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: stored_comment.into(),
+            },
+          );
+        }
+      }
+    }
+
+    self.current_exported = true;
+    self.current_default_export = true;
+    n.visit_mut_children_with(self);
+    self.current_exported = false;
+    self.current_default_export = false;
   }
 
   /// Visit variable declarations
@@ -803,13 +868,20 @@ where
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      "styled" if is_top_level => Box::new(TransformStyled::new(
-        &mut self.naming_convention,
-        current_variable_id.clone(),
-        self.display_names,
-        self.current_exported,
-        self.transpilation_mode,
-      )),
+      "styled" if is_top_level => {
+        let is_exported =
+          self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export
+          || self.variables.is_default_exported(&current_variable_id.id);
+        Box::new(TransformStyled::new(
+          &mut self.naming_convention,
+          current_variable_id.clone(),
+          self.display_names,
+          is_exported,
+          is_default_export,
+          self.transpilation_mode,
+        ))
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -824,13 +896,20 @@ where
         self.transpilation_mode,
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
-      "css" if is_top_level => Box::new(TransformCssMixin::new(
-        &mut self.naming_convention,
-        current_variable_id.clone(),
-        self.current_exported,
-        self.inside_element_with_css_attribute,
-        self.transpilation_mode,
-      )),
+      "css" if is_top_level => {
+        let is_exported =
+          self.current_exported || self.variables.is_default_exported(&current_variable_id.id);
+        let is_default_export = self.current_default_export
+          || self.variables.is_default_exported(&current_variable_id.id);
+        Box::new(TransformCssMixin::new(
+          &mut self.naming_convention,
+          current_variable_id.clone(),
+          is_exported,
+          is_default_export,
+          self.inside_element_with_css_attribute,
+          self.transpilation_mode,
+        ))
+      }
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
@@ -889,14 +968,50 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
-        self.comments.add_leading(
-          result_span.lo,
-          Comment {
-            kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
-          },
-        );
+        let current_variable_id = self.get_current_component_id();
+
+        // Check if this is a default-exported styled component or mixin with separated comments
+        if let Some(css_only_comment) = transform_result.css.css_only_comment.clone() {
+          // For inline default exports (no variable declaration), combine comments and place on export statement
+          if self.current_variable_name.is_none() && self.current_default_export {
+            // Inline default export: combine export and CSS comments
+            let full_comment = format!("{}\n{}\n", comment_prefix, css_code.trim());
+            self.comments.add_leading(
+              result_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: full_comment.into(),
+              },
+            );
+          } else {
+            // Separated default export: store export comment and add CSS comment to variable declaration
+            self
+              .default_export_styled_components
+              .insert(current_variable_id.id.0.to_string(), comment_prefix.clone());
+
+            // Add only the CSS comment for the variable declaration
+            let css_comment = format!("{}\n{}\n", css_only_comment, css_code.trim());
+            self.comments.add_leading(
+              result_span.lo,
+              Comment {
+                kind: swc_core::common::comments::CommentKind::Block,
+                span: DUMMY_SP,
+                text: css_comment.into(),
+              },
+            );
+          }
+        } else {
+          // Normal case: add the full comment
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            },
+          );
+        }
       }
     }
     self.comments.add_leading(result_span.lo, pure_annotation());
