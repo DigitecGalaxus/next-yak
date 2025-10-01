@@ -1,5 +1,11 @@
 # yak-swc
 
+## 7.0.0
+
+### Major Changes
+
+- e4d230c: Add support for next.js >= 15.4.4
+
 ## 6.0.0
 
 ### Major Changes
