@@ -1,5 +1,18 @@
 # next-yak
 
+## 7.0.0
+
+### Minor Changes
+
+- a5e730d: extract the cross-file resolution logic to make it reusable with different bundlers
+
+### Patch Changes
+
+- d3cbeae: Updated all packages
+- 39ffa4a: Fix playground cross-file resolving
+- Updated dependencies [e4d230c]
+  - yak-swc@7.0.0
+
 ## 6.0.0
 
 ### Patch Changes
