@@ -130,6 +130,87 @@ export default async function cssExtractLoader(
                   },
                 );
               },
+              evaluateYakModule: async (modulePath) => {
+                if (
+                  modulePath.endsWith(".yak.ts") ||
+                  modulePath.endsWith(".yak.tsx") ||
+                  modulePath.endsWith(".yak.js") ||
+                  modulePath.endsWith(".yak.jsx")
+                ) {
+                  const result = await new Promise<
+                    ReturnType<typeof transformSync>
+                  >((resolve, reject) => {
+                    this.fs.readFile(modulePath, "utf-8", (err, data) => {
+                      if (data) {
+                        return resolve(
+                          transformSync(data, {
+                            filename: modulePath,
+                            inputSourceMap: sourceMap
+                              ? JSON.stringify(sourceMap)
+                              : undefined,
+                            // sourceMaps: sourceMap,
+                            // inlineSourceContent: sourceMap,
+                            sourceFileName: modulePath,
+                            sourceRoot: this.rootContext,
+                            jsc: {
+                              transform: {
+                                react: {
+                                  runtime: "automatic",
+                                },
+                              },
+                              experimental: {
+                                plugins: [
+                                  [
+                                    "yak-swc",
+                                    {
+                                      minify: false,
+                                      basePath: this.rootContext,
+                                      displayNames: true,
+                                      transpilationMode: "DataUrl",
+                                    },
+                                  ],
+                                ],
+                              },
+                            },
+                            module: {
+                              type: "commonjs",
+                            },
+                          }),
+                        );
+                      }
+                    });
+                  });
+
+                  const moduleExports = {};
+                  const moduleScope = {
+                    exports: moduleExports,
+                    module: { exports: moduleExports },
+                    require: () => ({}),
+                    __filename: modulePath,
+                    __dirname: dirname(modulePath),
+                  };
+
+                  const moduleFunction = new Function(
+                    "exports",
+                    "module",
+                    "require",
+                    "__filename",
+                    "__dirname",
+                    result.code,
+                  );
+
+                  moduleFunction(
+                    moduleScope.exports,
+                    moduleScope.module,
+                    moduleScope.require,
+                    moduleScope.__filename,
+                    moduleScope.__dirname,
+                  );
+
+                  return moduleScope.module.exports || moduleScope.exports;
+                }
+                return {};
+              },
             },
             modulePath,
           );
