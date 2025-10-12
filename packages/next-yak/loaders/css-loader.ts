@@ -1,58 +1,18 @@
+import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
 import { transformSync } from "@swc/core";
-import { relative } from "path";
+import { dirname, relative } from "path";
 import type { LoaderContext } from "webpack";
+import {
+  ModuleExport,
+  ModuleExports,
+  parseModule,
+} from "../cross-file-resolver/parseModule.js";
+import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import type { YakConfigOptions } from "../withYak/index.js";
-
-const yakCssImportRegex =
-  // Make mixin and selector non optional once we dropped support for the babel plugin
-  /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
-
-async function parseYakCssImport(
-  resolve: (spec: string) => Promise<{}>,
-  css: string,
-) {
-  const yakImports: any[] = [];
-
-  for (const match of css.matchAll(yakCssImportRegex)) {
-    const [fullMatch, encodedArguments, importKind, semicolon] = match;
-    const [moduleSpecifier, ...specifier] = encodedArguments
-      .split(":")
-      .map((entry) => decodeURIComponent(entry));
-
-    yakImports.push({
-      encodedArguments,
-      moduleSpecifier: await resolve(moduleSpecifier),
-      specifier,
-      importKind: importKind as any,
-      semicolon,
-      position: match.index,
-      size: fullMatch.length,
-    });
-  }
-
-  return yakImports;
-}
 
 // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
 
-function parseStyledComponents(sourceContents: string) {
-  // cross-file Styled Components are always in the following format:
-  // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
-  const styledParts = sourceContents.split("/*YAK EXPORTED STYLED:");
-  let styledComponents: any = {};
-
-  for (let i = 1; i < styledParts.length; i++) {
-    const [comment] = styledParts[i].split("*/", 1);
-    const [componentName, className] = comment.split(":");
-    styledComponents[componentName] = {
-      type: "styled-component",
-      nameParts: componentName.split("."),
-      value: `.${className}`,
-    };
-  }
-
-  return styledComponents;
-}
 /**
  * Transform typescript to css
  *
@@ -68,10 +28,7 @@ export default async function cssExtractLoader(
 ): Promise<string | void> {
   const callback = this.async();
 
-  if (
-    this.currentRequest.includes("app/page") ||
-    this.currentRequest.includes("button")
-  ) {
+  if (_code.includes("next-yak")) {
     const result = transformSync(_code, {
       filename: this.resourcePath,
       inputSourceMap: sourceMap ? JSON.stringify(sourceMap) : undefined,
@@ -80,6 +37,11 @@ export default async function cssExtractLoader(
       sourceFileName: this.resourcePath,
       sourceRoot: this.rootContext,
       jsc: {
+        transform: {
+          react: {
+            runtime: "automatic",
+          },
+        },
         experimental: {
           plugins: [
             [
@@ -106,79 +68,271 @@ export default async function cssExtractLoader(
     });
 
     let css = extractCss(result.code, "Css");
-    // @ts-ignore
-    const yakImports = await parseYakCssImport((moduleSpecifier) => {
-      // @ts-ignore
-      return this.getResolve({})(this.context, moduleSpecifier);
-    }, css);
 
-    if (yakImports.length === 0) {
-      return callback(null, result.code, sourceMap);
-    } else {
-      const dataUrl = result.code
-        .split("\n")
-        .find((line) => line.includes("data:text/css;base64"))!;
-      const code = await new Promise<string>((resolve, reject) => {
-        this.fs.readFile(
-          yakImports[0].moduleSpecifier,
-          "utf-8",
-          (err, data) => {
-            if (data) {
-              const transformed = transformSync(data, {
-                filename: yakImports[0].moduleSpecifier,
-                inputSourceMap: sourceMap
-                  ? JSON.stringify(sourceMap)
-                  : undefined,
-                // sourceMaps: sourceMap,
-                // inlineSourceContent: sourceMap,
-                sourceFileName: yakImports[0].moduleSpecifier,
-                sourceRoot: this.rootContext,
-                jsc: {
-                  experimental: {
-                    plugins: [
-                      [
-                        "yak-swc",
-                        {
-                          minify: false,
-                          basePath: this.rootContext,
-                          displayNames: true,
-                          transpilationMode: "DataUrl",
-                        },
-                      ],
-                    ],
+    const { resolved } = await resolveCrossFileConstant(
+      {
+        parse: (modulePath) => {
+          return parseModule(
+            {
+              transpilationMode: "Css",
+              extractExports: async (modulePath) => {
+                const sourceContents = new Promise<string>((resolve, reject) =>
+                  this.fs.readFile(modulePath, "utf-8", (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result || "");
+                  }),
+                );
+                return parseExports(await sourceContents);
+              },
+              getTransformed: async (modulePath) => {
+                return await new Promise<ReturnType<typeof transformSync>>(
+                  (resolve, reject) => {
+                    this.fs.readFile(modulePath, "utf-8", (err, data) => {
+                      if (data) {
+                        return resolve(
+                          transformSync(data, {
+                            filename: modulePath,
+                            inputSourceMap: sourceMap
+                              ? JSON.stringify(sourceMap)
+                              : undefined,
+                            // sourceMaps: sourceMap,
+                            // inlineSourceContent: sourceMap,
+                            sourceFileName: modulePath,
+                            sourceRoot: this.rootContext,
+                            jsc: {
+                              experimental: {
+                                plugins: [
+                                  [
+                                    "yak-swc",
+                                    {
+                                      minify: false,
+                                      basePath: this.rootContext,
+                                      displayNames: true,
+                                      transpilationMode: "DataUrl",
+                                    },
+                                  ],
+                                ],
+                              },
+                              target: "es2022",
+                              loose: false,
+                              minify: {
+                                compress: false,
+                                mangle: false,
+                              },
+                              preserveAllComments: true,
+                            },
+                            minify: false,
+                            isModule: true,
+                          }),
+                        );
+                      }
+                    });
                   },
-                  target: "es2022",
-                  loose: false,
-                  minify: {
-                    compress: false,
-                    mangle: false,
-                  },
-                  preserveAllComments: true,
-                },
-                minify: false,
-                isModule: true,
-              });
-              const styledComponents = parseStyledComponents(transformed.code);
-              css = css.replace(
-                '--yak-css-import: url("../../components/button:Button",selector)',
-                styledComponents.Button.value,
-              );
+                );
+              },
+            },
+            modulePath,
+          );
+        },
+        resolve: (specifier, importer) => {
+          return new Promise<string>((resolve, reject) => {
+            this.getResolve({})(dirname(importer), specifier, (err, result) => {
+              if (err) return reject(err);
+              if (!result)
+                return reject(new Error(`Could not resolve ${specifier}`));
+              resolve(result);
+            });
+          });
+        },
+      },
+      this.resourcePath,
+      css,
+    );
 
-              return resolve(
-                result.code.replace(
-                  dataUrl,
-                  `import "data:text/css;base64,${Buffer.from(css).toString("base64")}"`,
-                ),
-              );
-            }
-          },
-        );
-      });
+    const dataUrl = result.code
+      .split("\n")
+      .find((line) => line.includes("data:text/css;base64"))!;
 
-      return callback(null, "import React from 'react';\n" + code, sourceMap);
-    }
+    let newCode = result.code.replace(
+      dataUrl,
+      `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
+    );
+    return callback(null, newCode, sourceMap);
   }
   return callback(null, _code, sourceMap);
+}
+
+async function parseExports(sourceContents: string): Promise<ModuleExports> {
+  const moduleExports: ModuleExports = {
+    importYak: true,
+    named: {},
+    all: [],
+  };
+
+  // Track variable declarations for lookup
+  const variableDeclarations: Record<string, babel.types.Expression> = {};
+
+  // Track default export identifier if present
+  let defaultIdentifier: string | null = null;
+
+  try {
+    const ast = parse(sourceContents, {
+      sourceType: "module",
+      plugins: ["jsx", "typescript"] as const,
+    });
+
+    traverse.default(ast, {
+      // Track all variable declarations in the file
+      VariableDeclarator({ node }) {
+        if (node.id.type === "Identifier" && node.init) {
+          variableDeclarations[node.id.name] = node.init;
+        }
+      },
+
+      ExportNamedDeclaration({ node }) {
+        if (node.source) {
+          node.specifiers.forEach((specifier) => {
+            if (
+              specifier.type === "ExportSpecifier" &&
+              specifier.exported.type === "Identifier" &&
+              specifier.local.type === "Identifier"
+            ) {
+              moduleExports.named[specifier.exported.name] = {
+                type: "re-export",
+                from: node.source!.value,
+                name: specifier.local.name,
+              };
+            }
+          });
+        } else if (node.declaration?.type === "VariableDeclaration") {
+          node.declaration.declarations.forEach((declaration) => {
+            if (declaration.id.type === "Identifier" && declaration.init) {
+              const parsed = parseExportValueExpression(declaration.init);
+              if (parsed) {
+                moduleExports.named[declaration.id.name] = parsed;
+              }
+            }
+          });
+        }
+      },
+      ExportDeclaration({ node }) {
+        if ("specifiers" in node && node.source) {
+          const { specifiers, source } = node;
+          specifiers.forEach((specifier) => {
+            // export * as color from "./colors";
+            if (
+              specifier.type === "ExportNamespaceSpecifier" &&
+              specifier.exported.type === "Identifier"
+            ) {
+              moduleExports.named[specifier.exported.name] = {
+                type: "namespace-re-export",
+                from: source.value,
+              };
+            }
+          });
+        }
+      },
+      ExportDefaultDeclaration({ node }) {
+        if (node.declaration.type === "Identifier") {
+          // e.g. export default variableName;
+          // Save the identifier name to look up later
+          defaultIdentifier = node.declaration.name;
+        } else if (
+          node.declaration.type === "FunctionDeclaration" ||
+          node.declaration.type === "ClassDeclaration"
+        ) {
+          // e.g. export default function() {...} or export default class {...}
+          moduleExports.named["default"] = {
+            type: "unsupported",
+            hint: node.declaration.type,
+          };
+        } else {
+          // e.g. export default { ... } or export default "value"
+          moduleExports.named["default"] = parseExportValueExpression(
+            node.declaration as babel.types.Expression,
+          );
+        }
+      },
+      ExportAllDeclaration({ node }) {
+        moduleExports.all.push(node.source.value);
+      },
+    });
+    // If we found a default export that's an identifier, look up its value
+    if (defaultIdentifier && variableDeclarations[defaultIdentifier]) {
+      moduleExports.named["default"] = parseExportValueExpression(
+        variableDeclarations[defaultIdentifier],
+      );
+    }
+
+    return moduleExports;
+  } catch (error) {
+    throw new Error(`Error parsing exports: ${(error as Error).message}`);
+  }
+}
+
+/**
+ * Unpacks a TSAsExpression to its expression value
+ */
+function unpackTSAsExpression(
+  node: babel.types.TSAsExpression | babel.types.Expression,
+): babel.types.Expression {
+  if (node.type === "TSAsExpression") {
+    return unpackTSAsExpression(node.expression);
+  }
+  return node;
+}
+
+function parseExportValueExpression(
+  node: babel.types.Expression,
+): ModuleExport {
+  // ignores `as` casts so it doesn't interfere with the ast node type detection
+  const expression = unpackTSAsExpression(node);
+  if (
+    expression.type === "CallExpression" ||
+    expression.type === "TaggedTemplateExpression"
+  ) {
+    return { type: "tag-template" };
+  } else if (
+    expression.type === "StringLiteral" ||
+    expression.type === "NumericLiteral"
+  ) {
+    return { type: "constant", value: expression.value };
+  } else if (
+    expression.type === "UnaryExpression" &&
+    expression.operator === "-" &&
+    expression.argument.type === "NumericLiteral"
+  ) {
+    return { type: "constant", value: -expression.argument.value };
+  } else if (
+    expression.type === "TemplateLiteral" &&
+    expression.quasis.length === 1
+  ) {
+    return { type: "constant", value: expression.quasis[0].value.raw };
+  } else if (expression.type === "ObjectExpression") {
+    return { type: "record", value: parseObjectExpression(expression) };
+  }
+  return { type: "unsupported", hint: expression.type };
+}
+
+function parseObjectExpression(
+  node: babel.types.ObjectExpression,
+): Record<string, ModuleExport> {
+  let result: Record<string, ModuleExport> = {};
+  for (const property of node.properties) {
+    if (
+      property.type === "ObjectProperty" &&
+      property.key.type === "Identifier"
+    ) {
+      const key = property.key.name;
+      const parsed = parseExportValueExpression(
+        property.value as babel.types.Expression,
+      );
+      if (parsed) {
+        result[key] = parsed;
+      }
+    }
+  }
+  return result;
 }
 
 function extractCss(
