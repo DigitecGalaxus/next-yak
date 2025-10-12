@@ -188,10 +188,11 @@ fn escape_css_class_name(input: &str) -> String {
   result
 }
 
-#[derive(Deserialize, Clone, Copy)]
+#[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum TranspilationMode {
   CssModule,
   Css,
+  DataUrl,
 }
 
 impl TranspilationMode {
@@ -200,6 +201,7 @@ impl TranspilationMode {
     match self {
       TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
       TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
+      TranspilationMode::DataUrl => format!(".{}", escape_css_class_name(input)),
     }
   }
 }

@@ -42,6 +42,7 @@ export type YakConfigOptions = {
 };
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
+  const isTurbo = process.env.TURBOPACK === "1";
   const previousConfig = nextConfig.webpack;
   const minify =
     yakOptions.minify !== undefined
@@ -49,23 +50,44 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       : process.env.NODE_ENV === "production";
 
   nextConfig.experimental ||= {};
-  nextConfig.experimental.swcPlugins ||= [];
-  nextConfig.experimental.swcPlugins.push([
-    "yak-swc",
-    {
-      minify,
-      basePath: currentDir,
-      prefix: yakOptions.prefix,
-      displayNames: yakOptions.displayNames ?? !minify,
-      transpilationMode: yakOptions.experiments?.transpilationMode,
-    },
-  ]);
+  // nextConfig.experimental.swcPlugins ||= [];
+  // nextConfig.experimental.swcPlugins.push([
+  //   "yak-swc",
+  //   {
+  //     minify,
+  //     basePath: currentDir,
+  //     prefix: yakOptions.prefix,
+  //     displayNames: yakOptions.displayNames ?? !minify,
+  //     transpilationMode: isTurbo
+  //       ? "DataUrl"
+  //       : yakOptions.experiments?.transpilationMode,
+  //   },
+  // ]);
+
+  if (isTurbo) {
+    nextConfig.turbopack ||= {};
+    nextConfig.turbopack.rules ||= {};
+    nextConfig.turbopack.rules["*.{js,jsx,ts,tsx}"] = {
+      loaders: [path.join(currentDir, "../loaders/css-loader.js")],
+      // as: "*.js",
+    };
+    nextConfig.turbopack.resolveExtensions = [
+      ".mdx",
+      ".tsx",
+      ".ts",
+      ".js",
+      ".jsx",
+      ".css",
+      "text/yak-css",
+    ];
+  }
 
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
     }
 
+    // if (!isTurbo) {
     webpackConfig.module.rules.push({
       test:
         yakOptions.experiments?.transpilationMode === "Css"
@@ -74,6 +96,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       loader: path.join(currentDir, "../loaders/css-loader.js"),
       options: yakOptions,
     });
+    // }
 
     // With the following alias the internal next-yak code
     // is able to import a context which works for server components

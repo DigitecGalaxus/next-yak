@@ -1,0 +1,28 @@
+{
+  "name": "example-turbo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev --turbo",
+    "build": "next build --webpack",
+    "build:turbo": "next build --turbo",
+    "build:yak": "pnpm run --filter=next-yak build",
+    "build:swc": "pnpm run --filter=yak-swc build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev",
+    "next": "15.6.0-canary.52",
+    "next-yak": "workspace:*",
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev"
+  }
+}

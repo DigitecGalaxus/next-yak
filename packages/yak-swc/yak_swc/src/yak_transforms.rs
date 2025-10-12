@@ -530,7 +530,7 @@ impl YakTransform for TransformKeyframes {
     parser_state.current_scopes = vec![CssScope {
       name: match &self.transpilation_mode {
         TranspilationMode::CssModule => format!("@keyframes :global({})", self.animation_name),
-        TranspilationMode::Css => format!("@keyframes {}", self.animation_name),
+        _ => format!("@keyframes {}", self.animation_name),
       },
       scope_type: ScopeType::AtRule,
     }];
@@ -584,7 +584,7 @@ impl YakTransform for TransformKeyframes {
   fn get_css_reference_name(&self) -> Option<String> {
     Some(match &self.transpilation_mode {
       TranspilationMode::CssModule => format!("global({})", self.animation_name),
-      TranspilationMode::Css => self.animation_name.clone(),
+      _ => self.animation_name.clone(),
     })
   }
 }

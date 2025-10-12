@@ -1,8 +1,58 @@
+import { transformSync } from "@swc/core";
 import { relative } from "path";
 import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
-import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
+const yakCssImportRegex =
+  // Make mixin and selector non optional once we dropped support for the babel plugin
+  /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
+
+async function parseYakCssImport(
+  resolve: (spec: string) => Promise<{}>,
+  css: string,
+) {
+  const yakImports: any[] = [];
+
+  for (const match of css.matchAll(yakCssImportRegex)) {
+    const [fullMatch, encodedArguments, importKind, semicolon] = match;
+    const [moduleSpecifier, ...specifier] = encodedArguments
+      .split(":")
+      .map((entry) => decodeURIComponent(entry));
+
+    yakImports.push({
+      encodedArguments,
+      moduleSpecifier: await resolve(moduleSpecifier),
+      specifier,
+      importKind: importKind as any,
+      semicolon,
+      position: match.index,
+      size: fullMatch.length,
+    });
+  }
+
+  return yakImports;
+}
+
+// https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
+
+function parseStyledComponents(sourceContents: string) {
+  // cross-file Styled Components are always in the following format:
+  // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
+  const styledParts = sourceContents.split("/*YAK EXPORTED STYLED:");
+  let styledComponents: any = {};
+
+  for (let i = 1; i < styledParts.length; i++) {
+    const [comment] = styledParts[i].split("*/", 1);
+    const [componentName, className] = comment.split(":");
+    styledComponents[componentName] = {
+      type: "styled-component",
+      nameParts: componentName.split("."),
+      value: `.${className}`,
+    };
+  }
+
+  return styledComponents;
+}
 /**
  * Transform typescript to css
  *
@@ -17,28 +67,118 @@ export default async function cssExtractLoader(
   sourceMap: string | undefined,
 ): Promise<string | void> {
   const callback = this.async();
-  // Load the module from the original typescript request (without !=! and the query)
-  return this.loadModule(this.resourcePath, (err, source) => {
-    if (err) {
-      return callback(err);
-    }
-    if (!source) {
-      return callback(
-        new Error(`Source code for ${this.resourcePath} is empty`),
-      );
-    }
-    const { experiments } = this.getOptions();
-    const debugLog = createDebugLogger(this, experiments?.debug);
 
-    debugLog("ts", source);
-    const css = extractCss(source, experiments?.transpilationMode);
-    debugLog("css", css);
+  if (
+    this.currentRequest.includes("app/page") ||
+    this.currentRequest.includes("button")
+  ) {
+    const result = transformSync(_code, {
+      filename: this.resourcePath,
+      inputSourceMap: sourceMap ? JSON.stringify(sourceMap) : undefined,
+      // sourceMaps: sourceMap,
+      // inlineSourceContent: sourceMap,
+      sourceFileName: this.resourcePath,
+      sourceRoot: this.rootContext,
+      jsc: {
+        experimental: {
+          plugins: [
+            [
+              "yak-swc",
+              {
+                minify: false,
+                basePath: this.rootContext,
+                displayNames: true,
+                transpilationMode: "DataUrl",
+              },
+            ],
+          ],
+        },
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: true,
+      },
+      minify: false,
+      isModule: true,
+    });
 
-    return resolveCrossFileConstant(this, this.context, css).then((result) => {
-      debugLog("css resolved", css);
-      return callback(null, result, sourceMap);
-    }, callback);
-  });
+    let css = extractCss(result.code, "Css");
+    // @ts-ignore
+    const yakImports = await parseYakCssImport((moduleSpecifier) => {
+      // @ts-ignore
+      return this.getResolve({})(this.context, moduleSpecifier);
+    }, css);
+
+    if (yakImports.length === 0) {
+      return callback(null, result.code, sourceMap);
+    } else {
+      const dataUrl = result.code
+        .split("\n")
+        .find((line) => line.includes("data:text/css;base64"))!;
+      const code = await new Promise<string>((resolve, reject) => {
+        this.fs.readFile(
+          yakImports[0].moduleSpecifier,
+          "utf-8",
+          (err, data) => {
+            if (data) {
+              const transformed = transformSync(data, {
+                filename: yakImports[0].moduleSpecifier,
+                inputSourceMap: sourceMap
+                  ? JSON.stringify(sourceMap)
+                  : undefined,
+                // sourceMaps: sourceMap,
+                // inlineSourceContent: sourceMap,
+                sourceFileName: yakImports[0].moduleSpecifier,
+                sourceRoot: this.rootContext,
+                jsc: {
+                  experimental: {
+                    plugins: [
+                      [
+                        "yak-swc",
+                        {
+                          minify: false,
+                          basePath: this.rootContext,
+                          displayNames: true,
+                          transpilationMode: "DataUrl",
+                        },
+                      ],
+                    ],
+                  },
+                  target: "es2022",
+                  loose: false,
+                  minify: {
+                    compress: false,
+                    mangle: false,
+                  },
+                  preserveAllComments: true,
+                },
+                minify: false,
+                isModule: true,
+              });
+              const styledComponents = parseStyledComponents(transformed.code);
+              css = css.replace(
+                '--yak-css-import: url("../../components/button:Button",selector)',
+                styledComponents.Button.value,
+              );
+
+              return resolve(
+                result.code.replace(
+                  dataUrl,
+                  `import "data:text/css;base64,${Buffer.from(css).toString("base64")}"`,
+                ),
+              );
+            }
+          },
+        );
+      });
+
+      return callback(null, "import React from 'react';\n" + code, sourceMap);
+    }
+  }
+  return callback(null, _code, sourceMap);
 }
 
 function extractCss(

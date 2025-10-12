@@ -3804,6 +3804,7 @@ dependencies = [
 name = "yak_swc"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "css_in_js_parser",
  "divan",
  "itertools 0.14.0",

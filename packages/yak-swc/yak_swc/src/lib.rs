@@ -1,3 +1,5 @@
+use base64::prelude::BASE64_STANDARD;
+use base64::Engine;
 use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
@@ -135,6 +137,8 @@ where
   display_names: bool,
   /// Transpilation mode to determine how to transpile the code
   transpilation_mode: TranspilationMode,
+  /// All CSS rules collected during transformation
+  all_css_rules: Vec<String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -164,6 +168,7 @@ where
       comments,
       display_names,
       transpilation_mode,
+      all_css_rules: Vec::new(),
     }
   }
 
@@ -349,7 +354,7 @@ where
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
-                  TranspilationMode::Css => parse_css(&keyframe_name, css_state),
+                  _ => parse_css(&keyframe_name, css_state),
                 };
                 css_state = Some(new_state);
               } else {
@@ -598,6 +603,12 @@ where
                 }
                 TranspilationMode::Css => {
                   format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+                }
+                TranspilationMode::DataUrl => {
+                  format!(
+                    "data:text/css;base64,{}",
+                    BASE64_STANDARD.encode(self.all_css_rules.join(""))
+                  )
                 }
               }
               .into(),
@@ -889,6 +900,7 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix.clone() {
+        self.all_css_rules.push(css_code.trim().into());
         self.comments.add_leading(
           result_span.lo,
           Comment {
@@ -1035,6 +1047,33 @@ mod tests {
       },
       &input,
       &input.with_file_name("output.dev.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_dev_turbo(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          false,
+          None,
+          true,
+          TranspilationMode::DataUrl,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.turbo.dev.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,
