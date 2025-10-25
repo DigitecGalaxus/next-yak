@@ -31,55 +31,89 @@ export type YakConfigOptions = {
    */
   displayNames?: boolean;
   experiments?: {
-    debug?:
-      | boolean
-      | {
-          filter?: (path: string) => boolean;
-          type: "all" | "ts" | "css" | "css resolved";
-        };
+    debug?: WebpackDebugOptions | TurbopackDebugOptions;
     transpilationMode?: "CssModule" | "Css";
   };
 };
 
+type WebpackDebugOptions =
+  | boolean
+  | {
+      filter?: (path: string) => boolean;
+      type: "all" | "ts" | "css" | "css resolved";
+    };
+
+type TurbopackDebugOptions = boolean;
+
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
-  const isTurbo = process.env.TURBOPACK === "1";
+  const isTurbo =
+    process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto";
   const previousConfig = nextConfig.webpack;
   const minify =
     yakOptions.minify !== undefined
       ? yakOptions.minify
       : process.env.NODE_ENV === "production";
+  const yakPluginOptions = {
+    minify,
+    basePath: currentDir,
+    prefix: yakOptions.prefix,
+    displayNames: yakOptions.displayNames ?? !minify,
+    importMode: isTurbo
+      ? { type: "DataUrl" }
+      : {
+          type: "InlineMatchResource",
+          transpilation:
+            yakOptions.experiments?.transpilationMode ?? "CssModule",
+        },
+  };
 
-  nextConfig.experimental ||= {};
-  // nextConfig.experimental.swcPlugins ||= [];
-  // nextConfig.experimental.swcPlugins.push([
-  //   "yak-swc",
-  //   {
-  //     minify,
-  //     basePath: currentDir,
-  //     prefix: yakOptions.prefix,
-  //     displayNames: yakOptions.displayNames ?? !minify,
-  //     transpilationMode: isTurbo
-  //       ? "DataUrl"
-  //       : yakOptions.experiments?.transpilationMode,
-  //   },
-  // ]);
+  if (isTurbo && typeof yakOptions.experiments?.debug === "object") {
+    throw new Error(
+      "The debug option must be a boolean when used with Turbopack",
+    );
+  }
 
-  if (isTurbo) {
+  if (!isTurbo) {
+    nextConfig.experimental ||= {};
+    nextConfig.experimental.swcPlugins ||= [];
+    nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
+  } else {
+    // Turbopack can't handle options with undefined values
+    if (yakOptions.prefix === undefined) {
+      delete yakPluginOptions.prefix;
+      delete yakOptions.prefix;
+    }
+
     nextConfig.turbopack ||= {};
     nextConfig.turbopack.rules ||= {};
-    nextConfig.turbopack.rules["*.{js,jsx,ts,tsx}"] = {
-      loaders: [path.join(currentDir, "../loaders/css-loader.js")],
-      // as: "*.js",
+
+    const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
+    const existingRule = nextConfig.turbopack.rules[ruleKey];
+
+    const yakLoader = {
+      loader: path.join(currentDir, "../loaders/turbo-loader.js"),
+      options: {
+        yakOptions,
+        yakPluginOptions,
+      },
     };
-    nextConfig.turbopack.resolveExtensions = [
-      ".mdx",
-      ".tsx",
-      ".ts",
-      ".js",
-      ".jsx",
-      ".css",
-      "text/yak-css",
-    ];
+
+    if (existingRule && "loaders" in existingRule) {
+      existingRule.loaders ||= [];
+      // @ts-expect-error - We throw an error if the debug option isn't serializable
+      existingRule.loaders.push(yakLoader);
+    } else if (existingRule) {
+      nextConfig.turbopack.rules[ruleKey] = {
+        ...existingRule,
+        // @ts-expect-error - We throw an error if the debug option isn't serializable
+        loaders: [yakLoader],
+      };
+    } else {
+      nextConfig.turbopack.rules[ruleKey] = {
+        // @ts-expect-error - We throw an error if the debug option isn't serializable
+        loaders: [yakLoader],
+      };
+    }
   }
 
   nextConfig.webpack = (webpackConfig, options) => {
@@ -87,7 +121,6 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       webpackConfig = previousConfig(webpackConfig, options);
     }
 
-    // if (!isTurbo) {
     webpackConfig.module.rules.push({
       test:
         yakOptions.experiments?.transpilationMode === "Css"
@@ -96,7 +129,6 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       loader: path.join(currentDir, "../loaders/css-loader.js"),
       options: yakOptions,
     });
-    // }
 
     // With the following alias the internal next-yak code
     // is able to import a context which works for server components
