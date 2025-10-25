@@ -1,6 +1,7 @@
 import { relative } from "path";
 import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
+import { extractCss } from "./lib/extractCss.js";
 import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
 /**
@@ -39,39 +40,6 @@ export default async function cssExtractLoader(
       return callback(null, result, sourceMap);
     }, callback);
   });
-}
-
-function extractCss(
-  code: string | Buffer<ArrayBufferLike>,
-  transpilationMode: NonNullable<
-    YakConfigOptions["experiments"]
-  >["transpilationMode"],
-): string {
-  let codeString: string;
-
-  if (typeof code === "string") {
-    codeString = code;
-  } else if (code instanceof Buffer) {
-    codeString = code.toString("utf-8");
-  } else if (code instanceof ArrayBuffer) {
-    codeString = new TextDecoder("utf-8").decode(code);
-  } else {
-    throw new Error(
-      "Invalid input type: code must be string, Buffer, or ArrayBuffer",
-    );
-  }
-
-  const codeParts = codeString.split("/*YAK Extracted CSS:\n");
-  let result = "";
-  for (let i = 1; i < codeParts.length; i++) {
-    const codeUntilEnd = codeParts[i].split("*/")[0];
-    result += codeUntilEnd;
-  }
-  if (result && transpilationMode !== "Css") {
-    result = "/* cssmodules-pure-no-check */\n" + result;
-  }
-
-  return result;
 }
 
 function createDebugLogger(
