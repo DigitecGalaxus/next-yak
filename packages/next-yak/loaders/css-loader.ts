@@ -50,7 +50,9 @@ export default async function cssExtractLoader(
                 minify: false,
                 basePath: this.rootContext,
                 displayNames: true,
-                transpilationMode: "DataUrl",
+                importMode: {
+                  type: "DataUrl",
+                },
               },
             ],
           ],
@@ -108,7 +110,9 @@ export default async function cssExtractLoader(
                                       minify: false,
                                       basePath: this.rootContext,
                                       displayNames: true,
-                                      transpilationMode: "DataUrl",
+                                      importMode: {
+                                        type: "DataUrl",
+                                      },
                                     },
                                   ],
                                 ],
@@ -166,7 +170,9 @@ export default async function cssExtractLoader(
                                       minify: false,
                                       basePath: this.rootContext,
                                       displayNames: true,
-                                      transpilationMode: "DataUrl",
+                                      importMode: {
+                                        type: "DataUrl",
+                                      },
                                     },
                                   ],
                                 ],

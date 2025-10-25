@@ -192,7 +192,6 @@ fn escape_css_class_name(input: &str) -> String {
 pub enum TranspilationMode {
   CssModule,
   Css,
-  DataUrl,
 }
 
 impl TranspilationMode {
@@ -201,7 +200,22 @@ impl TranspilationMode {
     match self {
       TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
       TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
-      TranspilationMode::DataUrl => format!(".{}", escape_css_class_name(input)),
+    }
+  }
+}
+
+#[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
+#[serde(tag = "type")]
+pub enum ImportMode {
+  InlineMatchResource { transpilation: TranspilationMode },
+  DataUrl,
+}
+
+impl ImportMode {
+  pub fn transpilation_mode(&self) -> TranspilationMode {
+    match self {
+      ImportMode::InlineMatchResource { transpilation } => *transpilation,
+      ImportMode::DataUrl => TranspilationMode::Css,
     }
   }
 }

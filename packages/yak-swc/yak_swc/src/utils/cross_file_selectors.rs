@@ -82,7 +82,6 @@ impl ImportKind {
       );
     }
 
-    //"--yak-css-import: attr(data-yak raw-string, \"{}:{}:{}\")",
     format!(
       "--yak-css-import: url(\"{}:{}\",{})",
       self.import_source().as_str(),

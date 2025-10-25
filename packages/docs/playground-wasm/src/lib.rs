@@ -98,16 +98,18 @@ fn yak_pass(
             None,
             config.minify.unwrap_or_default(),
             config
-                .transpilation_mode
+                .import_mode
                 .clone()
-                .unwrap_or(TranspilationMode::Css)
+                .unwrap_or(ImportMode::InlineMatchResource {
+                    transpilation: TranspilationMode::Css,
+                })
                 .into(),
         );
         program.visit_mut_with(&mut transformer);
     })
 }
 
-fn real_file_name(file: &SourceFile) -> Option<Cow<str>> {
+fn real_file_name(file: &SourceFile) -> Option<Cow<'_, str>> {
     match &*file.name {
         FileName::Real(path) => path.file_name().map(|s| s.to_string_lossy()),
         _ => None,
@@ -130,6 +132,14 @@ pub enum TranspilationMode {
     Css,
 }
 
+#[derive(Tsify, Serialize, Deserialize, Clone)]
+#[serde(tag = "type")]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum ImportMode {
+    InlineMatchResource { transpilation: TranspilationMode },
+    DataUrl,
+}
+
 impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     fn from(val: TranspilationMode) -> Self {
         match val {
@@ -141,6 +151,19 @@ impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     }
 }
 
+impl From<ImportMode> for yak_swc::naming_convention::ImportMode {
+    fn from(val: ImportMode) -> Self {
+        match val {
+            ImportMode::InlineMatchResource { transpilation } => {
+                yak_swc::naming_convention::ImportMode::InlineMatchResource {
+                    transpilation: transpilation.into(),
+                }
+            }
+            ImportMode::DataUrl => yak_swc::naming_convention::ImportMode::DataUrl,
+        }
+    }
+}
+
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(rename_all = "camelCase")]
@@ -148,14 +171,16 @@ pub struct YakConfig {
     #[tsify(optional)]
     minify: Option<bool>,
     #[tsify(optional)]
-    transpilation_mode: Option<TranspilationMode>,
+    import_mode: Option<ImportMode>,
 }
 
 impl Default for YakConfig {
     fn default() -> Self {
         Self {
             minify: Default::default(),
-            transpilation_mode: Some(TranspilationMode::Css),
+            import_mode: Some(ImportMode::InlineMatchResource {
+                transpilation: TranspilationMode::Css,
+            }),
         }
     }
 }

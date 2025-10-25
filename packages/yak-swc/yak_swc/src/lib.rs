@@ -40,7 +40,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{NamingConvention, TranspilationMode};
+use naming_convention::{ImportMode, NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -68,8 +68,8 @@ pub struct Config {
   pub display_names: bool,
   /// Transpile mode for CSS
   /// Influences how class names and selectors are transpiled
-  #[serde(default = "Config::transpilation_mode_default")]
-  pub transpilation_mode: TranspilationMode,
+  #[serde(default = "Config::import_mode_default")]
+  pub import_mode: ImportMode,
 }
 
 impl Config {
@@ -77,19 +77,21 @@ impl Config {
     true
   }
 
-  fn transpilation_mode_default() -> TranspilationMode {
-    TranspilationMode::CssModule
+  fn import_mode_default() -> ImportMode {
+    ImportMode::InlineMatchResource {
+      transpilation: naming_convention::TranspilationMode::CssModule,
+    }
   }
 }
 
 impl Default for Config {
   fn default() -> Self {
     Self {
-      minify: true,
+      minify: Config::minify_default(),
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
-      transpilation_mode: TranspilationMode::CssModule,
+      import_mode: Config::import_mode_default(),
     }
   }
 }
@@ -135,8 +137,8 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
-  /// Transpilation mode to determine how to transpile the code
-  transpilation_mode: TranspilationMode,
+  /// Import mode to determine how to import the generated css
+  import_mode: ImportMode,
   /// All CSS rules collected during transformation
   all_css_rules: Vec<String>,
 }
@@ -151,7 +153,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
-    transpilation_mode: TranspilationMode,
+    import_mode: ImportMode,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -167,7 +169,7 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
-      transpilation_mode,
+      import_mode,
       all_css_rules: Vec::new(),
     }
   }
@@ -350,11 +352,11 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = match &self.transpilation_mode {
+                let (new_state, _) = match &self.import_mode.transpilation_mode() {
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
-                  _ => parse_css(&keyframe_name, css_state),
+                  TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
                 css_state = Some(new_state);
               } else {
@@ -597,14 +599,18 @@ where
             specifiers: vec![],
             src: Box::new(Str {
               span: DUMMY_SP,
-              value: match &self.transpilation_mode {
-                TranspilationMode::CssModule => {
+              value: match &self.import_mode {
+                ImportMode::InlineMatchResource {
+                  transpilation: TranspilationMode::CssModule,
+                } => {
                   format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
                 }
-                TranspilationMode::Css => {
+                ImportMode::InlineMatchResource {
+                  transpilation: TranspilationMode::Css,
+                } => {
                   format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
                 }
-                TranspilationMode::DataUrl => {
+                ImportMode::DataUrl => {
                   format!(
                     "data:text/css;base64,{}",
                     BASE64_STANDARD.encode(self.all_css_rules.join(""))
@@ -819,7 +825,7 @@ where
         current_variable_id.clone(),
         self.display_names,
         self.current_exported,
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
@@ -832,7 +838,7 @@ where
               .naming_convention
               .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       // CSS Mixin e.g. const highlight = css`color: red;`
       "css" if is_top_level => Box::new(TransformCssMixin::new(
@@ -840,14 +846,14 @@ where
         current_variable_id.clone(),
         self.current_exported,
         self.inside_element_with_css_attribute,
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
         &current_variable_id,
         self.current_condition.clone(),
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       _ => {
         if !is_top_level {
@@ -1042,7 +1048,9 @@ mod tests {
           false,
           None,
           true,
-          TranspilationMode::CssModule,
+          ImportMode::InlineMatchResource {
+            transpilation: TranspilationMode::CssModule,
+          },
         ))
       },
       &input,
@@ -1069,7 +1077,7 @@ mod tests {
           false,
           None,
           true,
-          TranspilationMode::DataUrl,
+          ImportMode::DataUrl,
         ))
       },
       &input,
@@ -1096,7 +1104,9 @@ mod tests {
           true,
           None,
           false,
-          TranspilationMode::CssModule,
+          ImportMode::InlineMatchResource {
+            transpilation: TranspilationMode::CssModule,
+          },
         ))
       },
       &input,
