@@ -142,6 +142,29 @@ pnpm build:swc
 pnpm example
 ```
 
+#### Bundler Support
+
+Next.js 16+ defaults to Turbopack, but **next-yak currently only supports webpack**. Turbopack support is planned for future releases.
+
+All example and documentation projects have been updated to use webpack by default:
+
+**Webpack (required):**
+
+- `dev` - Next.js dev server with webpack (`--webpack` flag)
+- `build:next` - Production build with webpack (`--webpack` flag)
+
+**Turbopack (not yet supported):**
+
+- `dev:turbo` - Next.js dev server with Turbopack (will fail with next-yak)
+- `build:next:turbo` - Production build with Turbopack (will fail with next-yak)
+
+To run the example app:
+
+```bash
+# Use webpack (only working option currently)
+pnpm example
+```
+
 Debugging the SWC plugin in the example app, you can enable debug logging
 
 ```js

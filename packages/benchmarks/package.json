@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm run generate:letters && next dev",
+    "dev": "pnpm run generate:letters && next dev --webpack",
     "build": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next",
-    "build:next": "next build",
+    "build:next": "next build --webpack",
     "build:yak": "pnpm run --dir ../.. build",
     "start": "next start",
     "prettier": "npx prettier --write \"./{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
