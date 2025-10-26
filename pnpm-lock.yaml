@@ -218,16 +218,12 @@ catalogs:
       specifier: 5.101.3
       version: 5.101.3
 
+overrides:
+  yak-swc: workspace:*
+
 importers:
 
   .:
-    dependencies:
-      next-yak:
-        specifier: 'link:'
-        version: 'link:'
-      yak-swc:
-        specifier: 'link:'
-        version: 'link:'
     devDependencies:
       '@changesets/cli':
         specifier: catalog:dev
@@ -555,8 +551,8 @@ importers:
         specifier: ^1.13.5
         version: 1.13.5(@swc/helpers@0.5.17)
       yak-swc:
-        specifier: 7.0.0
-        version: 7.0.0
+        specifier: workspace:*
+        version: link:../yak-swc
     devDependencies:
       '@testing-library/jest-dom':
         specifier: catalog:dev
@@ -6407,9 +6403,6 @@ packages:
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
-
-  yak-swc@7.0.0:
-    resolution: {integrity: sha512-BujB5iVNgBN+9Lm6DkztZ2CZUkGHOJNvE7ZIzG4oENE5CNSpaCwP+s6TFcuJk8WBO2OrSCHXUwja88sNRq+JbA==}
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -13240,10 +13233,6 @@ snapshots:
   xmlchars@2.2.0: {}
 
   y18n@5.0.8: {}
-
-  yak-swc@7.0.0:
-    dependencies:
-      '@swc/counter': 0.1.3
 
   yallist@3.1.1: {}
 

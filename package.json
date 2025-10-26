@@ -22,16 +22,16 @@
   "engines": {
     "node": ">=22"
   },
-  "pnpm": {},
+  "pnpm": {
+    "overrides": {
+      "yak-swc": "workspace:*"
+    }
+  },
   "packageManager": "pnpm@10.15.0",
   "author": "Jan Nicklas",
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "catalog:dev",
     "prettier": "catalog:dev"
-  },
-  "dependencies": {
-    "next-yak": "link:",
-    "yak-swc": "link:"
   }
 }
