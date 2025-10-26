@@ -2,6 +2,7 @@ import { transformSync } from "@swc/core";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
+import { createContext, runInContext } from "node:vm";
 
 interface EvaluateYakModuleOptions {
   modulePath: string;
@@ -14,7 +15,7 @@ interface EvaluateYakModuleOptions {
  * Evaluates a .yak module and all its dependencies
  * - Transpiles all files with yak-swc
  * - Pre-resolves imports using the provided resolver (Turbopack/Webpack)
- * - Only evaluates the entry module (dependencies are loaded lazily via require)
+ * - Bundles all dependencies into a single file and evaluates once
  */
 export async function evaluateYakModule({
   modulePath,
@@ -30,7 +31,6 @@ export async function evaluateYakModule({
     return {};
   }
 
-  const moduleCache = new Map<string, any>();
   const transpiledCache = new Map<string, string>();
   const resolvedImportsCache = new Map<string, Map<string, string>>();
 
@@ -139,101 +139,126 @@ export async function evaluateYakModule({
     }
   };
 
-  // Create require function with pre-resolved imports
-  const createRequireWithResolver = (currentPath: string) => {
-    const nodeRequire = createRequire(currentPath);
-    const resolvedImports = resolvedImportsCache.get(currentPath) || new Map();
+  // Generate a bundled module system with all dependencies
+  const generateBundle = (): string => {
+    const nodeRequire = createRequire(modulePath);
+    const modules: string[] = [];
+    const moduleMapping: Record<string, string> = {};
 
-    return (specifier: string) => {
-      // Check if this was pre-resolved
-      const resolvedPath = resolvedImports.get(specifier);
+    // Create module IDs for all transpiled modules
+    let moduleId = 0;
+    for (const [filePath] of transpiledCache) {
+      const id = `__yak_module_${moduleId++}`;
+      moduleMapping[filePath] = id;
+    }
 
-      if (resolvedPath) {
-        // Check cache first
-        if (moduleCache.has(resolvedPath)) {
-          return moduleCache.get(resolvedPath);
+    // Generate wrapped modules
+    for (const [filePath, code] of transpiledCache) {
+      const resolvedImports = resolvedImportsCache.get(filePath) || new Map();
+      const moduleId = moduleMapping[filePath];
+
+      // Transform require calls to use module mapping
+      let wrappedCode = code;
+      for (const [specifier, resolvedPath] of resolvedImports) {
+        if (moduleMapping[resolvedPath]) {
+          // Local module - replace with module ID
+          wrappedCode = wrappedCode.replace(
+            new RegExp(
+              `require\\s*\\(\\s*["']${escapeRegex(specifier)}["']\\s*\\)`,
+              "g",
+            ),
+            `__bundleRequire("${moduleMapping[resolvedPath]}")`,
+          );
+        } else if (resolvedPath.includes("node_modules")) {
+          // External module - keep as-is but use resolved path
+          wrappedCode = wrappedCode.replace(
+            new RegExp(
+              `require\\s*\\(\\s*["']${escapeRegex(specifier)}["']\\s*\\)`,
+              "g",
+            ),
+            `__nodeRequire("${resolvedPath}")`,
+          );
+        } else {
+          // Try node require with original specifier for external packages
+          wrappedCode = wrappedCode.replace(
+            new RegExp(
+              `require\\s*\\(\\s*["']${escapeRegex(specifier)}["']\\s*\\)`,
+              "g",
+            ),
+            `__nodeRequire("${specifier}")`,
+          );
         }
+      }
 
-        // node_modules - use Node's require
-        if (resolvedPath.includes("node_modules")) {
-          const result = nodeRequire(resolvedPath);
-          moduleCache.set(resolvedPath, result);
-          return result;
-        }
+      modules.push(`
+        __modules["${moduleId}"] = function(exports, module, __bundleRequire, __nodeRequire, __filename, __dirname) {
+          ${wrappedCode}
+        };
+      `);
+    }
 
-        // All pre-resolved local files - use transpiled code if available
-        const transpiledCode = transpiledCache.get(resolvedPath);
+    // Generate the bundle
+    return `
+      (function() {
+        const __modules = {};
+        const __moduleCache = {};
+        const __nodeRequire = require;
 
-        if (transpiledCode) {
-          // File was transpiled, evaluate it
-          const moduleExports = {};
-          const moduleObj = { exports: moduleExports };
+        ${modules.join("\n")}
 
-          new Function(
-            "exports",
-            "module",
-            "require",
-            "__filename",
-            "__dirname",
-            transpiledCode,
-          )(
-            moduleExports,
-            moduleObj,
-            createRequireWithResolver(resolvedPath),
-            resolvedPath,
-            dirname(resolvedPath),
+        function __bundleRequire(moduleId) {
+          if (__moduleCache[moduleId]) {
+            return __moduleCache[moduleId].exports;
+          }
+
+          const module = { exports: {} };
+          __moduleCache[moduleId] = module;
+
+          __modules[moduleId](
+            module.exports,
+            module,
+            __bundleRequire,
+            __nodeRequire,
+            __filename,
+            __dirname
           );
 
-          const result = moduleObj.exports || moduleExports;
-          moduleCache.set(resolvedPath, result);
-          return result;
+          return module.exports;
         }
 
-        // Not transpiled - use Node's require with the resolved path
-        const result = nodeRequire(resolvedPath);
-        moduleCache.set(resolvedPath, result);
-        return result;
-      }
+        // Execute the entry module
+        return __bundleRequire("${moduleMapping[modulePath]}");
+      })();
+    `;
+  };
 
-      // Not pre-resolved - try Node's require directly (for external packages)
-      try {
-        return nodeRequire(specifier);
-      } catch (err) {
-        console.warn(`Could not require "${specifier}":`, err);
-        return {};
-      }
-    };
+  // Helper function to escape regex special characters
+  const escapeRegex = (str: string): string => {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   };
 
   // Prepare the entry module and all its dependencies
   await prepareModule(modulePath);
 
-  // Now evaluate only the entry module
-  const transpiledCode = transpiledCache.get(modulePath)!;
+  // Generate the bundled code
+  const bundledCode = generateBundle();
 
-  const moduleExports = {};
-  const moduleScope = {
-    exports: moduleExports,
-    module: { exports: moduleExports },
-    require: createRequireWithResolver(modulePath),
+  // Create VM context and evaluate the bundle once
+  const context = createContext({
+    require: createRequire(modulePath),
     __filename: modulePath,
     __dirname: dirname(modulePath),
-  };
+    global: globalThis,
+    console,
+    Buffer,
+    process,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    setImmediate,
+    clearImmediate,
+  });
 
-  new Function(
-    "exports",
-    "module",
-    "require",
-    "__filename",
-    "__dirname",
-    transpiledCode,
-  )(
-    moduleScope.exports,
-    moduleScope.module,
-    moduleScope.require,
-    moduleScope.__filename,
-    moduleScope.__dirname,
-  );
-
-  return moduleScope.module.exports || moduleScope.exports;
+  return runInContext(bundledCode, context);
 }
