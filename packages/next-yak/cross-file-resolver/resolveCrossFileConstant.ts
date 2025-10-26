@@ -1,12 +1,6 @@
-import type {
-  ConstantExport,
-  ModuleExport,
-  ParsedModule,
-  RecordExport,
-  TagTemplateExport,
-} from "./parseModule.js";
-import { Cache } from "./types.js";
-import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
+import type {ConstantExport, ModuleExport, ParsedModule, RecordExport,} from "./parseModule.js";
+import {Cache} from "./types.js";
+import {CauseError, CircularDependencyError, ResolveError} from "./Errors.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
@@ -81,15 +75,15 @@ export async function uncachedResolveCrossFileConstant(
   const yakImports = await parseYakCssImport(context, filePath, css);
 
   if (yakImports.length === 0) {
-    return { resolved: css, dependencies: [] };
+    return {resolved: css, dependencies: []};
   }
 
   try {
     const dependencies = new Set<string>();
 
     const resolvedValues = await Promise.all(
-      yakImports.map(async ({ moduleSpecifier, specifier }) => {
-        const { resolved: resolvedModule } = await resolveModule(
+      yakImports.map(async ({moduleSpecifier, specifier}) => {
+        const {resolved: resolvedModule} = await resolveModule(
           context,
           moduleSpecifier,
         );
@@ -111,7 +105,7 @@ export async function uncachedResolveCrossFileConstant(
     // Replace the imports with the resolved values
     let result = css;
     for (let i = yakImports.length - 1; i >= 0; i--) {
-      const { position, size, importKind, specifier, semicolon } =
+      const {position, size, importKind, specifier, semicolon} =
         yakImports[i];
       const resolved = resolvedValues[i];
 
@@ -144,16 +138,16 @@ export async function uncachedResolveCrossFileConstant(
           resolved.type === "styled-component"
             ? resolved.value
             : resolved.value +
-              // resolved.value can be of two different types:
-              // - mixin:
-              //   ${mixinName};
-              // - constant:
-              //   color: ${value};
-              // For mixins the semicolon is already included in the value
-              // but for constants it has to be added manually
-              (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1))
-                ? ""
-                : semicolon);
+            // resolved.value can be of two different types:
+            // - mixin:
+            //   ${mixinName};
+            // - constant:
+            //   color: ${value};
+            // For mixins the semicolon is already included in the value
+            // but for constants it has to be added manually
+            (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1))
+              ? ""
+              : semicolon);
       }
 
       result =
@@ -162,11 +156,11 @@ export async function uncachedResolveCrossFileConstant(
         result.slice(position + size);
     }
 
-    return { resolved: result, dependencies: Array.from(dependencies) };
+    return {resolved: result, dependencies: Array.from(dependencies)};
   } catch (error) {
     throw new CauseError(
       `Error while resolving cross-file selectors in file "${filePath}"`,
-      { cause: error },
+      {cause: error},
     );
   }
 }
@@ -179,26 +173,28 @@ async function parseYakCssImport(
   filePath: string,
   css: string,
 ): Promise<YakCssImport[]> {
-  const yakImports: YakCssImport[] = [];
 
-  for (const match of css.matchAll(yakCssImportRegex)) {
-    const [fullMatch, encodedArguments, importKind, semicolon] = match;
-    const [moduleSpecifier, ...specifier] = encodedArguments
-      .split(":")
-      .map((entry) => decodeURIComponent(entry));
+  const yakImports$: Promise<YakCssImport>[] = [...css.matchAll(yakCssImportRegex)]
+    .map(async match => {
+      const [fullMatch, encodedArguments, importKind, semicolon] = match;
+      const [moduleSpecifier, ...specifier] = encodedArguments
+        .split(":")
+        .map((entry) => decodeURIComponent(entry));
 
-    yakImports.push({
-      encodedArguments,
-      moduleSpecifier: await context.resolve(moduleSpecifier, filePath),
-      specifier,
-      importKind: importKind as YakImportKind,
-      semicolon,
-      position: match.index,
-      size: fullMatch.length,
+      const resolvedModuleSpecifier = await context.resolve(moduleSpecifier, filePath);
+      return {
+        encodedArguments,
+        moduleSpecifier: resolvedModuleSpecifier,
+        specifier,
+        importKind: importKind as YakImportKind,
+        semicolon,
+        position: match.index,
+        size: fullMatch.length,
+      };
     });
-  }
 
-  return yakImports;
+
+  return Promise.all(yakImports$);
 }
 
 async function resolveModule(context: ResolveContext, filePath: string) {
@@ -258,7 +254,7 @@ async function uncachedResolveModule(
         let exportEntry = exports.named[styledComponent.nameParts[0]];
 
         if (!exportEntry) {
-          exportEntry = { type: "record", value: {} };
+          exportEntry = {type: "record", value: {}};
           exports.named[styledComponent.nameParts[0]] = exportEntry;
         } else if (exportEntry.type !== "record") {
           throw new CauseError(`Error parsing file "${parsedModule.path}"`, {
@@ -270,7 +266,7 @@ async function uncachedResolveModule(
         for (let i = 1; i < styledComponent.nameParts.length - 1; i++) {
           let next = current[styledComponent.nameParts[i]];
           if (!next) {
-            next = { type: "record", value: {} };
+            next = {type: "record", value: {}};
             current[styledComponent.nameParts[i]] = next;
           } else if (next.type !== "record") {
             throw new CauseError(`Error parsing file "${parsedModule.path}"`, {
@@ -281,7 +277,7 @@ async function uncachedResolveModule(
         }
         current[
           styledComponent.nameParts[styledComponent.nameParts.length - 1]
-        ] = {
+          ] = {
           type: "styled-component",
           className: styledComponent.value,
         };
@@ -295,7 +291,7 @@ async function uncachedResolveModule(
   if (parsedModule.mixins) {
     await Promise.all(
       Object.values(parsedModule.mixins).map(async (mixin) => {
-        const { resolved, dependencies: deps } = await resolveCrossFileConstant(
+        const {resolved, dependencies: deps} = await resolveCrossFileConstant(
           context,
           parsedModule.path,
           mixin.value,
@@ -314,7 +310,7 @@ async function uncachedResolveModule(
           let exportEntry = exports.named[mixin.nameParts[0]];
 
           if (!exportEntry) {
-            exportEntry = { type: "record", value: {} };
+            exportEntry = {type: "record", value: {}};
             exports.named[mixin.nameParts[0]] = exportEntry;
           } else if (exportEntry.type !== "record") {
             throw new CauseError(`Error parsing file "${parsedModule.path}"`, {
@@ -326,7 +322,7 @@ async function uncachedResolveModule(
           for (let i = 1; i < mixin.nameParts.length - 1; i++) {
             let next = current[mixin.nameParts[i]];
             if (!next) {
-              next = { type: "record", value: {} };
+              next = {type: "record", value: {}};
               current[mixin.nameParts[i]] = next;
             } else if (next.type !== "record") {
               throw new CauseError(
@@ -369,7 +365,7 @@ async function resolveModuleSpecifierRecursively(
         `Unable to resolve "${specifiers.join(".")}" in module "${
           resolvedModule.path
         }"`,
-        { cause: "Circular dependency detected" },
+        {cause: "Circular dependency detected"},
       );
     }
 
@@ -414,7 +410,7 @@ async function resolveModuleSpecifierRecursively(
           `Unable to resolve "${specifiers.join(".")}" in module "${
             resolvedModule.path
           }"`,
-          { cause: "Circular dependency detected" },
+          {cause: "Circular dependency detected"},
         );
       }
 
@@ -450,7 +446,7 @@ async function resolveModuleExport(
   try {
     switch (moduleExport.type) {
       case "re-export": {
-        const { resolved: reExportedModule } = await resolveModule(
+        const {resolved: reExportedModule} = await resolveModule(
           context,
           await context.resolve(moduleExport.from, filePath),
         );
@@ -466,7 +462,7 @@ async function resolveModuleExport(
         return resolved;
       }
       case "namespace-re-export": {
-        const { resolved: reExportedModule } = await resolveModule(
+        const {resolved: reExportedModule} = await resolveModule(
           context,
           await context.resolve(moduleExport.from, filePath),
         );
@@ -555,13 +551,13 @@ async function resolveModuleExport(
   } catch (error) {
     throw new ResolveError(
       `Unable to resolve "${specifiers.join(".")}" in module "${filePath}"`,
-      { cause: error },
+      {cause: error},
     );
   }
 
   throw new ResolveError(
     `Unable to resolve "${specifiers.join(".")}" in module "${filePath}"`,
-    { cause: `unknown type "${moduleExport.type}"` },
+    {cause: `unknown type "${moduleExport.type}"`},
   );
 }
 
@@ -583,7 +579,7 @@ function resolveSpecifierInRecord(
   if (current === undefined || depth !== specifiers.length) {
     throw new ResolveError(
       `Unable to resolve "${specifiers.join(".")}" in object/array "${name}"`,
-      { cause: "path not found" },
+      {cause: "path not found"},
     );
   }
 
@@ -601,12 +597,12 @@ function resolveSpecifierInRecord(
     "__yak" in current.value &&
     current.value.__yak.type === "constant"
   ) {
-    return { type: "mixin", value: String(current.value.__yak.value) };
+    return {type: "mixin", value: String(current.value.__yak.value)};
   }
 
   throw new ResolveError(
     `Unable to resolve "${specifiers.join(".")}" in object/array "${name}"`,
-    { cause: "only string and numbers are supported" },
+    {cause: "only string and numbers are supported"},
   );
 }
 
@@ -626,25 +622,25 @@ async function sha1(message: string) {
 
 type ResolvedCssImport =
   | {
-      type: "styled-component";
-      source: string;
-      from: string[];
-      name: string;
-      value: string;
-    }
+  type: "styled-component";
+  source: string;
+  from: string[];
+  name: string;
+  value: string;
+}
   | {
-      type: "unresolved-tag";
-      source: string;
-      from: string[];
-      name: string;
-    }
+  type: "unresolved-tag";
+  source: string;
+  from: string[];
+  name: string;
+}
   | { type: "mixin"; source: string; from: string[]; value: string | number }
   | {
-      type: "constant";
-      source: string;
-      from: string[];
-      value: string | number;
-    };
+  type: "constant";
+  source: string;
+  from: string[];
+  value: string | number;
+};
 
 export type ResolveContext = {
   parse: (modulePath: string) => Promise<ParsedModule> | ParsedModule;
