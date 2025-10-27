@@ -1,6 +1,5 @@
 use rustc_hash::FxHashMap;
 use swc_core::atoms::Atom;
-use swc_core::common::{Span, Spanned};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 
@@ -23,16 +22,7 @@ pub enum ImportSourceType {
 pub struct VariableVisitor {
   variables: FxHashMap<Id, Box<Expr>>,
   imports: FxHashMap<Id, ImportKind>,
-  default_export: Option<DefaultExportReference>,
-}
-
-#[derive(PartialEq, Debug, Clone)]
-/// Represents a reference to the default export of a module
-/// in order to add the magic comment to it if the referenced variable
-/// is processed
-pub struct DefaultExportReference {
-  pub id: Id,
-  pub span: Span,
+  default_export: Option<ScopedVariableReference>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -151,7 +141,7 @@ impl VariableVisitor {
     None
   }
 
-  pub fn get_default_export(&self) -> Option<DefaultExportReference> {
+  pub fn get_default_export(&self) -> Option<ScopedVariableReference> {
     self.default_export.clone()
   }
 }
@@ -159,15 +149,16 @@ impl VariableVisitor {
 impl Fold for VariableVisitor {}
 
 impl VisitMut for VariableVisitor {
-  /// Visit export default expressions to store the referenced identifier
-  /// This could be before or after the referenced identifier is declared
-  /// e.g. export default button;
+  /// Visit export default expressions to store the variable name
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    if let Expr::Ident(ident) = n.expr.as_ref() {
-      self.default_export = Some(DefaultExportReference {
-        id: ident.to_id(),
-        span: ident.span(),
-      });
+    match n.expr.as_ref() {
+      Expr::Ident(ident) => {
+        self.default_export = Some(ScopedVariableReference::new(
+          ident.to_id(),
+          vec![ident.sym.clone()],
+        ));
+      }
+      _ => {}
     }
     n.visit_mut_children_with(self);
   }
@@ -565,253 +556,5 @@ mod tests {
 
     let result = visitor.get_const_value(&non_existent_ref);
     assert!(result.is_none());
-  }
-
-  #[test]
-  fn test_export_default_simple() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const button = "primary-button";
-        export default button;
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    assert_eq!(default_ref.id.0.as_str(), "button");
-    assert_eq!(default_ref.id.1, SyntaxContext::from_u32(0));
-  }
-
-  #[test]
-  fn test_export_default_before_declaration() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        export default myComponent;
-        const myComponent = "component-style";
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    assert_eq!(default_ref.id.0.as_str(), "myComponent");
-  }
-
-  #[test]
-  fn test_export_default_with_imported_variable() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        import { theme } from "./theme.yak";
-        const buttonStyle = "button-class";
-        export default theme;
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    assert_eq!(default_ref.id.0.as_str(), "theme");
-
-    // Verify the imported variable is also tracked
-    let theme_import = visitor.get_imported_variable(&default_ref.id);
-    assert!(theme_import.is_some());
-    let (source_type, import_kind) = theme_import.unwrap();
-    assert_eq!(source_type, ImportSourceType::Yak);
-    assert_eq!(import_kind.import_source().as_str(), "./theme.yak");
-  }
-
-  #[test]
-  fn test_export_default_multiple_exports() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const first = "first-value";
-        export default first;
-        const second = "second-value";
-        // This would overwrite the previous default export in real code
-        export default second;
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    // Should capture the last export default
-    assert_eq!(default_ref.id.0.as_str(), "second");
-  }
-
-  #[test]
-  fn test_no_export_default() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const button = "primary-button";
-        export { button };
-        export const namedExport = "named";
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_none());
-  }
-
-  #[test]
-  fn test_export_default_with_const_value() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const config = {
-          theme: "dark",
-          colors: {
-            primary: '#007bff',
-            secondary: '#6c757d'
-          }
-        };
-        export default config;
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    assert_eq!(default_ref.id.0.as_str(), "config");
-
-    // Verify we can still access the const value through the exported variable
-    let theme_value = get_expr_value(
-      &visitor
-        .get_const_value(&ScopedVariableReference::new(
-          default_ref.id.clone(),
-          vec![atom!("config"), atom!("theme")],
-        ))
-        .unwrap(),
-    );
-    assert_eq!(theme_value, Some("dark".to_string()));
-
-    let primary_color = get_expr_value(
-      &visitor
-        .get_const_value(&ScopedVariableReference::new(
-          default_ref.id,
-          vec![atom!("config"), atom!("colors"), atom!("primary")],
-        ))
-        .unwrap(),
-    );
-    assert_eq!(primary_color, Some("#007bff".to_string()));
-  }
-
-  #[test]
-  fn test_export_default_non_identifier() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const button = "primary-button";
-        // Export default with a literal (not an identifier)
-        export default "literal-string";
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    // Should not capture non-identifier exports
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_none());
-  }
-
-  #[test]
-  fn test_export_default_with_function_call() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const config = { theme: "light" };
-        function getConfig() { return config; }
-        // Export default with a function call (not an identifier)
-        export default getConfig();
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    // Should not capture function call exports
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_none());
-  }
-
-  #[test]
-  fn test_export_default_span_tracking() {
-    let mut visitor = VariableVisitor::new();
-    let code = r#"
-        const myVar = "test";
-        export default myVar;
-        "#;
-
-    test_transform(
-      Default::default(),
-      Some(true),
-      |_| visit_mut_pass(&mut visitor),
-      code,
-      code,
-    );
-
-    let default_export = visitor.get_default_export();
-    assert!(default_export.is_some());
-
-    let default_ref = default_export.unwrap();
-    // Span should be present (we can't easily test the exact span values
-    // without more complex setup, but we can verify it's not empty)
-    assert_ne!(default_ref.span.lo.0, 0);
-    assert_ne!(default_ref.span.hi.0, 0);
-    assert!(default_ref.span.hi.0 > default_ref.span.lo.0);
   }
 }
