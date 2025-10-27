@@ -3,7 +3,6 @@ import type {
   ModuleExport,
   ParsedModule,
   RecordExport,
-  TagTemplateExport,
 } from "./parseModule.js";
 import { Cache } from "./types.js";
 import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
@@ -36,13 +35,14 @@ export async function resolveCrossFileConstant(
   filePath: string,
   css: string,
 ): Promise<{ resolved: string; dependencies: string[] }> {
-  if (context.cache?.resolveCrossFileConstant === undefined) {
+  const resolveCrossFileConstant = context.cache?.resolveCrossFileConstant;
+  if (resolveCrossFileConstant === undefined) {
     return uncachedResolveCrossFileConstant(context, filePath, css);
   }
 
   const cacheKey = await sha1(filePath + ":" + css);
 
-  const cached = context.cache.resolveCrossFileConstant.get(cacheKey);
+  const cached = resolveCrossFileConstant.get(cacheKey);
 
   if (cached === undefined) {
     const resolvedCrossFilConstantPromise = uncachedResolveCrossFileConstant(
@@ -50,19 +50,16 @@ export async function resolveCrossFileConstant(
       filePath,
       css,
     );
-    context.cache.resolveCrossFileConstant.set(
-      filePath,
+    resolveCrossFileConstant.set(
+      cacheKey,
       resolvedCrossFilConstantPromise,
     );
 
-    if (context.cache.resolveCrossFileConstant.addDependency) {
-      context.cache.resolveCrossFileConstant.addDependency(filePath, filePath);
+    if (resolveCrossFileConstant.addDependency) {
+      resolveCrossFileConstant.addDependency(cacheKey, filePath);
       resolvedCrossFilConstantPromise.then((value) => {
         for (const dep of value.dependencies) {
-          context.cache!.resolveCrossFileConstant!.addDependency!(
-            filePath,
-            dep,
-          );
+          resolveCrossFileConstant!.addDependency!(cacheKey, dep);
         }
       });
     }
