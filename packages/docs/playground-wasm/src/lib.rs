@@ -107,7 +107,7 @@ fn yak_pass(
     })
 }
 
-fn real_file_name(file: &SourceFile) -> Option<Cow<str>> {
+fn real_file_name(file: &SourceFile) -> Option<Cow<'_, str>> {
     match &*file.name {
         FileName::Real(path) => path.file_name().map(|s| s.to_string_lossy()),
         _ => None,
