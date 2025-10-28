@@ -50,10 +50,7 @@ export async function resolveCrossFileConstant(
       filePath,
       css,
     );
-    resolveCrossFileConstant.set(
-      cacheKey,
-      resolvedCrossFilConstantPromise,
-    );
+    resolveCrossFileConstant.set(cacheKey, resolvedCrossFilConstantPromise);
 
     if (resolveCrossFileConstant.addDependency) {
       resolveCrossFileConstant.addDependency(cacheKey, filePath);
