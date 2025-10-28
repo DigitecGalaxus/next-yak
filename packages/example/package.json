@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "pnpm run build:yak && pnpm run build:next",
-    "build:next": "next build",
+    "build:next": "next build --webpack",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
     "start": "next start",
