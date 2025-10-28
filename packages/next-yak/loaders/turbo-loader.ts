@@ -1,10 +1,10 @@
 import { transformSync } from "@swc/core";
 import { dirname } from "node:path";
+import { createContext, runInContext } from "node:vm";
 import type { LoaderContext } from "webpack";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import type { YakConfigOptions } from "../withYak/index.js";
-import { evaluateYakModule } from "./lib/evaluateYakFiles.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
@@ -81,13 +81,61 @@ export default async function cssExtractLoader(
                 },
               );
             },
-            evaluateYakModule: async (modulePath: string) =>
-              await evaluateYakModule({
-                modulePath,
-                yakPluginOptions,
-                resolve: resolveFn,
-                addDependency: this.addDependency,
-              }),
+            evaluateYakModule: async (modulePath: string) => {
+              const code = await new Promise<string>((resolve, reject) => {
+                this.fs.readFile(modulePath, "utf-8", (err, data) => {
+                  if (err) return reject(err);
+                  if (data) {
+                    return resolve(data);
+                  }
+                  return reject(new Error(`File not found: ${modulePath}`));
+                });
+              });
+
+              const transformed = transformSync(code, {
+                filename: modulePath,
+                sourceFileName: modulePath,
+                jsc: {
+                  transform: {
+                    react: { runtime: "automatic" },
+                  },
+                  experimental: {
+                    plugins: [["yak-swc", yakPluginOptions]],
+                  },
+                },
+                module: {
+                  type: "commonjs",
+                },
+              });
+
+              const moduleObject = { exports: {} };
+              const context = createContext({
+                require: (path: string) => {
+                  throw new Error(
+                    `Yak files cannot have imports in turbopack.\n` +
+                      `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
+                      `Yak files should be self-contained and only export constants or styled components.\n`,
+                  );
+                },
+                __filename: modulePath,
+                __dirname: dirname(modulePath),
+                global: globalThis,
+                console,
+                Buffer,
+                process,
+                setTimeout,
+                clearTimeout,
+                setInterval,
+                clearInterval,
+                setImmediate,
+                clearImmediate,
+                exports: moduleObject.exports,
+                module: moduleObject,
+              });
+              runInContext(transformed.code, context);
+
+              return moduleObject.exports;
+            },
           },
           modulePath,
         );
