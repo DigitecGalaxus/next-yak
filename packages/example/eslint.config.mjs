@@ -1,30 +1,34 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import yakPlugin from "eslint-plugin-yak";
-import { defineConfig } from "eslint/config";
-
-const compat = new FlatCompat({
-  // import.meta.dirname is available after Node.js v20.11.0
-  baseDirectory: import.meta.dirname,
-});
+import { defineConfig, globalIgnores } from "eslint/config";
+import eslintNextPlugin from "@next/eslint-plugin-next";
+import nextTs from "eslint-config-next/typescript";
 
 export default defineConfig([
-  {
-    ignores: [
-      ".next/**",
-      ".swc/**",
-      "public/**",
-      "next.config.mjs",
-      "postcss.config.js",
-      "jest.config.cjs",
-      "next-env.d.ts",
-    ],
-  },
   yakPlugin.configs.recommended,
-  ...compat.config({
-    extends: ["next", "next/typescript"],
+  ...nextTs,
+  {
+    plugins: {
+      next: eslintNextPlugin,
+    },
+    settings: {
+      next: {
+        rootDir: "packages/example/",
+      },
+    },
+  },
+  {
     rules: {
       "no-var": "off",
       "@typescript-eslint/no-empty-object-type": "off",
     },
-  }),
+  },
+  globalIgnores([
+    ".next/**",
+    ".swc/**",
+    "public/**",
+    "next.config.mjs",
+    "postcss.config.js",
+    "jest.config.cjs",
+    "next-env.d.ts",
+  ]),
 ]);
