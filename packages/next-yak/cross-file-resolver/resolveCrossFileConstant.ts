@@ -173,26 +173,30 @@ async function parseYakCssImport(
   filePath: string,
   css: string,
 ): Promise<YakCssImport[]> {
-  const yakImports: YakCssImport[] = [];
-
-  for (const match of css.matchAll(yakCssImportRegex)) {
+  const yakImports$: Promise<YakCssImport>[] = [
+    ...css.matchAll(yakCssImportRegex),
+  ].map(async (match) => {
     const [fullMatch, encodedArguments, importKind, semicolon] = match;
     const [moduleSpecifier, ...specifier] = encodedArguments
       .split(":")
       .map((entry) => decodeURIComponent(entry));
 
-    yakImports.push({
+    const resolvedModuleSpecifier = await context.resolve(
+      moduleSpecifier,
+      filePath,
+    );
+    return {
       encodedArguments,
-      moduleSpecifier: await context.resolve(moduleSpecifier, filePath),
+      moduleSpecifier: resolvedModuleSpecifier,
       specifier,
       importKind: importKind as YakImportKind,
       semicolon,
       position: match.index,
       size: fullMatch.length,
-    });
-  }
+    };
+  });
 
-  return yakImports;
+  return Promise.all(yakImports$);
 }
 
 async function resolveModule(context: ResolveContext, filePath: string) {
