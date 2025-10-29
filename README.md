@@ -23,6 +23,8 @@
 
 | next-yak         | Next.js         | react            | swc_core         |
 |------------------|-----------------|------------------|------------------|
+| 8.x              | >= 16.0.0       | 19.x             | 45.0.1           |
+| 7.x              | >= 15.4.4       | 19.x             | 38.0.1           |
 | 6.x              | >= 15.4.1       | 19.x             | 27.0.6           |
 | 5.x              | >= 15.2.1       | 19.x             | 16.0.0           |
 | 4.x              | >= 15.0.4       | 19.x             | 5.0.1            |
@@ -32,7 +34,7 @@
 ## Installation
 
 ```bash
-# For Next.js >= 15.2.1
+# For Next.js >= 16.0.0
 npm install next-yak
 
 # For Next.js 14.x
@@ -299,7 +301,6 @@ Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 - https://github.com/parcel-bundler/lightningcss/issues/889 (add cssmodules-pure-no-check)
 
 [![nexrt-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
-
 
 </details>
 
