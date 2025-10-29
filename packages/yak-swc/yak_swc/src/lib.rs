@@ -233,7 +233,7 @@ where
         if final_quasi.ends_with(';') || final_quasi.ends_with('}') {
           quasi.raw.to_string()
         } else {
-          format!("{final_quasi};").to_string()
+          format!("{};", final_quasi).to_string()
         }
       } else {
         quasi.raw.to_string()
@@ -265,7 +265,7 @@ where
         if let Some(evaluated_math_calculation) = try_evaluate(expr, &self.variables) {
           // Format to 4 decimal places
           let (new_state, new_declarations) = parse_css(
-            format!("{evaluated_math_calculation:.4}")
+            format!("{:.4}", evaluated_math_calculation)
               .trim_end_matches('0')
               .trim_end_matches('.'),
             css_state,
@@ -356,7 +356,7 @@ where
                   .insert(scoped_name.clone(), keyframe_name.clone());
                 let (new_state, _) = match &self.transpilation_mode {
                   TranspilationMode::CssModule => {
-                    parse_css(&format!("global({keyframe_name})"), css_state)
+                    parse_css(&format!("global({})", keyframe_name), css_state)
                   }
                   TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
@@ -503,7 +503,7 @@ ${{() => {var}}};\n",
               format!("--{}", css_variable_name.clone()),
               css_variable_runtime_expr,
             );
-            let (new_state, _) = parse_css(&format!("var(--{css_variable_name})"), css_state);
+            let (new_state, _) = parse_css(&format!("var(--{})", css_variable_name), css_state);
             css_state = Some(new_state);
           }
 
@@ -892,7 +892,10 @@ where
           });
           return;
         }
-        panic!("Invalid context for next-yak function {yak_library_function_name:?}")
+        panic!(
+          "Invalid context for next-yak function {:?}",
+          yak_library_function_name
+        )
       }
     };
 
@@ -928,19 +931,15 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
-        if self.is_default_exported(&current_variable_id)
-          && transform.get_default_export_marker().is_some()
-        {
-          // add default export comment based on the "original" component to be used when generating the default export
-          self.default_export_comment = Some(
-            format!(
-              "{}\n{}\n",
-              transform.get_default_export_marker().unwrap(),
-              css_code.trim()
-            )
-            .into(),
-          );
+        let is_default_export = self.is_default_exported(&current_variable_id);
+        if let Some(default_prefix) = transform.get_default_export_comment_prefix() {
+          if is_default_export {
+            // add default export comment based on the "original" component to be used when generating the default export
+            self.default_export_comment =
+              Some(format!("{}\n{}\n", default_prefix, css_code.trim()).into());
+          }
         }
+
         self.comments.add_leading(
           result_span.lo,
           Comment {
@@ -994,8 +993,8 @@ where
 fn condition_to_string(expr: &Expr, negate: bool) -> String {
   let prefix = if negate { "not_" } else { "" };
   match expr {
-    Expr::Ident(Ident { sym, .. }) => format!("{prefix}{sym}"),
-    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{prefix}{value}"),
+    Expr::Ident(Ident { sym, .. }) => format!("{}{}", prefix, sym),
+    Expr::Lit(Lit::Bool(Bool { value, .. })) => format!("{}{}", prefix, value),
     Expr::Member(MemberExpr { obj, prop, .. }) => {
       let obj = condition_to_string(obj, false);
       let prop = match prop {
@@ -1005,7 +1004,7 @@ fn condition_to_string(expr: &Expr, negate: bool) -> String {
       if prop.is_empty() || obj.is_empty() {
         return "".to_string();
       }
-      format!("{obj}.{prop}")
+      format!("{}.{}", obj, prop)
     }
     _ => "".to_string(),
   }

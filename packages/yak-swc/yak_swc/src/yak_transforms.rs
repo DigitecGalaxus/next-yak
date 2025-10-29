@@ -46,8 +46,8 @@ pub trait YakTransform {
   fn get_css_reference_name(&self) -> Option<String> {
     None
   }
-
-  fn get_default_export_marker(&self) -> Option<String> {
+  /// Get a comment prefix for the current variable as default export
+  fn get_default_export_comment_prefix(&self) -> Option<String> {
     None
   }
 }
@@ -272,7 +272,8 @@ impl YakTransform for TransformCssMixin {
     }
   }
 
-  fn get_default_export_marker(&self) -> Option<String> {
+  /// Replaces the current variable name with "default" for the comment marker
+  fn get_default_export_comment_prefix(&self) -> Option<String> {
     Some(format!(
       "YAK EXPORTED MIXIN:default{}",
       self
@@ -521,7 +522,8 @@ impl YakTransform for TransformStyled {
     Some(self.transpilation_mode.css_class_name(&self.class_name))
   }
 
-  fn get_default_export_marker(&self) -> Option<String> {
+  /// Replaces the current variable name with "default" for the comment marker
+  fn get_default_export_comment_prefix(&self) -> Option<String> {
     Some(format!(
       "YAK EXPORTED STYLED:default:{}*//*YAK Extracted CSS:",
       self.class_name.clone()
