@@ -69,12 +69,7 @@ export default async function cssExtractLoader(
                     if (err) return reject(err);
                     if (data) {
                       return resolve(
-                        transform(
-                          data,
-                          modulePath,
-                          this.rootContext,
-                          result.map,
-                        ),
+                        transform(data, modulePath, this.rootContext),
                       );
                     }
                   });
@@ -169,7 +164,7 @@ function createTransform(yakPluginOptions: any) {
     // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
     transformSync(data, {
       filename: modulePath,
-      inputSourceMap: sourceMap ? JSON.stringify(sourceMap) : undefined,
+      inputSourceMap: sourceMap,
       sourceMaps: true,
       sourceFileName: modulePath,
       sourceRoot: rootPath,

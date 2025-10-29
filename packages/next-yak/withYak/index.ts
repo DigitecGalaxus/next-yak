@@ -126,7 +126,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
         yakOptions.experiments?.transpilationMode === "Css"
           ? /\.yak\.css$/
           : /\.yak\.module\.css$/,
-      loader: path.join(currentDir, "../loaders/css-loader.js"),
+      loader: path.join(currentDir, "../loaders/webpack-loader.js"),
       options: yakOptions,
     });
 

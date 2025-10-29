@@ -94,7 +94,7 @@ export default defineConfig([
   },
   // loaders
   {
-    entryPoints: ["loaders/css-loader.ts", "loaders/turbo-loader.ts"],
+    entryPoints: ["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"],
     format: ["esm"],
     minify: false,
     sourcemap: true,
