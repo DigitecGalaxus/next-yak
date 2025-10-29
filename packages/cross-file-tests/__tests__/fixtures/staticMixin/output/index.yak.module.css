@@ -8,3 +8,12 @@
 
   }
 }
+:global(.index_ListItem_PZqRtI) {
+  margin-bottom: 10px;
+  &:hover {
+    &:last-child {
+  margin-bottom: 0;
+}
+
+  }
+}
