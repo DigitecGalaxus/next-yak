@@ -949,7 +949,12 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
-        self.all_css_rules.push(css_code.trim().into());
+        // Don't add invalid CSS rules to the list of all CSS rules
+        // Mixin code should always be used in other components so that they target the correct element
+        if !comment_prefix.starts_with("YAK EXPORTED MIXIN:") {
+          self.all_css_rules.push(css_code.trim().into());
+        }
+
         let is_default_export = self.is_default_exported(&current_variable_id);
         if let Some(default_prefix) = transform.get_default_export_comment_prefix() {
           if is_default_export {
