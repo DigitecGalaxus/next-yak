@@ -42,8 +42,7 @@ use naming_convention::{NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
-  ToCommentPrefix, TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled,
-  YakTransform,
+  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
 };
 
 /// Static plugin configuration.
@@ -929,11 +928,14 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
-        if self.is_default_exported(&current_variable_id) {
+        if self.is_default_exported(&current_variable_id)
+          && transform.get_default_export_marker().is_some()
+        {
+          // add default export comment based on the "original" component to be used when generating the default export
           self.default_export_comment = Some(
             format!(
               "{}\n{}\n",
-              comment_prefix.to_comment_prefix(true),
+              transform.get_default_export_marker().unwrap(),
               css_code.trim()
             )
             .into(),
@@ -944,12 +946,7 @@ where
           Comment {
             kind: swc_core::common::comments::CommentKind::Block,
             span: DUMMY_SP,
-            text: format!(
-              "{}\n{}\n",
-              comment_prefix.to_comment_prefix(false),
-              css_code.trim()
-            )
-            .into(),
+            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
           },
         );
       }
