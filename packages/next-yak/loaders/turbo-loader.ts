@@ -73,7 +73,7 @@ export default async function cssExtractLoader(
                           data,
                           modulePath,
                           this.rootContext,
-                          sourceMap,
+                          result.map,
                         ),
                       );
                     }
@@ -156,7 +156,7 @@ export default async function cssExtractLoader(
   );
 
   debugLog(codeWithCrossFileResolved);
-  return callback(null, codeWithCrossFileResolved, sourceMap);
+  return callback(null, codeWithCrossFileResolved, result.map);
 }
 
 function createTransform(yakPluginOptions: any) {
@@ -170,8 +170,7 @@ function createTransform(yakPluginOptions: any) {
     transformSync(data, {
       filename: modulePath,
       inputSourceMap: sourceMap ? JSON.stringify(sourceMap) : undefined,
-      // sourceMaps: sourceMap,
-      // inlineSourceContent: sourceMap,
+      sourceMaps: true,
       sourceFileName: modulePath,
       sourceRoot: rootPath,
       jsc: {
