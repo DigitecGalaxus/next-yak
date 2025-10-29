@@ -76,7 +76,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@babel/traverse": "catalog:core",
-    "@swc/core": "^1.13.5",
+    "@swc/core": "catalog:core",
     "yak-swc": "7.0.0"
   },
   "devDependencies": {

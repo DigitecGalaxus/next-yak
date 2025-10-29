@@ -22,7 +22,7 @@
     "codspeed:run": "NODE_ENV=production node ./codspeed/dist/index.bench.mjs"
   },
   "dependencies": {
-    "@swc/core": "catalog:dev",
+    "@swc/core": "catalog:core",
     "next": "catalog:dev",
     "next-yak": "workspace:*",
     "react": "catalog:dev",

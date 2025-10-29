@@ -139,8 +139,9 @@ where
   display_names: bool,
   /// Import mode to determine how to import the generated css
   import_mode: ImportMode,
-  /// All CSS rules collected during transformation
+  /// All valid CSS rules collected during transformation
   all_css_rules: Vec<String>,
+  /// Comment string to be added to the default export
   default_export_comment: Option<String>,
 }
 
@@ -1162,6 +1163,33 @@ mod tests {
       },
       &input,
       &input.with_file_name("output.prod.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_prod_turbo(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          true,
+          None,
+          false,
+          ImportMode::DataUrl,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.turbo.prod.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,

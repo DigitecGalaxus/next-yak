@@ -23,7 +23,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "next": "16.0.0",
+    "next": "catalog:dev",
     "next-yak": "workspace:*",
     "postcss-nested": "catalog:dev",
     "react": "catalog:dev",
