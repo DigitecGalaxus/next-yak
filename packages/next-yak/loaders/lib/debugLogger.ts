@@ -2,6 +2,10 @@ import { relative } from "path";
 import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../../withYak/index.js";
 
+/**
+ * Creates a debug logger function that conditionally logs messages
+ * based on debug options and file paths.
+ */
 export function createDebugLogger(
   loaderContext: LoaderContext<unknown>,
   debugOptions: Required<YakConfigOptions>["experiments"]["debug"],

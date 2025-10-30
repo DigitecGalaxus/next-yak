@@ -1,5 +1,10 @@
 import { YakConfigOptions } from "../../withYak/index.js";
 
+/**
+ * Extracts CSS content from code that contains YAK-generated CSS comments.
+ * Parses the input code and returns the extracted CSS, optionally adding
+ * a cssmodules directive based on the transpilation mode.
+ */
 export function extractCss(
   code: string | Buffer<ArrayBufferLike>,
   transpilationMode: NonNullable<
