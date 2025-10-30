@@ -1,6 +1,6 @@
 import React, { createElement, isValidElement, ReactElement } from "react";
 import * as prettier from "prettier";
-import * as babelParser from "prettier/parser-babel";
+import * as typescriptParser from "prettier/plugins/typescript";
 import * as estreePlugin from "prettier/plugins/estree";
 import { runLoaderForSingleFile } from "./mockedLoader";
 import type { transform as WasmTransform } from "../../playground-wasm/out";
@@ -239,8 +239,8 @@ async function transform(
   ).code;
 
   transformedCodeToDisplay = await prettier.format(transformedCodeToDisplay, {
-    parser: "babel",
-    plugins: [babelParser, estreePlugin as any],
+    parser: "typescript",
+    plugins: [typescriptParser, estreePlugin as any],
   });
 
   return { transformedCode, transformedCodeToDisplay };
