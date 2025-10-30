@@ -17,7 +17,7 @@ import { useTranspile } from "@/lib/transformation/useTranspile";
 import { ErrorBoundaryWithSnapshot } from "./errorBoundaryWithSnapshot";
 import { css } from "next-yak";
 import * as prettier from "prettier";
-import * as babelParser from "prettier/parser-babel";
+import * as tsParser from "prettier/plugins/typescript";
 import * as estreePlugin from "prettier/plugins/estree";
 import { compressWithDictionary } from "./compress";
 import { Toggle } from "./toggle";
@@ -174,9 +174,6 @@ export default dynamic(
                 <CodeBlockTabsList
                   css={css`
                     border-bottom: 1px solid var(--color-fd-border);
-                    & > :last-child {
-                      display: none;
-                    }
                   `}
                 >
                   <div
@@ -336,8 +333,8 @@ export default dynamic(
                         async provideDocumentFormattingEdits(model) {
                           const text = await prettier.format(model.getValue(), {
                             embeddedLanguageFormatting: "auto",
-                            parser: "babel-ts",
-                            plugins: [babelParser, estreePlugin as any],
+                            parser: "typescript",
+                            plugins: [tsParser, estreePlugin as any],
                             tabWidth: 2,
                           });
 
@@ -543,13 +540,7 @@ export default dynamic(
                         marginBlock: 0,
                       }}
                     >
-                      <CodeBlockTabsList
-                        css={css`
-                          & > :last-child {
-                            display: none;
-                          }
-                        `}
-                      >
+                      <CodeBlockTabsList>
                         <CodeBlockTabsTrigger value="CSS">
                           CSS
                         </CodeBlockTabsTrigger>
@@ -589,13 +580,7 @@ export default dynamic(
                       marginBlock: 0,
                     }}
                   >
-                    <CodeBlockTabsList
-                      css={css`
-                        & > :last-child {
-                          display: none;
-                        }
-                      `}
-                    >
+                    <CodeBlockTabsList>
                       {fileNames.map((fileName) => (
                         <CodeBlockTabsTrigger
                           key={fileName}
