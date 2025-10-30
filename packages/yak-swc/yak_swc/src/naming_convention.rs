@@ -204,13 +204,23 @@ impl TranspilationMode {
   }
 }
 
+/// Defines how CSS imports should be processed and transpiled
 #[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(tag = "type")]
 pub enum ImportMode {
+  /// Add a new import statement using the inline match resource syntax of webpack
+  /// The query parameters will reflect the transpilation mode
+  /// e.g. import "./input.yak.module.css!=!./input?./input.yak.module.css";
+  /// or import "./input.yak.css!=!./input?./input.yak.css";
   InlineMatchResource { transpilation: TranspilationMode },
+  /// The CSS content will be added as new import statement
+  /// encoded as a data URL string
   DataUrl,
 }
 
+/// Extract the transpilation mode from an import mode
+/// DataUrl only supports CSS
+/// InlineMatchResource supports CSS and CSS Modules
 impl ImportMode {
   pub fn transpilation_mode(&self) -> TranspilationMode {
     match self {
