@@ -1,6 +1,6 @@
-import { relative } from "path";
 import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
+import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
@@ -36,43 +36,8 @@ export default async function cssExtractLoader(
     debugLog("css", css);
 
     return resolveCrossFileConstant(this, this.context, css).then((result) => {
-      debugLog("css resolved", css);
+      debugLog("css-resolved", css);
       return callback(null, result, sourceMap);
     }, callback);
   });
-}
-
-function createDebugLogger(
-  loaderContext: LoaderContext<YakConfigOptions>,
-  debugOptions: Required<YakConfigOptions>["experiments"]["debug"],
-) {
-  if (
-    !debugOptions ||
-    (debugOptions !== true &&
-      debugOptions.filter &&
-      !debugOptions.filter(loaderContext.resourcePath))
-  ) {
-    return () => {};
-  }
-  const debugType = debugOptions === true ? "ts" : debugOptions.type;
-  return (
-    messageType: "ts" | "css" | "css resolved",
-    message: string | Buffer<ArrayBufferLike> | undefined,
-  ) => {
-    if (messageType === debugType || debugType === "all") {
-      console.log(
-        "🐮 Yak",
-        messageType,
-        "\n",
-        loaderContext._compiler
-          ? relative(
-              loaderContext._compiler.context,
-              loaderContext.resourcePath,
-            )
-          : loaderContext.resourcePath,
-        "\n\n",
-        message,
-      );
-    }
-  };
 }

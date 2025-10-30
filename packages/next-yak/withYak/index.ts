@@ -31,19 +31,15 @@ export type YakConfigOptions = {
    */
   displayNames?: boolean;
   experiments?: {
-    debug?: WebpackDebugOptions | TurbopackDebugOptions;
+    /**
+     * A regex pattern to filter files based on their path.
+     * Use ".css$" to filter the raw CSS transpilation and ".css-resolved$" for resolved CSS
+     * Use true to enable debug mode for all files
+     */
+    debug?: boolean | string;
     transpilationMode?: "CssModule" | "Css";
   };
 };
-
-type WebpackDebugOptions =
-  | boolean
-  | {
-      filter?: (path: string) => boolean;
-      type: "all" | "ts" | "css" | "css resolved";
-    };
-
-type TurbopackDebugOptions = boolean;
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const isTurbo =
@@ -66,12 +62,6 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
             yakOptions.experiments?.transpilationMode ?? "CssModule",
         },
   };
-
-  if (isTurbo && typeof yakOptions.experiments?.debug === "object") {
-    throw new Error(
-      "The debug option must be a boolean when used with Turbopack",
-    );
-  }
 
   if (!isTurbo) {
     nextConfig.experimental ||= {};

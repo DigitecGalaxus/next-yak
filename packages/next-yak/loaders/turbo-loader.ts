@@ -1,15 +1,19 @@
-import { transformSync } from "@swc/core";
+import { transform as swcTransform } from "@swc/core";
 import { dirname } from "node:path";
 import { createContext, runInContext } from "node:vm";
 import type { LoaderContext } from "webpack";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import type { YakConfigOptions } from "../withYak/index.js";
+import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
 /**
  * This loader transforms styled-components styles to a static data-url import
+ * The compile-time nexy-yak transformation takes javascript/typescript as input,
+ * strips all inline css code and adds the css as static css urls
+ * e.g.: `import "data:text/css;base64,"`
  */
 export default async function cssExtractLoader(
   this: LoaderContext<{ yakOptions: YakConfigOptions; yakPluginOptions: any }>,
@@ -18,6 +22,7 @@ export default async function cssExtractLoader(
 ): Promise<string | void> {
   const callback = this.async();
 
+  // process only files which include next-yak for maximal compile performance
   if (!code.includes("next-yak")) {
     return callback(null, code, sourceMap);
   }
@@ -26,12 +31,13 @@ export default async function cssExtractLoader(
     yakPluginOptions,
     yakOptions: { experiments },
   } = this.getOptions();
-  const debugLog = createDebugLogger(this, experiments?.debug as any);
+  const debugLog = createDebugLogger(this, experiments?.debug);
+  const resolveTurbopack = this.getResolve({});
   const transform = createTransform(yakPluginOptions);
 
   const resolveFn = (specifier: string, importer: string) => {
     return new Promise<string>((resolve, reject) => {
-      this.getResolve({})(dirname(importer), specifier, (err, result) => {
+      resolveTurbopack(dirname(importer), specifier, (err, result) => {
         if (err) return reject(err);
         if (!result) return reject(new Error(`Could not resolve ${specifier}`));
         resolve(result);
@@ -39,13 +45,25 @@ export default async function cssExtractLoader(
     });
   };
 
-  const result = transform(
+  const fsReadFile = (filePath: string) =>
+    new Promise<string>((resolve, reject) =>
+      this.fs.readFile(filePath, "utf-8", (err, result) => {
+        if (err) return reject(err);
+        if (!result) return reject(new Error(`File not found: ${filePath}`));
+        resolve(result);
+      }),
+    );
+
+  const result = await transform(
     code,
     this.resourcePath,
     this.rootContext,
     sourceMap,
   );
+  debugLog("ts", result.code);
+
   let css = extractCss(result.code, "Css");
+  debugLog("css", css);
 
   const { resolved } = await resolveCrossFileConstant(
     {
@@ -54,40 +72,17 @@ export default async function cssExtractLoader(
           {
             transpilationMode: "Css",
             extractExports: async (modulePath) => {
-              const sourceContents = new Promise<string>((resolve, reject) =>
-                this.fs.readFile(modulePath, "utf-8", (err, result) => {
-                  if (err) return reject(err);
-                  resolve(result || "");
-                }),
-              );
-              return parseExports(await sourceContents);
+              const sourceContents = await fsReadFile(modulePath);
+              return parseExports(sourceContents);
             },
             getTransformed: async (modulePath) => {
-              return await new Promise<ReturnType<typeof transformSync>>(
-                (resolve, reject) => {
-                  this.fs.readFile(modulePath, "utf-8", (err, data) => {
-                    if (err) return reject(err);
-                    if (data) {
-                      return resolve(
-                        transform(data, modulePath, this.rootContext),
-                      );
-                    }
-                  });
-                },
-              );
+              const sourceContent = await fsReadFile(modulePath);
+              return transform(sourceContent, modulePath, this.rootContext);
             },
             evaluateYakModule: async (modulePath: string) => {
-              const code = await new Promise<string>((resolve, reject) => {
-                this.fs.readFile(modulePath, "utf-8", (err, data) => {
-                  if (err) return reject(err);
-                  if (data) {
-                    return resolve(data);
-                  }
-                  return reject(new Error(`File not found: ${modulePath}`));
-                });
-              });
+              const code = await fsReadFile(modulePath);
 
-              const transformed = transformSync(code, {
+              const transformed = await swcTransform(code, {
                 filename: modulePath,
                 sourceFileName: modulePath,
                 jsc: {
@@ -109,12 +104,13 @@ export default async function cssExtractLoader(
                   throw new Error(
                     `Yak files cannot have imports in turbopack.\n` +
                       `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
-                      `Yak files should be self-contained and only export constants or styled components.\n`,
+                      `Yak files should be self-contained and only export constants or styled components.\n` +
+                      `This will be resolved once Vercel adds "this.importModule" support for turbopack.`,
                   );
                 },
                 __filename: modulePath,
                 __dirname: dirname(modulePath),
-                global: globalThis,
+                global: {},
                 console,
                 Buffer,
                 process,
@@ -150,7 +146,7 @@ export default async function cssExtractLoader(
     `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
   );
 
-  debugLog(codeWithCrossFileResolved);
+  debugLog("css-resolved", resolved);
   return callback(null, codeWithCrossFileResolved, result.map);
 }
 
@@ -162,7 +158,7 @@ function createTransform(yakPluginOptions: any) {
     sourceMap?: any,
   ) =>
     // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
-    transformSync(data, {
+    swcTransform(data, {
       filename: modulePath,
       inputSourceMap: sourceMap,
       sourceMaps: true,
@@ -174,7 +170,7 @@ function createTransform(yakPluginOptions: any) {
         },
         transform: {
           react: {
-            runtime: "automatic",
+            runtime: "preserve",
           },
         },
         target: "es2022",
@@ -188,23 +184,4 @@ function createTransform(yakPluginOptions: any) {
       minify: false,
       isModule: true,
     });
-}
-
-function createDebugLogger(
-  loaderContext: LoaderContext<any>,
-  debugOptions: boolean | undefined,
-) {
-  if (!debugOptions || debugOptions !== true) {
-    return () => {};
-  }
-  return (message: string | Buffer<ArrayBufferLike> | undefined) => {
-    console.log(
-      "🐮 Yak",
-      "ts",
-      "\n",
-      loaderContext.resourcePath,
-      "\n\n",
-      message,
-    );
-  };
 }
