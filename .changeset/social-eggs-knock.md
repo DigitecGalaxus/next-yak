@@ -1,6 +1,6 @@
 ---
-"next-yak": patch
-"yak-swc": patch
+"next-yak": major
+"yak-swc": major
 ---
 
-Added alpha Turbopack support
+Add limited Turbopack support (.yak files can't use `import` statements)
