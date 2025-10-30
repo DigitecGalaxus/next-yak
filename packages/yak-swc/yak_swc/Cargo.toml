@@ -20,6 +20,7 @@ relative_posix_path = { path = "../relative_posix_path" }
 itertools.workspace = true
 percent-encoding.workspace = true
 rustc-hash.workspace = true
+base64.workspace = true
 
 [dev-dependencies]
 divan.workspace = true

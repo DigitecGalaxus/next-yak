@@ -1,0 +1,27 @@
+import { styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
+import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQ6IHJlZDsKfS55bTd1QkJ1MSB7CiAgY29sb3I6IGJsdWU7CiAgZm9udC1zaXplOiAyNHB4Owp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAyMHB4OwogIGJhY2tncm91bmQ6IHllbGxvdzsKfQ==";
+const Button = /*YAK Extracted CSS:
+.ym7uBBu {
+  background: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
+export const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu1*//*YAK Extracted CSS:
+.ym7uBBu1 {
+  color: blue;
+  font-size: 24px;
+}
+*/ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu1");
+const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu2*//*YAK Extracted CSS:
+.ym7uBBu2 {
+  padding: 20px;
+  background: yellow;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
+export default /*YAK EXPORTED STYLED:default:ym7uBBu2*//*YAK Extracted CSS:
+.ym7uBBu2 {
+  padding: 20px;
+  background: yellow;
+}
+*/ Container;
+export { Button };

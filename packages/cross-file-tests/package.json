@@ -14,7 +14,7 @@
     "vitest": "catalog:dev",
     "webpack": "catalog:dev",
     "swc-loader": "catalog:dev",
-    "@swc/core": "catalog:dev",
+    "@swc/core": "catalog:core",
     "next-yak": "workspace:*",
     "memfs": "catalog:dev",
     "unionfs": "catalog:dev",

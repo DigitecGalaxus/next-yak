@@ -1,0 +1,7 @@
+  x atoms() must not be used inside selectors or media query
+   ,-[input.js:6:1]
+ 5 |   &:hover {
+ 6 |     ${atoms("bg-blue-700")}
+   :       ^^^^^^^^^^^^^^^^^^^^
+ 7 |   }
+   `----

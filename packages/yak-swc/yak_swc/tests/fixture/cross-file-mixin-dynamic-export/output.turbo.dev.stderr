@@ -1,0 +1,11 @@
+  x Dynamic mixins must not be exported. Please ensure that this mixin requires no props.
+    ,-[input.js:15:1]
+ 14 |     
+ 15 | ,-> export const buttonStyles = css`
+ 16 | |     padding: 10px 20px;
+ 17 | |     border: none;
+ 18 | |     border-radius: 5px;
+ 19 | |     cursor: pointer;
+ 20 | |     ${textStyles};
+ 21 | `-> `;
+    `----

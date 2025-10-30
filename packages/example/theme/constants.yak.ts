@@ -4,4 +4,6 @@ export const queries = {
   lg: "@media(max-width: 1024px)",
 };
 
-export { colors } from "./colors.yak";
+export const colors = {
+  dark: "#000",
+};

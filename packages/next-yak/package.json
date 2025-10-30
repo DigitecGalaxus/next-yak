@@ -60,7 +60,8 @@
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/css-loader": "./dist/loaders/css-loader.js"
+    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.js",
+    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.js"
   },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
@@ -76,6 +77,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@babel/traverse": "catalog:core",
+    "@swc/core": "catalog:core",
     "yak-swc": "7.0.0"
   },
   "devDependencies": {

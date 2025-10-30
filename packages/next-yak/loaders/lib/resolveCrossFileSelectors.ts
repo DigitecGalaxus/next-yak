@@ -121,7 +121,9 @@ export async function resolveModule(
   });
 }
 
-async function parseExports(sourceContents: string): Promise<ModuleExports> {
+export async function parseExports(
+  sourceContents: string,
+): Promise<ModuleExports> {
   const moduleExports: ModuleExports = {
     importYak: true,
     named: {},

@@ -33,6 +33,6 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.minify,
     config.prefix,
     config.display_names,
-    config.transpilation_mode,
+    config.import_mode,
   )))
 }

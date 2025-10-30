@@ -2,6 +2,7 @@ import { withYak } from "next-yak/withYak";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  productionBrowserSourceMaps: true,
   /**
    * Debug types:
    * - `'ts'` - Show transformed TypeScript

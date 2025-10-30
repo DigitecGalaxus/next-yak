@@ -23,8 +23,8 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist",
   },
-   // internal
-   {
+  // internal
+  {
     entryPoints: ["runtime/internal.ts"],
     format: ["cjs", "esm"],
     minify: false,
@@ -94,9 +94,7 @@ export default defineConfig([
   },
   // loaders
   {
-    entryPoints: [
-      "loaders/css-loader.ts",
-    ],
+    entryPoints: ["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"],
     format: ["esm"],
     minify: false,
     sourcemap: true,
