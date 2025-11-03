@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run generate:letters && next dev --webpack",
+    "dev:turbo": "pnpm run generate:letters && next dev",
     "build": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next",
+    "build:turbo": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next:turbo",
     "build:next": "next build --webpack",
+    "build:next:turbo": "next build",
     "build:yak": "pnpm run --dir ../.. build",
     "start": "next start",
     "prettier": "npx prettier --write \"./{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
