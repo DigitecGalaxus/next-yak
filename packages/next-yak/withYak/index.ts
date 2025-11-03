@@ -78,10 +78,10 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     const yakLoader = removeUndefinedRecursive({
       loader: path.join(currentDir, "../loaders/turbo-loader.js"),
       options: {
-        yakOptions,
+        yakOptions: yakOptions,
         yakPluginOptions: yakPluginOptions,
       },
-    };
+    }) as { loader: string; options: {} };
 
     if (existingRule && "loaders" in existingRule) {
       existingRule.loaders ||= [];
