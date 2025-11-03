@@ -35,6 +35,7 @@
     "next": "catalog:dev",
     "next-themes": "catalog:dev",
     "next-yak": "workspace:*",
+    "prettier": "catalog:dev",
     "raw-loader": "catalog:dev",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
