@@ -233,12 +233,8 @@ Therefore the runtime code is very small and optimized to be tree-shakable
 
 ## Context
 
-<Callout type="warn">
-  As of next.js >15.0.0, this feature doesn't work with server components anymore.
-</Callout>
-
 The yak theme context allows you to configure the theme of your yak application. It works for react-server components
-and normal react components.
+and normal react components, including full support for async server functions in Next.js 15+.
 
 The first part of the puzzle is to export two different modules for the server and the client.
 
@@ -339,21 +335,16 @@ to determine your values for the theme context.
 
 ```tsx
 import { cookies } from 'next/headers'
-import { cache } from "react";
 
-const hasHighContrast = cache(() => {
-    const cookieStore = cookies()
-    return cookieStore.get("highContrast")?.value === "true"
-});
-
-export function getYakThemeContext() {
+export async function getYakThemeContext() {
+    const cookieStore = await cookies()
     return {
-        highContrast: hasHighContrast()
+        highContrast: cookieStore.get("highContrast")?.value === "true"
     }
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends ReturnType<typeof getYakThemeContext> { }
+    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
 }
 ```
 
