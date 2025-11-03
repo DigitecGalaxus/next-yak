@@ -220,4 +220,4 @@ export default withYak({
 
 ---
 
-For any questions not covered here, please feel free to [open an issue](https://github.com/jantimon/next-yak/issues/new).
+For any questions not covered here, please feel free to [open an issue](https://github.com/DigitecGalaxus/next-yak/issues/new).

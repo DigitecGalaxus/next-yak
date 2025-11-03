@@ -281,7 +281,7 @@ export const KanjiLetterComponent${
         .join("\n      ")}
     </Wrapper>
 
-        <a href="https://github.com/jantimon/next-yak/">next-yak</a>
+        <a href="https://github.com/DigitecGalaxus/next-yak/">next-yak</a>
     </>
   );
 };

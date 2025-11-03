@@ -67,7 +67,7 @@ export const LandingPage = ({ version }: { version: string }) => {
             <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
           </Svg>
         </PrimaryLink>
-        <SecondaryLink href={"https://github.com/jantimon/next-yak"}>
+        <SecondaryLink href={"https://github.com/DigitecGalaxus/next-yak"}>
           Github
           <Svg
             xmlns="http://www.w3.org/2000/svg"

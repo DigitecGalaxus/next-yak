@@ -578,7 +578,7 @@ where
         // search for the last import statement as position to insert the css module import
         // it has to be the last import to ensure that the css module is loaded after the other imports
         // and therefore the css is added to the end of the bundle css file
-        // see https://github.com/jantimon/next-yak/issues/202
+        // see https://github.com/DigitecGalaxus/next-yak/issues/202
         let mut last_import_index = 0;
         for (i, item) in module.body.iter_mut().enumerate() {
           if matches!(item, ModuleItem::ModuleDecl(ModuleDecl::Import(_))) {
