@@ -1,0 +1,34 @@
+{
+  "name": "vite-yak-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:yak": "pnpm run --filter next-yak build",
+    "build:swc": "pnpm run --filter yak-swc build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@babel/parser": "catalog:core",
+    "@babel/traverse": "catalog:core",
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev",
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "@swc/core": "catalog:core",
+    "@types/babel__core": "catalog:dev",
+    "@types/babel__traverse": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "@vitejs/plugin-react-swc": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev"
+  },
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+}

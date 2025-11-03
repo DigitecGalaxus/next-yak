@@ -94,7 +94,11 @@ export default defineConfig([
   },
   // loaders
   {
-    entryPoints: ["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"],
+    entryPoints: [
+      "loaders/webpack-loader.ts",
+      "loaders/turbo-loader.ts",
+      "loaders/vite-plugin.ts",
+    ],
     format: ["esm"],
     minify: false,
     sourcemap: true,
