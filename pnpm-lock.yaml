@@ -235,7 +235,7 @@ importers:
         specifier: catalog:dev
         version: 3.6.2
 
-  packages/benchmarks:
+  benchmarks:
     dependencies:
       '@swc/core':
         specifier: catalog:core
@@ -245,7 +245,7 @@ importers:
         version: 16.0.1(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       react:
         specifier: catalog:dev
         version: 19.2.0
@@ -257,7 +257,7 @@ importers:
         version: 6.1.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
     devDependencies:
       '@codspeed/benchmark.js-plugin':
         specifier: catalog:dev
@@ -284,7 +284,7 @@ importers:
         specifier: catalog:dev
         version: 5.9.3
 
-  packages/cross-file-tests:
+  cross-file-tests:
     devDependencies:
       '@swc/core':
         specifier: catalog:core
@@ -297,7 +297,7 @@ importers:
         version: 4.50.0
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       swc-loader:
         specifier: catalog:dev
         version: 0.2.6(@swc/core@1.13.5(@swc/helpers@0.5.17))(webpack@5.102.1(@swc/core@1.13.5(@swc/helpers@0.5.17)))
@@ -315,9 +315,9 @@ importers:
         version: 5.102.1(@swc/core@1.13.5(@swc/helpers@0.5.17))
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
 
-  packages/docs:
+  docs:
     dependencies:
       '@babel/preset-typescript':
         specifier: catalog:dev
@@ -372,7 +372,7 @@ importers:
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       prettier:
         specifier: catalog:dev
         version: 3.6.2
@@ -396,7 +396,7 @@ importers:
         version: 1.2.1(react@19.2.0)(shiki@3.14.0)
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
     devDependencies:
       '@swc/helpers':
         specifier: catalog:dev
@@ -435,38 +435,7 @@ importers:
         specifier: catalog:dev
         version: 0.13.1
 
-  packages/eslint-plugin-yak:
-    dependencies:
-      '@typescript-eslint/parser':
-        specifier: '>8.0.0'
-        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/utils':
-        specifier: catalog:dev
-        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint:
-        specifier: '>=9.0.0'
-        version: 9.38.0(jiti@2.6.1)
-    devDependencies:
-      '@types/node':
-        specifier: catalog:dev
-        version: 24.9.2
-      '@typescript-eslint/rule-tester':
-        specifier: catalog:dev
-        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-doc-generator:
-        specifier: catalog:dev
-        version: 2.3.0(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)(typescript@5.9.3)
-      tsup:
-        specifier: catalog:dev
-        version: 8.5.0(@swc/core@1.13.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.3
-      vitest:
-        specifier: catalog:dev
-        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)
-
-  packages/examples/next-js:
+  examples/next-js:
     dependencies:
       '@types/node':
         specifier: catalog:dev
@@ -482,7 +451,7 @@ importers:
         version: 16.0.1(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-yak:
         specifier: workspace:*
-        version: link:../../next-yak
+        version: link:../../packages/next-yak
       postcss-nested:
         specifier: catalog:dev
         version: 7.0.2(postcss@8.5.6)
@@ -497,7 +466,7 @@ importers:
         version: 5.9.3
       yak-swc:
         specifier: workspace:*
-        version: link:../../yak-swc
+        version: link:../../packages/yak-swc
     devDependencies:
       '@eslint/eslintrc':
         specifier: catalog:dev
@@ -528,7 +497,7 @@ importers:
         version: 16.0.1(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-yak:
         specifier: workspace:^
-        version: link:../../eslint-plugin-yak
+        version: link:../../packages/eslint-plugin-yak
       jest:
         specifier: catalog:dev
         version: 30.2.0(@types/node@24.9.2)
@@ -545,7 +514,7 @@ importers:
         specifier: catalog:dev
         version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)
 
-  packages/examples/vite:
+  examples/vite:
     dependencies:
       '@babel/parser':
         specifier: catalog:core
@@ -555,7 +524,7 @@ importers:
         version: 7.28.5
       next-yak:
         specifier: workspace:*
-        version: link:../../next-yak
+        version: link:../../packages/next-yak
       react:
         specifier: catalog:dev
         version: 19.2.0
@@ -564,7 +533,7 @@ importers:
         version: 19.2.0(react@19.2.0)
       yak-swc:
         specifier: workspace:*
-        version: link:../../yak-swc
+        version: link:../../packages/yak-swc
     devDependencies:
       '@swc/core':
         specifier: catalog:core
@@ -593,6 +562,37 @@ importers:
       vite:
         specifier: catalog:dev
         version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)
+
+  packages/eslint-plugin-yak:
+    dependencies:
+      '@typescript-eslint/parser':
+        specifier: '>8.0.0'
+        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/utils':
+        specifier: catalog:dev
+        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint:
+        specifier: '>=9.0.0'
+        version: 9.38.0(jiti@2.6.1)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:dev
+        version: 24.9.2
+      '@typescript-eslint/rule-tester':
+        specifier: catalog:dev
+        version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-doc-generator:
+        specifier: catalog:dev
+        version: 2.3.0(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)(typescript@5.9.3)
+      tsup:
+        specifier: catalog:dev
+        version: 8.5.0(@swc/core@1.13.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+      vitest:
+        specifier: catalog:dev
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)
 
   packages/next-yak:
     dependencies:

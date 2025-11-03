@@ -1,6 +1,9 @@
 packages:
   - packages/*
-  - packages/examples/*
+  - examples/*
+  - benchmarks
+  - cross-file-tests
+  - docs
 
 catalogs:
   core:
