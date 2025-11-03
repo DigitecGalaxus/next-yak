@@ -74,12 +74,12 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
     const existingRule = nextConfig.turbopack.rules[ruleKey];
 
-    const yakLoader = {
+    // turbopack can't handle options with undefined values, so we remove them
+    const yakLoader = removeUndefinedRecursive({
       loader: path.join(currentDir, "../loaders/turbo-loader.js"),
       options: {
-        // turbopack can't handle options with undefined values, so we remove them
-        yakOptions: removeUndefinedRecursive(yakOptions),
-        yakPluginOptions: removeUndefinedRecursive(yakPluginOptions),
+        yakOptions,
+        yakPluginOptions: yakPluginOptions,
       },
     };
 
