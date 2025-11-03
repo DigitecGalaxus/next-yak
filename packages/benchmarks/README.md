@@ -5,13 +5,15 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First, run the development server:
 
 ```bash
-# With webpack (required for next-yak)
+# With webpack
 npm run dev
 # or
 yarn dev
 
-# Note: Turbopack is not yet supported by next-yak
-# npm run dev:turbo will fail
+# With turbopack
+npm run dev:turbo
+# or
+yarn dev:turbo
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

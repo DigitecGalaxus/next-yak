@@ -98,9 +98,11 @@ fn yak_pass(
             None,
             config.minify.unwrap_or_default(),
             config
-                .transpilation_mode
+                .import_mode
                 .clone()
-                .unwrap_or(TranspilationMode::Css)
+                .unwrap_or(CssDependencyMode::InlineMatchResource {
+                    transpilation: TranspilationMode::Css,
+                })
                 .into(),
         );
         program.visit_mut_with(&mut transformer);
@@ -130,6 +132,14 @@ pub enum TranspilationMode {
     Css,
 }
 
+#[derive(Tsify, Serialize, Deserialize, Clone)]
+#[serde(tag = "type")]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum CssDependencyMode {
+    InlineMatchResource { transpilation: TranspilationMode },
+    DataUrl,
+}
+
 impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     fn from(val: TranspilationMode) -> Self {
         match val {
@@ -141,6 +151,19 @@ impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     }
 }
 
+impl From<CssDependencyMode> for yak_swc::naming_convention::CssDependencyMode {
+    fn from(val: CssDependencyMode) -> Self {
+        match val {
+            CssDependencyMode::InlineMatchResource { transpilation } => {
+                yak_swc::naming_convention::CssDependencyMode::InlineMatchResource {
+                    transpilation: transpilation.into(),
+                }
+            }
+            CssDependencyMode::DataUrl => yak_swc::naming_convention::CssDependencyMode::DataUrl,
+        }
+    }
+}
+
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(rename_all = "camelCase")]
@@ -148,14 +171,16 @@ pub struct YakConfig {
     #[tsify(optional)]
     minify: Option<bool>,
     #[tsify(optional)]
-    transpilation_mode: Option<TranspilationMode>,
+    import_mode: Option<CssDependencyMode>,
 }
 
 impl Default for YakConfig {
     fn default() -> Self {
         Self {
             minify: Default::default(),
-            transpilation_mode: Some(TranspilationMode::Css),
+            import_mode: Some(CssDependencyMode::InlineMatchResource {
+                transpilation: TranspilationMode::Css,
+            }),
         }
     }
 }

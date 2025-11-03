@@ -144,16 +144,14 @@ pnpm example
 
 #### Bundler Support
 
-Next.js 16+ defaults to Turbopack, but **next-yak currently only supports webpack**. Turbopack support is planned for future releases.
+All example and documentation projects have been updated to use Webpack by default, but also support Turbopack:
 
-All example and documentation projects have been updated to use webpack by default:
-
-**Webpack (required):**
+**Webpack:**
 
 - `dev` - Next.js dev server with webpack (`--webpack` flag)
 - `build:next` - Production build with webpack (`--webpack` flag)
 
-**Turbopack (not yet supported):**
+**Turbopack:**
 
 - `dev:turbo` - Next.js dev server with Turbopack (will fail with next-yak)
 - `build:next:turbo` - Production build with Turbopack (will fail with next-yak)
@@ -171,7 +169,7 @@ Debugging the SWC plugin in the example app, you can enable debug logging
 // ./packages/example/next.config.mjs
 export default withYak({
   experiments: {
-    debug: true, // or { filter: (path) => path.includes('component.tsx'), type: 'css' }
+    debug: true, // or { filter: 'component.tsx.css$' }
   },
 });
 ```

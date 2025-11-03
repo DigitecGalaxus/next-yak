@@ -19,6 +19,7 @@ swc_ecma_transforms_testing = "=31.0.0"
 swc_ecma_parser = "=25.0.0"
 swc_config = "=3.1.2"
 testing = "16.0.0"
+base64 = "0.22.1"
 
 [profile.release]
 # This profile results in small binary size with acceptable impact on

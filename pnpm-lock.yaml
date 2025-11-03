@@ -12,6 +12,9 @@ catalogs:
     '@babel/traverse':
       specifier: ^7.28.5
       version: 7.28.5
+    '@swc/core':
+      specifier: ^1.13.5
+      version: 1.13.5
     '@swc/counter':
       specifier: 0.1.3
       version: 0.1.3
@@ -46,9 +49,6 @@ catalogs:
     '@shikijs/transformers':
       specifier: 3.14.0
       version: 3.14.0
-    '@swc/core':
-      specifier: 1.13.5
-      version: 1.13.5
     '@swc/helpers':
       specifier: 0.5.17
       version: 0.5.17
@@ -235,7 +235,7 @@ importers:
   packages/benchmarks:
     dependencies:
       '@swc/core':
-        specifier: catalog:dev
+        specifier: catalog:core
         version: 1.13.5(@swc/helpers@0.5.17)
       next:
         specifier: catalog:dev
@@ -284,7 +284,7 @@ importers:
   packages/cross-file-tests:
     devDependencies:
       '@swc/core':
-        specifier: catalog:dev
+        specifier: catalog:core
         version: 1.13.5(@swc/helpers@0.5.17)
       fast-glob:
         specifier: catalog:dev
@@ -335,7 +335,7 @@ importers:
         specifier: catalog:dev
         version: 3.14.0
       '@swc/core':
-        specifier: catalog:dev
+        specifier: catalog:core
         version: 1.13.5(@swc/helpers@0.5.17)
       '@vercel/analytics':
         specifier: ^1.5.0
@@ -550,6 +550,9 @@ importers:
       '@babel/traverse':
         specifier: catalog:core
         version: 7.28.5
+      '@swc/core':
+        specifier: catalog:core
+        version: 1.13.5(@swc/helpers@0.5.17)
       yak-swc:
         specifier: workspace:*
         version: link:../yak-swc
