@@ -100,7 +100,7 @@ fn yak_pass(
             config
                 .import_mode
                 .clone()
-                .unwrap_or(ImportMode::InlineMatchResource {
+                .unwrap_or(CssDependencyMode::InlineMatchResource {
                     transpilation: TranspilationMode::Css,
                 })
                 .into(),
@@ -135,7 +135,7 @@ pub enum TranspilationMode {
 #[derive(Tsify, Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub enum ImportMode {
+pub enum CssDependencyMode {
     InlineMatchResource { transpilation: TranspilationMode },
     DataUrl,
 }
@@ -151,15 +151,15 @@ impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     }
 }
 
-impl From<ImportMode> for yak_swc::naming_convention::ImportMode {
-    fn from(val: ImportMode) -> Self {
+impl From<CssDependencyMode> for yak_swc::naming_convention::CssDependencyMode {
+    fn from(val: CssDependencyMode) -> Self {
         match val {
-            ImportMode::InlineMatchResource { transpilation } => {
-                yak_swc::naming_convention::ImportMode::InlineMatchResource {
+            CssDependencyMode::InlineMatchResource { transpilation } => {
+                yak_swc::naming_convention::CssDependencyMode::InlineMatchResource {
                     transpilation: transpilation.into(),
                 }
             }
-            ImportMode::DataUrl => yak_swc::naming_convention::ImportMode::DataUrl,
+            CssDependencyMode::DataUrl => yak_swc::naming_convention::CssDependencyMode::DataUrl,
         }
     }
 }
@@ -171,14 +171,14 @@ pub struct YakConfig {
     #[tsify(optional)]
     minify: Option<bool>,
     #[tsify(optional)]
-    import_mode: Option<ImportMode>,
+    import_mode: Option<CssDependencyMode>,
 }
 
 impl Default for YakConfig {
     fn default() -> Self {
         Self {
             minify: Default::default(),
-            import_mode: Some(ImportMode::InlineMatchResource {
+            import_mode: Some(CssDependencyMode::InlineMatchResource {
                 transpilation: TranspilationMode::Css,
             }),
         }

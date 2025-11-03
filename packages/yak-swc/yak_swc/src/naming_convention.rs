@@ -207,7 +207,7 @@ impl TranspilationMode {
 /// Defines how CSS imports should be processed and transpiled
 #[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(tag = "type")]
-pub enum ImportMode {
+pub enum CssDependencyMode {
   /// Add a new import statement using the inline match resource syntax of webpack
   /// The query parameters will reflect the transpilation mode
   /// e.g. import "./input.yak.module.css!=!./input?./input.yak.module.css";
@@ -221,11 +221,11 @@ pub enum ImportMode {
 /// Extract the transpilation mode from an import mode
 /// DataUrl only supports CSS
 /// InlineMatchResource supports CSS and CSS Modules
-impl ImportMode {
+impl CssDependencyMode {
   pub fn transpilation_mode(&self) -> TranspilationMode {
     match self {
-      ImportMode::InlineMatchResource { transpilation } => *transpilation,
-      ImportMode::DataUrl => TranspilationMode::Css,
+      CssDependencyMode::InlineMatchResource { transpilation } => *transpilation,
+      CssDependencyMode::DataUrl => TranspilationMode::Css,
     }
   }
 }
