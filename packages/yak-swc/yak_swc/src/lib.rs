@@ -60,6 +60,7 @@ pub struct Config {
   /// from the base dir to the source file is used.
   pub base_path: String,
   /// Prefix for the generated css identifier
+  #[serde(default)]
   pub prefix: Option<String>,
   /// Improves react DevTools experience by setting displayName
   /// on the component to match the original component name.

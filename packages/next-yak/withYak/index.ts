@@ -68,12 +68,6 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     nextConfig.experimental.swcPlugins ||= [];
     nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
   } else {
-    // Turbopack can't handle options with undefined values
-    if (yakOptions.prefix === undefined) {
-      delete yakPluginOptions.prefix;
-      delete yakOptions.prefix;
-    }
-
     nextConfig.turbopack ||= {};
     nextConfig.turbopack.rules ||= {};
 
@@ -83,24 +77,22 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     const yakLoader = {
       loader: path.join(currentDir, "../loaders/turbo-loader.js"),
       options: {
-        yakOptions,
-        yakPluginOptions,
+        // turbopack can't handle options with undefined values, so we remove them
+        yakOptions: removeUndefinedRecursive(yakOptions),
+        yakPluginOptions: removeUndefinedRecursive(yakPluginOptions),
       },
     };
 
     if (existingRule && "loaders" in existingRule) {
       existingRule.loaders ||= [];
-      // @ts-expect-error - We throw an error if the debug option isn't serializable
       existingRule.loaders.push(yakLoader);
     } else if (existingRule) {
       nextConfig.turbopack.rules[ruleKey] = {
         ...existingRule,
-        // @ts-expect-error - We throw an error if the debug option isn't serializable
         loaders: [yakLoader],
       };
     } else {
       nextConfig.turbopack.rules[ruleKey] = {
-        // @ts-expect-error - We throw an error if the debug option isn't serializable
         loaders: [yakLoader],
       };
     }
@@ -134,6 +126,48 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   };
   return nextConfig;
 };
+
+/**
+ * Recursively removes undefined values from an object or array.
+ *
+ * This function deeply traverses the input object/array and creates a new structure
+ * with all undefined values filtered out. For objects, properties with undefined values
+ * are omitted. For arrays, undefined elements are removed from the result.
+ *
+ * @param obj - The object or array to process
+ * @returns A new object/array with undefined values removed, or the original value if no changes were needed
+ */
+function removeUndefinedRecursive<T>(obj: T): {} {
+  if (typeof obj !== "object" || obj === null) {
+    return obj as {};
+  }
+
+  if (Array.isArray(obj)) {
+    const filtered: unknown[] = [];
+    for (let i = 0; i < obj.length; i++) {
+      const processed = removeUndefinedRecursive(obj[i]);
+      if (processed !== undefined) {
+        filtered.push(processed);
+      }
+    }
+    return filtered as {};
+  }
+
+  const newObj: Record<string, unknown> = {};
+  let hasChanges = false;
+
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = removeUndefinedRecursive((obj as any)[key]);
+      if (value !== undefined) {
+        newObj[key] = value;
+        hasChanges = true;
+      }
+    }
+  }
+
+  return hasChanges ? (newObj as {}) : obj;
+}
 
 /**
  * Try to resolve yak
