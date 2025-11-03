@@ -1,3 +1,5 @@
+import type { YakTheme } from "./index.js";
+
 export function getYakThemeContext() {
-  return {};
+  return {} as YakTheme | undefined;
 }
