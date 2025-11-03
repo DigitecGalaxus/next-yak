@@ -68,7 +68,7 @@ jobs:
         run: pnpm run build:swc
 
       - name: Install Vercel CLI
-        run: npm install -g vercel@35
+        run: npm install -g vercel@latest
 
       - name: Link Vercel project
         run: vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
