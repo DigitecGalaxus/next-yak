@@ -5,7 +5,7 @@
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
 [![npm version](https://badge.fury.io/js/next-yak.svg)](https://www.npmjs.com/package/next-yak)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jantimon/next-yak/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/DigitecGalaxus/next-yak/blob/main/LICENSE)
 
 **next-yak** is a CSS-in-JS solution tailored for [Next.js](https://nextjs.org/) that seamlessly combines the expressive power of styled-components syntax with efficient build-time extraction of CSS using Next.js's built-in CSS configuration.
 
@@ -17,7 +17,7 @@
 - **Standard CSS Syntax**: Write styles in familiar, easy-to-use CSS
 - **Integrates with Atomic CSS**: Easily combines with atomic CSS frameworks like Tailwind CSS for more design options
 
-[Preview (Video)](https://github.com/jantimon/next-yak/assets/4113649/f5a220fc-2a0f-46be-a8e7-c855f7faa337)
+[Preview (Video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/f5a220fc-2a0f-46be-a8e7-c855f7faa337)
 
 ## Compatibility
 
@@ -104,7 +104,7 @@ const ToggleButton = styled.button`
 `;
 ```
 
-[Dynamic Styles (Video)](https://github.com/jantimon/next-yak/assets/4113649/c5f52846-33e4-4058-9c78-efd98197d75f)
+[Dynamic Styles (Video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/c5f52846-33e4-4058-9c78-efd98197d75f)
 
 ### Dynamic Properties
 
@@ -135,7 +135,7 @@ const ExampleComponent = () => {
 };
 ```
 
-[Dynamic Props (video)](https://github.com/jantimon/next-yak/assets/4113649/2fa78f82-382c-465f-b294-2504739ea168)
+[Dynamic Props (video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/2fa78f82-382c-465f-b294-2504739ea168)
 
 ### Targeting Components
 
@@ -184,7 +184,7 @@ module.exports = {
 };
 ```
 
-[Nesting Example (video)](https://github.com/jantimon/next-yak/assets/4113649/33eeeb13-b0cf-499f-a1d3-ba6f51cf4308)
+[Nesting Example (video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/33eeeb13-b0cf-499f-a1d3-ba6f51cf4308)
 
 ## Motivation
 
@@ -211,13 +211,13 @@ Optimizations are done by postcss. This allows to use the full power of postcss 
 
 ## Performance Gains
 
-[![CSS Extract](https://raw.githubusercontent.com/jantimon/next-yak/main/css-extract.gif)](https://raw.githubusercontent.com/jantimon/next-yak/main/css-extract.gif)
+[![CSS Extract](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/css-extract.gif)](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/css-extract.gif)
 
 ## How it works
 
 next-yak converts css-in-js into css modules. This allows to use the full power of postcss and its plugins. It also allows to use the same optimizations for css files and css-in-js.
 
-[![Compile Flow](https://raw.githubusercontent.com/jantimon/next-yak/main/compile-flow.webp)](https://raw.githubusercontent.com/jantimon/next-yak/main/compile-flow.webp)
+[![Compile Flow](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/compile-flow.webp)](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/compile-flow.webp)
 
 ## Atomic CSS
 
@@ -274,7 +274,7 @@ const Container = styled.div`
 | Side effects   | ✅                          | 🚫                                      |
 | Yak Features   | All (`styled`, `css`, ...)  | 🚫                                      |
 
-[Build time constants (video)](https://github.com/jantimon/next-yak/assets/4113649/2c83246c-a03b-4c57-8814-32a7248983ac)
+[Build time constants (video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/2c83246c-a03b-4c57-8814-32a7248983ac)
 
 ## Yak shaving
 
@@ -330,13 +330,13 @@ Special thanks to the contributors and the inspiring projects that influenced ne
 
 ## License
 
-**next-yak** is licensed under the [MIT License](https://github.com/jantimon/next-yak/blob/main/packages/next-yak/LICENSE).
+**next-yak** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/LICENSE).
 
 ## Contributing
 
 Contributions are welcome!
 
-The [contributing guide](https://github.com/jantimon/next-yak/blob/main/CONTRIBUTION.md) helps you get started with setting up the development environment and explains the development workflow
+The [contributing guide](https://github.com/DigitecGalaxus/next-yak/blob/main/CONTRIBUTION.md) helps you get started with setting up the development environment and explains the development workflow
 
 ---
 
