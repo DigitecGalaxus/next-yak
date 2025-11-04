@@ -3,4 +3,4 @@
 "yak-swc": major
 ---
 
-Add limited Turbopack support (.yak files can't use `import` statements)
+Add limited Turbopack support (Limitation: .yak files can't use `import` statements)

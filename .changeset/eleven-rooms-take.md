@@ -3,4 +3,4 @@
 "yak-swc": patch
 ---
 
-Adds support for export default expressions
+Allow exporting Yak components as default expressions
