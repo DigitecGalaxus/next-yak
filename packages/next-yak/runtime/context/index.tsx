@@ -2,7 +2,7 @@
 //
 // This file is the client component (browser & ssr) version of index.server.tsx
 //
-import React, { ReactNode, createContext, useContext } from "react";
+import React, { ReactNode, createContext, use } from "react";
 
 export interface YakTheme {}
 
@@ -17,7 +17,10 @@ const YakContext = createContext<YakTheme>({});
  *
  * @see https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/context/README.md
  */
-export const useTheme = (): YakTheme => useContext(YakContext);
+export const useTheme = (): YakTheme => {
+  const context = use(YakContext);
+  return context instanceof Promise ? use(context) : context;
+};
 
 /**
  * Yak theme context provider

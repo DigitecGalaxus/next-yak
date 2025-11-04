@@ -483,8 +483,8 @@ const Box = styled.div('.Box', {
 
 ## Theming
 
-<Callout type="warn">
-  As of Next.js ≥15.0.0, the `cookies()` function is async, which affects how you can use it within `getYakThemeContext`. See the note below for details.
+<Callout type="info">
+  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak now supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs seamlessly.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
@@ -530,7 +530,7 @@ const getMyBrandName: () => string | undefined = () => "test";
 const isNewDesign: () => boolean | undefined = () => true;
 
 // ---cut---
-export function getYakThemeContext() {
+export async function getYakThemeContext() {
     return {
         brandName: getMyBrandName() ?? 'myDefaultBrand',
         featureFlags: {
@@ -540,7 +540,7 @@ export function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends ReturnType<typeof getYakThemeContext> { }
+    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
 }
 ```
 
@@ -553,7 +553,7 @@ Once this context file is in place, you can access the theme props on every comp
 const getMyBrandName: () => string | undefined = () => "test";
 const isNewDesign: () => boolean | undefined = () => true;
 
-export function getYakThemeContext() {
+export async function getYakThemeContext() {
     return {
         brandName: getMyBrandName() ?? 'myDefaultBrand',
         featureFlags: {
@@ -563,7 +563,7 @@ export function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends ReturnType<typeof getYakThemeContext> { }
+    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
 }
 
 // ---cut---
@@ -603,24 +603,26 @@ const Button = styled.button`
 </Tab>
 </Tabs>
 
-### Important Note for Next.js 15.0.0+
+### Using Async Server Functions in Next.js 15.0.0+
 
-Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous <a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>. This creates a limitation when using server-side dynamic values in `getYakThemeContext()`:
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs seamlessly:
 
 ```tsx
-// This won't work in Next.js 15.0.0+ because cookies() is async
-// but getYakThemeContext() must be synchronous
 import { cookies } from 'next/headers'
 
-export function getYakThemeContext() {
-    const cookieStore = cookies() // Error: cookies() is async but not awaited
+export async function getYakThemeContext() {
+    const cookieStore = await cookies()
     return {
         highContrast: cookieStore.get("highContrast")?.value === "true"
     }
 }
+
+declare module "next-yak" {
+    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+}
 ```
 
-We've created an <a href="https://github.com/DigitecGalaxus/next-yak/issues/403">RFC to address this issue</a> and to provide a possible solution for it.
+Under the hood, next-yak uses React's `use()` hook to resolve the promise from your async context function at the component level, then passes the fully resolved theme object to your styled components. This means your styled component template literals continue to work exactly as before, receiving a synchronous theme object, while you get the flexibility to await any server-side APIs you need in your context function.
 
 ## CSS Prop
 
