@@ -1,6 +1,6 @@
 import { type Compilation } from "webpack";
 // @ts-ignore
-import cssLoader = require("next-yak/loaders/css-loader");
+import webpackLoader = require("next-yak/loaders/webpack-loader");
 
 export async function runLoaderForSingleFile(
   originalContent: string,
@@ -28,7 +28,7 @@ export async function runLoaderForSingleFile(
 
   const p = createAsyncPromise(mockLoader);
   // @ts-expect-error Types don't add up
-  cssLoader.default.call(mockLoader, "", undefined);
+  webpackLoader.default.call(mockLoader, "", undefined);
   return (await p) as string;
 }
 

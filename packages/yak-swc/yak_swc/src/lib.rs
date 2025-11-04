@@ -1,3 +1,5 @@
+use base64::prelude::BASE64_STANDARD;
+use base64::Engine;
 use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
 use css_in_js_parser::{Declaration, ParserState};
 use rustc_hash::FxHashMap;
@@ -38,7 +40,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{NamingConvention, TranspilationMode};
+use naming_convention::{CssDependencyMode, NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -58,6 +60,7 @@ pub struct Config {
   /// from the base dir to the source file is used.
   pub base_path: String,
   /// Prefix for the generated css identifier
+  #[serde(default)]
   pub prefix: Option<String>,
   /// Improves react DevTools experience by setting displayName
   /// on the component to match the original component name.
@@ -66,8 +69,8 @@ pub struct Config {
   pub display_names: bool,
   /// Transpile mode for CSS
   /// Influences how class names and selectors are transpiled
-  #[serde(default = "Config::transpilation_mode_default")]
-  pub transpilation_mode: TranspilationMode,
+  #[serde(default = "Config::import_mode_default")]
+  pub import_mode: CssDependencyMode,
 }
 
 impl Config {
@@ -75,19 +78,21 @@ impl Config {
     true
   }
 
-  fn transpilation_mode_default() -> TranspilationMode {
-    TranspilationMode::CssModule
+  fn import_mode_default() -> CssDependencyMode {
+    CssDependencyMode::InlineMatchResource {
+      transpilation: naming_convention::TranspilationMode::CssModule,
+    }
   }
 }
 
 impl Default for Config {
   fn default() -> Self {
     Self {
-      minify: true,
+      minify: Config::minify_default(),
       base_path: Default::default(),
       prefix: Default::default(),
       display_names: Default::default(),
-      transpilation_mode: TranspilationMode::CssModule,
+      import_mode: Config::import_mode_default(),
     }
   }
 }
@@ -133,8 +138,11 @@ where
   /// If true, additional code will be injected to provide readable `displayName` values
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
-  /// Transpilation mode to determine how to transpile the code
-  transpilation_mode: TranspilationMode,
+  /// Import mode to determine how to import the generated css
+  import_mode: CssDependencyMode,
+  /// All valid CSS rules collected during transformation
+  all_css_rules: Vec<String>,
+  /// Comment string to be added to the default export
   default_export_comment: Option<String>,
 }
 
@@ -148,7 +156,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
-    transpilation_mode: TranspilationMode,
+    import_mode: CssDependencyMode,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -164,7 +172,8 @@ where
       inside_element_with_css_attribute: false,
       comments,
       display_names,
-      transpilation_mode,
+      import_mode,
+      all_css_rules: Vec::new(),
       default_export_comment: None,
     }
   }
@@ -354,7 +363,7 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = match &self.transpilation_mode {
+                let (new_state, _) = match &self.import_mode.transpilation_mode() {
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
@@ -601,12 +610,22 @@ where
             specifiers: vec![],
             src: Box::new(Str {
               span: DUMMY_SP,
-              value: match &self.transpilation_mode {
-                TranspilationMode::CssModule => {
+              value: match &self.import_mode {
+                CssDependencyMode::InlineMatchResource {
+                  transpilation: TranspilationMode::CssModule,
+                } => {
                   format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
                 }
-                TranspilationMode::Css => {
+                CssDependencyMode::InlineMatchResource {
+                  transpilation: TranspilationMode::Css,
+                } => {
                   format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
+                }
+                CssDependencyMode::DataUrl => {
+                  format!(
+                    "data:text/css;base64,{}",
+                    BASE64_STANDARD.encode(self.all_css_rules.join(""))
+                  )
                 }
               }
               .into(),
@@ -849,7 +868,7 @@ where
         current_variable_id.clone(),
         self.display_names,
         self.current_exported || is_default_exported,
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
@@ -862,7 +881,7 @@ where
               .naming_convention
               .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
 
       // CSS Mixin e.g. const highlight = css`color: red;`
@@ -871,14 +890,14 @@ where
         current_variable_id.clone(),
         self.current_exported || is_default_exported,
         self.inside_element_with_css_attribute,
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
         &current_variable_id,
         self.current_condition.clone(),
-        self.transpilation_mode,
+        self.import_mode.transpilation_mode(),
       )),
       _ => {
         if !is_top_level {
@@ -931,6 +950,12 @@ where
     let result_span = transform_result.expression.span();
     if (!css_code.is_empty() || self.current_exported) && is_top_level {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
+        // Don't add invalid CSS rules to the list of all CSS rules
+        // Mixin code should always be used in other components so that they target the correct element
+        if !comment_prefix.starts_with("YAK EXPORTED MIXIN:") {
+          self.all_css_rules.push(css_code.trim().into());
+        }
+
         let is_default_export = self.is_default_exported(&current_variable_id);
         if let Some(default_prefix) = transform.get_default_export_comment_prefix() {
           if is_default_export {
@@ -1081,11 +1106,40 @@ mod tests {
           false,
           None,
           true,
-          TranspilationMode::CssModule,
+          CssDependencyMode::InlineMatchResource {
+            transpilation: TranspilationMode::CssModule,
+          },
         ))
       },
       &input,
       &input.with_file_name("output.dev.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_dev_turbo(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          false,
+          None,
+          true,
+          CssDependencyMode::DataUrl,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.turbo.dev.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,
@@ -1108,11 +1162,40 @@ mod tests {
           true,
           None,
           false,
-          TranspilationMode::CssModule,
+          CssDependencyMode::InlineMatchResource {
+            transpilation: TranspilationMode::CssModule,
+          },
         ))
       },
       &input,
       &input.with_file_name("output.prod.tsx"),
+      FixtureTestConfig {
+        module: None,
+        sourcemap: false,
+        allow_error: true,
+      },
+    )
+  }
+
+  #[testing::fixture("tests/fixture/**/input.tsx")]
+  fn fixture_prod_turbo(input: PathBuf) {
+    test_fixture(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      &|tester| {
+        visit_mut_pass(TransformVisitor::new(
+          Some(tester.comments.clone()),
+          "path/input.tsx",
+          true,
+          None,
+          false,
+          CssDependencyMode::DataUrl,
+        ))
+      },
+      &input,
+      &input.with_file_name("output.turbo.prod.tsx"),
       FixtureTestConfig {
         module: None,
         sourcemap: false,

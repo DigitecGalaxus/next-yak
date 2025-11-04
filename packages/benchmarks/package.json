@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run generate:letters && next dev --webpack",
+    "dev:turbo": "pnpm run generate:letters && next dev",
     "build": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next",
+    "build:turbo": "pnpm run build:yak && pnpm run generate:letters && pnpm run build:next:turbo",
     "build:next": "next build --webpack",
+    "build:next:turbo": "next build",
     "build:yak": "pnpm run --dir ../.. build",
     "start": "next start",
     "prettier": "npx prettier --write \"./{app,letters,codspeed}/**/*.{ts,tsx,js,jsx}\"",
@@ -22,7 +25,7 @@
     "codspeed:run": "NODE_ENV=production node ./codspeed/dist/index.bench.mjs"
   },
   "dependencies": {
-    "@swc/core": "catalog:dev",
+    "@swc/core": "catalog:core",
     "next": "catalog:dev",
     "next-yak": "workspace:*",
     "react": "catalog:dev",

@@ -5,8 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:turbo": "next dev",
     "build": "pnpm run build:yak && pnpm run build:next",
+    "build:turbo": "pnpm run build:yak && pnpm run build:next:turbo",
     "build:next": "next build --webpack",
+    "build:next:turbo": "next build",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
     "start": "next start",

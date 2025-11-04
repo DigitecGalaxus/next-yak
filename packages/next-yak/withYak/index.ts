@@ -31,35 +31,72 @@ export type YakConfigOptions = {
    */
   displayNames?: boolean;
   experiments?: {
-    debug?:
-      | boolean
-      | {
-          filter?: (path: string) => boolean;
-          type: "all" | "ts" | "css" | "css resolved";
-        };
+    /**
+     * A regex pattern to filter files based on their path.
+     * Use ".css$" to filter the raw CSS transpilation and ".css-resolved$" for resolved CSS
+     * Use true to enable debug mode for all files
+     */
+    debug?: boolean | string;
     transpilationMode?: "CssModule" | "Css";
   };
 };
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
+  const isTurbo =
+    process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto";
   const previousConfig = nextConfig.webpack;
   const minify =
     yakOptions.minify !== undefined
       ? yakOptions.minify
       : process.env.NODE_ENV === "production";
+  const yakPluginOptions = {
+    minify,
+    basePath: currentDir,
+    prefix: yakOptions.prefix,
+    displayNames: yakOptions.displayNames ?? !minify,
+    importMode: isTurbo
+      ? { type: "DataUrl" }
+      : {
+          type: "InlineMatchResource",
+          transpilation:
+            yakOptions.experiments?.transpilationMode ?? "CssModule",
+        },
+  };
 
-  nextConfig.experimental ||= {};
-  nextConfig.experimental.swcPlugins ||= [];
-  nextConfig.experimental.swcPlugins.push([
-    "yak-swc",
-    {
-      minify,
-      basePath: currentDir,
-      prefix: yakOptions.prefix,
-      displayNames: yakOptions.displayNames ?? !minify,
-      transpilationMode: yakOptions.experiments?.transpilationMode,
-    },
-  ]);
+  if (!isTurbo) {
+    nextConfig.experimental ||= {};
+    nextConfig.experimental.swcPlugins ||= [];
+    nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
+  } else {
+    nextConfig.turbopack ||= {};
+    nextConfig.turbopack.rules ||= {};
+
+    const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
+    const existingRule = nextConfig.turbopack.rules[ruleKey];
+
+    // turbopack can't handle options with undefined values, so we remove them
+    const yakLoader = removeUndefinedRecursive({
+      loader: path.join(currentDir, "../loaders/turbo-loader.js"),
+      options: {
+        yakOptions: yakOptions,
+        yakPluginOptions: yakPluginOptions,
+      },
+    }) as { loader: string; options: {} };
+
+    if (existingRule && "loaders" in existingRule) {
+      existingRule.loaders ||= [];
+      existingRule.loaders.push(yakLoader);
+    } else if (existingRule) {
+      nextConfig.turbopack.rules[ruleKey] = {
+        ...existingRule,
+        loaders: [yakLoader],
+      };
+    } else {
+      nextConfig.turbopack.rules[ruleKey] = {
+        loaders: [yakLoader],
+      };
+    }
+  }
 
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
@@ -71,7 +108,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
         yakOptions.experiments?.transpilationMode === "Css"
           ? /\.yak\.css$/
           : /\.yak\.module\.css$/,
-      loader: path.join(currentDir, "../loaders/css-loader.js"),
+      loader: path.join(currentDir, "../loaders/webpack-loader.js"),
       options: yakOptions,
     });
 
@@ -89,6 +126,48 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   };
   return nextConfig;
 };
+
+/**
+ * Recursively removes undefined values from an object or array.
+ *
+ * This function deeply traverses the input object/array and creates a new structure
+ * with all undefined values filtered out. For objects, properties with undefined values
+ * are omitted. For arrays, undefined elements are removed from the result.
+ *
+ * @param obj - The object or array to process
+ * @returns A new object/array with undefined values removed, or the original value if no changes were needed
+ */
+function removeUndefinedRecursive<T>(obj: T): {} {
+  if (typeof obj !== "object" || obj === null) {
+    return obj as {};
+  }
+
+  if (Array.isArray(obj)) {
+    const filtered: unknown[] = [];
+    for (let i = 0; i < obj.length; i++) {
+      const processed = removeUndefinedRecursive(obj[i]);
+      if (processed !== undefined) {
+        filtered.push(processed);
+      }
+    }
+    return filtered as {};
+  }
+
+  const newObj: Record<string, unknown> = {};
+  let hasChanges = false;
+
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = removeUndefinedRecursive((obj as any)[key]);
+      if (value !== undefined) {
+        newObj[key] = value;
+        hasChanges = true;
+      }
+    }
+  }
+
+  return hasChanges ? (newObj as {}) : obj;
+}
 
 /**
  * Try to resolve yak
