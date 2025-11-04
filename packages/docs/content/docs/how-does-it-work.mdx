@@ -25,7 +25,7 @@ usages of the tagged template literals (like `styled` and `css`), while the load
 
 ### The SWC plugin
 
-See: [yak-swc](https://github.com/jantimon/next-yak/tree/main/packages/yak-swc)
+See: [yak-swc](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak-swc)
 
 The SWC plugin takes in the source code and transforms the tagged template literals into `next-yak` runtime function
 calls with the imported styles (from the final css module output) as arguments. It also transforms the dynamic parts of the
@@ -206,7 +206,7 @@ Additionally, the comment is marked with `/*#__PURE__*/` so that the minifier kn
 
 ### The webpack loader
 
-See: [webpack-loader.ts](https://github.com/jantimon/next-yak/blob/main/packages/next-yak/loaders/webpack-loader.ts)
+See: [webpack-loader.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/loaders/webpack-loader.ts)
 
 The second loader takes the output of the first loader and resolves the cross module dependencies. The result is valid CSS that will be written to the context.
 
@@ -217,7 +217,7 @@ Once the final css is generated the loader hands it over as a CSS module file so
 
 ## The runtime part
 
-See: [styled.tsx](https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/styled.tsx)
+See: [styled.tsx](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/styled.tsx)
 
 Next-yak is a zero-runtime css-in-js library. This means there is zero code which manipulates the DOM or CSSOM.
 
@@ -267,21 +267,21 @@ export interface YakTheme {}
 
 /**
  * The yak theme context
- * @see https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/context/README.md
+ * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/context/README.md
  */
 const YakContext = createContext<YakTheme>({});
 
 /**
  * Returns the current yak theme context
  *
- * @see https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/context/README.md
+ * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/context/README.md
  */
 export const useTheme = (): YakTheme => useContext(YakContext);
 
 /**
  * Yak theme context provider
  *
- * @see https://github.com/jantimon/next-yak/blob/main/packages/next-yak/runtime/context/README.md
+ * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/context/README.md
  */
 export const YakThemeProvider = ({
   children,

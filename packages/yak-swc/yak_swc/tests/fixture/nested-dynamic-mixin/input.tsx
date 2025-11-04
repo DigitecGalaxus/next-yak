@@ -1,6 +1,6 @@
 import { styled, css } from "next-yak";
 
-// example taken from https://github.com/jantimon/next-yak/issues/208 
+// example taken from https://github.com/DigitecGalaxus/next-yak/issues/208 
 
 const spacing = "20px";
 
