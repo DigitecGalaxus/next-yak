@@ -42,62 +42,105 @@ export type YakConfigOptions = {
 };
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
-  const isTurbo =
-    process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto";
-  const previousConfig = nextConfig.webpack;
-  const minify =
-    yakOptions.minify !== undefined
-      ? yakOptions.minify
-      : process.env.NODE_ENV === "production";
+  const minify = yakOptions.minify ?? process.env.NODE_ENV === "production";
   const yakPluginOptions = {
     minify,
     basePath: currentDir,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
-    importMode: isTurbo
-      ? { type: "DataUrl" }
-      : {
-          type: "InlineMatchResource",
-          transpilation:
-            yakOptions.experiments?.transpilationMode ?? "CssModule",
-        },
   };
 
-  if (!isTurbo) {
-    nextConfig.experimental ||= {};
-    nextConfig.experimental.swcPlugins ||= [];
-    nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
+  if (process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto") {
+    addYakTurbopack(nextConfig, yakOptions, {
+      ...yakPluginOptions,
+      importMode: { type: "DataUrl" },
+    });
   } else {
-    nextConfig.turbopack ||= {};
-    nextConfig.turbopack.rules ||= {};
-
-    const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
-    const existingRule = nextConfig.turbopack.rules[ruleKey];
-
-    // turbopack can't handle options with undefined values, so we remove them
-    const yakLoader = removeUndefinedRecursive({
-      loader: path.join(currentDir, "../loaders/turbo-loader.js"),
-      options: {
-        yakOptions: yakOptions,
-        yakPluginOptions: yakPluginOptions,
+    addYakWebpack(nextConfig, yakOptions, {
+      ...yakPluginOptions,
+      importMode: {
+        type: "InlineMatchResource",
+        transpilation: yakOptions.experiments?.transpilationMode ?? "CssModule",
       },
-    }) as { loader: string; options: {} };
-
-    if (existingRule && "loaders" in existingRule) {
-      existingRule.loaders ||= [];
-      existingRule.loaders.push(yakLoader);
-    } else if (existingRule) {
-      nextConfig.turbopack.rules[ruleKey] = {
-        ...existingRule,
-        loaders: [yakLoader],
-      };
-    } else {
-      nextConfig.turbopack.rules[ruleKey] = {
-        loaders: [yakLoader],
-      };
-    }
+    });
   }
+  return nextConfig;
+};
 
+/**
+ * Configure Turbopack with yak loader for CSS-in-JS transformation
+ * @param nextConfig - Next.js configuration object
+ * @param yakOptions - Yak configuration options
+ * @param yakPluginOptions - Processed plugin options for yak-swc
+ */
+function addYakTurbopack(
+  nextConfig: NextConfig,
+  yakOptions: YakConfigOptions,
+  yakPluginOptions: {
+    minify: boolean;
+    basePath: string;
+    prefix?: string;
+    displayNames: boolean;
+    importMode: { type: string };
+  },
+) {
+  // turbopack can't handle options with undefined values, so we remove them
+  const yakLoader = removeUndefinedRecursive({
+    loader: path.join(currentDir, "../loaders/turbo-loader.js"),
+    options: {
+      yakOptions: yakOptions,
+      yakPluginOptions: yakPluginOptions,
+    },
+  }) as { loader: string; options: {} };
+
+  nextConfig.turbopack ||= {};
+  nextConfig.turbopack.rules ||= {};
+
+  const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
+  nextConfig.turbopack.rules[ruleKey] = {
+    loaders: [],
+    ...nextConfig.turbopack.rules[ruleKey],
+  };
+  nextConfig.turbopack.rules[ruleKey].loaders.push(yakLoader);
+
+  // Configure resolveAlias for custom yak context (similar to webpack)
+  // This allows users to provide a custom context file that will be used
+  // instead of the default baseContext
+  const yakContext = resolveYakContext(yakOptions.contextPath, process.cwd());
+  if (yakContext) {
+    nextConfig.turbopack.resolveAlias ||= {};
+    nextConfig.turbopack.resolveAlias["next-yak/context/baseContext"] =
+      // This is a hack around the fact that turbopack currently only supports relative paths
+      // turbopack: "server relative imports are not implemented yet"
+      // Relative is quite dangerous here as it relies on the cwd being the starting point
+      `./${path.relative(process.cwd(), yakContext)}`;
+  }
+}
+
+/**
+ * Configure Webpack with yak SWC plugin and webpack loader for CSS-in-JS transformation
+ * @param nextConfig - Next.js configuration object
+ * @param yakOptions - Yak configuration options
+ * @param yakPluginOptions - Processed plugin options for yak-swc
+ */
+function addYakWebpack(
+  nextConfig: NextConfig,
+  yakOptions: YakConfigOptions,
+  yakPluginOptions: {
+    minify: boolean;
+    basePath: string;
+    prefix?: string;
+    displayNames: boolean;
+    importMode: { type: string; transpilation?: string };
+  },
+) {
+  // Add SWC plugin for Webpack
+  nextConfig.experimental ||= {};
+  nextConfig.experimental.swcPlugins ||= [];
+  nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
+
+  // Configure webpack loader
+  const previousConfig = nextConfig.webpack;
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
@@ -124,8 +167,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
 
     return webpackConfig;
   };
-  return nextConfig;
-};
+}
 
 /**
  * Recursively removes undefined values from an object or array.
