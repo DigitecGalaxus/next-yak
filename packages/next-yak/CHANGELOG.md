@@ -1,5 +1,25 @@
 # next-yak
 
+## 8.0.0
+
+### Major Changes
+
+- 24caa1f: Add limited Turbopack support (Limitation: .yak files can't use `import` statements)
+- 6f84e74: Update to Next.js 16
+
+### Minor Changes
+
+- 2e43185: Add support for async RSC Yak Theme Contexts (yak.context.ts)
+
+### Patch Changes
+
+- cea6d53: Allow exporting Yak components as default expressions
+- Updated dependencies [cea6d53]
+- Updated dependencies [2e43185]
+- Updated dependencies [24caa1f]
+- Updated dependencies [6f84e74]
+  - yak-swc@8.0.0
+
 ## 7.0.0
 
 ### Minor Changes
