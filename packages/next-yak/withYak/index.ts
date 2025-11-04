@@ -84,12 +84,6 @@ function addYakTurbopack(
     importMode: { type: string };
   },
 ) {
-  nextConfig.turbopack ||= {};
-  nextConfig.turbopack.rules ||= {};
-
-  const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
-  const existingRule = nextConfig.turbopack.rules[ruleKey];
-
   // turbopack can't handle options with undefined values, so we remove them
   const yakLoader = removeUndefinedRecursive({
     loader: path.join(currentDir, "../loaders/turbo-loader.js"),
@@ -99,19 +93,15 @@ function addYakTurbopack(
     },
   }) as { loader: string; options: {} };
 
-  if (existingRule && "loaders" in existingRule) {
-    existingRule.loaders ||= [];
-    existingRule.loaders.push(yakLoader);
-  } else if (existingRule) {
-    nextConfig.turbopack.rules[ruleKey] = {
-      ...existingRule,
-      loaders: [yakLoader],
-    };
-  } else {
-    nextConfig.turbopack.rules[ruleKey] = {
-      loaders: [yakLoader],
-    };
-  }
+  nextConfig.turbopack ||= {};
+  nextConfig.turbopack.rules ||= {};
+
+  const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
+  nextConfig.turbopack.rules[ruleKey] = {
+    loaders: [],
+    ...nextConfig.turbopack.rules[ruleKey],
+  };
+  nextConfig.turbopack.rules[ruleKey].loaders.push(yakLoader);
 
   // Configure resolveAlias for custom yak context (similar to webpack)
   // This allows users to provide a custom context file that will be used
