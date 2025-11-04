@@ -1,13 +1,14 @@
-import { styled } from "next-yak";
+import { styled, useTheme } from "next-yak";
 import { baseStyle } from "./mixins";
 import { MyButton } from "./myButton";
-import "./vite-yak-client";
 
 interface ButtonProps {
   primary?: boolean;
 }
 
 function App() {
+  const theme = useTheme();
+  console.log({ theme });
   return (
     <Container>
       <Title>YAK + Vite Integration Test</Title>

@@ -4,6 +4,7 @@ import { createContext, runInContext } from "node:vm";
 import { type Plugin, type ViteDevServer } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
+import { resolveYakContext } from "../withYak/index.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
@@ -15,6 +16,31 @@ export function viteYak(): Plugin {
   return {
     name: "vite-yak:css:pre",
     enforce: "pre",
+    config: (config) => {
+      const context = resolveYakContext(
+        // todo add config possibility
+        undefined,
+        config.root ?? root,
+      );
+
+      if (!context) {
+        return;
+      }
+
+      config.resolve ||= {};
+
+      if (Array.isArray(config.resolve.alias)) {
+        config.resolve.alias.push({
+          find: "next-yak/context/baseContext",
+          replacement: context,
+        });
+      } else {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          "next-yak/context/baseContext": context,
+        };
+      }
+    },
     async configureServer(_server) {
       server = _server;
     },

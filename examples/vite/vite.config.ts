@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react-swc";
-import { viteYak } from "next-yak/loaders/vite-plugin";
+import { viteYak } from "next-yak/vite";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 

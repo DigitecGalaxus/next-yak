@@ -62,7 +62,7 @@
     },
     "./loaders/webpack-loader": "./dist/loaders/webpack-loader.js",
     "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.js",
-    "./loaders/vite-plugin": "./dist/loaders/vite-plugin.js"
+    "./vite": "./dist/loaders/vite-plugin.js"
   },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",

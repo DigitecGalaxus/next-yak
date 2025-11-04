@@ -2,7 +2,7 @@
 import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NextConfig } from "../../examples/next-js/node_modules/next/dist/server/config.js";
+import { NextConfig } from "../../../examples/next-js/node_modules/next/dist/server/config.js";
 
 const currentDir =
   typeof __dirname !== "undefined"
@@ -172,7 +172,10 @@ function removeUndefinedRecursive<T>(obj: T): {} {
 /**
  * Try to resolve yak
  */
-function resolveYakContext(contextPath: string | undefined, cwd: string) {
+export function resolveYakContext(
+  contextPath: string | undefined,
+  cwd: string,
+) {
   const yakContext = contextPath
     ? path.resolve(cwd, contextPath)
     : path.resolve(cwd, "yak.context");
