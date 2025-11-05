@@ -1,5 +1,12 @@
 # next-yak
 
+## 8.0.1
+
+### Patch Changes
+
+- f6e8912: Fix plugin invocation in turbopack loader
+  - yak-swc@8.0.1
+
 ## 8.0.0
 
 ### Major Changes
