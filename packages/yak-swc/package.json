@@ -1,14 +1,14 @@
 {
   "name": "yak-swc",
-  "version": "7.0.0",
+  "version": "8.0.1",
   "description": "next-yak rust based swc plugin to compile styled components at build time",
   "homepage": "https://yak.js.org/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jantimon/next-yak.git"
+    "url": "https://github.com/DigitecGalaxus/next-yak.git"
   },
   "bugs": {
-    "url": "https://github.com/jantimon/next-yak/issues"
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
   },
   "license": "MIT",
   "keywords": [

@@ -82,7 +82,7 @@ Converts a slice of `Declaration`s back into a CSS string.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit an [Issue](https://github.com/jantimon/next-yak/issues) or [Pull](https://github.com/jantimon/next-yak/pulls) Request.
+Contributions are welcome! Please feel free to submit an [Issue](https://github.com/DigitecGalaxus/next-yak/issues) or [Pull](https://github.com/DigitecGalaxus/next-yak/pulls) Request.
 
 ## License
 

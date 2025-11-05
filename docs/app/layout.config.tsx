@@ -24,5 +24,5 @@ export const baseOptions: BaseLayoutProps = {
       active: "nested-url",
     },
   ],
-  githubUrl: "https://github.com/jantimon/next-yak",
+  githubUrl: "https://github.com/DigitecGalaxus/next-yak",
 };

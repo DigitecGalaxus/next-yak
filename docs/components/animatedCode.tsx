@@ -224,7 +224,7 @@ export const AnimatedCode = () => {
         </AnimationButton>
       </AnimationWrapper>
       <video
-        src="https://github.com/jantimon/next-yak/assets/4113649/f5a220fc-2a0f-46be-a8e7-c855f7faa337"
+        src="https://github.com/DigitecGalaxus/next-yak/assets/4113649/f5a220fc-2a0f-46be-a8e7-c855f7faa337"
         controls
       />
     </ResponsiveCode>

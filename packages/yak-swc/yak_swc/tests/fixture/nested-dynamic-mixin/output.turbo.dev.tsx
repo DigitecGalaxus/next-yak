@@ -1,7 +1,7 @@
 import { styled, css, __yak_unitPostFix } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "data:text/css;base64,LmlucHV0X0NvbnRhaW5lckZsdWlkX203dUJCdSB7CiAgcG9zaXRpb246IHJlbGF0aXZlOwogIG1hcmdpbjogMCBhdXRvOwogIHBhZGRpbmctdG9wOiAyMHB4OwogIG1heC13aWR0aDogMTAwJTsKfQouaW5wdXRfQ29udGFpbmVyRmx1aWRfX1wkaXNBcHBfbTd1QkJ1IHsKICBtYXJnaW4tdG9wOiB1bnNldDsKfQouaW5wdXRfQ29udGFpbmVyRmx1aWRfX25vdF9cJGlzQXBwX203dUJCdSB7CiAgbWFyZ2luLXRvcDogcHg7Cn0KLmlucHV0X0NvbnRhaW5lckZsdWlkX203dUJCdSB7CiAgbWFyZ2luLXRvcDogdmFyKC0taW5wdXRfQ29udGFpbmVyRmx1aWRfX21hcmdpbi10b3BfbTd1QkJ1KTsKfQ==";
-// example taken from https://github.com/jantimon/next-yak/issues/208 
+// example taken from https://github.com/DigitecGalaxus/next-yak/issues/208 
 const spacing = "20px";
 const ContainerFluid = /*YAK Extracted CSS:
 .input_ContainerFluid_m7uBBu {
