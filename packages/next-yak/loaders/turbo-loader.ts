@@ -1,4 +1,5 @@
 import { transform as swcTransform } from "@swc/core";
+import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { createContext, runInContext } from "node:vm";
 import type { LoaderContext } from "webpack";
@@ -8,6 +9,9 @@ import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+
+const require = createRequire(import.meta.url);
+const yakSwcPluginPath = require.resolve("yak-swc");
 
 /**
  * This loader transforms styled-components styles to a static data-url import
@@ -33,7 +37,7 @@ export default async function cssExtractLoader(
   } = this.getOptions();
   const debugLog = createDebugLogger(this, experiments?.debug);
   const resolveTurbopack = this.getResolve({});
-  const transform = createTransform(yakPluginOptions);
+  const transform = createTransform(yakPluginOptions, yakSwcPluginPath);
 
   const resolveFn = (specifier: string, importer: string) => {
     return new Promise<string>((resolve, reject) => {
@@ -90,7 +94,7 @@ export default async function cssExtractLoader(
                     react: { runtime: "automatic" },
                   },
                   experimental: {
-                    plugins: [["yak-swc", yakPluginOptions]],
+                    plugins: [[yakSwcPluginPath, yakPluginOptions]],
                   },
                 },
                 module: {
@@ -150,7 +154,7 @@ export default async function cssExtractLoader(
   return callback(null, codeWithCrossFileResolved, result.map);
 }
 
-function createTransform(yakPluginOptions: any) {
+function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
   return (
     data: string,
     modulePath: string,
@@ -166,7 +170,7 @@ function createTransform(yakPluginOptions: any) {
       sourceRoot: rootPath,
       jsc: {
         experimental: {
-          plugins: [["yak-swc", yakPluginOptions]],
+          plugins: [[yakSwcPluginPath, yakPluginOptions]],
         },
         transform: {
           react: {
