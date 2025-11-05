@@ -2,7 +2,7 @@
 name = "playground-wasm"
 version = "0.1.0"
 edition = "2024"
-workspace = "../../yak-swc"
+workspace = "../../packages/yak-swc"
 
 [lib]
 crate-type = ["cdylib"]
@@ -24,7 +24,7 @@ swc_core = { workspace = true, features = [
     "binding_macro_wasm",
 ] }
 wasm-bindgen = "0.2"
-yak_swc = { version = "0.1.0", path = "../../yak-swc/yak_swc", default-features = false }
+yak_swc = { version = "0.1.0", path = "../../packages/yak-swc/yak_swc", default-features = false }
 either = "1.15.0"
 tsify = "0.5.5"
 

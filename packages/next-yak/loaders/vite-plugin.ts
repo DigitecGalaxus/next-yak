@@ -1,25 +1,39 @@
 import { transform as swcTransform } from "@swc/core";
-import { dirname } from "node:path";
+import { dirname, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createContext, runInContext } from "node:vm";
-import { type Plugin, type ViteDevServer } from "vite";
+import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
-import { resolveYakContext } from "../withYak/index.js";
+import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
-export function viteYak(): Plugin {
-  let server: ViteDevServer;
-  let mode: "dev" | "build" = "dev";
-  let root = process.cwd();
+const currentDir =
+  typeof __dirname !== "undefined"
+    ? __dirname
+    : dirname(fileURLToPath(import.meta.url));
 
+export function viteYak(
+  yakOptions: YakConfigOptions = {
+    experiments: {
+      transpilationMode: "Css",
+    },
+    minify: process.env.NODE_ENV === "production",
+  },
+): Plugin {
+  yakOptions.displayNames = yakOptions.displayNames ?? !yakOptions.minify;
+  let root = process.cwd();
+  const debugLog = createDebugLogger(yakOptions.experiments?.debug, root);
+  const sourceFileRegex = /\.(tsx?|m?jsx?)$/;
+  const virtualModuleRegex = /^virtual:yak-css:/;
+  const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   return {
-    name: "vite-yak:css:pre",
+    name: "vite-plugin-yak:css:pre",
     enforce: "pre",
     config: (config) => {
       const context = resolveYakContext(
-        // todo add config possibility
-        undefined,
+        yakOptions.contextPath,
         config.root ?? root,
       );
 
@@ -41,81 +55,39 @@ export function viteYak(): Plugin {
         };
       }
     },
-    async configureServer(_server) {
-      server = _server;
-    },
     configResolved(config) {
       root = config.root;
-      if (config.command === "build") {
-        mode = "build";
-      }
     },
-    async resolveId(id) {
-      if (id.startsWith("virtual:yak-css:")) {
-        const virtualId = `\0${id}`;
-        return virtualId;
-      }
-      return null;
+    resolveId: {
+      filter: {
+        id: virtualModuleRegex,
+      },
+      handler(id) {
+        return "\0" + id;
+      },
     },
-
-    async load(id) {
-      console.log("load: ", id);
-      if (id.startsWith("\0virtual:yak-css:")) {
-        const originalId = id
-          .replace("\0virtual:yak-css:", "")
-          .replace(/\.css$/, "");
-
-        // Add for HMR - this tells Vite to watch the original file
+    load: {
+      filter: {
+        id: virtualCssModuleRegex,
+      },
+      async handler(id) {
+        // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
+        const originalId = id.slice(17, -4);
         this.addWatchFile(originalId);
-
-        // const extractedCssBase64 = id
-        //   .replace("\0virtual:yak-css:", "")
-        //   .replace(/^.*\?inline&/, "");
-        // const extractedCss = Buffer.from(extractedCssBase64, "base64").toString(
-        //   "utf-8",
-        // );
-
-        const transform = createTransform({
-          basePath: root,
-          importMode: {
-            type: "Custom",
-            value: `virtual:yak-css:${id}.css`,
-            transpilation: "Css",
-            encoding: "None",
-          },
-        });
 
         const sourceContent = await this.fs.readFile(originalId, {
           encoding: "utf8",
         });
-        const code = await transform(sourceContent, originalId, root);
+        const code = await transform(
+          sourceContent,
+          originalId,
+          root,
+          yakOptions,
+        );
         const extractedCss = extractCss(code.code, "Css");
+        debugLog("css", extractedCss, originalId);
 
-        const resolveFn = async (moduleSpecifier: string, context: string) => {
-          let importer = context;
-
-          // These workarounds are necessary because webpacks resolution is more advanced
-          // if (context.endsWith("/src")) {
-          //   // add virtual file path that the import comes from
-          //   importer = context + "/index.tsx";
-          // } else if (!context.includes(".")) {
-          //   // add a virtual extension to the path if it's not present
-          //   importer = context + ".tsx"; // or '/package.json'
-          // }
-
-          console.log({ moduleSpecifier, context, importer });
-
-          const resolved = await this.resolve(moduleSpecifier, importer);
-
-          if (!resolved) {
-            throw new Error(
-              `Could not resolve ${moduleSpecifier} from ${context}`,
-            );
-          }
-          return resolved.id;
-        };
-
-        const transformedCode = await resolveCrossFileConstant(
+        const { resolved } = await resolveCrossFileConstant(
           {
             parse: (modulePath) => {
               return parseModule(
@@ -134,7 +106,12 @@ export function viteYak(): Plugin {
                     const sourceContent = await this.fs.readFile(modulePath, {
                       encoding: "utf8",
                     });
-                    return transform(sourceContent, modulePath, root);
+                    return transform(
+                      sourceContent,
+                      modulePath,
+                      root,
+                      yakOptions,
+                    );
                   },
                   evaluateYakModule: async (modulePath: string) => {
                     this.addWatchFile(modulePath);
@@ -154,10 +131,13 @@ export function viteYak(): Plugin {
                             [
                               "yak-swc",
                               {
+                                minify: yakOptions.minify,
                                 basePath: root,
+                                prefix: yakOptions.prefix,
+                                displayNames: yakOptions.displayNames,
                                 importMode: {
                                   type: "Custom",
-                                  value: `virtual:yak-css:${id}.css`,
+                                  value: `virtual:yak-css:${modulePath}.css`,
                                   transpilation: "Css",
                                   encoding: "None",
                                 },
@@ -204,49 +184,36 @@ export function viteYak(): Plugin {
                 modulePath,
               );
             },
-            resolve: resolveFn,
+            resolve: async (moduleSpecifier: string, context: string) => {
+              let importer = context;
+              const resolved = await this.resolve(moduleSpecifier, importer);
+
+              if (!resolved) {
+                throw new Error(
+                  `Could not resolve ${moduleSpecifier} from ${context}`,
+                );
+              }
+              return resolved.id;
+            },
           },
           originalId,
           extractedCss,
         );
 
-        console.log({
-          module: id,
-          originalId,
-          extractedCss,
-          resolvedCSS: transformedCode.resolved,
-        });
-
-        // Return the CSS and mark with moduleSideEffects to prevent tree-shaking
-        // This is critical for HMR to work correctly with virtual CSS modules
-        return {
-          code: transformedCode.resolved,
-          map: { mappings: "" },
-        };
-      }
-
-      return null;
+        debugLog("css-resolved", resolved, originalId);
+        return resolved;
+      },
     },
 
-    async transform(code, id) {
-      if (
-        id.endsWith(".ts") ||
-        id.endsWith(".tsx") ||
-        id.endsWith(".js") ||
-        id.endsWith(".jsx")
-      ) {
+    transform: {
+      filter: {
+        id: sourceFileRegex,
+        code: "next-yak",
+      },
+      async handler(code, id) {
         try {
-          const transform = createTransform({
-            basePath: root,
-            importMode: {
-              type: "Custom",
-              value: `virtual:yak-css:${id}.css`,
-              transpilation: "Css",
-              encoding: "None",
-            },
-          });
-
-          const result = await transform(code, id, root);
+          const result = await transform(code, id, root, yakOptions);
+          debugLog("ts", result.code, id);
 
           return {
             code: result.code,
@@ -257,45 +224,87 @@ export function viteYak(): Plugin {
             `[YAK Plugin] Error transforming ${id}: ${(error as Error).message}`,
           );
         }
-      }
-
-      return null;
+      },
     },
   };
 }
 
-function createTransform(yakPluginOptions: any) {
-  return (
-    data: string,
-    modulePath: string,
-    rootPath: string,
-    sourceMap?: any,
-  ) =>
-    // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
-    swcTransform(data, {
-      filename: modulePath,
-      inputSourceMap: sourceMap,
-      sourceMaps: true,
-      sourceFileName: modulePath,
-      sourceRoot: rootPath,
-      jsc: {
-        experimental: {
-          plugins: [["yak-swc", yakPluginOptions]],
-        },
-        transform: {
-          react: {
-            runtime: "preserve",
-          },
-        },
-        target: "es2022",
-        loose: false,
-        minify: {
-          compress: false,
-          mangle: false,
-        },
-        preserveAllComments: true,
+function transform(
+  data: string,
+  modulePath: string,
+  rootPath: string,
+  yakOptions: YakConfigOptions,
+) {
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
+  return swcTransform(data, {
+    filename: modulePath,
+    inputSourceMap: undefined,
+    sourceMaps: true,
+    sourceFileName: modulePath,
+    sourceRoot: rootPath,
+    jsc: {
+      experimental: {
+        plugins: [
+          [
+            "yak-swc",
+            {
+              minify: yakOptions.minify,
+              basePath: rootPath,
+              prefix: yakOptions.prefix,
+              displayNames: yakOptions.displayNames,
+              importMode: {
+                type: "Custom",
+                value: `virtual:yak-css:${modulePath}.css`,
+                transpilation: "Css",
+                encoding: "None",
+              },
+            },
+          ],
+        ],
       },
-      minify: false,
-      isModule: true,
-    });
+      transform: {
+        react: {
+          runtime: "preserve",
+        },
+      },
+      target: "es2022",
+      loose: false,
+      minify: {
+        compress: false,
+        mangle: false,
+      },
+      preserveAllComments: true,
+    },
+    minify: false,
+    isModule: true,
+  });
+}
+
+/**
+ * Creates a debug logger function that conditionally logs messages
+ * based on debug options and file paths.
+ */
+export function createDebugLogger(
+  debugOptions: Required<YakConfigOptions>["experiments"]["debug"],
+  root: string,
+) {
+  if (!debugOptions) {
+    return () => {};
+  }
+
+  return (
+    messageType: "ts" | "css" | "css-resolved",
+    message: string | Buffer<ArrayBufferLike> | undefined,
+    filePath: string,
+  ) => {
+    // the path contains already the extension for the ts{x} file
+    const pathWithExtension =
+      messageType !== "ts" ? filePath + `.${messageType}` : filePath;
+    if (
+      debugOptions === true ||
+      new RegExp(debugOptions).test(pathWithExtension)
+    ) {
+      console.log("🐮 Yak", relative(root, pathWithExtension), "\n\n", message);
+    }
+  };
 }
