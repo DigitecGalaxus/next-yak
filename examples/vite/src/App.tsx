@@ -1,93 +1,243 @@
-import { styled, useTheme } from "next-yak";
-import { baseStyle } from "./mixins";
-import { MyButton } from "./myButton";
+/** @jsxImportSource next-yak */
+import { YakThemeProvider, atoms, css, styled } from "next-yak";
+import styles from "./page.module.css";
+import { queries, colors } from "./theme/constants.yak";
+import { Clock } from "./Clock";
+import { Inputs } from "./Input";
+import { HighContrastToggle } from "./HighContrastToggle";
+import { typography } from "./mixins";
+import { mixins, tokens } from "./constants";
+import defaultColor from "./constantColors";
 
-interface ButtonProps {
-  primary?: boolean;
-}
+const headline = css<{ $primary?: boolean }>`
+  ${typography.h1};
+  filter: drop-shadow(0px 0px 1px #fff);
+  ${({ theme }) =>
+    theme.highContrast
+      ? css`
+          color: ${colors.dark};
+        `
+      : css`
+          color: blue;
+          background: linear-gradient(
+            149deg,
+            #ae52eb 0%,
+            rgba(253, 29, 29, 1) 50%,
+            rgba(252, 176, 69, 1) 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        `}
+
+  ${queries.sm} {
+    font-size: 1.5rem;
+    ${({ $primary }) =>
+      $primary &&
+      css`
+        font-size: 1.7rem;
+      `}
+  }
+
+  &:before,
+  &:after {
+    content: "\\2022";
+  }
+
+  &:hover {
+    color: red;
+  }
+  ${({ $primary }) =>
+    $primary &&
+    css`
+      color: green;
+    `}
+`;
+
+const Headline = styled.h1<{ $primary?: boolean }>`
+  ${headline};
+`;
+
+const SubHeadline = styled.h2`
+  ${typography.h2};
+  color: #323248;
+`;
+
+const Button = styled.button<{ $primary?: boolean }>`
+  @layer base {
+    display: block;
+    ${({ theme }) =>
+      theme.highContrast
+        ? css`
+            color: ${colors.dark};
+          `
+        : css`
+            color: #009688;
+          `}
+    background: #fff;
+  }
+  border: 1px solid currentColor;
+  font-size: 17px;
+  padding: 7px 12px;
+  font-weight: normal;
+  margin: 6px 0;
+  margin-right: 12px;
+  display: inline-block;
+  font-family: "Open Sans", sans-serif;
+  min-width: 120px;
+  ${({ $primary }) =>
+    $primary &&
+    css`
+      border-width: 2px;
+    `}
+`;
+
+const FancyButton = styled(Button)`
+  color: #fff;
+  background: linear-gradient(
+    149deg,
+    #ae52eb 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+`;
+
+const StyledLink = styled.a`
+  background: linear-gradient(
+    149deg,
+    #ae52eb 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 100%;
+  filter: drop-shadow(0px 0px 1px #fff);
+  font-weight: bold;
+  border-bottom: 2px solid red;
+  transition: all 0.3s ease-in-out;
+  &:hover {
+    background-position: 100% 0;
+    border-bottom-color: #9d0a0a;
+  }
+`;
+
+const NestedConstantText = styled.span`
+  color: ${tokens.colors.orange};
+`;
+
+const ToBeWrapped = styled.div<{ $primary: boolean }>`
+  ${atoms(
+    styles.green,
+    false && styles.large,
+    (_, classNames) => {
+      classNames.delete(styles.blue);
+      classNames.add(styles.yellow);
+    },
+    () => {},
+  )}
+`;
+
+const Wrap = styled(ToBeWrapped)<{ $secondary: boolean }>`
+  ${atoms((_, classNames) => {
+    classNames.delete(styles.yellow);
+    classNames.add(styles.italic);
+  })}
+`;
 
 function App() {
-  const theme = useTheme();
-  console.log({ theme });
   return (
-    <Container>
-      <Title>YAK + Vite Integration Test</Title>
-      <Button primary>Primary Button</Button>
-      <Button>Secondary Button</Button>
-      <Card>
-        <CardTitle>Test Card</CardTitle>
-        <CardContent>
-          This is a test card to verify that the YAK plugin is working correctly
-          with Vite. The styles should be applied and visible.
-        </CardContent>
-        <Wrapper>
-          ete
-          <MyButton>TEEST</MyButton>
-        </Wrapper>
-      </Card>
-    </Container>
+    <main className={styles.main}>
+      <Headline $primary>Hello world</Headline>
+      <SubHeadline>example page</SubHeadline>
+      <Button>Ghost</Button>
+      <Button $primary>Primary Ghost</Button>
+      <FancyButton $primary title="fancy">
+        Fancy Ghost
+      </FancyButton>
+      <Clock />
+      <HighContrastToggle />
+      <StyledLink href="https://github.com/DigitecGalaxus/next-yak/tree/main/packages/example/app">
+        view code
+      </StyledLink>
+      <p
+        css={css`
+          color: green;
+        `}
+      >
+        CSS Prop works if this is green
+      </p>
+      <p
+        css={css`
+          color: red;
+          ${() =>
+            true &&
+            css`
+              color: green;
+            `}
+        `}
+      >
+        Conditional CSS Prop works if this is green
+      </p>
+      <p
+        css={css`
+          color: violet;
+        `}
+      >
+        Nested CSS Prop works
+        <span
+          css={css`
+            color: green;
+          `}
+        >
+          {" "}
+          if this is green{" "}
+        </span>
+        and this is violet
+      </p>
+      <p
+        css={css`
+          ${mixins.primary.main};
+        `}
+      >
+        Nested constants work if this is light blue{" "}
+        <NestedConstantText>this is orange </NestedConstantText>
+        <span
+          css={css`
+            color: ${defaultColor};
+          `}
+        >
+          and this is teal
+        </span>
+      </p>
+      <p
+        css={atoms(styles.small, (_, __, style) => {
+          style["color"] = "black";
+        })}
+      >
+        Atoms in css props work if this is small{" "}
+        <span
+          css={css`
+            color: black;
+            ${atoms(styles.small, true && styles.red, (_, classNames) => {
+              classNames.delete(styles.red);
+              classNames.delete(styles.small);
+              classNames.add(styles.large);
+            })}
+          `}
+        >
+          and this is large
+        </span>
+      </p>
+      <Wrap
+        className={`${styles.small} ${styles.blue}`}
+        $primary={true}
+        $secondary={true}
+      >
+        Atoms in styled components work if this is small, green and italic
+      </Wrap>
+      <Inputs />
+    </main>
   );
 }
 
 export default App;
-
-const Wrapper = styled.div`
-  & ${MyButton} {
-    color: red;
-  }
-  color: blue;
-`;
-
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  ${baseStyle};
-`;
-
-const Title = styled.h1`
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
-`;
-
-const Button = styled.button<ButtonProps>`
-  background: ${(props) => (props.primary ? "#3498db" : "#95a5a6")};
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  margin: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${(props) => (props.primary ? "#2980b9" : "#7f8c8d")};
-    transform: translateY(-1px);
-  }
-`;
-
-const Card = styled.div`
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-top: 2rem;
-  border: 1px solid #e0e0e0;
-`;
-
-const CardTitle = styled.h3`
-  color: #2c3e50;
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-`;
-
-const CardContent = styled.p`
-  color: #7f8c8d;
-  line-height: 1.6;
-  margin: 0;
-`;

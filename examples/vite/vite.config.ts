@@ -11,13 +11,6 @@ export default defineConfig({
       },
     },
   },
-  plugins: [
-    react(),
-    viteYak({
-      experiments: {
-        debug: ".css-resolved$",
-      },
-    }),
-  ],
+  plugins: [react(), viteYak()],
   css: {},
 });
