@@ -1,12 +1,13 @@
-import { cookies } from 'next/headers'
+import { cookies } from "next/headers";
 
 export async function getYakThemeContext() {
-    const cookieStore = await cookies()
-    return {
-        highContrast: cookieStore.get('highContrast')?.value === 'true'
-    }
+  const cookieStore = await cookies();
+  return {
+    highContrast: cookieStore.get("highContrast")?.value === "true",
+  };
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme
+    extends Awaited<ReturnType<typeof getYakThemeContext>> {}
 }
