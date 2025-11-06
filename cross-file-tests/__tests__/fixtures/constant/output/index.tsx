@@ -2,21 +2,21 @@ import { styled, css } from "next-yak/internal";
 import { colors, negative, siteMaxWidth } from "./constants";
 import * as __yak from "next-yak/internal";
 import "./index.yak.module.css!=!./index?./index.yak.module.css";
-export var Button = /*YAK EXPORTED STYLED:Button:index_Button_wIxfWW*//*YAK Extracted CSS:
-:global(.index_Button_wIxfWW) {
+export var Button = /*YAK EXPORTED STYLED:Button:index_Button_TFAx3R*//*YAK Extracted CSS:
+:global(.index_Button_TFAx3R) {
   color: red;
   height: --yak-css-import: url("./constants:siteMaxWidth",mixin)px;
   color: --yak-css-import: url("./constants:colors:primary",mixin);
   background-color: --yak-css-import: url("./constants:colors:secondary",mixin);
   z-index: --yak-css-import: url("./constants:negative",mixin);
 }
-:global(.index_Button___wIxfWW) {
+:global(.index_Button___TFAx3R) {
   color: --yak-css-import: url("./constants:colors:secondary",mixin);
   background-color: --yak-css-import: url("./constants:colors:primary",mixin);
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("index_Button_wIxfWW", function(param) {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("index_Button_TFAx3R", function(param) {
     var $variant = param.$variant;
-    return $variant === "secondary" && /*#__PURE__*/ css("index_Button___wIxfWW");
+    return $variant === "secondary" && /*#__PURE__*/ css("index_Button___TFAx3R");
 }), {
     "displayName": "Button"
 });

@@ -1,12 +1,12 @@
 /* cssmodules-pure-no-check * /
-:global(.index_Button_wIxfWW) {
+:global(.index_Button_TFAx3R) {
   color: red;
   height: 10px;
   color: var(--color-primary);
   background-color: var(--color-secondary);
   z-index: -1;
 }
-:global(.index_Button___wIxfWW) {
+:global(.index_Button___TFAx3R) {
   color: var(--color-secondary);
   background-color: var(--color-primary);
 }
