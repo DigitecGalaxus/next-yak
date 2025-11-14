@@ -1,0 +1,16 @@
+import { styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
+import "./icon.yak.module.css!=!./icon?./icon.yak.module.css";
+export var Icon = /*YAK EXPORTED STYLED:Icon:icon_Icon_duIcGH*//*YAK Extracted CSS:
+:global(.icon_Icon_duIcGH) {
+  width: 32px;
+  height: 32px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_svg("icon_Icon_duIcGH"), {
+    "displayName": "Icon"
+});
+export var AnyIcon = /*YAK EXPORTED STYLED:AnyIcon:icon_AnyIcon_duIcGH*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_svg("icon_AnyIcon_duIcGH"), {
+    "displayName": "AnyIcon"
+});

@@ -1,0 +1,251 @@
+---
+title: Vite
+description: Use next-yak with Vite and React.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+# Using next-yak with Vite
+
+While next-yak is built primarily for Next.js, you can also use it in a plain React + Vite setup via the `viteYak` plugin.
+
+This page shows how to:
+
+- Configure Vite to use next-yak
+- Define a theme context for `YakThemeProvider`
+- Migrate from styled-components
+- Start from scratch if you dont use any CSS-in-JS yet
+
+## Install dependencies
+
+Install next-yak alongside Vite and React (if you havent already):
+
+```bash
+npm i next-yak
+# or
+pnpm i next-yak
+# or
+yarn add next-yak
+# or
+bun add next-yak
+```
+
+## Configure Vite
+
+Add the `viteYak` plugin to your `vite.config.ts` (or `.js`). It works together with `@vitejs/plugin-react-swc`:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import { viteYak } from "next-yak/vite";
+
+export default defineConfig({
+  //...
+  plugins: [react(), viteYak()],
+});
+```
+
+You can pass the same options you would use in `withYak`:
+
+```ts
+viteYak({
+  // compact class names in production
+  minify: process.env.NODE_ENV === "production",
+  // optional prefix for generated identifiers
+  prefix: "my-app",
+  // optional custom path to your yak context file
+  // (relative to the project root)
+  contextPath: "yak.context",
+  experiments: {
+    // enable logging of transformed TS/CSS
+    debug: false,
+  },
+});
+```
+
+## Theme context (`yak.context.ts`)
+
+If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root.
+The Vite plugin automatically aliases `next-yak/context/baseContext` to this file.
+
+```ts title="yak.context.ts"
+export function getYakThemeContext() {
+  if (typeof document !== "undefined") {
+    const cookies = document.cookie.split(";");
+    const highContrastCookie = cookies.find((cookie) =>
+      cookie.trim().startsWith("highContrast="),
+    );
+
+    const highContrast = highContrastCookie
+      ? highContrastCookie.split("=")[1] === "true"
+      : false;
+
+    return { highContrast };
+  }
+
+  // server / SSR fallback
+  return { highContrast: false };
+}
+
+declare module "next-yak" {
+  export interface YakTheme extends ReturnType<typeof getYakThemeContext> {}
+}
+```
+
+Then wrap your app in `YakThemeProvider` and read the theme from `next-yak/context/baseContext`:
+
+```tsx title="src/main.tsx"
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import { YakThemeProvider } from "next-yak";
+import { getYakThemeContext } from "next-yak/context/baseContext";
+import "./globals.css";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <YakThemeProvider theme={getYakThemeContext()}>
+      <App />
+    </YakThemeProvider>
+  </StrictMode>,
+);
+```
+
+## JSX runtime / `css` prop
+
+If you want to use the `css` prop or compile-time JSX transforms (like in the example app),
+configure the JSX import source so that `next-yak` provides the JSX factory:
+
+**Per-file (quick start):**
+
+```tsx title="App.tsx"
+/** @jsxImportSource next-yak */
+import { styled, css } from "next-yak";
+
+const Title = styled.h1`
+  ${({ $primary }: { $primary?: boolean }) =>
+    $primary &&
+    css`
+      color: teal;
+    `}
+`;
+```
+
+**Globally via tsconfig / jsconfig:**
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "next-yak"
+  }
+}
+```
+
+## Migrating from styled-components
+
+If you already use styled-components in a Vite + React app, migration is mostly about imports
+(the styled API stays familiar). After adding the `viteYak` plugin:
+
+```tsx title="src/Button.tsx"
+import styled, { css, keyframes } from "styled-components"; // [!code --]
+import { styled, css, keyframes } from "next-yak"; // [!code ++]
+
+const Button = styled.button<{ $primary?: boolean }>`
+  background: #bf4f74;
+  color: ${({ $primary }) => ($primary ? "white" : "#bf4f74")};
+`;
+```
+
+Most common patterns (static styles, dynamic props, `css` blocks, keyframes, attrs, component references)
+work the same. For details and edge cases, see the
+[Migration from styled-components](/docs/migration-from-styled-components) guide.
+
+## Starting without any CSS-in-JS
+
+If you dont use any CSS-in-JS today, you can:
+
+1. Install next-yak and configure `viteYak` as shown above.
+2. Start using `styled` components alongside your existing CSS files.
+
+```tsx title="src/Button.tsx"
+import { styled } from "next-yak";
+
+const Button = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  background: white;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+export default Button;
+```
+
+You can mix next-yak with regular CSS / CSS Modules. next-yak styles are extracted at build time and
+end up in regular CSS files handled by Vites CSS pipeline.
+
+## Yak constant files in Vite
+
+next-yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files.
+In Vite, these files are evaluated in a sandboxed context.
+
+You usually **do not need** a `.yak` file for simple string constants – those can live in normal `.ts` modules and be imported as usual.
+Yak files become useful when you want to run a bit of TypeScript/JavaScript at build time
+(e.g. generate a design token scale, expand objects, or normalize data) and then inject the
+_result_ into your styles.
+
+<Callout>
+**Important:** In Vite, yak files must be self-contained.
+They cannot import other modules. If a yak file uses `import` / `require`,
+you'll see an error like:
+
+`Yak files cannot have imports in vite. Yak files should be self-contained and only export constants or styled components.`
+
+</Callout>
+
+### Example: build-time design tokens
+
+```ts title="src/theme/tokens.yak.ts"
+// Base scale for spacing (in px)
+const baseSpacing = [0, 4, 8, 12, 16, 24, 32, 40, 48];
+
+export const spacing = Object.fromEntries(
+  baseSpacing.map((value, index) => [`s${index}`, `${value}px`]),
+);
+
+// Generate a simple color ramp
+const baseHue = 220;
+
+export const colors = Array.from({ length: 9 }, (_, i) => {
+  const lightness = 30 + i * 5;
+  return `hsl(${baseHue}, 80%, ${lightness}%)`;
+});
+```
+
+Usage in your components:
+
+```tsx title="src/App.tsx"
+/** @jsxImportSource next-yak */
+import { styled } from "next-yak";
+import { spacing, colors } from "./theme/tokens.yak";
+
+const Card = styled.div`
+  padding: ${spacing.s3};
+  background-color: ${colors[4]};
+  border-radius: ${spacing.s2};
+`;
+```
+
+Here, the loops and calculations in `tokens.yak.ts` run at build time, and only the final
+string values are used inside your CSS. This keeps your runtime lean while still letting you
+express token generation in regular TypeScript.
+
+## Example project
+
+You can find a full Vite example in the repository:
+
+- Vite example: https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite

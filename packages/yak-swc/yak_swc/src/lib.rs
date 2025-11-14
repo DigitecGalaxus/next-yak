@@ -40,7 +40,9 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{CssDependencyMode, NamingConvention, TranspilationMode};
+use naming_convention::{
+  CssDependencyMode, ImportModeEncoding, NamingConvention, TranspilationMode,
+};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -625,6 +627,18 @@ where
                   format!(
                     "data:text/css;base64,{}",
                     BASE64_STANDARD.encode(self.all_css_rules.join(""))
+                  )
+                }
+                CssDependencyMode::Custom {
+                  value, encoding, ..
+                } => {
+                  format!(
+                    "{value}{}",
+                    match encoding {
+                      ImportModeEncoding::Base64 =>
+                        BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
+                      ImportModeEncoding::None => "".to_string(),
+                    }
                   )
                 }
               }

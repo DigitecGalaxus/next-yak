@@ -1,0 +1,19 @@
+/* cssmodules-pure-no-check * /
+:global(.index_ListItem_ivr8cV) {
+  margin-bottom: 10px;
+  &:hover {
+    &:last-child {
+  margin-bottom: 0;
+}
+
+  }
+}
+:global(.index_ListItem_ivr8cV) {
+  margin-bottom: 10px;
+  &:hover {
+    &:last-child {
+  margin-bottom: 0;
+}
+
+  }
+}

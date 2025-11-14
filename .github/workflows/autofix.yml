@@ -58,9 +58,9 @@ jobs:
         run: pnpm prettier
 
       - name: Prettier Examples
-        run: npx prettier --write "packages/example/app/**/*.{ts,tsx,js,jsx}"
+        run: npx prettier --write "examples/**/*.{ts,tsx,js,jsx}"
 
       - name: Benchmarks
-        run: npx prettier --write "packages/benchmarks/**/*.{ts,tsx}" --ignore-path "packages/benchmarks/.prettierignore"
+        run: npx prettier --write "benchmarks/**/*.{ts,tsx}" --ignore-path "benchmarks/.prettierignore"
 
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
