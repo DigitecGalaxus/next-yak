@@ -5,6 +5,7 @@
     "---Guide---",
     "index",
     "getting-started",
+    "vite",
     "migration-from-styled-components",
     "eslint-plugin",
     "faq",

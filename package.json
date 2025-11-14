@@ -11,6 +11,7 @@
     "build": "pnpm run --filter=next-yak build",
     "build:swc": "pnpm run --filter=yak-swc build",
     "example": "pnpm --filter=next-yak-example run dev",
+    "docs": "pnpm --filter=docs run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "prettier": "pnpm run --recursive --if-present prettier",
     "test": "pnpm run build && pnpm --filter=next-yak --filter=cross-file-tests --filter=next-yak-example run \"/test($|:types)/\"",
