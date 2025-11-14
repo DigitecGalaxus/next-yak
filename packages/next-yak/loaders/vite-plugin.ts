@@ -1,6 +1,5 @@
 import { transform as swcTransform } from "@swc/core";
 import { dirname, relative } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createContext, runInContext } from "node:vm";
 import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
@@ -8,11 +7,6 @@ import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFil
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
-
-const currentDir =
-  typeof __dirname !== "undefined"
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url));
 
 export function viteYak(
   yakOptions: YakConfigOptions = {
@@ -155,10 +149,9 @@ export function viteYak(
                     const context = createContext({
                       require: (path: string) => {
                         throw new Error(
-                          `Yak files cannot have imports in turbopack.\n` +
+                          `Yak files cannot have imports in vite.\n` +
                             `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
-                            `Yak files should be self-contained and only export constants or styled components.\n` +
-                            `This will be resolved once Vercel adds "this.importModule" support for turbopack.`,
+                            `Yak files should be self-contained and only export constants or styled components.\n`,
                         );
                       },
                       __filename: modulePath,
