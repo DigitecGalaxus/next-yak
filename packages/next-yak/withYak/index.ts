@@ -2,7 +2,7 @@
 import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NextConfig } from "../../example/node_modules/next/dist/server/config.js";
+import type { NextConfig } from "next";
 
 const currentDir =
   typeof __dirname !== "undefined"
