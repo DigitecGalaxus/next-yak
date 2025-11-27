@@ -60,8 +60,8 @@
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.js",
-    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.js"
+    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
+    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.cjs"
   },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
