@@ -1,8 +1,8 @@
 /// <reference types="node" />
+import type { NextConfig } from "next";
 import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NextConfig } from "../../example/node_modules/next/dist/server/config.js";
 
 const currentDir =
   typeof __dirname !== "undefined"
@@ -151,7 +151,7 @@ function addYakWebpack(
         yakOptions.experiments?.transpilationMode === "Css"
           ? /\.yak\.css$/
           : /\.yak\.module\.css$/,
-      loader: path.join(currentDir, "../loaders/webpack-loader.js"),
+      loader: path.join(currentDir, "../loaders/webpack-loader.cjs"),
       options: yakOptions,
     });
 
