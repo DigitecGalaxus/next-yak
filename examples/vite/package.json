@@ -12,17 +12,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@babel/parser": "catalog:core",
-    "@babel/traverse": "catalog:core",
     "next-yak": "workspace:*",
     "react": "catalog:dev",
-    "react-dom": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "react-dom": "catalog:dev"
   },
   "devDependencies": {
-    "@swc/core": "catalog:core",
-    "@types/babel__core": "catalog:dev",
-    "@types/babel__traverse": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

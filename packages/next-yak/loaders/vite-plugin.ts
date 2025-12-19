@@ -1,5 +1,7 @@
-import { transform as swcTransform } from "@swc/core";
-import { dirname, relative } from "node:path";
+import { Options, transform as swcTransform } from "@swc/core";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, relative, resolve } from "node:path";
 import { createContext, runInContext } from "node:vm";
 import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
@@ -7,21 +9,58 @@ import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFil
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+const require = createRequire(import.meta.url);
 
-export function viteYak(
-  yakOptions: YakConfigOptions = {
+type ViteYakPluginOptions = YakConfigOptions & {
+  swcOptions: Omit<
+    Options,
+    | "filename"
+    | "sourceFileName"
+    | "inputSourceMap"
+    | "sourceMaps"
+    | "sourceRoot"
+  >;
+};
+
+export async function viteYak(
+  yakOptions: ViteYakPluginOptions = {
     experiments: {
       transpilationMode: "Css",
     },
     minify: process.env.NODE_ENV === "production",
+    swcOptions: {
+      jsc: {
+        parser: {
+          syntax: "typescript",
+          tsx: true,
+          decorators: false,
+          dynamicImport: true,
+        },
+        transform: {
+          react: {
+            runtime: "preserve",
+          },
+        },
+        target: "es2022",
+        loose: false,
+        minify: {
+          compress: false,
+          mangle: false,
+        },
+        preserveAllComments: true,
+      },
+      minify: false,
+      isModule: true,
+    },
   },
-): Plugin {
+): Promise<Plugin> {
   yakOptions.displayNames = yakOptions.displayNames ?? !yakOptions.minify;
   let root = process.cwd();
   const debugLog = createDebugLogger(yakOptions.experiments?.debug, root);
-  const sourceFileRegex = /\.(tsx?|m?jsx?)$/;
+  const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
   const virtualModuleRegex = /^virtual:yak-css:/;
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
+  const yakSwcPath = await findYakSwcPlugin();
   return {
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
@@ -76,6 +115,7 @@ export function viteYak(
           sourceContent,
           originalId,
           root,
+          yakSwcPath,
           yakOptions,
         );
         const extractedCss = extractCss(code.code, "Css");
@@ -104,6 +144,7 @@ export function viteYak(
                       sourceContent,
                       modulePath,
                       root,
+                      yakSwcPath,
                       yakOptions,
                     );
                   },
@@ -116,14 +157,13 @@ export function viteYak(
                     const transformed = await swcTransform(sourceContent, {
                       filename: modulePath,
                       sourceFileName: modulePath,
+                      ...yakOptions.swcOptions,
                       jsc: {
-                        transform: {
-                          react: { runtime: "automatic" },
-                        },
+                        ...yakOptions.swcOptions.jsc,
                         experimental: {
                           plugins: [
                             [
-                              "yak-swc",
+                              yakSwcPath,
                               {
                                 minify: yakOptions.minify,
                                 basePath: root,
@@ -200,12 +240,21 @@ export function viteYak(
 
     transform: {
       filter: {
-        id: sourceFileRegex,
+        id: {
+          include: sourceFileRegex,
+          exclude: [/packages\/next-yak/],
+        },
         code: "next-yak",
       },
       async handler(code, id) {
         try {
-          const result = await transform(code, id, root, yakOptions);
+          const result = await transform(
+            code,
+            id.split("?")[0],
+            root,
+            yakSwcPath,
+            yakOptions,
+          );
           debugLog("ts", result.code, id);
 
           return {
@@ -222,11 +271,33 @@ export function viteYak(
   };
 }
 
+/**
+ * This function finds the path to the yak-swc plugin because it is most of the time a transitive dependency
+ * and the resolver of SWC only resolves the main node_modules directory.
+ * @returns The path to the yak-swc wasm plugin.
+ */
+async function findYakSwcPlugin() {
+  try {
+    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const packageRoot = dirname(packageJsonPath);
+
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+
+    // Resolve the main field which points to the WASM file
+    const wasmPath = resolve(packageRoot, packageJson.main);
+
+    return wasmPath;
+  } catch (e) {
+    throw new Error(`Could not resolve yak-swc plugin: ${e}`);
+  }
+}
+
 function transform(
   data: string,
   modulePath: string,
   rootPath: string,
-  yakOptions: YakConfigOptions,
+  yakSwcPath: string,
+  yakOptions: ViteYakPluginOptions,
 ) {
   // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
   return swcTransform(data, {
@@ -235,11 +306,13 @@ function transform(
     sourceMaps: true,
     sourceFileName: modulePath,
     sourceRoot: rootPath,
+    ...yakOptions.swcOptions,
     jsc: {
+      ...yakOptions.swcOptions.jsc,
       experimental: {
         plugins: [
           [
-            "yak-swc",
+            yakSwcPath,
             {
               minify: yakOptions.minify,
               basePath: rootPath,
@@ -255,21 +328,7 @@ function transform(
           ],
         ],
       },
-      transform: {
-        react: {
-          runtime: "preserve",
-        },
-      },
-      target: "es2022",
-      loose: false,
-      minify: {
-        compress: false,
-        mangle: false,
-      },
-      preserveAllComments: true,
     },
-    minify: false,
-    isModule: true,
   });
 }
 
