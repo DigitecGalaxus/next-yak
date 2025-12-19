@@ -1,5 +1,19 @@
 # next-yak
 
+## 8.0.3
+
+### Patch Changes
+
+- 2f5864a: Fixed turbopack loader import
+  - yak-swc@8.0.3
+
+## 8.0.2
+
+### Patch Changes
+
+- b41703b: Fix turbopack loader invocation by transpiling to CJS instead of ESM
+  - yak-swc@8.0.2
+
 ## 8.0.1
 
 ### Patch Changes

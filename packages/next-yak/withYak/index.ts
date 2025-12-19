@@ -1,8 +1,8 @@
 /// <reference types="node" />
+import type { NextConfig } from "next";
 import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NextConfig } from "../../../examples/next-js/node_modules/next/dist/server/config.js";
 
 const currentDir =
   typeof __dirname !== "undefined"
@@ -86,7 +86,7 @@ function addYakTurbopack(
 ) {
   // turbopack can't handle options with undefined values, so we remove them
   const yakLoader = removeUndefinedRecursive({
-    loader: path.join(currentDir, "../loaders/turbo-loader.js"),
+    loader: path.join(currentDir, "../loaders/turbo-loader.cjs"),
     options: {
       yakOptions: yakOptions,
       yakPluginOptions: yakPluginOptions,
@@ -151,7 +151,7 @@ function addYakWebpack(
         yakOptions.experiments?.transpilationMode === "Css"
           ? /\.yak\.css$/
           : /\.yak\.module\.css$/,
-      loader: path.join(currentDir, "../loaders/webpack-loader.js"),
+      loader: path.join(currentDir, "../loaders/webpack-loader.cjs"),
       options: yakOptions,
     });
 

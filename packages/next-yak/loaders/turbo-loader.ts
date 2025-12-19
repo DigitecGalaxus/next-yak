@@ -10,8 +10,9 @@ import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
-const require = createRequire(import.meta.url);
-const yakSwcPluginPath = require.resolve("yak-swc");
+const universalRequire =
+  typeof require === "undefined" ? createRequire(import.meta.url) : require;
+const yakSwcPluginPath = universalRequire.resolve("yak-swc");
 
 /**
  * This loader transforms styled-components styles to a static data-url import

@@ -1,6 +1,6 @@
 {
   "name": "next-yak",
-  "version": "8.0.1",
+  "version": "8.0.3",
   "type": "module",
   "types": "./dist/",
   "sideEffects": false,
@@ -60,8 +60,8 @@
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.js",
-    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.js",
+    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
+    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.cjs",
     "./vite": "./dist/loaders/vite-plugin.js"
   },
   "scripts": {
@@ -79,7 +79,7 @@
     "@babel/parser": "catalog:core",
     "@babel/traverse": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "8.0.1"
+    "yak-swc": "8.0.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:dev",
