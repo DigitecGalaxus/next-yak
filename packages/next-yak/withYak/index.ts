@@ -38,6 +38,11 @@ export type YakConfigOptions = {
      */
     debug?: boolean | string;
     transpilationMode?: "CssModule" | "Css";
+    /**
+     * Suppress deprecation warnings for :global() selectors during migration period
+     * @defaultValue false
+     */
+    suppressDeprecationWarnings?: boolean;
   };
 };
 
@@ -48,6 +53,8 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     basePath: currentDir,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
+    suppressDeprecationWarnings:
+      yakOptions.experiments?.suppressDeprecationWarnings ?? false,
   };
 
   if (process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto") {

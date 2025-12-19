@@ -248,8 +248,10 @@ pub fn parse_css(
     // @media (max-width: 600px) {
     //                           ^
     else if current_character == '{' {
+      let scope_name = current_code.trim().to_string();
+
       state.current_scopes.push(CssScope {
-        name: current_code.trim().to_string(),
+        name: scope_name,
         scope_type: if state.is_inside_at_rule {
           ScopeType::AtRule
         } else {
@@ -536,6 +538,6 @@ mod tests {
     assert_eq!(
       declarations3[0].value.trim(),
       "translate(-50%, -50%) rotate(20deg) translate(0, -88px) rotate(90deg)"
-    );
+);
   }
 }

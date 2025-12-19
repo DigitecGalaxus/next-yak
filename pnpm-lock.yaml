@@ -572,6 +572,9 @@ importers:
       eslint-doc-generator:
         specifier: catalog:dev
         version: 2.3.0(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)(typescript@5.9.3)
+      next-yak:
+        specifier: workspace:*
+        version: link:../next-yak
       tsup:
         specifier: catalog:dev
         version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
