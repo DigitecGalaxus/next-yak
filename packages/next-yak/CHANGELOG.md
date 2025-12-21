@@ -1,12 +1,5 @@
 # next-yak
 
-## 8.0.3
-
-### Patch Changes
-
-- 2f5864a: Fixed turbopack loader import
-  - yak-swc@8.0.3
-
 ## 8.0.2
 
 ### Patch Changes
