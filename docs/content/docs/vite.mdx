@@ -7,7 +7,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 # Using next-yak with Vite
 
-While next-yak is built primarily for Next.js, you can also use it in a plain React + Vite setup via the `viteYak` plugin.
+While next-yak is built primarily for Next.js, you can also use it in a Vite setup via the `viteYak` plugin. This works with vanilla Vite, Vite will Rolldown and even with react-router and tanstack-start.
 
 This page shows how to:
 
@@ -32,7 +32,7 @@ bun add next-yak
 
 ## Configure Vite
 
-Add the `viteYak` plugin to your `vite.config.ts` (or `.js`). It works together with `@vitejs/plugin-react-swc`:
+Add the `viteYak` plugin to your `vite.config.ts` (or `.js`). It works together with `@vitejs/plugin-react-swc` or `@vitejs/plugin-react`.
 
 ```ts title="vite.config.ts"
 import { defineConfig } from "vite";
@@ -41,7 +41,7 @@ import { viteYak } from "next-yak/vite";
 
 export default defineConfig({
   //...
-  plugins: [react(), viteYak()],
+  plugins: [viteYak(), react()], // ideally this is before the react plugin
 });
 ```
 
