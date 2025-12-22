@@ -73,6 +73,7 @@ catalogs:
     tailwindcss: 4.1.16
     tree-kill: 1.2.2
     tsup: 8.5.0
+    tsx: 4.21.0
     typescript: 5.9.3
     unionfs: 4.6.0
     vite: 7.1.12
