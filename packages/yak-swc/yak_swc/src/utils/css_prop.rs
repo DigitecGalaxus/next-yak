@@ -3,7 +3,7 @@ use swc_core::{
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
     CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
-    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, ObjectLit, Prop, PropName,
+    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop, PropName,
     PropOrSpread, SpreadElement,
   },
 };
@@ -127,7 +127,7 @@ impl CSSProp {
       .as_ref()
       .ok_or(TransformError::MissingAttributeValue(span))
       .and_then(|v| match v {
-        JSXAttrValue::Lit(lit) => Ok(Box::new(Expr::Lit(lit.clone()))),
+        JSXAttrValue::Str(str_lit) => Ok(Box::new(Expr::Lit(Lit::Str(str_lit.clone())))),
         JSXAttrValue::JSXExprContainer(container) => match &container.expr {
           JSXExpr::Expr(expr) => Ok(expr.clone()),
           JSXExpr::JSXEmptyExpr(_) => Err(TransformError::InvalidJSXEmptyExpr(container.span)),

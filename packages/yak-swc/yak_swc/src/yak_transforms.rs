@@ -1,5 +1,4 @@
 use rustc_hash::FxHashMap;
-use swc_core::atoms::Atom;
 use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
@@ -235,8 +234,8 @@ impl YakTransform for TransformCssMixin {
           .export_name
           .parts
           .iter()
-          .map(|atom| encode_percent(atom.as_str()))
-          .collect::<Vec<String>>()
+          .map(|atom| encode_percent(atom.to_string_lossy().as_ref())) // If the name contains surrogates, other CSS parser would have problems as well
+          .collect::<Vec<_>>()
           .join(":")
       ))
     } else {
@@ -281,7 +280,7 @@ impl YakTransform for TransformCssMixin {
         .parts
         .iter()
         .skip(1)
-        .map(|atom| encode_percent(atom.as_str()))
+        .map(|atom| encode_percent(atom.to_string_lossy().as_ref()))
         .collect::<Vec<String>>()
         .join(":"),
     ))
@@ -348,7 +347,7 @@ impl TransformStyled {
         }),
         value: Box::new(Expr::Lit(Lit::Str(Str {
           span: DUMMY_SP,
-          value: self.declaration_name.last_part().as_str().into(),
+          value: self.declaration_name.last_part(),
           raw: None,
         }))),
       })))],
@@ -392,7 +391,7 @@ fn transform_styled_usages(expression: Box<Expr>, yak_imports: &mut YakImports) 
               callee: Callee::Expr(Box::new(Expr::Ident(ident.clone()))),
               args: vec![ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(Str {
                 span: DUMMY_SP,
-                value: Atom::new(member_name),
+                value: member_name.into(),
                 raw: None,
               }))))],
               type_args: None,

@@ -1,5 +1,5 @@
 use rustc_hash::FxHashMap;
-use swc_core::atoms::Atom;
+use swc_core::atoms::Wtf8Atom;
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 
@@ -35,24 +35,28 @@ pub struct ScopedVariableReference {
   /// The parts of the variable reference
   /// - e.g. foo.bar.baz -> [foo, bar, baz]
   /// - e.g. foo -> [foo]
-  pub parts: Vec<Atom>,
+  pub parts: Vec<Wtf8Atom>,
 }
 impl ScopedVariableReference {
-  pub fn new(id: Id, parts: Vec<Atom>) -> Self {
+  pub fn new(id: Id, parts: Vec<Wtf8Atom>) -> Self {
     Self { id, parts }
   }
   pub fn to_readable_string(&self) -> String {
     self
       .parts
       .iter()
-      .map(|atom| atom.as_str())
-      .collect::<Vec<&str>>()
+      .map(|atom| atom.to_string_lossy())
+      .collect::<Vec<_>>()
       .join(".")
   }
 
-  pub fn last_part(&self) -> &Atom {
+  pub fn last_part(&self) -> Wtf8Atom {
     // We don't expect `parts` to be empty in normal code
-    self.parts.last().unwrap_or(&self.id.0)
+    self
+      .parts
+      .last()
+      .cloned()
+      .unwrap_or_else(|| self.id.0.as_ref().into())
   }
 }
 
@@ -67,7 +71,7 @@ impl VariableVisitor {
 
   /// Try to get a constant value for a variable id
   /// Supports normal constant values, object properties and array elements
-  /// e.g. get_const_value(("primary#0", vec![atom!("primary"), atom!("red")]))
+  /// e.g. get_const_value(("primary#0", vec!["primary".into(), "red".into()]))
   pub fn get_const_value(&self, scoped_name: &ScopedVariableReference) -> Option<Box<Expr>> {
     if let Some(expr) = self.variables.get(&scoped_name.id) {
       // Start with the initial expression
@@ -81,13 +85,16 @@ impl VariableVisitor {
               PropOrSpread::Prop(prop) => match &**prop {
                 Prop::KeyValue(kv) => match &kv.key {
                   // Regular identifiers like e.g. foo.bar
-                  PropName::Ident(ident) if ident.sym == *part => Some(&kv.value),
+                  PropName::Ident(ident) if Wtf8Atom::from(ident.sym.as_str()) == *part => {
+                    Some(&kv.value)
+                  }
                   // String literals like e.g. foo["bar"]
                   PropName::Str(str_lit) if str_lit.value == *part => Some(&kv.value),
                   // Numeric literals like e.g. foo[1]
-                  PropName::Num(num_lit) if num_lit.value.to_string() == part.as_str() => {
-                    Some(&kv.value)
-                  }
+                  PropName::Num(num_lit) => match part.as_str() {
+                    Some(part_str) if num_lit.value.to_string() == part_str => Some(&kv.value),
+                    _ => None,
+                  },
                   _ => None,
                 },
                 _ => None,
@@ -101,12 +108,16 @@ impl VariableVisitor {
           }
           Expr::Array(arr) => {
             // For array expressions, try to parse the part as an index
-            if let Ok(index) = part.to_string().parse::<usize>() {
-              if let Some(Some(elem)) = arr.elems.get(index) {
-                if elem.spread.is_some() {
-                  return None; // Spread operator not supported
+            if let Some(part) = part.as_str() {
+              if let Ok(index) = part.parse::<usize>() {
+                if let Some(Some(elem)) = arr.elems.get(index) {
+                  if elem.spread.is_some() {
+                    return None; // Spread operator not supported
+                  }
+                  current_expr = &elem.expr;
+                } else {
+                  return None;
                 }
-                current_expr = &elem.expr;
               } else {
                 return None;
               }
@@ -127,16 +138,17 @@ impl VariableVisitor {
   /// Returns the source of an imported variable if it exists
   pub fn get_imported_variable(&mut self, name: &Id) -> Option<(ImportSourceType, &ImportKind)> {
     if let Some(src) = self.imports.get(name) {
-      let import_src = src.import_source().to_string();
-      let source_type = if import_src.ends_with(".yak")
-        || import_src.ends_with(".yak.js")
-        || import_src.ends_with(".yak.mjs")
-      {
-        ImportSourceType::Yak
-      } else {
-        ImportSourceType::Normal
-      };
-      return Some((source_type, src));
+      if let Some(import_src) = src.import_source().as_str() {
+        let source_type = if import_src.ends_with(".yak")
+          || import_src.ends_with(".yak.js")
+          || import_src.ends_with(".yak.mjs")
+        {
+          ImportSourceType::Yak
+        } else {
+          ImportSourceType::Normal
+        };
+        return Some((source_type, src));
+      }
     }
     None
   }
@@ -155,7 +167,7 @@ impl VisitMut for VariableVisitor {
       Expr::Ident(ident) => {
         self.default_export = Some(ScopedVariableReference::new(
           ident.to_id(),
-          vec![ident.sym.clone()],
+          vec![ident.sym.clone().into()],
         ));
       }
       _ => {}
@@ -175,6 +187,7 @@ impl VisitMut for VariableVisitor {
   }
   /// Scans the AST for import declarations and extracts the imported names
   fn visit_mut_import_decl(&mut self, import: &mut ImportDecl) {
+    let import_source = import.src.value.to_owned();
     import.specifiers.iter_mut().for_each(|specifier| {
       match specifier {
         // Named imports: import { foo, bar } from "./module"
@@ -184,16 +197,18 @@ impl VisitMut for VariableVisitor {
             .imported
             .as_ref()
             .map(|imported| match imported {
-              ModuleExportName::Ident(ident) => ident.sym.clone(),
-              ModuleExportName::Str(str_lit) => str_lit.value.clone(),
+              ModuleExportName::Ident(ident) => Wtf8Atom::from(ident.sym.clone()),
+              ModuleExportName::Str(str_lit) => {
+                Wtf8Atom::from(str_lit.value.to_atom_lossy().into_owned())
+              }
             })
-            .unwrap_or_else(|| local_name.0.clone());
+            .unwrap_or_else(|| Wtf8Atom::from(local_name.0.clone()));
 
           self.imports.insert(
             local_name.clone(),
             ImportKind::Named {
               external_name,
-              import_source: import.src.value.clone(),
+              import_source: import_source.clone(),
             },
           );
         }
@@ -202,7 +217,7 @@ impl VisitMut for VariableVisitor {
           self.imports.insert(
             namespace.local.to_id(),
             ImportKind::Namespace {
-              import_source: import.src.value.clone(),
+              import_source: import_source.clone(),
             },
           );
         }
@@ -211,7 +226,7 @@ impl VisitMut for VariableVisitor {
           self.imports.insert(
             default.local.to_id(),
             ImportKind::Default {
-              import_source: import.src.value.clone(),
+              import_source: import_source.clone(),
             },
           );
         }
@@ -238,12 +253,16 @@ impl VisitMut for VariableVisitor {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use swc_core::atoms::Atom;
   use swc_core::ecma::transforms::testing::test_transform;
   use swc_core::{atoms::atom, common::SyntaxContext, ecma::visit::visit_mut_pass};
 
   fn get_expr_value(expr: &Expr) -> Option<String> {
     match expr {
-      Expr::Lit(Lit::Str(str)) => Some(str.value.to_string()),
+      Expr::Lit(Lit::Str(str)) => match str.value.as_str() {
+        Some(value) => Some(value.into()),
+        None => None,
+      },
       Expr::Lit(Lit::Num(num)) => Some(num.value.to_string()),
       _ => None,
     }
@@ -269,27 +288,30 @@ mod tests {
     );
 
     // Check primary import
-    let primary_id = Id::from((Atom::from("primary"), SyntaxContext::from_u32(0)));
+    let primary_id = Id::from(("primary".into(), SyntaxContext::from_u32(0)));
     let primary = visitor.get_imported_variable(&primary_id);
     assert!(primary.is_some());
     let (source_type, import_kind) = primary.unwrap();
     assert_eq!(source_type, ImportSourceType::Normal);
-    assert_eq!(import_kind.import_source().as_str(), "./theme");
+    assert_eq!(import_kind.import_source().as_str(), "./theme".into());
 
     // Check mixin import
-    let mixin_id = Id::from((Atom::from("mixin"), SyntaxContext::from_u32(0)));
+    let mixin_id = Id::from(("mixin".into(), SyntaxContext::from_u32(0)));
     let mixin = visitor.get_imported_variable(&mixin_id);
     assert!(mixin.is_some());
     let (source_type, import_kind) = mixin.unwrap();
     assert_eq!(source_type, ImportSourceType::Yak);
-    assert_eq!(import_kind.import_source().as_str(), "./constants.yak");
+    assert_eq!(
+      import_kind.import_source().as_str(),
+      "./constants.yak".into()
+    );
 
     // Check duration constant
     let duration = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("duration"), SyntaxContext::from_u32(0))),
-          vec![atom!("duration")],
+          Id::from(("duration".into(), SyntaxContext::from_u32(0))),
+          vec!["duration".into()],
         ))
         .unwrap(),
     );
@@ -318,16 +340,16 @@ mod tests {
     let nested_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("obj"), SyntaxContext::from_u32(0))),
-          vec![atom!("obj"), atom!("prop1"), atom!("nestedProp")],
+          Id::from(("obj".into(), SyntaxContext::from_u32(0))),
+          vec!["obj".into(), "prop1".into(), "nestedProp".into()],
         ))
         .unwrap(),
     );
     assert_eq!(nested_value, Some("fancy".to_string()));
     // Test accessing an array element
     let array_elem = &visitor.get_const_value(&ScopedVariableReference::new(
-      Id::from((Atom::from("obj"), SyntaxContext::from_u32(0))),
-      vec![atom!("obj"), atom!("prop2"), atom!("1")],
+      Id::from(("obj".into(), SyntaxContext::from_u32(0))),
+      vec!["obj".into(), "prop2".into(), "1".into()],
     ));
     let array_value = get_expr_value(array_elem.as_ref().unwrap());
     assert_eq!(array_value, Some("2".to_string()));
@@ -336,17 +358,16 @@ mod tests {
   #[test]
   fn test_last_part_normal() {
     let i = ScopedVariableReference::new(
-      Id::from((Atom::from("f"), SyntaxContext::empty())),
-      vec![atom!("g"), atom!("h")],
+      Id::from(("f".into(), SyntaxContext::empty())),
+      vec!["g".into(), "h".into()],
     );
-    assert_eq!(i.last_part(), &atom!("h"));
+    assert_eq!(i.last_part(), Wtf8Atom::from("h"));
   }
 
   #[test]
   fn test_last_part_zero_parts() {
-    let i =
-      ScopedVariableReference::new(Id::from((Atom::from("f"), SyntaxContext::empty())), vec![]);
-    assert_eq!(i.last_part(), &atom!("f"));
+    let i = ScopedVariableReference::new(Id::from(("f".into(), SyntaxContext::empty())), vec![]);
+    assert_eq!(i.last_part(), Wtf8Atom::from("f"));
   }
 
   #[test]
@@ -370,38 +391,41 @@ mod tests {
     );
 
     // Test default import
-    let default_id = Id::from((Atom::from("defaultExport"), SyntaxContext::from_u32(0)));
+    let default_id = Id::from((("defaultExport").into(), SyntaxContext::from_u32(0)));
     let default_import = visitor.get_imported_variable(&default_id).unwrap();
     assert_eq!(default_import.0, ImportSourceType::Normal);
     assert!(matches!(default_import.1, ImportKind::Default { .. }));
     assert_eq!(
       default_import.1.import_source().as_str(),
-      "./default-module"
+      "./default-module".into()
     );
 
     // Test namespace import
-    let namespace_id = Id::from((Atom::from("namespace"), SyntaxContext::from_u32(0)));
+    let namespace_id = Id::from((("namespace").into(), SyntaxContext::from_u32(0)));
     let namespace_import = visitor.get_imported_variable(&namespace_id).unwrap();
     assert_eq!(namespace_import.0, ImportSourceType::Normal);
     assert!(matches!(namespace_import.1, ImportKind::Namespace { .. }));
     assert_eq!(
       namespace_import.1.import_source().as_str(),
-      "./namespace-module"
+      "./namespace-module".into()
     );
 
     // Test named import
-    let named_id = Id::from((Atom::from("named1"), SyntaxContext::from_u32(0)));
+    let named_id = Id::from((("named1").into(), SyntaxContext::from_u32(0)));
     let named_import = visitor.get_imported_variable(&named_id).unwrap();
     assert_eq!(named_import.0, ImportSourceType::Normal);
     assert!(matches!(named_import.1, ImportKind::Named { .. }));
-    assert_eq!(named_import.1.import_source().as_str(), "./named-module");
+    assert_eq!(
+      named_import.1.import_source().as_str(),
+      "./named-module".into()
+    );
 
     // Test aliased import
-    let alias_id = Id::from((Atom::from("aliased"), SyntaxContext::from_u32(0)));
+    let alias_id = Id::from((("aliased").into(), SyntaxContext::from_u32(0)));
     let alias_import = visitor.get_imported_variable(&alias_id).unwrap();
     assert_eq!(alias_import.0, ImportSourceType::Normal);
     if let ImportKind::Named { external_name, .. } = alias_import.1 {
-      assert_eq!(external_name.as_str(), "named2");
+      assert_eq!(external_name.as_str(), "named2".into());
     } else {
       panic!("Expected Named import");
     }
@@ -417,7 +441,7 @@ mod tests {
       let yak_id = Id::from((Atom::from(name), SyntaxContext::from_u32(0)));
       let yak_import = visitor.get_imported_variable(&yak_id).unwrap();
       assert_eq!(yak_import.0, ImportSourceType::Yak);
-      assert_eq!(yak_import.1.import_source().as_str(), path);
+      assert_eq!(yak_import.1.import_source().to_string_lossy(), path);
     }
   }
 
@@ -455,8 +479,8 @@ mod tests {
     let simple_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("simpleVar"), SyntaxContext::from_u32(0))),
-          vec![atom!("simpleVar")],
+          Id::from(("simpleVar".into(), SyntaxContext::from_u32(0))),
+          vec!["simpleVar".into()],
         ))
         .unwrap(),
     );
@@ -466,8 +490,8 @@ mod tests {
     let nested_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("objVar"), SyntaxContext::from_u32(0))),
-          vec![atom!("objVar"), atom!("b"), atom!("c")],
+          Id::from((("objVar").into(), SyntaxContext::from_u32(0))),
+          vec![("objVar").into(), ("b").into(), ("c").into()],
         ))
         .unwrap(),
     );
@@ -477,8 +501,13 @@ mod tests {
     let array_in_obj_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("objVar"), SyntaxContext::from_u32(0))),
-          vec![atom!("objVar"), atom!("b"), atom!("d"), atom!("0")],
+          Id::from((("objVar").into(), SyntaxContext::from_u32(0))),
+          vec![
+            atom!("objVar").into(),
+            atom!("b").into(),
+            atom!("d").into(),
+            atom!("0").into(),
+          ],
         ))
         .unwrap(),
     );
@@ -488,8 +517,12 @@ mod tests {
     let obj_in_array_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("arrVar"), SyntaxContext::from_u32(0))),
-          vec![atom!("arrVar"), atom!("2"), atom!("prop")],
+          Id::from((("arrVar").into(), SyntaxContext::from_u32(0))),
+          vec![
+            atom!("arrVar").into(),
+            atom!("2").into(),
+            atom!("prop").into(),
+          ],
         ))
         .unwrap(),
     );
@@ -499,8 +532,8 @@ mod tests {
     let nested_array_value = get_expr_value(
       &visitor
         .get_const_value(&ScopedVariableReference::new(
-          Id::from((Atom::from("arrVar"), SyntaxContext::from_u32(0))),
-          vec![atom!("arrVar"), atom!("3"), atom!("0")],
+          Id::from((("arrVar").into(), SyntaxContext::from_u32(0))),
+          vec!["arrVar".into(), "3".into(), "0".into()],
         ))
         .unwrap(),
     );
@@ -510,18 +543,18 @@ mod tests {
   #[test]
   fn test_scoped_variable_reference_to_string() {
     let simple_ref = ScopedVariableReference::new(
-      Id::from((Atom::from("variable"), SyntaxContext::empty())),
-      vec![atom!("variable")],
+      Id::from((("variable").into(), SyntaxContext::empty())),
+      vec!["variable".into()],
     );
     assert_eq!(simple_ref.to_readable_string(), "variable");
 
     let complex_ref = ScopedVariableReference::new(
-      Id::from((Atom::from("obj"), SyntaxContext::empty())),
+      Id::from((("obj").into(), SyntaxContext::empty())),
       vec![
-        atom!("obj"),
-        atom!("nested"),
-        atom!("deep"),
-        atom!("property"),
+        "obj".into(),
+        "nested".into(),
+        "deep".into(),
+        "property".into(),
       ],
     );
     assert_eq!(complex_ref.to_readable_string(), "obj.nested.deep.property");
@@ -540,7 +573,7 @@ mod tests {
       code,
     );
 
-    let non_existent_id = Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0)));
+    let non_existent_id = Id::from((("nonExistent").into(), SyntaxContext::from_u32(0)));
     let result = visitor.get_imported_variable(&non_existent_id);
     assert!(result.is_none());
   }
@@ -550,8 +583,8 @@ mod tests {
     let visitor = VariableVisitor::new(); // Empty visitor
 
     let non_existent_ref = ScopedVariableReference::new(
-      Id::from((Atom::from("nonExistent"), SyntaxContext::from_u32(0))),
-      vec![atom!("nonExistent")],
+      Id::from((("nonExistent").into(), SyntaxContext::from_u32(0))),
+      vec!["nonExistent".into()],
     );
 
     let result = visitor.get_const_value(&non_existent_ref);
