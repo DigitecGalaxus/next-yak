@@ -72,6 +72,7 @@ export async function uncachedParseModule(
     transformed.code,
     context.transpilationMode,
   );
+  const idents = parseIdents(transformed.code);
 
   return {
     type: "regular",
@@ -80,6 +81,7 @@ export async function uncachedParseModule(
     exports,
     styledComponents,
     mixins,
+    idents,
   };
 }
 
@@ -133,11 +135,81 @@ function parseStyledComponents(
   return styledComponents;
 }
 
+/**
+ * Parse ident() function calls from the transformed source code.
+ * This works for both:
+ * - Regular transformed files where ident`string` becomes ident("scoped_string")
+ * - .yak files where users write ident("string") directly
+ */
+function parseIdents(sourceContents: string): Record<string, Ident> {
+  // Match: [export] const varName = [/*#__PURE__*/] ident("identifier")
+  // The regex captures the variable name and the identifier string
+  // Handles:
+  // - export const color = ident("--color")
+  // - const color = /*#__PURE__*/ ident("--color")
+  // - export const color = /*#__PURE__*/ ident("--color")
+  const identRegex =
+    /(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\/\*#__PURE__\*\/\s*)?ident\s*\(\s*["']([^"']+)["']\s*\)/g;
+  const idents: Record<string, Ident> = {};
+
+  for (const match of sourceContents.matchAll(identRegex)) {
+    const [, varName, identifier] = match;
+    const isDashed = identifier.startsWith("--");
+    idents[varName] = {
+      type: "ident",
+      identifier,
+      isDashed,
+    };
+  }
+
+  return idents;
+}
+
+/**
+ * Check if a value is a YakIdent object (from ident() function call)
+ * YakIdent objects have a `name` property and a toString() method
+ */
+function isYakIdent(
+  value: unknown,
+): value is { name: string; toString(): string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    typeof (value as { name: unknown }).name === "string" &&
+    "toString" in value &&
+    typeof (value as { toString: unknown }).toString === "function"
+  );
+}
+
 function objectToModuleExport(object: object) {
   return Object.fromEntries(
     Object.entries(object).map(([key, value]): [string, ModuleExport] => {
       if (typeof value === "string" || typeof value === "number") {
         return [key, { type: "constant" as const, value }];
+      } else if (isYakIdent(value)) {
+        // Handle YakIdent objects from .yak files
+        // Store as a record with special structure that can be used for both
+        // direct interpolation and .name access
+        const identifier = value.name;
+        const isDashed = identifier.startsWith("--");
+        return [
+          key,
+          {
+            type: "record" as const,
+            value: {
+              // The __yakIdent marker helps identify this as an ident
+              __yakIdent: { type: "constant" as const, value: identifier },
+              // .name property returns the raw identifier
+              name: { type: "constant" as const, value: identifier },
+              // Direct interpolation value (var() for dashed, raw for custom)
+              __value: {
+                type: "constant" as const,
+                value: isDashed ? `var(${identifier})` : identifier,
+              },
+            },
+          },
+        ];
       } else if (value && (typeof value === "object" || Array.isArray(value))) {
         return [
           key,
@@ -197,6 +269,7 @@ export type ParsedModule = {
       js?: { code: string; map?: string };
       styledComponents?: Record<string, StyledComponent>;
       mixins?: Record<string, Mixin>;
+      idents?: Record<string, Ident>;
     }
   | {
       type: "yak";
@@ -210,3 +283,9 @@ export type StyledComponent = {
 };
 
 export type Mixin = { type: "mixin"; value: string; nameParts: string[] };
+
+export type Ident = {
+  type: "ident";
+  identifier: string;
+  isDashed: boolean;
+};

@@ -614,3 +614,76 @@ impl YakTransform for TransformKeyframes {
     })
   }
 }
+
+/// Transform for CSS identifiers (custom properties and custom idents)
+/// e.g. const thumbSize = ident`--thumb-size`
+pub struct TransformIdent {
+  /// The generated identifier name (already scoped with hash)
+  identifier_name: String,
+  /// Whether this is a dashed-ident (CSS custom property)
+  is_dashed: bool,
+}
+
+impl TransformIdent {
+  pub fn new(identifier_name: String, is_dashed: bool) -> TransformIdent {
+    TransformIdent {
+      identifier_name,
+      is_dashed,
+    }
+  }
+
+  /// Get the raw identifier name (for .name property access)
+  pub fn get_name_reference(&self) -> String {
+    self.identifier_name.clone()
+  }
+}
+
+impl YakTransform for TransformIdent {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+    // ident has no CSS content, return empty state
+    ParserState::new()
+  }
+
+  fn transform_expression(
+    &mut self,
+    expression: &mut TaggedTpl,
+    _runtime_expressions: Vec<Expr>,
+    _declarations: &[Declaration],
+    _runtime_css_variables: FxHashMap<String, Expr>,
+    _yak_imports: &mut YakImports,
+  ) -> YakTransformResult {
+    // Transform: ident`--thumb-size` -> ident("--slider_thumbSize_hash")
+    let arguments: Vec<ExprOrSpread> = vec![ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(
+      Str {
+        span: DUMMY_SP,
+        value: self.identifier_name.clone().into(),
+        raw: None,
+      },
+    ))))];
+
+    YakTransformResult {
+      css: YakCss {
+        comment_prefix: None,
+        declarations: vec![],
+      },
+      expression: Box::new(Expr::Call(CallExpr {
+        span: expression.span,
+        ctxt: SyntaxContext::empty(),
+        callee: Callee::Expr(expression.tag.clone()),
+        args: arguments,
+        type_args: None,
+      })),
+    }
+  }
+
+  /// Get the reference for direct interpolation ${myIdent}:
+  /// - dashed: var(--name)
+  /// - custom: name
+  fn get_css_reference_name(&self) -> Option<String> {
+    Some(if self.is_dashed {
+      format!("var({})", self.identifier_name)
+    } else {
+      self.identifier_name.clone()
+    })
+  }
+}

@@ -36,7 +36,7 @@ export default async function cssExtractLoader(
     debugLog("css", css);
 
     return resolveCrossFileConstant(this, this.context, css).then((result) => {
-      debugLog("css-resolved", css);
+      debugLog("css-resolved", result);
       return callback(null, result, sourceMap);
     }, callback);
   });

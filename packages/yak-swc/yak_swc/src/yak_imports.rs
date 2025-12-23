@@ -30,6 +30,10 @@ pub struct YakImports {
   /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
   /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
   yak_keyframes_idents: FxHashSet<Id>,
+  /// Local Identifiers for the next-yak ident function \
+  /// Most of the time it is just `ident#0` for `import { ident } from "next-yak"` \
+  /// but it might also contain renamings like `import { ident as ident_ } from "next-yak"`
+  yak_ident_idents: FxHashSet<Id>,
 }
 
 /// Scans a JavaScript/TypeScript module for yak library usage and collects import information.
@@ -61,6 +65,7 @@ impl From<YakImportVisitor> for YakImports {
       value.yak_library_imports,
       value.yak_css_idents,
       value.yak_keyframes_idents,
+      value.yak_ident_idents,
     )
   }
 }
@@ -70,6 +75,7 @@ impl YakImports {
     yak_library_imports: FxHashMap<Id, Id>,
     yak_css_idents: FxHashSet<Id>,
     yak_keyframes_idents: FxHashSet<Id>,
+    yak_ident_idents: FxHashSet<Id>,
   ) -> Self {
     Self {
       yak_utilities: FxHashMap::default(),
@@ -77,6 +83,7 @@ impl YakImports {
       yak_library_imports,
       yak_css_idents,
       yak_keyframes_idents,
+      yak_ident_idents,
     }
   }
 
@@ -86,6 +93,10 @@ impl YakImports {
 
   pub fn yak_keyframes_idents(&self) -> &FxHashSet<Id> {
     &self.yak_keyframes_idents
+  }
+
+  pub fn yak_ident_idents(&self) -> &FxHashSet<Id> {
+    &self.yak_ident_idents
   }
 
   /// Check if the current AST has imports to the next-yak library
@@ -213,6 +224,10 @@ struct YakImportVisitor {
   /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
   /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
   pub yak_keyframes_idents: FxHashSet<Id>,
+  /// Local Identifiers for the next-yak ident function \
+  /// Most of the time it is just `ident#0` for `import { ident } from "next-yak"` \
+  /// but it might also contain renamings like `import { ident as ident_ } from "next-yak"`
+  pub yak_ident_idents: FxHashSet<Id>,
 }
 
 impl YakImportVisitor {
@@ -221,6 +236,7 @@ impl YakImportVisitor {
       yak_library_imports: FxHashMap::default(),
       yak_css_idents: FxHashSet::default(),
       yak_keyframes_idents: FxHashSet::default(),
+      yak_ident_idents: FxHashSet::default(),
     }
   }
 }
@@ -251,6 +267,8 @@ impl VisitMut for YakImportVisitor {
             self.yak_css_idents.insert(named.local.to_id());
           } else if imported.0 == "keyframes" {
             self.yak_keyframes_idents.insert(named.local.to_id());
+          } else if imported.0 == "ident" {
+            self.yak_ident_idents.insert(named.local.to_id());
           }
         }
       }
