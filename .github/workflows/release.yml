@@ -37,7 +37,7 @@ jobs:
         uses: dtolnay/rust-toolchain@6d653acede28d24f02e3cd41383119e8b1b35921 # master
         with:
           toolchain: stable
-          targets: wasm32-wasip1
+          targets: wasm32-wasip1, wasm32-unknown-unknown
           components: clippy, rustfmt
       - name: Enable caching
         uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2
