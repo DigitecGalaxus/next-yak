@@ -88,6 +88,8 @@ impl CSSProp {
           _ => Err(TransformError::InvalidCSSAttribute(span)),
         }),
       JSXAttrOrSpread::SpreadElement(_) => Err(TransformError::UnsupportedSpreadElement(span)),
+      #[cfg(swc_ast_unknown)]
+      _ => Err(TransformError::UnsupportedSpreadElement(span)),
     }
   }
 
@@ -102,6 +104,8 @@ impl CSSProp {
       .map(|prop| match prop {
         JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
         JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
+        #[cfg(swc_ast_unknown)]
+        _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
       })
       .collect()
   }
@@ -130,7 +134,7 @@ impl CSSProp {
         JSXAttrValue::Str(str_lit) => Ok(Box::new(Expr::Lit(Lit::Str(str_lit.clone())))),
         JSXAttrValue::JSXExprContainer(container) => match &container.expr {
           JSXExpr::Expr(expr) => Ok(expr.clone()),
-          JSXExpr::JSXEmptyExpr(_) => Err(TransformError::InvalidJSXEmptyExpr(container.span)),
+          _ => Err(TransformError::InvalidJSXEmptyExpr(container.span)),
         },
         _ => Err(TransformError::UnsupportedAttributeValue(span)),
       })
@@ -185,7 +189,7 @@ impl HasCSSProp for JSXOpeningElement {
             }
           }
         }
-        JSXAttrOrSpread::SpreadElement(_) => relevant_props.push(index),
+        _ => relevant_props.push(index),
       }
     }
 
@@ -204,6 +208,8 @@ pub enum TransformError {
   MissingAttributeValue(Span),
   InvalidJSXEmptyExpr(Span),
   UnsupportedAttributeValue(Span),
+  #[cfg(swc_ast_unknown)]
+  UnsupportedJSXAttrOrSpread(),
 }
 
 impl TransformError {
@@ -215,6 +221,8 @@ impl TransformError {
       | TransformError::MissingAttributeValue(span)
       | TransformError::InvalidJSXEmptyExpr(span)
       | TransformError::UnsupportedAttributeValue(span) => *span,
+      #[cfg(swc_ast_unknown)]
+      TransformError::UnsupportedJSXAttrOrSpread() => Span::default(),
     }
   }
 
@@ -243,6 +251,11 @@ impl TransformError {
             TransformError::UnsupportedAttributeValue(_) =>
                 "Unsupported attribute value type. Use string literals for className, \
                 template literals for css prop, and object literals for style prop.",
+
+            #[cfg(swc_ast_unknown)]
+            TransformError::UnsupportedJSXAttrOrSpread() =>
+                "Unsupported JSX attribute or spread element detected. Ensure all attributes have valid names and values. \
+                Example: className=\"my-class\" or style={{ color: 'red' }}",
         }
   }
 }

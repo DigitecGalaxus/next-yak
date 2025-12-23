@@ -197,20 +197,24 @@ impl VisitMut for VariableVisitor {
             .imported
             .as_ref()
             .map(|imported| match imported {
-              ModuleExportName::Ident(ident) => Wtf8Atom::from(ident.sym.clone()),
+              ModuleExportName::Ident(ident) => Some(Wtf8Atom::from(ident.sym.clone())),
               ModuleExportName::Str(str_lit) => {
-                Wtf8Atom::from(str_lit.value.to_atom_lossy().into_owned())
+                Some(Wtf8Atom::from(str_lit.value.to_atom_lossy().into_owned()))
               }
+              #[cfg(swc_ast_unknown)]
+              _ => None,
             })
-            .unwrap_or_else(|| Wtf8Atom::from(local_name.0.clone()));
+            .unwrap_or_else(|| Some(Wtf8Atom::from(local_name.0.clone())));
 
-          self.imports.insert(
-            local_name.clone(),
-            ImportKind::Named {
-              external_name,
-              import_source: import_source.clone(),
-            },
-          );
+          if let Some(external_name) = external_name {
+            self.imports.insert(
+              local_name.clone(),
+              ImportKind::Named {
+                external_name,
+                import_source: import_source.clone(),
+              },
+            );
+          }
         }
         // Namespace imports: import * as ns from "./module"
         ImportSpecifier::Namespace(namespace) => {
@@ -230,6 +234,8 @@ impl VisitMut for VariableVisitor {
             },
           );
         }
+        #[cfg(swc_ast_unknown)]
+        _ => {}
       }
     });
     import.visit_mut_children_with(self);

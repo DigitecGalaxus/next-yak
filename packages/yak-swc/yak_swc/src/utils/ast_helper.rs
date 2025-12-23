@@ -45,7 +45,7 @@ pub fn member_expr_to_strings(member_expr: &MemberExpr) -> Option<(Ident, Vec<Wt
       }
       _ => return None,
     },
-    MemberProp::PrivateName(_) => return None,
+    _ => return None,
   }
   match *member_expr.obj.clone() {
     Expr::Ident(ident) => {

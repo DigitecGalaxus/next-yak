@@ -718,8 +718,8 @@ where
             PropName::Str(value) => Some(value.value.to_owned()),
             PropName::Num(value) => Some(Wtf8Atom::from(value.value.to_string())),
             PropName::BigInt(value) => Some(Wtf8Atom::from(value.value.to_string())),
-            // Skip computed property names
-            PropName::Computed(_) => None,
+            // Skip computed property names and additionals (if any)
+            _ => None,
           };
 
           if let Some(part) = new_part {

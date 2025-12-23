@@ -20,7 +20,9 @@
   ],
   "main": "target/wasm32-wasip1/release/yak_swc.wasm",
   "scripts": {
-    "build": "cargo build --release --target=wasm32-wasip1",
+    "build": "pnpm build:yak && pnpm build:playground",
+    "build:yak": "RUSTFLAGS=\"--cfg swc_ast_unknown\" cargo build -p yak_swc --release --target=wasm32-wasip1",
+    "build:playground": "cargo build -p playground-wasm --release --target=wasm32-wasip1",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
     "prettier": "cargo fmt --all",
     "test": "cargo test",
