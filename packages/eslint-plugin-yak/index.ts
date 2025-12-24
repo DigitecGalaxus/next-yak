@@ -1,5 +1,6 @@
 import pkg from "./package.json" with { type: "json" };
 import { cssNestingOperator } from "./rules/cssNestingOperator.js";
+import { cssGlobalDeprecated } from "./rules/cssGlobalDeprecated.js";
 import { enforceSemicolons } from "./rules/enforceSemicolon.js";
 import { styleConditions } from "./rules/styleConditions.js";
 
@@ -10,6 +11,7 @@ const plugin = {
   },
   rules: {
     "css-nesting-operator": cssNestingOperator,
+    "css-global-deprecated": cssGlobalDeprecated,
     "enforce-semicolon": enforceSemicolons,
     "style-conditions": styleConditions,
   },
@@ -23,6 +25,7 @@ const configs = {
     },
     rules: {
       [`${pkg.name}/css-nesting-operator`]: "error",
+      [`${pkg.name}/css-global-deprecated`]: "warn",
       [`${pkg.name}/enforce-semicolon`]: "error",
       [`${pkg.name}/style-conditions`]: "warn",
     },

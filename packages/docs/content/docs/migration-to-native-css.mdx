@@ -1,0 +1,199 @@
+---
+title: Migration to Native CSS
+description: Guide for migrating from :global() selectors to native CSS transpilation mode in next-yak.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Overview
+
+The `:global()` selector in next-yak is deprecated and will be removed in the next major version. This guide explains how to migrate to native CSS transpilation mode, which provides a simpler and more performant approach to handling global selectors.
+
+<Callout type="warn">
+**Deprecation Notice**: The `:global()` selector syntax is deprecated. Please migrate to native CSS transpilation mode to ensure compatibility with future versions.
+</Callout>
+
+## Why are :global() selectors deprecated?
+
+The `:global()` selector was originally needed because next-yak used CSS Modules under the hood, which scopes all selectors locally by default. To target global classes or elements, you had to wrap them in `:global()`.
+
+With native CSS transpilation mode, next-yak outputs standard CSS instead of CSS Modules, eliminating the need for `:global()` wrappers entirely.
+
+## Migration Steps
+
+<Steps>
+<Step>
+
+### Enable Native CSS Transpilation
+
+Update your `next.config.js` to enable native CSS transpilation mode:
+
+```js title="next.config.js"
+import { withYak } from "next-yak/withYak";
+
+const nextConfig = {
+  // your next.js config
+};
+
+export default withYak({
+  experiments: {
+    transpilationMode: 'Css' // [!code ++]
+  }
+}, nextConfig);
+```
+
+</Step>
+<Step>
+
+### Remove :global() wrappers
+
+With native CSS transpilation enabled, you can remove all `:global()` wrappers from your styled components:
+
+```tsx title="component.tsx"
+import { styled } from 'next-yak';
+
+const Container = styled.div`
+  padding: 1rem;
+
+  :global(.external-class) { // [!code --]
+  .external-class { // [!code ++]
+    color: red;
+  }
+
+  :global(body) { // [!code --]
+  body { // [!code ++]
+    margin: 0;
+  }
+`;
+```
+
+</Step>
+<Step>
+
+### Test your styles
+
+After making these changes, verify that your styles still work as expected. The behavior should be identical, but without the `:global()` syntax.
+
+</Step>
+</Steps>
+
+## Using the ESLint Plugin
+
+The `eslint-plugin-yak` package includes a rule to help identify `:global()` usage in your codebase:
+
+```json title="eslint.config.js"
+import eslintPluginYak from "eslint-plugin-yak";
+
+export default [
+  eslintPluginYak.configs.recommended,
+  // or enable just the deprecation rule:
+  {
+    plugins: { yak: eslintPluginYak },
+    rules: {
+      "yak/css-global-deprecated": "warn"
+    }
+  }
+];
+```
+
+This will warn you about any `:global()` selectors that need to be migrated.
+
+## Suppressing Deprecation Warnings
+
+If you need more time to migrate, you can temporarily suppress the deprecation warnings:
+
+```js title="next.config.js"
+import { withYak } from "next-yak/withYak";
+
+export default withYak({
+  experiments: {
+    suppressDeprecationWarnings: true // [!code highlight]
+  }
+}, nextConfig);
+```
+
+<Callout type="warn">
+This is only a temporary solution. Please plan to complete your migration before the next major version.
+</Callout>
+
+## Before and After Examples
+
+### Targeting external library classes
+
+```tsx title="Before"
+const Wrapper = styled.div`
+  :global(.react-select__control) {
+    border-color: blue;
+  }
+`;
+```
+
+```tsx title="After (with transpilationMode: 'Css')"
+const Wrapper = styled.div`
+  .react-select__control {
+    border-color: blue;
+  }
+`;
+```
+
+### Styling body or html elements
+
+```tsx title="Before"
+const GlobalStyles = styled.div`
+  :global(html) {
+    font-size: 16px;
+  }
+
+  :global(body) {
+    margin: 0;
+    padding: 0;
+  }
+`;
+```
+
+```tsx title="After (with transpilationMode: 'Css')"
+const GlobalStyles = styled.div`
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+`;
+```
+
+### Nested global selectors
+
+```tsx title="Before"
+const Card = styled.div`
+  :global(.dark-mode) & {
+    background: #333;
+    color: white;
+  }
+`;
+```
+
+```tsx title="After (with transpilationMode: 'Css')"
+const Card = styled.div`
+  .dark-mode & {
+    background: #333;
+    color: white;
+  }
+`;
+```
+
+## FAQ
+
+### Will my styles break if I switch to native CSS mode?
+
+No, the styling behavior remains the same. The only difference is that you no longer need `:global()` wrappers since all selectors are treated as global by default in native CSS mode.
+
+### Can I use both modes during migration?
+
+No, you must choose one transpilation mode for your entire project. We recommend migrating all `:global()` usage at once when switching to native CSS mode.
+
+### What if I'm using CSS Modules features like :local()?
+
+Native CSS transpilation mode doesn't support CSS Modules-specific features like `:local()`. If you rely on these features, you may need to refactor your styles before migrating.

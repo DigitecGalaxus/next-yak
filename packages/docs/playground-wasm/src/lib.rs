@@ -104,6 +104,7 @@ fn yak_pass(
                     transpilation: TranspilationMode::Css,
                 })
                 .into(),
+            false, // suppress_deprecation_warnings
         );
         program.visit_mut_with(&mut transformer);
     })
