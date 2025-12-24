@@ -4,7 +4,6 @@
 
 ### Patch Changes
 
-- f08dd58: Fixed turbopack loader import
 - Updated dependencies [a85dcba]
   - yak-swc@9.0.0
 
