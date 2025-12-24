@@ -1,5 +1,12 @@
 # next-yak
 
+## 9.0.0
+
+### Patch Changes
+
+- Updated dependencies [a85dcba]
+  - yak-swc@9.0.0
+
 ## 8.0.2
 
 ### Patch Changes

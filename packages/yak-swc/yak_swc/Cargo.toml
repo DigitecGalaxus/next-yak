@@ -14,7 +14,7 @@ plugin = ["swc_core/ecma_plugin_transform"]
 lazy_static.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-swc_core = { workspace = true, features = ["common", "ecma_ast", "ecma_visit", "ecma_parser"]}
+swc_core = { workspace = true, features = ["common", "ecma_ast", "ecma_visit"]}
 css_in_js_parser = { path = "../css_in_js_parser" }
 relative_posix_path = { path = "../relative_posix_path" }
 itertools.workspace = true
@@ -28,12 +28,12 @@ regex.workspace = true
 swc_ecma_transforms_testing.workspace = true
 swc_ecma_parser.workspace = true
 testing.workspace = true
-swc_core = { workspace = true, features = ["ecma_transforms", "testing_transform"]}
+swc_core = { workspace = true, features = ["ecma_transforms", "testing_transform", "ecma_parser"]}
 
 [[bench]]
 name = "extension_detection"
 harness = false
 
-# .cargo/config defines few alias to build plugin.
-# cargo build-wasi generates wasm-wasi32 binary
-# cargo build-wasm32 generates wasm32-unknown-unknown binary.
+[lints.rust]
+# The config exists when we compile to wasm see https://swc.rs/docs/plugin/ecmascript/compatibility
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(swc_ast_unknown)'] }

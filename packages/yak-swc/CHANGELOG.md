@@ -1,5 +1,11 @@
 # yak-swc
 
+## 9.0.0
+
+### Major Changes
+
+- a85dcba: Add support for next.js 16.1.0
+
 ## 8.0.2
 
 ## 8.0.1

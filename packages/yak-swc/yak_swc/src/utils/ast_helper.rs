@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 
-use swc_core::atoms::Atom;
+use swc_core::atoms::Wtf8Atom;
 use swc_core::{common::errors::HANDLER, common::DUMMY_SP, ecma::ast::*};
 
 use crate::variable_visitor::ScopedVariableReference;
@@ -30,27 +30,27 @@ pub fn expr_hash_map_to_object(values: FxHashMap<String, Expr>) -> Expr {
 
 /// Convert a member expression to a root identifier and a string vector of properties
 /// e.g. `foo.bar.baz` will return `(foo#0, ["foo", "bar", "baz"])`
-pub fn member_expr_to_strings(member_expr: &MemberExpr) -> Option<(Ident, Vec<Atom>)> {
-  let mut props: Vec<Atom> = vec![];
+pub fn member_expr_to_strings(member_expr: &MemberExpr) -> Option<(Ident, Vec<Wtf8Atom>)> {
+  let mut props: Vec<Wtf8Atom> = vec![];
   match member_expr.prop.clone() {
     MemberProp::Ident(ident) => {
-      props.push(ident.sym);
+      props.push(ident.sym.into());
     }
     MemberProp::Computed(computed) => match &*computed.expr {
       Expr::Lit(Lit::Str(str)) => {
         props.push(str.value.clone());
       }
       Expr::Lit(Lit::Num(num)) => {
-        props.push(Atom::from(num.value.to_string()));
+        props.push(Wtf8Atom::from(num.value.to_string()));
       }
       _ => return None,
     },
-    MemberProp::PrivateName(_) => return None,
+    _ => return None,
   }
   match *member_expr.obj.clone() {
     Expr::Ident(ident) => {
       let root_ident = ident;
-      props.insert(0, root_ident.sym.clone());
+      props.insert(0, root_ident.sym.clone().into());
       Some((root_ident.clone(), props))
     }
     Expr::Member(member) => {
@@ -110,7 +110,7 @@ pub fn extract_ident_and_parts(expr: &Expr) -> Option<ScopedVariableReference> {
     ),
     Expr::Ident(ident) => Some(ScopedVariableReference::new(
       ident.to_id(),
-      vec![ident.sym.clone()],
+      vec![ident.sym.clone().into()],
     )),
     _ => None,
   }
