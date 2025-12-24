@@ -6,8 +6,7 @@ use rustc_hash::FxHashMap;
 use serde::Deserialize;
 use std::ops::Deref;
 use std::vec;
-use swc_core::atoms::atom;
-use swc_core::atoms::Atom;
+use swc_core::atoms::Wtf8Atom;
 
 use swc_core::common::comments::Comment;
 use swc_core::common::comments::Comments;
@@ -195,8 +194,8 @@ where
   fn get_current_component_id(&self) -> ScopedVariableReference {
     self.current_variable_name.clone().unwrap_or_else(|| {
       ScopedVariableReference::new(
-        Id::from((atom!("yak"), SyntaxContext::empty())),
-        vec![atom!("yak")],
+        Id::from(("yak".into(), SyntaxContext::empty())),
+        vec!["yak".into()],
       )
     })
   }
@@ -334,7 +333,7 @@ where
             // const primary = "red";
             // styled.button`color: ${primary};`
             if let Some(literal_value) = match *value.clone() {
-              Expr::Lit(Lit::Str(str)) => Some(str.value.to_string()),
+              Expr::Lit(Lit::Str(str)) => str.value.as_str().map(|s| s.into()),
               Expr::Lit(Lit::Num(num)) => Some(num.value.to_string()),
               _ => None,
             } {
@@ -671,8 +670,8 @@ where
 
     self.current_exported = true;
     self.current_variable_name = Some(ScopedVariableReference::new(
-      Id::from((atom!("default"), SyntaxContext::empty())),
-      vec![atom!("default")],
+      Id::from(("default".into(), SyntaxContext::empty())),
+      vec!["default".into()],
     ));
     n.visit_mut_children_with(self);
     self.current_variable_name = None;
@@ -691,7 +690,7 @@ where
         let previous_variable_name = self.current_variable_name.clone();
         self.current_variable_name = Some(ScopedVariableReference::new(
           id.to_id(),
-          vec![id.sym.clone()],
+          vec![id.sym.clone().into()],
         ));
         decl.init.visit_mut_with(self);
         self.current_variable_name = previous_variable_name;
@@ -715,12 +714,12 @@ where
       if let PropOrSpread::Prop(prop) = props_or_spread {
         if let Some(key_value) = prop.as_key_value() {
           let new_part = match &key_value.key {
-            PropName::Ident(value) => Some(value.sym.clone()),
-            PropName::Str(value) => Some(value.value.clone()),
-            PropName::Num(value) => Some(Atom::from(value.value.to_string())),
-            PropName::BigInt(value) => Some(Atom::from(value.value.to_string())),
-            // Skip computed property names
-            PropName::Computed(_) => None,
+            PropName::Ident(value) => Some(Wtf8Atom::from(value.sym.clone())),
+            PropName::Str(value) => Some(value.value.to_owned()),
+            PropName::Num(value) => Some(Wtf8Atom::from(value.value.to_string())),
+            PropName::BigInt(value) => Some(Wtf8Atom::from(value.value.to_string())),
+            // Skip computed property names and additionals (if any)
+            _ => None,
           };
 
           if let Some(part) = new_part {
@@ -994,7 +993,7 @@ where
                 .as_mut()
                 .unwrap()
                 .get_yak_library_name_for_ident(&ident.to_id())
-                == Some(atom!("atoms"))
+                == Some("atoms".into())
               {
                 HANDLER.with(|handler| {
                   handler

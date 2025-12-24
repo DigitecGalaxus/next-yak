@@ -1,7 +1,8 @@
 ---
-source: src/to_css.rs
+source: css_in_js_parser/src/to_css.rs
 expression: to_css(&combined_declarations)
 ---
+
 .foo {
   .fancy {
     color: blue;
