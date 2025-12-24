@@ -1,12 +1,5 @@
 /** @jsxImportSource next-yak */
-import {
-  YakThemeProvider,
-  atoms,
-  css,
-  ident,
-  keyframes,
-  styled,
-} from "next-yak";
+import { YakThemeProvider, atoms, css, styled } from "next-yak";
 import styles from "./page.module.css";
 import { queries, colors } from "@/theme/constants.yak";
 import { Clock } from "./Clock";
@@ -249,7 +242,7 @@ export default function Home() {
         >
           Atoms in styled components work if this is small, green and italic
         </Wrap>
-        <Color>If this is blue, cross file idents work</Color>
+        <Color>If this is blue cross file idents work</Color>
         <IdentDemo />
         <Inputs />
       </main>

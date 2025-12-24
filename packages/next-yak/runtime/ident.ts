@@ -43,10 +43,19 @@ export interface YakIdent {
  * into a function call with the scoped identifier:
  * `ident\`--thumb-size\`` -> `ident("--slider_thumbSize_hash")`
  *
- * @param identifier - The scoped identifier string (set by the compiler)
+ * @param identifierOrStyles - Either a string (after SWC transformation) or TemplateStringsArray (before transformation)
  * @returns A YakIdent object with .name property and toString/toPrimitive methods
  */
-export const ident = (identifier: string): YakIdent => {
+export const ident = (
+  identifierOrStyles: string | TemplateStringsArray,
+): YakIdent => {
+  // Handle both:
+  // - After SWC transformation: ident("--slider_thumbSize_hash") - receives string
+  // - Before transformation (or in tests): ident`--thumb-size` - receives TemplateStringsArray
+  const identifier =
+    typeof identifierOrStyles === "string"
+      ? identifierOrStyles
+      : identifierOrStyles[0];
   const isDashed = identifier.startsWith("--");
   return {
     get name() {

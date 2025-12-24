@@ -137,12 +137,16 @@ export async function uncachedResolveCrossFileConstant(
 
         if (resolved.type === "ident") {
           // For idents:
-          // - ident-value: returns var(--name) for dashed, raw name for custom
-          // - ident: returns raw name (for .name access or property names)
+          // Check if this is a .name access (specifier ends with "name")
+          // When SWC sees ${color.name}, it emits url("./file:color:name",mixin)
+          const isNameAccess =
+            specifier.length > 0 &&
+            specifier[specifier.length - 1] === "name";
+
           replacement =
-            importKind === "ident" || !resolved.isDashed
-              ? resolved.identifier
-              : `var(${resolved.identifier})`;
+            isNameAccess || !resolved.isDashed
+              ? resolved.identifier // Raw identifier for .name access or non-dashed idents
+              : `var(${resolved.identifier})`; // var() wrapper for dashed idents in direct interpolation
         } else {
           replacement =
             resolved.type === "styled-component"

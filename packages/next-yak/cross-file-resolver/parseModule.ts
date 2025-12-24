@@ -142,10 +142,14 @@ function parseStyledComponents(
  * - .yak files where users write ident("string") directly
  */
 function parseIdents(sourceContents: string): Record<string, Ident> {
-  // Match: const varName = ident("identifier")
+  // Match: [export] const varName = [/*#__PURE__*/] ident("identifier")
   // The regex captures the variable name and the identifier string
+  // Handles:
+  // - export const color = ident("--color")
+  // - const color = /*#__PURE__*/ ident("--color")
+  // - export const color = /*#__PURE__*/ ident("--color")
   const identRegex =
-    /(?:const|let|var)\s+(\w+)\s*=\s*ident\s*\(\s*["']([^"']+)["']\s*\)/g;
+    /(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\/\*#__PURE__\*\/\s*)?ident\s*\(\s*["']([^"']+)["']\s*\)/g;
   const idents: Record<string, Ident> = {};
 
   for (const match of sourceContents.matchAll(identRegex)) {
