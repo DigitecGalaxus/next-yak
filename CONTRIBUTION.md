@@ -71,11 +71,12 @@ Rust packages under `./packages/yak-swc/`:
 - [./css_in_js_parser](./packages/yak-swc/css_in_js_parser) - Rust library for parsing CSS-in-JS syntax
 - [./relative_posix_path](./packages/yak-swc/relative_posix_path) - Rust utility for path handling
 
-Additional packages
+Additional directories
 
-- [benchmark](./packages/benchmark) - CI-benchmarking tool
-- [example](./packages/example) - Demo Next.js application, featuring various use cases
-- [docs](./packages/docs) - Documentation and playground, hosted at [yak.js.org](https://yak.js.org/)
+- [benchmarks](./benchmarks) - CI-benchmarking tool
+- [examples/next-js](./examples/next-js) - Demo Next.js application, featuring various use cases
+- [examples/vite](./examples/vite) - Demo Vite application
+- [docs](./docs) - Documentation and playground, hosted at [yak.js.org](https://yak.js.org/)
 
 ## Developing `next-yak` TypeScript/JavaScript
 
@@ -132,7 +133,7 @@ pnpm test:snapshots
 
 ### Running the example app
 
-The example app is a Next.js application that demonstrates the features of `next-yak`. The example app is located in the `./packages/example` directory.
+The example app is a Next.js application that demonstrates the features of `next-yak`. The example app is located in the `./examples/next-js` directory.
 
 Build everything and start the example app
 
@@ -166,7 +167,7 @@ pnpm example
 Debugging the SWC plugin in the example app, you can enable debug logging
 
 ```js
-// ./packages/example/next.config.mjs
+// ./examples/next-js/next.config.mjs
 export default withYak({
   experiments: {
     debug: true, // or { filter: 'component.tsx.css$' }
