@@ -140,8 +140,7 @@ export async function uncachedResolveCrossFileConstant(
           // Check if this is a .name access (specifier ends with "name")
           // When SWC sees ${color.name}, it emits url("./file:color:name",mixin)
           const isNameAccess =
-            specifier.length > 0 &&
-            specifier[specifier.length - 1] === "name";
+            specifier.length > 0 && specifier[specifier.length - 1] === "name";
 
           replacement =
             isNameAccess || !resolved.isDashed

@@ -653,13 +653,12 @@ impl YakTransform for TransformIdent {
     _yak_imports: &mut YakImports,
   ) -> YakTransformResult {
     // Transform: ident`--thumb-size` -> ident("--slider_thumbSize_hash")
-    let arguments: Vec<ExprOrSpread> = vec![ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(
-      Str {
+    let arguments: Vec<ExprOrSpread> =
+      vec![ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(Str {
         span: DUMMY_SP,
         value: self.identifier_name.clone().into(),
         raw: None,
-      },
-    ))))];
+      }))))];
 
     YakTransformResult {
       css: YakCss {
