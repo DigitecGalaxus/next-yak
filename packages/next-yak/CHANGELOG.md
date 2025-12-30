@@ -1,5 +1,13 @@
 # next-yak
 
+## 9.0.1
+
+### Patch Changes
+
+- 3e4fc3b: Add experimental vite support
+- Updated dependencies [3e4fc3b]
+  - yak-swc@9.0.1
+
 ## 9.0.0
 
 ### Patch Changes

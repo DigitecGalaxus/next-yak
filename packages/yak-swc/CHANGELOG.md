@@ -1,5 +1,11 @@
 # yak-swc
 
+## 9.0.1
+
+### Patch Changes
+
+- 3e4fc3b: Add experimental vite support
+
 ## 9.0.0
 
 ### Major Changes
