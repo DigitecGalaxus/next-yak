@@ -177,7 +177,6 @@ export async function viteYak(
                                 prefix: yakOptions.prefix,
                                 displayNames: yakOptions.displayNames,
                                 importMode: {
-                                  type: "Custom",
                                   value:
                                     "virtual:yak-css:{{__MODULE_PATH__}}.css",
                                   transpilation: "Css",
@@ -327,7 +326,6 @@ function transform(
               prefix: yakOptions.prefix,
               displayNames: yakOptions.displayNames,
               importMode: {
-                type: "Custom",
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",
                 encoding: "None",
