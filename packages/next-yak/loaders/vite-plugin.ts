@@ -12,7 +12,7 @@ import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
 
 type ViteYakPluginOptions = YakConfigOptions & {
-  swcOptions: Omit<
+  swcOptions?: Omit<
     Options,
     | "filename"
     | "sourceFileName"
@@ -159,7 +159,7 @@ export async function viteYak(
                       sourceFileName: modulePath,
                       ...yakOptions.swcOptions,
                       jsc: {
-                        ...yakOptions.swcOptions.jsc,
+                        ...yakOptions.swcOptions?.jsc,
                         experimental: {
                           plugins: [
                             [
@@ -171,7 +171,8 @@ export async function viteYak(
                                 displayNames: yakOptions.displayNames,
                                 importMode: {
                                   type: "Custom",
-                                  value: `virtual:yak-css:${modulePath}.css`,
+                                  value:
+                                    "virtual:yak-css:{{__MODULE_PATH__}}.css",
                                   transpilation: "Css",
                                   encoding: "None",
                                 },
@@ -308,7 +309,7 @@ function transform(
     sourceRoot: rootPath,
     ...yakOptions.swcOptions,
     jsc: {
-      ...yakOptions.swcOptions.jsc,
+      ...yakOptions.swcOptions?.jsc,
       experimental: {
         plugins: [
           [
@@ -320,7 +321,7 @@ function transform(
               displayNames: yakOptions.displayNames,
               importMode: {
                 type: "Custom",
-                value: `virtual:yak-css:${modulePath}.css`,
+                value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",
                 encoding: "None",
               },

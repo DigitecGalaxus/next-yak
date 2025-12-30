@@ -34,6 +34,11 @@ impl NamingConvention {
     }
   }
 
+  /// Returns the file name/path used for this naming convention
+  pub fn get_file_name(&self) -> &str {
+    &self.file_name
+  }
+
   /// Returns the hash of the file name
   /// This allows to generate unique names based on the file name
   /// which will be consistent across multiple builds

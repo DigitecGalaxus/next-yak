@@ -631,8 +631,9 @@ where
                 CssDependencyMode::Custom {
                   value, encoding, ..
                 } => {
+                  let resolved_value = value.replace("{{__MODULE_PATH__}}", self.naming_convention.get_file_name());
                   format!(
-                    "{value}{}",
+                    "{resolved_value}{}",
                     match encoding {
                       ImportModeEncoding::Base64 =>
                         BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
