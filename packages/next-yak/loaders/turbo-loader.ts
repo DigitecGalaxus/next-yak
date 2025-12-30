@@ -76,8 +76,6 @@ export default async function cssExtractLoader(
         return parseModule(
           {
             transpilationMode: "Css",
-            suppressDeprecationWarnings:
-              experiments?.suppressDeprecationWarnings,
             extractExports: async (modulePath) => {
               const sourceContents = await fsReadFile(modulePath);
               return parseExports(sourceContents);

@@ -153,8 +153,6 @@ where
   has_user_global: bool,
   /// Flag to suppress deprecation warnings
   suppress_deprecation_warnings: bool,
-  /// The filename being processed (for warning messages)
-  filename: String,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -189,7 +187,6 @@ where
       default_export_comment: None,
       has_user_global: false,
       suppress_deprecation_warnings,
-      filename: filename.as_ref().to_string(),
     }
   }
 
@@ -277,12 +274,12 @@ where
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
           eprintln!(
-            "\n\x1b[33mwarning\x1b[0m: :global() selectors are deprecated and will be removed in the next major version.\
-            \n  \x1b[36m-->\x1b[0m {}\
+            "\n:global() selectors are deprecated and will be removed in the next major version.\
+            \n --> {}
             \n\nTo migrate to native CSS transpilation, add to your next.config.js:\
             \n  experiments: {{ transpilationMode: 'Css' }}\
             \n\nSee \x1b[4mhttps://yak.js.org/docs/migration-to-native-css\x1b[0m for migration guide.\n",
-            self.filename
+            self.naming_convention.get_file_name()
           );
         }
       }

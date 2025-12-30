@@ -88,8 +88,6 @@ function getParseContext(
       return loader.importModule(modulePath);
     },
     transpilationMode: loader.getOptions().experiments?.transpilationMode,
-    suppressDeprecationWarnings:
-      loader.getOptions().experiments?.suppressDeprecationWarnings,
   };
 }
 

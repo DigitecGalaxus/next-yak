@@ -153,7 +153,6 @@ function objectToModuleExport(object: object) {
 export type ParseContext = {
   cache?: { parse?: Cache<ParsedModule> };
   transpilationMode?: "Css" | "CssModule";
-  suppressDeprecationWarnings?: boolean;
   evaluateYakModule?: (
     modulePath: string,
   ) => Promise<Record<string, unknown>> | Record<string, unknown>;
