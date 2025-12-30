@@ -22,39 +22,46 @@ type ViteYakPluginOptions = YakConfigOptions & {
   >;
 };
 
+const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
+  jsc: {
+    parser: {
+      syntax: "typescript",
+      tsx: true,
+      decorators: false,
+      dynamicImport: true,
+    },
+    transform: {
+      react: {
+        runtime: "preserve",
+      },
+    },
+    target: "es2022",
+    loose: false,
+    minify: {
+      compress: false,
+      mangle: false,
+    },
+    preserveAllComments: true,
+  },
+  minify: false,
+  isModule: true,
+};
+
 export async function viteYak(
-  yakOptions: ViteYakPluginOptions = {
+  userOptions: ViteYakPluginOptions = {},
+): Promise<Plugin> {
+  const yakOptions: ViteYakPluginOptions = {
     experiments: {
       transpilationMode: "Css",
+      ...userOptions.experiments,
     },
-    minify: process.env.NODE_ENV === "production",
-    swcOptions: {
-      jsc: {
-        parser: {
-          syntax: "typescript",
-          tsx: true,
-          decorators: false,
-          dynamicImport: true,
-        },
-        transform: {
-          react: {
-            runtime: "preserve",
-          },
-        },
-        target: "es2022",
-        loose: false,
-        minify: {
-          compress: false,
-          mangle: false,
-        },
-        preserveAllComments: true,
-      },
-      minify: false,
-      isModule: true,
-    },
-  },
-): Promise<Plugin> {
-  yakOptions.displayNames = yakOptions.displayNames ?? !yakOptions.minify;
+    minify: userOptions.minify ?? process.env.NODE_ENV === "production",
+    prefix: userOptions.prefix,
+    contextPath: userOptions.contextPath,
+    swcOptions: deepMerge(defaultSwcOptions!, userOptions.swcOptions ?? {}),
+  };
+  yakOptions.displayNames =
+    userOptions.displayNames ?? yakOptions.displayNames ?? !yakOptions.minify;
   let root = process.cwd();
   const debugLog = createDebugLogger(yakOptions.experiments?.debug, root);
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
@@ -360,4 +367,35 @@ export function createDebugLogger(
       console.log("🐮 Yak", relative(root, pathWithExtension), "\n\n", message);
     }
   };
+}
+
+/**
+ * Deep merge two objects, with source values overriding target values.
+ */
+function deepMerge<T extends Record<string, unknown>>(
+  target: T,
+  source: Partial<T>,
+): T {
+  const result = { ...target };
+  for (const key of Object.keys(source) as Array<keyof T>) {
+    const sourceValue = source[key];
+    const targetValue = target[key];
+    if (
+      sourceValue !== undefined &&
+      typeof sourceValue === "object" &&
+      sourceValue !== null &&
+      !Array.isArray(sourceValue) &&
+      typeof targetValue === "object" &&
+      targetValue !== null &&
+      !Array.isArray(targetValue)
+    ) {
+      result[key] = deepMerge(
+        targetValue as Record<string, unknown>,
+        sourceValue as Record<string, unknown>,
+      ) as T[keyof T];
+    } else if (sourceValue !== undefined) {
+      result[key] = sourceValue as T[keyof T];
+    }
+  }
+  return result;
 }
