@@ -348,6 +348,7 @@ export const mixin = css<{ $primary: boolean }>` // [!code --]
 
 ### Reference external styles
 
+
 If you reference external styles (styles that aren't component styles) in your styled components, you need to change the identifier in addition to the import.
 
 ```tsx title="component.tsx"
@@ -365,6 +366,11 @@ const Button = styled.button`
   }
 `;
 ```
+
+
+<Callout type="warn">
+**Deprecation Notice**: The `:global()` selector syntax is deprecated. Please migrate to native CSS transpilation mode to ensure compatibility with future versions. For more informations read <a href="/docs/migration-to-native-css">Migration to native CSS</a>
+</Callout>
 
 The reason for this is that next-yak transforms your styles to module-css styles. And if you want to reference global selectors, you need to use the `:global` selector.
 More can be found in the [docs of css-modules](https://github.com/css-modules/css-modules/blob/master/docs/composition.md#exceptions)
