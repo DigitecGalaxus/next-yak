@@ -1,0 +1,113 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`renders Clock component 1`] = `
+<DocumentFragment>
+  <div
+    class="Clock_ClockWrapper_YzNyVi"
+  >
+    <div
+      class="Clock_ClockFace_YzNyVi"
+    >
+      <div
+        class="Clock_ClockCenter_YzNyVi"
+      />
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="0"
+        style="--Clock_ClockNumber__transform_YzNyVi: 0deg; --Clock_ClockNumber__transform_YzNyVi-01: 0deg;"
+      >
+        12
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="1"
+        style="--Clock_ClockNumber__transform_YzNyVi: 30deg; --Clock_ClockNumber__transform_YzNyVi-01: -30deg;"
+      >
+        1
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="2"
+        style="--Clock_ClockNumber__transform_YzNyVi: 60deg; --Clock_ClockNumber__transform_YzNyVi-01: -60deg;"
+      >
+        2
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="3"
+        style="--Clock_ClockNumber__transform_YzNyVi: 90deg; --Clock_ClockNumber__transform_YzNyVi-01: -90deg;"
+      >
+        3
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="4"
+        style="--Clock_ClockNumber__transform_YzNyVi: 120deg; --Clock_ClockNumber__transform_YzNyVi-01: -120deg;"
+      >
+        4
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="5"
+        style="--Clock_ClockNumber__transform_YzNyVi: 150deg; --Clock_ClockNumber__transform_YzNyVi-01: -150deg;"
+      >
+        5
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="6"
+        style="--Clock_ClockNumber__transform_YzNyVi: 180deg; --Clock_ClockNumber__transform_YzNyVi-01: -180deg;"
+      >
+        6
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="7"
+        style="--Clock_ClockNumber__transform_YzNyVi: 210deg; --Clock_ClockNumber__transform_YzNyVi-01: -210deg;"
+      >
+        7
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="8"
+        style="--Clock_ClockNumber__transform_YzNyVi: 240deg; --Clock_ClockNumber__transform_YzNyVi-01: -240deg;"
+      >
+        8
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="9"
+        style="--Clock_ClockNumber__transform_YzNyVi: 270deg; --Clock_ClockNumber__transform_YzNyVi-01: -270deg;"
+      >
+        9
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="10"
+        style="--Clock_ClockNumber__transform_YzNyVi: 300deg; --Clock_ClockNumber__transform_YzNyVi-01: -300deg;"
+      >
+        10
+      </div>
+      <div
+        class="Clock_ClockNumber_YzNyVi"
+        index="11"
+        style="--Clock_ClockNumber__transform_YzNyVi: 330deg; --Clock_ClockNumber__transform_YzNyVi-01: -330deg;"
+      >
+        11
+      </div>
+      <div
+        class="ClockHands_ClockHand_Y1HSyQ ClockHands_SecondHand_Y1HSyQ ClockHands_SecondHand__theme_highContrast_Y1HSyQ-01"
+        style="--ClockHands_ClockHand__transform_Y1HSyQ: 0deg;"
+      />
+      <div
+        class="ClockHands_ClockHand_Y1HSyQ ClockHands_MinuteHand_Y1HSyQ"
+        style="--ClockHands_ClockHand__transform_Y1HSyQ: 0deg;"
+      />
+      <div
+        class="ClockHands_ClockHand_Y1HSyQ ClockHands_HourHand_Y1HSyQ"
+        style="--ClockHands_ClockHand__transform_Y1HSyQ: 450deg;"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;

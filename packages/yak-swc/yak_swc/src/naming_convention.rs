@@ -34,6 +34,11 @@ impl NamingConvention {
     }
   }
 
+  /// Returns the file name/path used for this naming convention
+  pub fn get_file_name(&self) -> &str {
+    &self.file_name
+  }
+
   /// Returns the hash of the file name
   /// This allows to generate unique names based on the file name
   /// which will be consistent across multiple builds
@@ -205,7 +210,7 @@ impl TranspilationMode {
 }
 
 /// Defines how CSS imports should be processed and transpiled
-#[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Deserialize, Clone, PartialEq, Eq)]
 #[serde(tag = "type")]
 pub enum CssDependencyMode {
   /// Add a new import statement using the inline match resource syntax of webpack
@@ -216,6 +221,19 @@ pub enum CssDependencyMode {
   /// The CSS content will be added as new import statement
   /// encoded as a data URL string
   DataUrl,
+  /// Custom import mode with a configurable value that is used to generate the import statement
+  /// e.g. import "myCustomImport,1234"
+  Custom {
+    value: String,
+    transpilation: TranspilationMode,
+    encoding: ImportModeEncoding,
+  },
+}
+
+#[derive(Deserialize, Clone, PartialEq, Eq)]
+pub enum ImportModeEncoding {
+  Base64,
+  None,
 }
 
 /// Extract the transpilation mode from an import mode
@@ -226,6 +244,7 @@ impl CssDependencyMode {
     match self {
       CssDependencyMode::InlineMatchResource { transpilation } => *transpilation,
       CssDependencyMode::DataUrl => TranspilationMode::Css,
+      CssDependencyMode::Custom { transpilation, .. } => *transpilation,
     }
   }
 }

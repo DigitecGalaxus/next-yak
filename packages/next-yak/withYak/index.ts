@@ -214,7 +214,10 @@ function removeUndefinedRecursive<T>(obj: T): {} {
 /**
  * Try to resolve yak
  */
-function resolveYakContext(contextPath: string | undefined, cwd: string) {
+export function resolveYakContext(
+  contextPath: string | undefined,
+  cwd: string,
+) {
   const yakContext = contextPath
     ? path.resolve(cwd, contextPath)
     : path.resolve(cwd, "yak.context");

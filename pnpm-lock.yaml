@@ -100,6 +100,9 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: 5.1.0
       version: 5.1.0
+    '@vitejs/plugin-react-swc':
+      specifier: 4.2.0
+      version: 4.2.0
     autoprefixer:
       specifier: 10.4.21
       version: 10.4.21
@@ -199,6 +202,9 @@ catalogs:
     tsup:
       specifier: 8.5.0
       version: 8.5.0
+    tsx:
+      specifier: 4.21.0
+      version: 4.21.0
     typescript:
       specifier: 5.9.3
       version: 5.9.3
@@ -232,7 +238,7 @@ importers:
         specifier: catalog:dev
         version: 3.6.2
 
-  packages/benchmarks:
+  benchmarks:
     dependencies:
       '@swc/core':
         specifier: catalog:core
@@ -242,7 +248,7 @@ importers:
         version: 16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       react:
         specifier: catalog:dev
         version: 19.2.3
@@ -254,7 +260,7 @@ importers:
         version: 6.1.19(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
     devDependencies:
       '@codspeed/benchmark.js-plugin':
         specifier: catalog:dev
@@ -276,12 +282,15 @@ importers:
         version: 1.2.2
       tsup:
         specifier: catalog:dev
-        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.7.1)
+        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
+      tsx:
+        specifier: catalog:dev
+        version: 4.21.0
       typescript:
         specifier: catalog:dev
         version: 5.9.3
 
-  packages/cross-file-tests:
+  cross-file-tests:
     devDependencies:
       '@swc/core':
         specifier: catalog:core
@@ -294,7 +303,7 @@ importers:
         version: 4.50.0
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       swc-loader:
         specifier: catalog:dev
         version: 0.2.6(@swc/core@1.15.5(@swc/helpers@0.5.17))(webpack@5.102.1(@swc/core@1.15.5(@swc/helpers@0.5.17)))
@@ -303,18 +312,18 @@ importers:
         version: 4.6.0
       vite:
         specifier: catalog:dev
-        version: 7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+        version: 7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       vitest:
         specifier: catalog:dev
-        version: 4.0.5(@types/debug@4.1.12)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       webpack:
         specifier: catalog:dev
         version: 5.102.1(@swc/core@1.15.5(@swc/helpers@0.5.17))
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
 
-  packages/docs:
+  docs:
     dependencies:
       '@babel/preset-typescript':
         specifier: catalog:dev
@@ -348,7 +357,7 @@ importers:
         version: 16.0.5(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       fumadocs-mdx:
         specifier: catalog:dev
-        version: 13.0.2(fumadocs-core@16.0.5(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))
+        version: 13.0.2(fumadocs-core@16.0.5(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
       fumadocs-twoslash:
         specifier: catalog:dev
         version: 3.1.9(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-ui@16.0.5(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.16))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
@@ -369,7 +378,7 @@ importers:
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next-yak:
         specifier: workspace:*
-        version: link:../next-yak
+        version: link:../packages/next-yak
       prettier:
         specifier: catalog:dev
         version: 3.6.2
@@ -393,7 +402,7 @@ importers:
         version: 1.2.1(react@19.2.3)(shiki@3.20.0)
       yak-swc:
         specifier: workspace:*
-        version: link:../yak-swc
+        version: link:../packages/yak-swc
     devDependencies:
       '@swc/helpers':
         specifier: catalog:dev
@@ -432,6 +441,116 @@ importers:
         specifier: catalog:dev
         version: 0.13.1
 
+  examples/next-js:
+    dependencies:
+      '@types/node':
+        specifier: catalog:dev
+        version: 24.9.2
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.7)
+      next:
+        specifier: catalog:dev
+        version: 16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      next-yak:
+        specifier: workspace:*
+        version: link:../../packages/next-yak
+      postcss-nested:
+        specifier: catalog:dev
+        version: 7.0.2(postcss@8.5.6)
+      react:
+        specifier: catalog:dev
+        version: 19.2.3
+      react-dom:
+        specifier: catalog:dev
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+      yak-swc:
+        specifier: workspace:*
+        version: link:../../packages/yak-swc
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: catalog:dev
+        version: 3.3.1
+      '@next/eslint-plugin-next':
+        specifier: catalog:dev
+        version: 16.1.1
+      '@testing-library/dom':
+        specifier: catalog:dev
+        version: 10.4.1
+      '@testing-library/jest-dom':
+        specifier: catalog:dev
+        version: 6.9.1
+      '@testing-library/react':
+        specifier: catalog:dev
+        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/jest':
+        specifier: catalog:dev
+        version: 30.0.0
+      '@vitejs/plugin-react':
+        specifier: catalog:dev
+        version: 5.1.0(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
+      eslint:
+        specifier: catalog:dev
+        version: 9.38.0(jiti@2.6.1)
+      eslint-config-next:
+        specifier: catalog:dev
+        version: 16.0.4(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-yak:
+        specifier: workspace:^
+        version: link:../../packages/eslint-plugin-yak
+      jest:
+        specifier: catalog:dev
+        version: 30.2.0(@types/node@24.9.2)
+      jest-environment-jsdom:
+        specifier: catalog:dev
+        version: 30.2.0
+      jsdom:
+        specifier: catalog:dev
+        version: 27.0.1
+      vite:
+        specifier: catalog:dev
+        version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
+      vitest:
+        specifier: catalog:dev
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
+
+  examples/vite:
+    dependencies:
+      next-yak:
+        specifier: workspace:*
+        version: link:../../packages/next-yak
+      react:
+        specifier: catalog:dev
+        version: 19.2.3
+      react-dom:
+        specifier: catalog:dev
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:dev
+        version: 24.9.2
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react-swc':
+        specifier: catalog:dev
+        version: 4.2.0(@swc/helpers@0.5.17)(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+      vite:
+        specifier: catalog:dev
+        version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
+
   packages/eslint-plugin-yak:
     dependencies:
       '@typescript-eslint/parser':
@@ -455,92 +574,13 @@ importers:
         version: 2.3.0(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)(typescript@5.9.3)
       tsup:
         specifier: catalog:dev
-        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.7.1)
+        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
       typescript:
         specifier: catalog:dev
         version: 5.9.3
       vitest:
         specifier: catalog:dev
-        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
-
-  packages/example:
-    dependencies:
-      '@types/node':
-        specifier: catalog:dev
-        version: 24.9.2
-      '@types/react':
-        specifier: catalog:dev
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: catalog:dev
-        version: 19.2.3(@types/react@19.2.7)
-      next:
-        specifier: catalog:dev
-        version: 16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      next-yak:
-        specifier: workspace:*
-        version: link:../next-yak
-      postcss-nested:
-        specifier: catalog:dev
-        version: 7.0.2(postcss@8.5.6)
-      react:
-        specifier: catalog:dev
-        version: 19.2.3
-      react-dom:
-        specifier: catalog:dev
-        version: 19.2.3(react@19.2.3)
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.3
-      yak-swc:
-        specifier: workspace:*
-        version: link:../yak-swc
-    devDependencies:
-      '@eslint/eslintrc':
-        specifier: catalog:dev
-        version: 3.3.1
-      '@next/eslint-plugin-next':
-        specifier: catalog:dev
-        version: 16.1.1
-      '@testing-library/dom':
-        specifier: catalog:dev
-        version: 10.4.1
-      '@testing-library/jest-dom':
-        specifier: catalog:dev
-        version: 6.9.1
-      '@testing-library/react':
-        specifier: catalog:dev
-        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@types/jest':
-        specifier: catalog:dev
-        version: 30.0.0
-      '@vitejs/plugin-react':
-        specifier: catalog:dev
-        version: 5.1.0(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))
-      eslint:
-        specifier: catalog:dev
-        version: 9.38.0(jiti@2.6.1)
-      eslint-config-next:
-        specifier: catalog:dev
-        version: 16.0.4(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-yak:
-        specifier: workspace:^
-        version: link:../eslint-plugin-yak
-      jest:
-        specifier: catalog:dev
-        version: 30.2.0(@types/node@24.9.2)
-      jest-environment-jsdom:
-        specifier: catalog:dev
-        version: 30.2.0
-      jsdom:
-        specifier: catalog:dev
-        version: 27.0.1
-      vite:
-        specifier: catalog:dev
-        version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
-      vitest:
-        specifier: catalog:dev
-        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
 
   packages/next-yak:
     dependencies:
@@ -598,16 +638,16 @@ importers:
         version: 19.2.3
       tsup:
         specifier: catalog:dev
-        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.7.1)
+        version: 8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
       typescript:
         specifier: catalog:dev
         version: 5.9.3
       vite:
         specifier: catalog:dev
-        version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+        version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       vitest:
         specifier: catalog:dev
-        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
 
   packages/yak-swc:
     dependencies:
@@ -2878,6 +2918,12 @@ packages:
         optional: true
       vue-router:
         optional: true
+
+  '@vitejs/plugin-react-swc@4.2.0':
+    resolution: {integrity: sha512-/tesahXD1qpkGC6FzMoFOJj0RyZdw9xLELOL+6jbElwmWfwOnIVy+IfpY+o9JfD9PKaR/Eyb6DNrvbXpuvA+8Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      vite: ^4 || ^5 || ^6 || ^7
 
   '@vitejs/plugin-react@5.1.0':
     resolution: {integrity: sha512-4LuWrg7EKWgQaMJfnN+wcmbAW+VSsCmqGohftWjuct47bv8uE4n/nPpq4XjJPsxgq00GGG5J8dvBczp8uxScew==}
@@ -5393,10 +5439,6 @@ packages:
     peerDependencies:
       postcss: ^8.2.14
 
-  postcss-selector-parser@7.1.0:
-    resolution: {integrity: sha512-8sLjZwK0R+JlxlYcTuVnyT2v+htpdrjDOKuMcOVdYjt52Lh8hWRYpxBPoKx/Zg+bcjc3wx6fmQevMmUztS/ccA==}
-    engines: {node: '>=4'}
-
   postcss-selector-parser@7.1.1:
     resolution: {integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==}
     engines: {node: '>=4'}
@@ -6128,6 +6170,11 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  tsx@4.21.0:
+    resolution: {integrity: sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
 
   twoslash-protocol@0.3.4:
     resolution: {integrity: sha512-HHd7lzZNLUvjPzG/IE6js502gEzLC1x7HaO1up/f72d8G8ScWAs9Yfa97igelQRDl5h9tGcdFsRp+lNVre1EeQ==}
@@ -7445,7 +7492,7 @@ snapshots:
   '@jest/console@30.2.0':
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       jest-message-util: 30.2.0
       jest-util: 30.2.0
@@ -7459,14 +7506,14 @@ snapshots:
       '@jest/test-result': 30.2.0
       '@jest/transform': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 4.3.1
       exit-x: 0.2.2
       graceful-fs: 4.2.11
       jest-changed-files: 30.2.0
-      jest-config: 30.2.0(@types/node@24.9.2)
+      jest-config: 30.2.0(@types/node@25.0.3)
       jest-haste-map: 30.2.0
       jest-message-util: 30.2.0
       jest-regex-util: 30.0.1
@@ -7495,7 +7542,7 @@ snapshots:
       '@jest/fake-timers': 30.2.0
       '@jest/types': 30.2.0
       '@types/jsdom': 21.1.7
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-mock: 30.2.0
       jest-util: 30.2.0
       jsdom: 26.1.0
@@ -7504,7 +7551,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-mock: 30.2.0
 
   '@jest/expect-utils@30.2.0':
@@ -7522,7 +7569,7 @@ snapshots:
     dependencies:
       '@jest/types': 30.2.0
       '@sinonjs/fake-timers': 13.0.5
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-message-util: 30.2.0
       jest-mock: 30.2.0
       jest-util: 30.2.0
@@ -7540,7 +7587,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-regex-util: 30.0.1
 
   '@jest/reporters@30.2.0':
@@ -7551,7 +7598,7 @@ snapshots:
       '@jest/transform': 30.2.0
       '@jest/types': 30.2.0
       '@jridgewell/trace-mapping': 0.3.31
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       collect-v8-coverage: 1.0.3
       exit-x: 0.2.2
@@ -7632,7 +7679,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       '@types/yargs': 17.0.34
       chalk: 4.1.2
 
@@ -8588,7 +8635,7 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
 
@@ -8634,7 +8681,7 @@ snapshots:
 
   '@types/webpack@5.28.5(@swc/core@1.15.5(@swc/helpers@0.5.17))':
     dependencies:
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       tapable: 2.3.0
       webpack: 5.104.1(@swc/core@1.15.5(@swc/helpers@0.5.17))
     transitivePeerDependencies:
@@ -8880,7 +8927,15 @@ snapshots:
       next: 16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
 
-  '@vitejs/plugin-react@5.1.0(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))':
+  '@vitejs/plugin-react-swc@4.2.0(@swc/helpers@0.5.17)(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-beta.43
+      '@swc/core': 1.15.5(@swc/helpers@0.5.17)
+      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+
+  '@vitejs/plugin-react@5.1.0(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -8888,7 +8943,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.43
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -8901,21 +8956,21 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.5(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))':
+  '@vitest/mocker@4.0.5(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))':
     dependencies:
       '@vitest/spy': 4.0.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
 
-  '@vitest/mocker@4.0.5(vite@7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))':
+  '@vitest/mocker@4.0.5(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))':
     dependencies:
       '@vitest/spy': 4.0.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
 
   '@vitest/pretty-format@4.0.5':
     dependencies:
@@ -9805,7 +9860,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.27.2
       '@esbuild/win32-ia32': 0.27.2
       '@esbuild/win32-x64': 0.27.2
-    optional: true
 
   escalade@3.2.0: {}
 
@@ -9821,7 +9875,7 @@ snapshots:
       eslint: 9.38.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.38.0(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.38.0(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.38.0(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.38.0(jiti@2.6.1))
@@ -9875,7 +9929,7 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.38.0(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
@@ -9890,7 +9944,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.38.0(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -10261,7 +10315,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-mdx@13.0.2(fumadocs-core@16.0.5(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)):
+  fumadocs-mdx@13.0.2(fumadocs-core@16.0.5(@types/react@19.2.7)(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.1.0
@@ -10284,7 +10338,7 @@ snapshots:
     optionalDependencies:
       next: 16.1.1(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
-      vite: 7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -10821,7 +10875,7 @@ snapshots:
       '@jest/expect': 30.2.0
       '@jest/test-result': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.7.0
@@ -10892,6 +10946,38 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
+  jest-config@30.2.0(@types/node@25.0.3):
+    dependencies:
+      '@babel/core': 7.28.5
+      '@jest/get-type': 30.1.0
+      '@jest/pattern': 30.0.1
+      '@jest/test-sequencer': 30.2.0
+      '@jest/types': 30.2.0
+      babel-jest: 30.2.0(@babel/core@7.28.5)
+      chalk: 4.1.2
+      ci-info: 4.3.1
+      deepmerge: 4.3.1
+      glob: 10.4.5
+      graceful-fs: 4.2.11
+      jest-circus: 30.2.0
+      jest-docblock: 30.2.0
+      jest-environment-node: 30.2.0
+      jest-regex-util: 30.0.1
+      jest-resolve: 30.2.0
+      jest-runner: 30.2.0
+      jest-util: 30.2.0
+      jest-validate: 30.2.0
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 30.2.0
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 25.0.3
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+
   jest-diff@29.7.0:
     dependencies:
       chalk: 4.1.2
@@ -10923,7 +11009,7 @@ snapshots:
       '@jest/environment': 30.2.0
       '@jest/environment-jsdom-abstract': 30.2.0(jsdom@26.1.0)
       '@types/jsdom': 21.1.7
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jsdom: 26.1.0
     transitivePeerDependencies:
       - bufferutil
@@ -10935,7 +11021,7 @@ snapshots:
       '@jest/environment': 30.2.0
       '@jest/fake-timers': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-mock: 30.2.0
       jest-util: 30.2.0
       jest-validate: 30.2.0
@@ -10945,7 +11031,7 @@ snapshots:
   jest-haste-map@30.2.0:
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -10984,7 +11070,7 @@ snapshots:
   jest-mock@30.2.0:
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       jest-util: 30.2.0
 
   jest-pnp-resolver@1.2.3(jest-resolve@30.2.0):
@@ -11018,7 +11104,7 @@ snapshots:
       '@jest/test-result': 30.2.0
       '@jest/transform': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       emittery: 0.13.1
       exit-x: 0.2.2
@@ -11047,7 +11133,7 @@ snapshots:
       '@jest/test-result': 30.2.0
       '@jest/transform': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       cjs-module-lexer: 2.1.0
       collect-v8-coverage: 1.0.3
@@ -11094,7 +11180,7 @@ snapshots:
   jest-util@30.2.0:
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       chalk: 4.1.2
       ci-info: 4.3.1
       graceful-fs: 4.2.11
@@ -11113,7 +11199,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 30.2.0
       '@jest/types': 30.2.0
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -11128,7 +11214,7 @@ snapshots:
 
   jest-worker@30.2.0:
     dependencies:
-      '@types/node': 24.9.2
+      '@types/node': 25.0.3
       '@ungap/structured-clone': 1.3.0
       jest-util: 30.2.0
       merge-stream: 2.0.0
@@ -12162,23 +12248,19 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(yaml@2.7.1):
+  postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       lilconfig: 3.1.3
     optionalDependencies:
       jiti: 2.6.1
       postcss: 8.5.6
+      tsx: 4.21.0
       yaml: 2.7.1
 
   postcss-nested@7.0.2(postcss@8.5.6):
     dependencies:
       postcss: 8.5.6
-      postcss-selector-parser: 7.1.0
-
-  postcss-selector-parser@7.1.0:
-    dependencies:
-      cssesc: 3.0.0
-      util-deprecate: 1.0.2
+      postcss-selector-parser: 7.1.1
 
   postcss-selector-parser@7.1.1:
     dependencies:
@@ -13020,7 +13102,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.7.1):
+  tsup@8.5.0(@swc/core@1.15.5(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.25.12)
       cac: 6.7.14
@@ -13031,7 +13113,7 @@ snapshots:
       fix-dts-default-cjs-exports: 1.0.1
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(yaml@2.7.1)
+      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.7.1)
       resolve-from: 5.0.0
       rollup: 4.52.5
       source-map: 0.8.0-beta.0
@@ -13048,6 +13130,13 @@ snapshots:
       - supports-color
       - tsx
       - yaml
+
+  tsx@4.21.0:
+    dependencies:
+      esbuild: 0.27.2
+      get-tsconfig: 4.13.0
+    optionalDependencies:
+      fsevents: 2.3.3
 
   twoslash-protocol@0.3.4: {}
 
@@ -13241,7 +13330,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -13255,9 +13344,10 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.2
       terser: 5.44.0
+      tsx: 4.21.0
       yaml: 2.7.1
 
-  vite@7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vite@7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -13271,9 +13361,10 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.2
       terser: 5.44.0
+      tsx: 4.21.0
       yaml: 2.7.1
 
-  vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
@@ -13287,13 +13378,30 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.2
       terser: 5.44.0
+      tsx: 4.21.0
       yaml: 2.7.1
-    optional: true
 
-  vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
+    dependencies:
+      esbuild: 0.27.2
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.52.5
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 25.0.3
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      lightningcss: 1.30.2
+      terser: 5.44.0
+      tsx: 4.21.0
+      yaml: 2.7.1
+
+  vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.0.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       '@vitest/expect': 4.0.5
-      '@vitest/mocker': 4.0.5(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))
+      '@vitest/mocker': 4.0.5(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
       '@vitest/pretty-format': 4.0.5
       '@vitest/runner': 4.0.5
       '@vitest/snapshot': 4.0.5
@@ -13310,7 +13418,7 @@ snapshots:
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
@@ -13330,10 +13438,10 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       '@vitest/expect': 4.0.5
-      '@vitest/mocker': 4.0.5(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))
+      '@vitest/mocker': 4.0.5(vite@7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
       '@vitest/pretty-format': 4.0.5
       '@vitest/runner': 4.0.5
       '@vitest/snapshot': 4.0.5
@@ -13350,7 +13458,7 @@ snapshots:
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
@@ -13370,10 +13478,10 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.5(@types/debug@4.1.12)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1):
+  vitest@4.0.5(@types/debug@4.1.12)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1):
     dependencies:
       '@vitest/expect': 4.0.5
-      '@vitest/mocker': 4.0.5(vite@7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1))
+      '@vitest/mocker': 4.0.5(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1))
       '@vitest/pretty-format': 4.0.5
       '@vitest/runner': 4.0.5
       '@vitest/snapshot': 4.0.5
@@ -13390,7 +13498,7 @@ snapshots:
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.1.12(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.7.1)
+      vite: 7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.7.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12

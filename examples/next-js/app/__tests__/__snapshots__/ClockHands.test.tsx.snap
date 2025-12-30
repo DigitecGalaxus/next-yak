@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`renders ClockHands component 1`] = `
+<DocumentFragment>
+  <div
+    class="ClockHands_ClockHand_Y1HSyQ ClockHands_SecondHand_Y1HSyQ ClockHands_SecondHand__theme_highContrast_Y1HSyQ-01"
+    style="--ClockHands_ClockHand__transform_Y1HSyQ: 0deg;"
+  />
+  <div
+    class="ClockHands_ClockHand_Y1HSyQ ClockHands_MinuteHand_Y1HSyQ"
+    style="--ClockHands_ClockHand__transform_Y1HSyQ: 0deg;"
+  />
+  <div
+    class="ClockHands_ClockHand_Y1HSyQ ClockHands_HourHand_Y1HSyQ"
+    style="--ClockHands_ClockHand__transform_Y1HSyQ: 450deg;"
+  />
+</DocumentFragment>
+`;
