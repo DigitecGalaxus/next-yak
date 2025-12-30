@@ -9,7 +9,7 @@ on:
     branches:
       - main
     paths:
-      - "packages/example/**"
+      - "examples/next-js/**"
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/example.yml"
