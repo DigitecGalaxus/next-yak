@@ -278,7 +278,7 @@ where
             \n --> {}
             \n\nTo migrate to native CSS transpilation, add to your next.config.js:\
             \n  experiments: {{ transpilationMode: 'Css' }}\
-            \n\nSee \x1b[4mhttps://yak.js.org/docs/migration-to-native-css\x1b[0m for migration guide.\n",
+            \n\nSee https://yak.js.org/docs/migration-to-native-css for migration guide.\n",
             self.naming_convention.get_file_name()
           );
         }
