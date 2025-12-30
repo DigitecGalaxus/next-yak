@@ -39,9 +39,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{
-  CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode,
-};
+use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{

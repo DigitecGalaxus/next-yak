@@ -194,7 +194,9 @@ impl Default for YakConfig {
         Self {
             minify: Default::default(),
             import_mode: Some(CssImportConfig {
-                value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css".to_string(),
+                value:
+                    "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"
+                        .to_string(),
                 transpilation: TranspilationMode::Css,
                 encoding: ImportModeEncoding::None,
             }),
