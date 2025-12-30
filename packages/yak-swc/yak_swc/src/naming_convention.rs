@@ -209,43 +209,31 @@ impl TranspilationMode {
   }
 }
 
-/// Defines how CSS imports should be processed and transpiled
+/// Configuration for how CSS imports should be generated
+/// Supports placeholders in the `value` field:
+/// - `{{__MODULE_PATH__}}` - replaced with the relative file path
+/// - `{{__BASE_NAME__}}` - replaced with the file basename (without extension)
+///
+/// Examples:
+/// - `"virtual:yak-css:{{__MODULE_PATH__}}.css"` (Vite)
+/// - `"./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css"` (Webpack)
+/// - `"data:text/css;base64,"` with `encoding: Base64` (Turbopack)
 #[derive(Deserialize, Clone, PartialEq, Eq)]
-#[serde(tag = "type")]
-pub enum CssDependencyMode {
-  /// Add a new import statement using the inline match resource syntax of webpack
-  /// The query parameters will reflect the transpilation mode
-  /// e.g. import "./input.yak.module.css!=!./input?./input.yak.module.css";
-  /// or import "./input.yak.css!=!./input?./input.yak.css";
-  InlineMatchResource { transpilation: TranspilationMode },
-  /// The CSS content will be added as new import statement
-  /// encoded as a data URL string
-  DataUrl,
-  /// Custom import mode with a configurable value that is used to generate the import statement
-  /// e.g. import "myCustomImport,1234"
-  Custom {
-    value: String,
-    transpilation: TranspilationMode,
-    encoding: ImportModeEncoding,
-  },
+pub struct CssImportConfig {
+  pub value: String,
+  pub transpilation: TranspilationMode,
+  pub encoding: ImportModeEncoding,
 }
 
-#[derive(Deserialize, Clone, PartialEq, Eq)]
+#[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum ImportModeEncoding {
   Base64,
   None,
 }
 
-/// Extract the transpilation mode from an import mode
-/// DataUrl only supports CSS
-/// InlineMatchResource supports CSS and CSS Modules
-impl CssDependencyMode {
+impl CssImportConfig {
   pub fn transpilation_mode(&self) -> TranspilationMode {
-    match self {
-      CssDependencyMode::InlineMatchResource { transpilation } => *transpilation,
-      CssDependencyMode::DataUrl => TranspilationMode::Css,
-      CssDependencyMode::Custom { transpilation, .. } => *transpilation,
-    }
+    self.transpilation
   }
 }
 
