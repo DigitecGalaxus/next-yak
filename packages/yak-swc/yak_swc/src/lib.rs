@@ -334,10 +334,10 @@ where
           // e.g. styled.button`${thumbSize.name}: 24px;`
           // where thumbSize is defined as: const thumbSize = ident`--thumb-size`
           else if scoped_name.parts.len() > 1
-            && scoped_name.parts.last().map(|p| p.as_ref()) == Some("name")
+            && scoped_name.parts.last().is_some_and(|p| p == "name")
           {
             // Check if the parent (without .name) is an ident template
-            let parent_parts: Vec<Atom> = scoped_name.parts[..scoped_name.parts.len() - 1].to_vec();
+            let parent_parts: Vec<Wtf8Atom> = scoped_name.parts[..scoped_name.parts.len() - 1].to_vec();
             let parent_ref =
               ScopedVariableReference::new(scoped_name.id.clone(), parent_parts.clone());
 
@@ -498,7 +498,7 @@ where
 
                 // Store the .name reference (always raw identifier)
                 let mut name_parts = scoped_name.parts.clone();
-                name_parts.push(atom!("name"));
+                name_parts.push("name".into());
                 self.variable_name_selector_mapping.insert(
                   ScopedVariableReference::new(scoped_name.id.clone(), name_parts),
                   identifier_name.clone(),
@@ -1085,7 +1085,7 @@ where
         // Store the .name reference (always raw identifier)
         let name_ref = transform.get_name_reference();
         let mut name_parts = current_variable_id.parts.clone();
-        name_parts.push(atom!("name"));
+        name_parts.push("name".into());
         self.variable_name_selector_mapping.insert(
           ScopedVariableReference::new(current_variable_id.id.clone(), name_parts),
           name_ref,
