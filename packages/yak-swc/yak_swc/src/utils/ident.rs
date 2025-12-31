@@ -29,7 +29,10 @@ impl IdentInfo {
 
     let is_dashed = base_name.starts_with("--");
 
-    IdentInfo { base_name, is_dashed }
+    IdentInfo {
+      base_name,
+      is_dashed,
+    }
   }
 
   /// Get the clean name without the leading "--" if present
@@ -126,7 +129,10 @@ mod tests {
     let tpl = create_tagged_tpl("--thumb-size");
     let info = IdentInfo::from_tagged_tpl(&tpl);
 
-    assert_eq!(info.get_css_reference("--thumb_size_abc123"), "var(--thumb_size_abc123)");
+    assert_eq!(
+      info.get_css_reference("--thumb_size_abc123"),
+      "var(--thumb_size_abc123)"
+    );
   }
 
   #[test]
@@ -134,7 +140,10 @@ mod tests {
     let tpl = create_tagged_tpl("grid-area");
     let info = IdentInfo::from_tagged_tpl(&tpl);
 
-    assert_eq!(info.get_css_reference("grid_area_abc123"), "grid_area_abc123");
+    assert_eq!(
+      info.get_css_reference("grid_area_abc123"),
+      "grid_area_abc123"
+    );
   }
 
   #[test]
