@@ -4,5 +4,3 @@
 //
 //
 export * as mixin from "./staticCssLiteral.js";
-export { ident } from "../runtime/ident.js";
-export type { YakIdent } from "../runtime/ident.js";
