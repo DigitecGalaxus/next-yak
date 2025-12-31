@@ -18,6 +18,7 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
+use utils::ident::{get_parent_ref, is_name_property_access, IdentInfo};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -36,6 +37,7 @@ mod utils {
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
+  pub(crate) mod ident;
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
@@ -333,43 +335,18 @@ where
           // Handle ident .name access pattern
           // e.g. styled.button`${thumbSize.name}: 24px;`
           // where thumbSize is defined as: const thumbSize = ident`--thumb-size`
-          else if scoped_name.parts.len() > 1
-            && scoped_name.parts.last().is_some_and(|p| p == "name")
-          {
+          else if is_name_property_access(&scoped_name) {
             // Check if the parent (without .name) is an ident template
-            let parent_parts: Vec<Wtf8Atom> = scoped_name.parts[..scoped_name.parts.len() - 1].to_vec();
-            let parent_ref =
-              ScopedVariableReference::new(scoped_name.id.clone(), parent_parts.clone());
+            let parent_ref = get_parent_ref(&scoped_name);
 
             if let Some(value) = self.variables.get_const_value(&parent_ref) {
               if let Expr::TaggedTpl(tagged_tpl) = *value {
                 if is_valid_tagged_tpl(&tagged_tpl, self.yak_imports().yak_ident_idents()) {
-                  // Extract the base name from the template literal
-                  let base_name = tagged_tpl
-                    .tpl
-                    .quasis
-                    .iter()
-                    .map(|q| q.raw.to_string())
-                    .collect::<String>()
-                    .trim()
-                    .to_string();
-
-                  let is_dashed = base_name.starts_with("--");
-                  let clean_name = if is_dashed {
-                    &base_name[2..]
-                  } else {
-                    &base_name
-                  };
-
-                  let identifier_name =
-                    self.naming_convention.get_ident_name(clean_name, is_dashed);
+                  let ident_info = IdentInfo::from_tagged_tpl(&tagged_tpl);
+                  let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
+                  let direct_ref = ident_info.get_css_reference(&identifier_name);
 
                   // Store the mappings for later use
-                  let direct_ref = if is_dashed {
-                    format!("var({})", identifier_name)
-                  } else {
-                    identifier_name.clone()
-                  };
                   self
                     .variable_name_selector_mapping
                     .insert(parent_ref.clone(), direct_ref);
@@ -467,31 +444,11 @@ where
               // const Button = styled.button`width: ${thumbSize};`
               // const thumbSize = ident`--thumb-size`
               else if is_valid_tagged_tpl(&tagged_tpl, self.yak_imports().yak_ident_idents()) {
-                // Extract the base name from the template literal
-                let base_name = tagged_tpl
-                  .tpl
-                  .quasis
-                  .iter()
-                  .map(|q| q.raw.to_string())
-                  .collect::<String>()
-                  .trim()
-                  .to_string();
-
-                let is_dashed = base_name.starts_with("--");
-                let clean_name = if is_dashed {
-                  &base_name[2..]
-                } else {
-                  &base_name
-                };
-
-                let identifier_name = self.naming_convention.get_ident_name(clean_name, is_dashed);
+                let ident_info = IdentInfo::from_tagged_tpl(&tagged_tpl);
+                let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
+                let direct_ref = ident_info.get_css_reference(&identifier_name);
 
                 // Store the direct reference (var(--name) for dashed, name for custom)
-                let direct_ref = if is_dashed {
-                  format!("var({})", identifier_name)
-                } else {
-                  identifier_name.clone()
-                };
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), direct_ref.clone());
@@ -1054,27 +1011,11 @@ where
       // Ident for CSS custom properties and custom identifiers
       // e.g. const thumbSize = ident`--thumb-size`
       "ident" if is_top_level => {
-        // Extract the base name from the template literal
-        let base_name = n
-          .tpl
-          .quasis
-          .iter()
-          .map(|q| q.raw.to_string())
-          .collect::<String>()
-          .trim()
-          .to_string();
-
-        let is_dashed = base_name.starts_with("--");
-        let clean_name = if is_dashed {
-          &base_name[2..]
-        } else {
-          &base_name
-        };
-
-        let identifier_name = self.naming_convention.get_ident_name(clean_name, is_dashed);
+        let ident_info = IdentInfo::from_tagged_tpl(n);
+        let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
 
         // Store the ident transform for later use
-        let transform = TransformIdent::new(identifier_name.clone(), is_dashed);
+        let transform = TransformIdent::new(identifier_name.clone(), ident_info.is_dashed);
 
         // Store the direct reference (var(--name) for dashed, name for custom)
         let direct_ref = transform.get_css_reference_name().unwrap();
