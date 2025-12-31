@@ -62,6 +62,7 @@
     },
     "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
     "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.cjs",
+    "./loaders/vite-plugin": "./dist/loaders/vite-plugin.js",
     "./vite": "./dist/loaders/vite-plugin.js"
   },
   "scripts": {

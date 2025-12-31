@@ -1,0 +1,57 @@
+{
+  "name": "storybook-addon-yak",
+  "version": "0.0.1",
+  "description": "Storybook addon for next-yak CSS-in-JS",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./preset": {
+      "types": "./dist/preset.d.ts",
+      "import": "./dist/preset.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "import": "./dist/preview.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "storybook",
+    "storybook-addon",
+    "next-yak",
+    "css-in-js",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jantimon/next-yak.git",
+    "directory": "packages/storybook-addon-yak"
+  },
+  "peerDependencies": {
+    "next-yak": ">=0.9.0",
+    "storybook": "^10.0.0"
+  },
+  "dependencies": {
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "next-yak": "workspace:*",
+    "tsup": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

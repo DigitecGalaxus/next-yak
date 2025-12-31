@@ -9,7 +9,16 @@ import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFil
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
-const require = createRequire(import.meta.url);
+
+// Handle both ESM and CJS contexts (CJS when loaded via Storybook's esbuild-register)
+const getRequire = () => {
+  // In CJS context (e.g., when transpiled by esbuild-register), use native require
+  // In ESM context, create require from import.meta.url
+  if (typeof require !== "undefined" && typeof require.resolve === "function") {
+    return require;
+  }
+  return createRequire(import.meta.url);
+};
 
 type ViteYakPluginOptions = YakConfigOptions & {
   swcOptions?: Omit<
@@ -286,7 +295,8 @@ export async function viteYak(
  */
 async function findYakSwcPlugin() {
   try {
-    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const localRequire = getRequire();
+    const packageJsonPath = localRequire.resolve("yak-swc/package.json");
     const packageRoot = dirname(packageJsonPath);
 
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
