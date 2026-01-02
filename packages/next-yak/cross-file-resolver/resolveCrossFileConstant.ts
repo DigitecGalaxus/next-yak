@@ -1,12 +1,11 @@
+import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
 import type {
   ConstantExport,
-  Ident,
   ModuleExport,
   ParsedModule,
   RecordExport,
 } from "./parseModule.js";
 import { Cache } from "./types.js";
-import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
@@ -123,7 +122,8 @@ export async function uncachedResolveCrossFileConstant(
         if (importKind === "selector") {
           if (
             resolved.type !== "styled-component" &&
-            resolved.type !== "constant"
+            resolved.type !== "constant" &&
+            resolved.type !== "ident"
           ) {
             throw new Error(
               `Found "${
@@ -145,7 +145,12 @@ export async function uncachedResolveCrossFileConstant(
           replacement =
             isNameAccess || !resolved.isDashed
               ? resolved.identifier // Raw identifier for .name access or non-dashed idents
-              : `var(${resolved.identifier})`; // var() wrapper for dashed idents in direct interpolation
+              : `var(${resolved.identifier})` + // var() wrapper for dashed idents in direct interpolation
+                (["}", ";"].includes(
+                  String(resolved.identifier).trimEnd().slice(-1),
+                )
+                  ? ""
+                  : semicolon);
         } else {
           replacement =
             resolved.type === "styled-component"
@@ -598,7 +603,7 @@ function resolveSpecifierInRecord(
   name: string,
   specifiers: string[],
 ): ConstantExport | ResolvedStyledComponent | ResolvedMixin | ResolvedIdent {
-  if (specifiers.length === 0) {
+  if (specifiers.length === 0 && !("__yakIdent" in record.value)) {
     throw new ResolveError("did not expect an object");
   }
   let depth = 0;
