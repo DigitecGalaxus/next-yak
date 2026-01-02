@@ -128,6 +128,33 @@ impl NamingConvention {
     );
     self.generate_unique_name(&css_variable_name)
   }
+
+  /// Generate a unique CSS identifier name based on the file name and a base name
+  /// The base_name should be the user-provided name without any dashes prefix
+  /// is_dashed indicates whether the identifier should be prefixed with `--`
+  pub fn get_ident_name(&mut self, base_name: &str, is_dashed: bool) -> String {
+    let name: String = if !self.minify {
+      if base_name.is_empty() {
+        format!("{}_ident_", self.get_base_file_name())
+      } else {
+        format!("{}_{}_", self.get_base_file_name(), base_name)
+      }
+    } else {
+      "".to_string()
+    };
+    let ident_name = format!(
+      "{}{}{}",
+      self.prefix.clone(),
+      name,
+      self.get_file_name_hash()
+    );
+    let unique_name = self.generate_unique_name(&ident_name);
+    if is_dashed {
+      format!("--{}", unique_name)
+    } else {
+      unique_name
+    }
+  }
 }
 
 /// This helper escapes names to be valid CSS identifiers

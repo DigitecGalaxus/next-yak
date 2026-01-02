@@ -18,6 +18,7 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
+use utils::ident::{get_parent_ref, is_name_property_access, IdentInfo};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -36,6 +37,7 @@ mod utils {
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
+  pub(crate) mod ident;
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
@@ -45,7 +47,8 @@ use naming_convention::{
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
+  TransformCssMixin, TransformIdent, TransformKeyframes, TransformNestedCss, TransformStyled,
+  YakTransform,
 };
 
 /// Static plugin configuration.
@@ -329,6 +332,71 @@ where
             let (new_state, _) = parse_css(&cross_file_import_token, css_state);
             css_state = Some(new_state);
           }
+          // Handle ident .name access pattern
+          // e.g. styled.button`${thumbSize.name}: 24px;`
+          // where thumbSize is defined as: const thumbSize = ident`--thumb-size`
+          else if is_name_property_access(&scoped_name) {
+            // Check if the parent (without .name) is an ident template
+            let parent_ref = get_parent_ref(&scoped_name);
+
+            if let Some(value) = self.variables.get_const_value(&parent_ref) {
+              if let Expr::TaggedTpl(tagged_tpl) = *value {
+                if is_valid_tagged_tpl(&tagged_tpl, self.yak_imports().yak_ident_idents()) {
+                  let ident_info = IdentInfo::from_tagged_tpl(&tagged_tpl);
+                  let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
+                  let direct_ref = ident_info.get_css_reference(&identifier_name);
+
+                  // Store the mappings for later use
+                  self
+                    .variable_name_selector_mapping
+                    .insert(parent_ref.clone(), direct_ref);
+                  self
+                    .variable_name_selector_mapping
+                    .insert(scoped_name.clone(), identifier_name.clone());
+
+                  // For .name access, we output the raw identifier
+                  let (new_state, _) = parse_css(&identifier_name, css_state);
+                  css_state = Some(new_state);
+                } else {
+                  HANDLER.with(|handler| {
+                    handler
+                      .struct_span_err(
+                        expr.span(),
+                        &format!(
+                          "The .name property access is only valid on ident`` template literals, not on \"{}\"",
+                          scoped_name.to_readable_string()
+                        ),
+                      )
+                      .emit();
+                  });
+                }
+              } else {
+                HANDLER.with(|handler| {
+                  handler
+                    .struct_span_err(
+                      expr.span(),
+                      &format!(
+                        "The .name property access is only valid on ident`` template literals, not on \"{}\"",
+                        scoped_name.to_readable_string()
+                      ),
+                    )
+                    .emit();
+                });
+              }
+            } else {
+              HANDLER.with(|handler| {
+                handler
+                  .struct_span_err(
+                    expr.span(),
+                    &format!(
+                      "Could not find the value for \"{}\" to access .name property",
+                      parent_ref.to_readable_string()
+                    ),
+                  )
+                  .emit();
+              });
+            }
+          }
           // Constants
           else if let Some(value) = self.variables.get_const_value(&scoped_name) {
             // e.g.:
@@ -370,6 +438,30 @@ where
                   }
                   TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
+                css_state = Some(new_state);
+              }
+              // ident - CSS identifiers which have not been parsed yet
+              // const Button = styled.button`width: ${thumbSize};`
+              // const thumbSize = ident`--thumb-size`
+              else if is_valid_tagged_tpl(&tagged_tpl, self.yak_imports().yak_ident_idents()) {
+                let ident_info = IdentInfo::from_tagged_tpl(&tagged_tpl);
+                let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
+                let direct_ref = ident_info.get_css_reference(&identifier_name);
+
+                // Store the direct reference (var(--name) for dashed, name for custom)
+                self
+                  .variable_name_selector_mapping
+                  .insert(scoped_name.clone(), direct_ref.clone());
+
+                // Store the .name reference (always raw identifier)
+                let mut name_parts = scoped_name.parts.clone();
+                name_parts.push("name".into());
+                self.variable_name_selector_mapping.insert(
+                  ScopedVariableReference::new(scoped_name.id.clone(), name_parts),
+                  identifier_name.clone(),
+                );
+
+                let (new_state, _) = parse_css(&direct_ref, css_state);
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
@@ -916,6 +1008,32 @@ where
         self.current_condition.clone(),
         self.import_mode.transpilation_mode(),
       )),
+      // Ident for CSS custom properties and custom identifiers
+      // e.g. const thumbSize = ident`--thumb-size`
+      "ident" if is_top_level => {
+        let ident_info = IdentInfo::from_tagged_tpl(n);
+        let identifier_name = ident_info.get_identifier_name(&mut self.naming_convention);
+
+        // Store the ident transform for later use
+        let transform = TransformIdent::new(identifier_name.clone(), ident_info.is_dashed);
+
+        // Store the direct reference (var(--name) for dashed, name for custom)
+        let direct_ref = transform.get_css_reference_name().unwrap();
+        self
+          .variable_name_selector_mapping
+          .insert(current_variable_id.clone(), direct_ref);
+
+        // Store the .name reference (always raw identifier)
+        let name_ref = transform.get_name_reference();
+        let mut name_parts = current_variable_id.parts.clone();
+        name_parts.push("name".into());
+        self.variable_name_selector_mapping.insert(
+          ScopedVariableReference::new(current_variable_id.id.clone(), name_parts),
+          name_ref,
+        );
+
+        Box::new(transform)
+      }
       _ => {
         if !is_top_level {
           HANDLER.with(|handler| {

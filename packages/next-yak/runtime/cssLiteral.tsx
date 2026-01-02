@@ -1,4 +1,4 @@
-import type { YakTheme } from "./index.d.ts";
+import type { YakIdent, YakTheme } from "./index.d.ts";
 import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 export const yakComponentSymbol = Symbol("yak");
@@ -16,6 +16,7 @@ export type CSSInterpolation<TProps> =
   | undefined
   | null
   | false
+  | YakIdent
   | ComponentStyles<TProps>
   | {
       // type only identifier to allow targeting components

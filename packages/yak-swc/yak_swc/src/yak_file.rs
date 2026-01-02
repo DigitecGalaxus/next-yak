@@ -3,7 +3,7 @@
 
 use swc_core::atoms::atom;
 use swc_core::common::errors::HANDLER;
-use swc_core::common::Spanned;
+use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Fold, VisitMut, VisitMutWith};
 
@@ -63,32 +63,87 @@ impl VisitMut for YakFileVisitor {
 
   fn visit_mut_expr(&mut self, expr: &mut Expr) {
     expr.visit_mut_children_with(self);
-    // Convert tagged template literals to an object with plain template literals
+    // Convert tagged template literals to objects
     // e.g. css`font-size: ${20}px;` => { __yak: `font-size: ${20}px;` }
+    // e.g. ident`--thumb-size` => { name: "--thumb-size", toString() { return "var(--thumb-size)"; } }
     // This is necessary as the mixin is also imported at runtime and a string would be
     // interpreted as a class name
     if let Expr::TaggedTpl(n) = expr {
-      if let Some("css") = self
+      match self
         .yak_imports
         .as_ref()
         .unwrap()
         .get_yak_library_function_name(n)
         .as_deref()
       {
-        *expr = ObjectLit {
-          span: n.span,
-          props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-            key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
-            value: Box::new(Expr::Tpl(Tpl {
-              span: n.span,
-              exprs: n.tpl.exprs.clone(),
-              quasis: n.tpl.quasis.clone(),
-            })),
-          })))]
-          .into_iter()
-          .collect(),
+        Some("css") => {
+          *expr = ObjectLit {
+            span: n.span,
+            props: vec![PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+              key: PropName::Ident(IdentName::new("__yak".into(), n.span)),
+              value: Box::new(Expr::Tpl(Tpl {
+                span: n.span,
+                exprs: n.tpl.exprs.clone(),
+                quasis: n.tpl.quasis.clone(),
+              })),
+            })))],
+          }
+          .into();
         }
-        .into();
+        Some("ident") => {
+          // Extract identifier from template quasis (should be a simple string)
+          let identifier = n.tpl.quasis.first().map_or("", |q| q.raw.trim());
+          let is_dashed = identifier.starts_with("--");
+          let return_value = if is_dashed {
+            format!("var({})", identifier)
+          } else {
+            identifier.to_string()
+          };
+
+          // Create: { name: "identifier", toString() { return "value"; } }
+          *expr = ObjectLit {
+            span: n.span,
+            props: vec![
+              // name: "identifier"
+              PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                key: PropName::Ident(IdentName::new("name".into(), DUMMY_SP)),
+                value: Box::new(Expr::Lit(Lit::Str(Str {
+                  span: DUMMY_SP,
+                  value: identifier.into(),
+                  raw: None,
+                }))),
+              }))),
+              // toString() { return "value"; }
+              PropOrSpread::Prop(Box::new(Prop::Method(MethodProp {
+                key: PropName::Ident(IdentName::new("toString".into(), DUMMY_SP)),
+                function: Box::new(Function {
+                  span: DUMMY_SP,
+                  params: vec![],
+                  body: Some(BlockStmt {
+                    span: DUMMY_SP,
+                    stmts: vec![Stmt::Return(ReturnStmt {
+                      span: DUMMY_SP,
+                      arg: Some(Box::new(Expr::Lit(Lit::Str(Str {
+                        span: DUMMY_SP,
+                        value: return_value.into(),
+                        raw: None,
+                      })))),
+                    })],
+                    ctxt: SyntaxContext::empty(),
+                  }),
+                  decorators: vec![],
+                  is_generator: false,
+                  is_async: false,
+                  type_params: None,
+                  return_type: None,
+                  ctxt: SyntaxContext::empty(),
+                }),
+              }))),
+            ],
+          }
+          .into();
+        }
+        _ => {}
       }
     }
   }
@@ -104,16 +159,21 @@ impl VisitMut for YakFileVisitor {
       return;
     };
 
-    // Right now only css template literals are allowed
-    if name != atom!("css") {
+    // Only css and ident template literals are allowed
+    if name != atom!("css") && name != atom!("ident") {
       HANDLER.with(|handler| {
         handler
           .struct_span_err(
             n.span,
-            "Only css template literals are allowed inside .yak files",
+            "Only css and ident template literals are allowed inside .yak files",
           )
           .emit();
       });
+      return;
+    }
+
+    // ident template literals don't need further validation
+    if name == atom!("ident") {
       return;
     }
 

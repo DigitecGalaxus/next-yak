@@ -8,6 +8,7 @@ import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
 import { mixins, tokens } from "./constants";
 import defaultColor from "./constantColors";
+import { color, IdentDemo } from "./indents";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -144,6 +145,11 @@ const Wrap = styled(ToBeWrapped)<{ $secondary: boolean }>`
   })}
 `;
 
+const Color = styled.div`
+  ${color.name}: blue;
+  color: ${color};
+`;
+
 export default function Home() {
   return (
     <YakThemeProvider>
@@ -236,6 +242,8 @@ export default function Home() {
         >
           Atoms in styled components work if this is small, green and italic
         </Wrap>
+        <Color>If this is blue cross file idents work</Color>
+        <IdentDemo />
         <Inputs />
       </main>
     </YakThemeProvider>

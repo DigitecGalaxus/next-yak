@@ -1,0 +1,13 @@
+import { styled } from "next-yak/internal";
+import { thumbSize, trackArea } from "./identDefinitions";
+import * as __yak from "next-yak/internal";
+import "data:text/css;base64,LmlucHV0X1NsaWRlcl9tN3VCQnUgewogIC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9pZGVudERlZmluaXRpb25zOnRodW1iU2l6ZTpuYW1lIixtaXhpbik6IDI0cHg7CiAgd2lkdGg6IC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9pZGVudERlZmluaXRpb25zOnRodW1iU2l6ZSIsbWl4aW4pOwogIGdyaWQtYXJlYTogLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2lkZW50RGVmaW5pdGlvbnM6dHJhY2tBcmVhIixtaXhpbik7Cn0=";
+export const Slider = /*YAK EXPORTED STYLED:Slider:input_Slider_m7uBBu*//*YAK Extracted CSS:
+.input_Slider_m7uBBu {
+  --yak-css-import: url("./identDefinitions:thumbSize:name",mixin): 24px;
+  width: --yak-css-import: url("./identDefinitions:thumbSize",mixin);
+  grid-area: --yak-css-import: url("./identDefinitions:trackArea",mixin);
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Slider_m7uBBu"), {
+    "displayName": "Slider"
+});

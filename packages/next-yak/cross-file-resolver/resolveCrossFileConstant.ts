@@ -1,3 +1,4 @@
+import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
 import type {
   ConstantExport,
   ModuleExport,
@@ -5,11 +6,10 @@ import type {
   RecordExport,
 } from "./parseModule.js";
 import { Cache } from "./types.js";
-import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
-  /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
+  /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector|ident|ident-value)\)(;?)/g;
 
 /**
  * Resolves cross-file selectors in css files
@@ -122,7 +122,8 @@ export async function uncachedResolveCrossFileConstant(
         if (importKind === "selector") {
           if (
             resolved.type !== "styled-component" &&
-            resolved.type !== "constant"
+            resolved.type !== "constant" &&
+            resolved.type !== "ident"
           ) {
             throw new Error(
               `Found "${
@@ -134,20 +135,38 @@ export async function uncachedResolveCrossFileConstant(
           }
         }
 
-        replacement =
-          resolved.type === "styled-component"
-            ? resolved.value
-            : resolved.value +
-              // resolved.value can be of two different types:
-              // - mixin:
-              //   ${mixinName};
-              // - constant:
-              //   color: ${value};
-              // For mixins the semicolon is already included in the value
-              // but for constants it has to be added manually
-              (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1))
-                ? ""
-                : semicolon);
+        if (resolved.type === "ident") {
+          // For idents:
+          // Check if this is a .name access (specifier ends with "name")
+          // When SWC sees ${color.name}, it emits url("./file:color:name",mixin)
+          const isNameAccess =
+            specifier.length > 0 && specifier[specifier.length - 1] === "name";
+
+          replacement =
+            isNameAccess || !resolved.isDashed
+              ? resolved.identifier // Raw identifier for .name access or non-dashed idents
+              : `var(${resolved.identifier})` + // var() wrapper for dashed idents in direct interpolation
+                (["}", ";"].includes(
+                  String(resolved.identifier).trimEnd().slice(-1),
+                )
+                  ? ""
+                  : semicolon);
+        } else {
+          replacement =
+            resolved.type === "styled-component"
+              ? resolved.value
+              : resolved.value +
+                // resolved.value can be of two different types:
+                // - mixin:
+                //   ${mixinName};
+                // - constant:
+                //   color: ${value};
+                // For mixins the semicolon is already included in the value
+                // but for constants it has to be added manually
+                (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1))
+                  ? ""
+                  : semicolon);
+        }
       }
 
       result =
@@ -280,6 +299,17 @@ async function uncachedResolveModule(
           className: styledComponent.value,
         };
       }
+    });
+  }
+
+  // Reconcile idents with export structure
+  if (parsedModule.idents) {
+    Object.entries(parsedModule.idents).forEach(([varName, ident]) => {
+      exports.named[varName] = {
+        type: "ident",
+        identifier: ident.identifier,
+        isDashed: ident.isDashed,
+      };
     });
   }
 
@@ -545,6 +575,15 @@ async function resolveModuleExport(
           value: moduleExport.value,
         };
       }
+      case "ident": {
+        return {
+          type: "ident",
+          from: [filePath],
+          source: filePath,
+          identifier: moduleExport.identifier,
+          isDashed: moduleExport.isDashed,
+        };
+      }
     }
   } catch (error) {
     throw new ResolveError(
@@ -563,8 +602,8 @@ function resolveSpecifierInRecord(
   record: ExtendedRecordExport,
   name: string,
   specifiers: string[],
-): ConstantExport | ResolvedStyledComponent | ResolvedMixin {
-  if (specifiers.length === 0) {
+): ConstantExport | ResolvedStyledComponent | ResolvedMixin | ResolvedIdent {
+  if (specifiers.length === 0 && !("__yakIdent" in record.value)) {
     throw new ResolveError("did not expect an object");
   }
   let depth = 0;
@@ -584,7 +623,8 @@ function resolveSpecifierInRecord(
   if (
     current.type === "constant" ||
     current.type === "styled-component" ||
-    current.type === "mixin"
+    current.type === "mixin" ||
+    current.type === "ident"
   ) {
     return current;
   }
@@ -596,6 +636,20 @@ function resolveSpecifierInRecord(
     current.value.__yak.type === "constant"
   ) {
     return { type: "mixin", value: String(current.value.__yak.value) };
+  }
+
+  // idents in .yak files are wrapped inside an object with a __yakIdent key
+  if (
+    current.type === "record" &&
+    "__yakIdent" in current.value &&
+    current.value.__yakIdent.type === "constant"
+  ) {
+    const identifier = String(current.value.__yakIdent.value);
+    return {
+      type: "ident",
+      identifier,
+      isDashed: identifier.startsWith("--"),
+    };
   }
 
   throw new ResolveError(
@@ -638,6 +692,13 @@ type ResolvedCssImport =
       source: string;
       from: string[];
       value: string | number;
+    }
+  | {
+      type: "ident";
+      source: string;
+      from: string[];
+      identifier: string;
+      isDashed: boolean;
     };
 
 export type ResolveContext = {
@@ -654,7 +715,7 @@ export type ResolveContext = {
   resolve: (specifier: string, importer: string) => Promise<string> | string;
 };
 
-type YakImportKind = "mixin" | "selector";
+type YakImportKind = "mixin" | "selector" | "ident" | "ident-value";
 
 type YakCssImport = {
   encodedArguments: string;
@@ -676,12 +737,18 @@ export type ResolvedStyledComponent = {
   type: "styled-component";
   className: string;
 };
+export type ResolvedIdent = {
+  type: "ident";
+  identifier: string;
+  isDashed: boolean;
+};
 
 export type ResolvedExport =
   | Exclude<ModuleExport, RecordExport>
   | ExtendedRecordExport
   | ResolvedStyledComponent
-  | ResolvedMixin;
+  | ResolvedMixin
+  | ResolvedIdent;
 
 export type ResolvedExports = {
   named: Record<string, ResolvedExport>;
