@@ -100,8 +100,10 @@ fn yak_pass(
             config
                 .import_mode
                 .clone()
-                .unwrap_or(CssDependencyMode::InlineMatchResource {
+                .unwrap_or(CssImportConfig {
+                    value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css".to_string(),
                     transpilation: TranspilationMode::Css,
+                    encoding: ImportModeEncoding::None,
                 })
                 .into(),
         );
@@ -133,11 +135,18 @@ pub enum TranspilationMode {
 }
 
 #[derive(Tsify, Serialize, Deserialize, Clone)]
-#[serde(tag = "type")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub enum CssDependencyMode {
-    InlineMatchResource { transpilation: TranspilationMode },
-    DataUrl,
+pub struct CssImportConfig {
+    pub value: String,
+    pub transpilation: TranspilationMode,
+    pub encoding: ImportModeEncoding,
+}
+
+#[derive(Tsify, Serialize, Deserialize, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum ImportModeEncoding {
+    Base64,
+    None,
 }
 
 impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
@@ -151,15 +160,21 @@ impl From<TranspilationMode> for yak_swc::naming_convention::TranspilationMode {
     }
 }
 
-impl From<CssDependencyMode> for yak_swc::naming_convention::CssDependencyMode {
-    fn from(val: CssDependencyMode) -> Self {
+impl From<ImportModeEncoding> for yak_swc::naming_convention::ImportModeEncoding {
+    fn from(val: ImportModeEncoding) -> Self {
         match val {
-            CssDependencyMode::InlineMatchResource { transpilation } => {
-                yak_swc::naming_convention::CssDependencyMode::InlineMatchResource {
-                    transpilation: transpilation.into(),
-                }
-            }
-            CssDependencyMode::DataUrl => yak_swc::naming_convention::CssDependencyMode::DataUrl,
+            ImportModeEncoding::Base64 => yak_swc::naming_convention::ImportModeEncoding::Base64,
+            ImportModeEncoding::None => yak_swc::naming_convention::ImportModeEncoding::None,
+        }
+    }
+}
+
+impl From<CssImportConfig> for yak_swc::naming_convention::CssImportConfig {
+    fn from(val: CssImportConfig) -> Self {
+        yak_swc::naming_convention::CssImportConfig {
+            value: val.value,
+            transpilation: val.transpilation.into(),
+            encoding: val.encoding.into(),
         }
     }
 }
@@ -171,15 +186,19 @@ pub struct YakConfig {
     #[tsify(optional)]
     minify: Option<bool>,
     #[tsify(optional)]
-    import_mode: Option<CssDependencyMode>,
+    import_mode: Option<CssImportConfig>,
 }
 
 impl Default for YakConfig {
     fn default() -> Self {
         Self {
             minify: Default::default(),
-            import_mode: Some(CssDependencyMode::InlineMatchResource {
+            import_mode: Some(CssImportConfig {
+                value:
+                    "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"
+                        .to_string(),
                 transpilation: TranspilationMode::Css,
+                encoding: ImportModeEncoding::None,
             }),
         }
     }
