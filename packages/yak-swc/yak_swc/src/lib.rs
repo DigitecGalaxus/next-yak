@@ -39,9 +39,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{
-  CssDependencyMode, ImportModeEncoding, NamingConvention, TranspilationMode,
-};
+use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -71,7 +69,7 @@ pub struct Config {
   /// Transpile mode for CSS
   /// Influences how class names and selectors are transpiled
   #[serde(default = "Config::import_mode_default")]
-  pub import_mode: CssDependencyMode,
+  pub import_mode: CssImportConfig,
   /// Suppress deprecation warnings for :global() selectors
   #[serde(default)]
   pub suppress_deprecation_warnings: bool,
@@ -82,9 +80,11 @@ impl Config {
     true
   }
 
-  fn import_mode_default() -> CssDependencyMode {
-    CssDependencyMode::InlineMatchResource {
+  fn import_mode_default() -> CssImportConfig {
+    CssImportConfig {
+      value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
       transpilation: naming_convention::TranspilationMode::CssModule,
+      encoding: ImportModeEncoding::None,
     }
   }
 }
@@ -144,7 +144,7 @@ where
   /// in React DevTools and stack traces for every yak component
   display_names: bool,
   /// Import mode to determine how to import the generated css
-  import_mode: CssDependencyMode,
+  import_mode: CssImportConfig,
   /// All valid CSS rules collected during transformation
   all_css_rules: Vec<String>,
   /// Comment string to be added to the default export
@@ -165,7 +165,7 @@ where
     minify: bool,
     prefix: Option<String>,
     display_names: bool,
-    import_mode: CssDependencyMode,
+    import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
   ) -> Self {
     Self {
@@ -639,39 +639,23 @@ where
             specifiers: vec![],
             src: Box::new(Str {
               span: DUMMY_SP,
-              value: match &self.import_mode {
-                CssDependencyMode::InlineMatchResource {
-                  transpilation: TranspilationMode::CssModule,
-                } => {
-                  format!("./{basename}.yak.module.css!=!./{basename}?./{basename}.yak.module.css")
-                }
-                CssDependencyMode::InlineMatchResource {
-                  transpilation: TranspilationMode::Css,
-                } => {
-                  format!("./{basename}.yak.css!=!./{basename}?./{basename}.yak.css")
-                }
-                CssDependencyMode::DataUrl => {
-                  format!(
-                    "data:text/css;base64,{}",
-                    BASE64_STANDARD.encode(self.all_css_rules.join(""))
-                  )
-                }
-                CssDependencyMode::Custom {
-                  value, encoding, ..
-                } => {
-                  let resolved_value = value.replace(
+              value: {
+                let resolved_value = self
+                  .import_mode
+                  .value
+                  .replace(
                     "{{__MODULE_PATH__}}",
                     self.naming_convention.get_file_name(),
-                  );
-                  format!(
-                    "{resolved_value}{}",
-                    match encoding {
-                      ImportModeEncoding::Base64 =>
-                        BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
-                      ImportModeEncoding::None => "".to_string(),
-                    }
                   )
-                }
+                  .replace("{{__BASE_NAME__}}", &basename);
+                format!(
+                  "{resolved_value}{}",
+                  match self.import_mode.encoding {
+                    ImportModeEncoding::Base64 =>
+                      BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
+                    ImportModeEncoding::None => "".to_string(),
+                  }
+                )
               }
               .into(),
               raw: None,
@@ -1151,8 +1135,10 @@ mod tests {
           false,
           None,
           true,
-          CssDependencyMode::InlineMatchResource {
+          CssImportConfig {
+            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
             transpilation: TranspilationMode::CssModule,
+            encoding: ImportModeEncoding::None,
           },
           false,
         ))
@@ -1181,7 +1167,11 @@ mod tests {
           false,
           None,
           true,
-          CssDependencyMode::DataUrl,
+          CssImportConfig {
+            value: "data:text/css;base64,".to_string(),
+            transpilation: TranspilationMode::Css,
+            encoding: ImportModeEncoding::Base64,
+          },
           false,
         ))
       },
@@ -1209,8 +1199,10 @@ mod tests {
           true,
           None,
           false,
-          CssDependencyMode::InlineMatchResource {
+          CssImportConfig {
+            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
             transpilation: TranspilationMode::CssModule,
+            encoding: ImportModeEncoding::None,
           },
           false,
         ))
@@ -1239,7 +1231,11 @@ mod tests {
           true,
           None,
           false,
-          CssDependencyMode::DataUrl,
+          CssImportConfig {
+            value: "data:text/css;base64,".to_string(),
+            transpilation: TranspilationMode::Css,
+            encoding: ImportModeEncoding::Base64,
+          },
           false,
         ))
       },

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm build:*)",
+      "Bash(cd:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm --filter next-yak build:*)",
+      "Bash(git -C /Users/luca/personal/next-yak status examples/vite/dist --porcelain)",
+      "Bash(git -C /Users/luca/personal/next-yak ls-files:*)",
+      "Bash(cargo test:*)",
+      "Bash(pnpm build:swc)",
+      "Bash(pnpm --filter yak-swc build:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --filter @example/storybook build-storybook:*)",
+      "Bash(pnpm:*)",
+      "Bash(ls:*)",
+      "WebSearch",
+      "mcp__fetch__fetch"
+    ]
+  }
+}

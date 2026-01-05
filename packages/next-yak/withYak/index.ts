@@ -57,17 +57,27 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
       yakOptions.experiments?.suppressDeprecationWarnings ?? false,
   };
 
+  const transpilation =
+    yakOptions.experiments?.transpilationMode ?? "CssModule";
+  const cssExtension =
+    transpilation === "CssModule" ? ".yak.module.css" : ".yak.css";
+
   if (process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto") {
     addYakTurbopack(nextConfig, yakOptions, {
       ...yakPluginOptions,
-      importMode: { type: "DataUrl" },
+      importMode: {
+        value: "data:text/css;base64,",
+        transpilation: "Css",
+        encoding: "Base64",
+      },
     });
   } else {
     addYakWebpack(nextConfig, yakOptions, {
       ...yakPluginOptions,
       importMode: {
-        type: "InlineMatchResource",
-        transpilation: yakOptions.experiments?.transpilationMode ?? "CssModule",
+        value: `./{{__BASE_NAME__}}${cssExtension}!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}${cssExtension}`,
+        transpilation,
+        encoding: "None",
       },
     });
   }
@@ -88,7 +98,11 @@ function addYakTurbopack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
-    importMode: { type: string };
+    importMode: {
+      value: string;
+      transpilation: string;
+      encoding: string;
+    };
   },
 ) {
   // turbopack can't handle options with undefined values, so we remove them
@@ -138,7 +152,11 @@ function addYakWebpack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
-    importMode: { type: string; transpilation?: string };
+    importMode: {
+      value: string;
+      transpilation: string;
+      encoding: string;
+    };
   },
 ) {
   // Add SWC plugin for Webpack

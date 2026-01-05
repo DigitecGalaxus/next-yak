@@ -181,7 +181,6 @@ export async function viteYak(
                                   yakOptions.experiments
                                     ?.suppressDeprecationWarnings,
                                 importMode: {
-                                  type: "Custom",
                                   value:
                                     "virtual:yak-css:{{__MODULE_PATH__}}.css",
                                   transpilation: "Css",
@@ -333,7 +332,6 @@ function transform(
               suppressDeprecationWarnings:
                 yakOptions.experiments?.suppressDeprecationWarnings,
               importMode: {
-                type: "Custom",
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",
                 encoding: "None",
