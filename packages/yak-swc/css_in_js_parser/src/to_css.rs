@@ -19,7 +19,7 @@ use crate::{CssScope, Declaration, ScopeType};
 ///     scope: vec![
 ///       CssScope {
 ///         name: ".foo".to_string(),
-///         scope_type: ScopeType::Selector
+///         scope_type: ScopeType::Selector,
 ///       }
 ///     ]
 ///   }

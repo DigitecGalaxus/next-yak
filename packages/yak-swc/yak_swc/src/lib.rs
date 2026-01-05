@@ -70,6 +70,9 @@ pub struct Config {
   /// Influences how class names and selectors are transpiled
   #[serde(default = "Config::import_mode_default")]
   pub import_mode: CssImportConfig,
+  /// Suppress deprecation warnings for :global() selectors
+  #[serde(default)]
+  pub suppress_deprecation_warnings: bool,
 }
 
 impl Config {
@@ -94,6 +97,7 @@ impl Default for Config {
       prefix: Default::default(),
       display_names: Default::default(),
       import_mode: Config::import_mode_default(),
+      suppress_deprecation_warnings: Default::default(),
     }
   }
 }
@@ -145,6 +149,10 @@ where
   all_css_rules: Vec<String>,
   /// Comment string to be added to the default export
   default_export_comment: Option<String>,
+  /// Flag to track if user-written :global() selectors were detected
+  has_user_global: bool,
+  /// Flag to suppress deprecation warnings
+  suppress_deprecation_warnings: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -158,6 +166,7 @@ where
     prefix: Option<String>,
     display_names: bool,
     import_mode: CssImportConfig,
+    suppress_deprecation_warnings: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -176,6 +185,8 @@ where
       import_mode,
       all_css_rules: Vec::new(),
       default_export_comment: None,
+      has_user_global: false,
+      suppress_deprecation_warnings,
     }
   }
 
@@ -256,6 +267,23 @@ where
       let (new_state, new_declarations) = parse_css(quasi_css_code, css_state);
       css_code_offset = 0;
       css_state = Some(new_state);
+
+      // Check for user-written :global() selectors in the raw quasi string
+      // This checks the original source code, not the transformed CSS
+      if !self.suppress_deprecation_warnings && !self.has_user_global {
+        if quasi.raw.contains(":global(") {
+          self.has_user_global = true;
+          eprintln!(
+            "\n:global() selectors are deprecated and will be removed in the next major version.\
+            \n --> {}
+            \n\nTo migrate to native CSS transpilation, add to your next.config.js:\
+            \n  experiments: {{ transpilationMode: 'Css' }}\
+            \n\nSee https://yak.js.org/docs/migration-to-native-css for migration guide.\n",
+            self.naming_convention.get_file_name()
+          );
+        }
+      }
+
       // Add the extracted CSS to the the root styled component
       self.current_declaration.extend(new_declarations);
 
@@ -1112,6 +1140,7 @@ mod tests {
             transpilation: TranspilationMode::CssModule,
             encoding: ImportModeEncoding::None,
           },
+          false,
         ))
       },
       &input,
@@ -1143,6 +1172,7 @@ mod tests {
             transpilation: TranspilationMode::Css,
             encoding: ImportModeEncoding::Base64,
           },
+          false,
         ))
       },
       &input,
@@ -1174,6 +1204,7 @@ mod tests {
             transpilation: TranspilationMode::CssModule,
             encoding: ImportModeEncoding::None,
           },
+          false,
         ))
       },
       &input,
@@ -1205,6 +1236,7 @@ mod tests {
             transpilation: TranspilationMode::Css,
             encoding: ImportModeEncoding::Base64,
           },
+          false,
         ))
       },
       &input,

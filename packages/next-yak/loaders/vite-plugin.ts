@@ -53,6 +53,7 @@ export async function viteYak(
   const yakOptions: ViteYakPluginOptions = {
     experiments: {
       transpilationMode: "Css",
+      suppressDeprecationWarnings: false,
       ...userOptions.experiments,
     },
     minify: userOptions.minify ?? process.env.NODE_ENV === "production",
@@ -176,6 +177,9 @@ export async function viteYak(
                                 basePath: root,
                                 prefix: yakOptions.prefix,
                                 displayNames: yakOptions.displayNames,
+                                suppressDeprecationWarnings:
+                                  yakOptions.experiments
+                                    ?.suppressDeprecationWarnings,
                                 importMode: {
                                   value:
                                     "virtual:yak-css:{{__MODULE_PATH__}}.css",
@@ -325,6 +329,8 @@ function transform(
               basePath: rootPath,
               prefix: yakOptions.prefix,
               displayNames: yakOptions.displayNames,
+              suppressDeprecationWarnings:
+                yakOptions.experiments?.suppressDeprecationWarnings,
               importMode: {
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",

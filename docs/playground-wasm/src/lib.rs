@@ -106,6 +106,7 @@ fn yak_pass(
                     encoding: ImportModeEncoding::None,
                 })
                 .into(),
+            false, // suppress_deprecation_warnings
         );
         program.visit_mut_with(&mut transformer);
     })
