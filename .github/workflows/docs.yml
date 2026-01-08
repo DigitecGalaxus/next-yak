@@ -1,4 +1,4 @@
-name: Build and Deploy packages/docs
+name: Build and Deploy docs
 env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - "packages/docs/**"
+      - "docs/**"
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/docs.yml"

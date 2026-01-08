@@ -7,14 +7,14 @@ on:
       - "./package.json"
       - "packages/next-yak/**"
       - "packages/yak-swc/**"
-      - ".github/workflows/node.js.yml"
+      - ".github/workflows/tests.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "./package.json"
       - "packages/next-yak/**"
       - "packages/yak-swc/**"
-      - ".github/workflows/node.js.yml"
+      - ".github/workflows/tests.yml"
   workflow_dispatch:
 
 permissions:
