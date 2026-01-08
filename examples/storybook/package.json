@@ -1,0 +1,33 @@
+{
+  "name": "@example/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "storybook:vite": "storybook dev -p 6006",
+    "storybook:webpack": "storybook dev -p 6006 --config-dir .storybook-webpack",
+    "build-storybook": "storybook build",
+    "build-storybook:vite": "storybook build",
+    "build-storybook:webpack": "storybook build --config-dir .storybook-webpack"
+  },
+  "dependencies": {
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@storybook/addon-docs": "catalog:dev",
+    "@storybook/addon-webpack5-compiler-swc": "catalog:dev",
+    "@storybook/react": "catalog:dev",
+    "@storybook/react-vite": "catalog:dev",
+    "@storybook/react-webpack5": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "storybook": "catalog:dev",
+    "storybook-addon-yak": "workspace:*",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "yak-swc": "workspace:*"
+  }
+}

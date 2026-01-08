@@ -1,0 +1,130 @@
+---
+title: Storybook
+description: Use next-yak with Storybook.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Using next-yak with Storybook
+
+The `storybook-addon-yak` addon enables next-yak in Storybook 10+.
+It supports both Vite and Webpack builders.
+
+## Installation
+
+Install the addon alongside next-yak:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm i -D storybook-addon-yak
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm i -D storybook-addon-yak
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add -D storybook-addon-yak
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add -D storybook-addon-yak
+```
+</Tab>
+</Tabs>
+
+## Configuration (Vite)
+
+Add the addon to your Storybook configuration:
+
+```ts title=".storybook/main.ts"
+import type { StorybookConfig } from "@storybook/react-vite";
+
+const config: StorybookConfig = {
+  stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  addons: [
+    "@storybook/addon-docs",
+    "storybook-addon-yak",
+  ],
+  framework: {
+    name: "@storybook/react-vite",
+    options: {},
+  },
+};
+
+export default config;
+```
+
+## Configuration (Webpack)
+
+<Callout>
+Webpack requires the SWC compiler addon (`@storybook/addon-webpack5-compiler-swc`) for yak-swc plugin support.
+</Callout>
+
+```ts title=".storybook/main.ts"
+import type { StorybookConfig } from "@storybook/react-webpack5";
+
+const config: StorybookConfig = {
+  stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  addons: [
+    "@storybook/addon-docs",
+    "@storybook/addon-webpack5-compiler-swc",
+    "storybook-addon-yak",
+  ],
+  framework: {
+    name: "@storybook/react-webpack5",
+    options: {},
+  },
+};
+
+export default config;
+```
+
+## Theme Context
+
+If you use `YakThemeProvider` for theming, you can wrap your stories in the provider via the `preview.tsx` file:
+
+```tsx title=".storybook/preview.tsx"
+import type { Preview } from "@storybook/react";
+import { YakThemeProvider } from "next-yak";
+import { getYakThemeContext } from "next-yak/context/baseContext";
+
+const preview: Preview = {
+  decorators: [
+    (Story) => (
+      <YakThemeProvider theme={getYakThemeContext()}>
+        <Story />
+      </YakThemeProvider>
+    ),
+  ],
+};
+
+export default preview;
+```
+
+Make sure your `yak.context.ts` file is configured via the addon options if it's not in the default location:
+
+```ts title=".storybook/main.ts"
+const config: StorybookConfig = {
+  addons: [
+    {
+      name: "storybook-addon-yak",
+      options: {
+        contextPath: "./src/yak.context.ts",
+      },
+    },
+  ],
+  // ...
+};
+```
+
+## Example Project
+
+You can find a full Storybook example in the repository with both Vite and Webpack configurations:
+
+- Storybook example: https://github.com/DigitecGalaxus/next-yak/tree/main/examples/storybook

@@ -1,0 +1,65 @@
+{
+  "name": "storybook-addon-yak",
+  "version": "0.0.1",
+  "description": "Storybook addon for next-yak CSS-in-JS",
+  "homepage": "https://yak.js.org/",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak"
+  },
+  "bugs": {
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "storybook",
+    "storybook-addon",
+    "next-yak",
+    "css-in-js",
+    "react"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./preset": {
+      "types": "./dist/preset.d.ts",
+      "import": "./dist/preset.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "next-yak": "workspace:*",
+    "tsup": "catalog:dev",
+    "typescript": "catalog:dev"
+  },
+  "peerDependencies": {
+    "next-yak": "workspace:*",
+    "storybook": "^10.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
+  ],
+  "author": {
+    "name": "Jan Nicklas"
+  }
+}

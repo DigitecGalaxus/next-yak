@@ -22,6 +22,11 @@ catalogs:
     "@radix-ui/react-switch": 1.2.6
     "@shikijs/monaco": 3.20.0
     "@shikijs/transformers": 3.20.0
+    "@storybook/addon-docs": 10.1.11
+    "@storybook/addon-webpack5-compiler-swc": 4.0.2
+    "@storybook/react": 10.1.11
+    "@storybook/react-vite": 10.1.11
+    "@storybook/react-webpack5": 10.1.11
     "@swc/helpers": 0.5.17
     "@tailwindcss/postcss": 4.1.16
     "@testing-library/dom": 10.4.1
@@ -68,6 +73,7 @@ catalogs:
     react-resizable-panels: 3.0.6
     shiki: 3.20.0
     shiki-magic-move: 1.2.1
+    storybook: 10.1.11
     styled-components: 6.1.19
     swc-loader: 0.2.6
     tailwindcss: 4.1.16
@@ -76,7 +82,7 @@ catalogs:
     tsx: 4.21.0
     typescript: 5.9.3
     unionfs: 4.6.0
-    vite: 7.1.12
+    vite: 7.3.0
     vitest: 4.0.5
     wasm-pack: 0.13.1
     webpack: 5.102.1
