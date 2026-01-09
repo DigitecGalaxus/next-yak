@@ -1,19 +1,20 @@
 ---
 title: FAQ
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Is next-yak production ready?
 
 Yes, `next-yak` is production ready.
 
 Digitec Galaxus, the biggest online retailer in Switzerland, is using `next-yak` in production with a few thousand components
-and saw a significant improvement in their CSS and web vitals performance especially on mobile devices.
+and saw a significant improvement in their CSS and web vitals performance especially on mobile devices. You can read more about their journey in their [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
 
-## Can I use next-yak with other frameworks than next.js?
+## Can I use next-yak with other frameworks than Next.js?
 
-Not at the moment.
+Yes! Since v9.1.0, next-yak supports [Vite](/docs/vite) in addition to Next.js. This works with vanilla Vite, Vite with Rolldown, react-router, and tanstack-start.
 
-Feel free to ask for adding support for your framework in our github issue tracker and we will give it a thought.
+Feel free to ask for adding support for other frameworks in our GitHub issue tracker and we will give it a thought.
 
 ## Can I mix/combine next-yak with other CSS-in-JS libraries?
 
@@ -26,14 +27,18 @@ import { styled, atoms } from 'next-yak';
 
 const Button = styled.button`
   background: #BF4F74;
-  /* Use any other class */
-  :global(.my-class-from-another-library) {
+  /* Target classes from other libraries */
+  & .my-class-from-another-library {
     color: white;
   }
   /* use tailwind classes */
   ${atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")}
 `;
 ```
+
+<Callout type="info">
+If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See the [Migration to native CSS](/docs/migration-to-native-css) guide for details.
+</Callout>
 
 ## I get a compile time error in my app router page
 
@@ -43,6 +48,38 @@ We have an open issue for this problem and are working on a solution.
 See the [open next.js issue here](https://github.com/vercel/next.js/issues/67591)
 
 If it's not this issue, please read it carefully as it should indicate how to fix the problem.
+
+## I get an error about selector that are not pure
+
+If you see an error like `Selector "h1" is not pure (pure selectors must contain at least one local class or id)`, this is coming from PostCSS and CSS Modules, not from next-yak directly.
+
+This error occurs when you use element selectors (like `h1`, `div`, `p`) without scoping them properly. There are two ways to fix this:
+
+**Option 1: Use the nesting selector (&)**
+
+Add `&` before your selector to properly scope it:
+
+```tsx
+const Container = styled.div`
+  & h1 {
+    color: red;
+  }
+`;
+```
+
+**Option 2: Enable native CSS transpilation mode**
+
+Switch to native CSS transpilation mode, which doesn't require CSS Modules scoping:
+
+```js title="next.config.js"
+export default withYak({
+  experiments: {
+    transpilationMode: 'Css'
+  }
+}, nextConfig);
+```
+
+See the [Migration to native CSS](/docs/migration-to-native-css) guide for more details.
 
 ## Can I reference a component in another component?
 

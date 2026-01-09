@@ -70,7 +70,7 @@ const libraries = {
       "Next.js": true,
       React: true,
       "React Server Components": true,
-      Vite: false,
+      Vite: true,
       "Framework agnostic": false,
     },
     Tailwind: {
@@ -337,6 +337,7 @@ const sups = [
   "Zero Runtime",
   "Zero SSR Overhead",
   "Compile time optimized",
+  "Vite",
 ] satisfies Array<Features>;
 
 export const ComparisonTable = () => {
