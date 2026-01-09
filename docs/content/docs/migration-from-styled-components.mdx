@@ -349,7 +349,40 @@ export const mixin = css<{ $primary: boolean }>` // [!code --]
 ### Reference external styles
 
 
-If you reference external styles (styles that aren't component styles) in your styled components, you need to change the identifier in addition to the import.
+If you reference external styles (styles that aren't component styles) in your styled components, you have two options:
+
+**Option 1 (Recommended): Enable native CSS transpilation mode**
+
+Enable native CSS mode in your next.config.js, then external selectors work without any wrapper:
+
+```js title="next.config.js"
+export default withYak({
+  experiments: {
+    transpilationMode: 'Css'
+  }
+}, nextConfig);
+```
+
+```tsx title="component.tsx"
+import styled from 'styled-components'; // [!code --]
+import { styled } from 'next-yak'; // [!code ++]
+
+const Button = styled.button`
+  color: blue;
+
+  .myGlobalClass {
+    color: red;
+  }
+`;
+```
+
+**Option 2 (Deprecated): Use `:global()` selector**
+
+<Callout type="warn">
+**Deprecation Notice**: The `:global()` selector syntax is deprecated and will be removed in the next major version. Please migrate to native CSS transpilation mode. For more information read [Migration to native CSS](/docs/migration-to-native-css).
+</Callout>
+
+If you're using the default CSS Modules mode, you need to wrap external selectors with `:global()`:
 
 ```tsx title="component.tsx"
 import styled from 'styled-components'; // [!code --]
@@ -367,13 +400,7 @@ const Button = styled.button`
 `;
 ```
 
-
-<Callout type="warn">
-**Deprecation Notice**: The `:global()` selector syntax is deprecated. Please migrate to native CSS transpilation mode to ensure compatibility with future versions. For more informations read <a href="/docs/migration-to-native-css">Migration to native CSS</a>
-</Callout>
-
-The reason for this is that next-yak transforms your styles to module-css styles. And if you want to reference global selectors, you need to use the `:global` selector.
-More can be found in the [docs of css-modules](https://github.com/css-modules/css-modules/blob/master/docs/composition.md#exceptions)
+This is needed because next-yak transforms your styles to CSS modules by default. More can be found in the [docs of css-modules](https://github.com/css-modules/css-modules/blob/master/docs/composition.md#exceptions)
 
 ### Functions that generate styles
 
@@ -478,6 +505,9 @@ Migrating `styled-components` with complex logic might need a bit more work. Yak
 As yak files are evaluated on every code change, they will slow down your dev experience and your production build times. They should only be used as a last resort.
 </Callout>
 
+<Callout type="warn">
+**Turbopack and Vite limitation**: Yak files with imports are not yet supported in Turbopack or Vite. Yak files must be self-contained in these environments.
+</Callout>
 
 ### Styles that use calculated values
 

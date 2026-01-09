@@ -2,6 +2,7 @@
 title: How does it work
 description: This is for the curious minds who want to know how `next-yak` works under the hood and it's not necessary to understand it in order to use it.
 ---
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Playground
 
@@ -214,6 +215,30 @@ The second loader takes the output of the first loader and resolves the cross mo
 
 To resolve cross module dependencies, the first loader generates a unique string to signal the second loader that this is a dependency with a specific name. The second loader then reads the generated CSS from the SWC plugin and resolves the dependencies.
 Once the final css is generated the loader hands it over as a CSS module file so it can be processed by Next.js like a normal css-modules file.
+
+### The Turbopack loader
+
+See: [turbo-loader.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/loaders/turbo-loader.ts)
+
+Turbopack uses a different approach than webpack. Instead of using inline match resources, Turbopack encodes the CSS as base64 data URLs:
+
+```tsx title="output"
+import __styleYak from "data:text/css;base64,LkJ1dHRvbiB7Li4ufQ==";
+```
+
+This allows Turbopack to handle the CSS without needing the complex resource matching syntax that webpack uses.
+
+### The Vite plugin
+
+See: [vite-plugin.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/loaders/vite-plugin.ts)
+
+For Vite, next-yak uses a virtual module system. The SWC plugin generates imports with a special placeholder:
+
+```tsx title="output"
+import __styleYak from "virtual:yak-css:{{__MODULE_PATH__}}.css";
+```
+
+The `{{__MODULE_PATH__}}` placeholder is replaced by the actual file path during transformation. The Vite plugin then resolves these virtual modules and serves the extracted CSS through Vite's standard CSS pipeline.
 
 ## The runtime part
 
