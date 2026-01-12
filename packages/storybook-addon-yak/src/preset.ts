@@ -1,13 +1,9 @@
-/// <reference types="node" />
+import { resolveYakContext } from "next-yak/withYak";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path, { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { resolveYakContext } from "next-yak/withYak";
 
-// ESM-only: create require for resolving packages
-const require = createRequire(import.meta.url);
-const currentDir = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url); // esm only
 
 export interface YakAddonOptions {
   /** Path to custom yak context file for theming */
@@ -102,8 +98,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   const transpilation = yakOptions.experiments?.transpilationMode ?? "Css";
 
   // Determine CSS extension based on transpilation mode
-  const cssExtension =
-    transpilation === "Css" ? ".yak.css" : ".yak.module.css";
+  const cssExtension = transpilation === "Css" ? ".yak.css" : ".yak.module.css";
 
   const yakPluginOptions = {
     minify,
@@ -221,4 +216,3 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
 
   return config;
 }
-

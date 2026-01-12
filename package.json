@@ -19,7 +19,7 @@
     "test:watch": "pnpm --filter=next-yak run test:watch",
     "test:snapshots": "pnpm --filter=next-yak --filter=cross-file-tests --filter=yak-swc run test:snapshots",
     "watch": "pnpm run --filter=next-yak watch",
-    "release": "pnpm run --filter=next-yak build && pnpm run --filter=yak-swc build && changeset publish"
+    "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && changeset publish"
   },
   "engines": {
     "node": ">=22"
