@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.1.0
+
+### Minor Changes
+
+- ddb0e93: Add deprecation warning for `:global()` selectors
+
 ## 1.0.1
 
 ### Patch Changes
