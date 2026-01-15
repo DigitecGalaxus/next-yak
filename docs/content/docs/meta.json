@@ -9,6 +9,7 @@
     "migration-from-styled-components",
     "migration-to-native-css",
     "eslint-plugin",
+    "storybook",
     "faq",
     "---Details---",
     "why-next-yak",
