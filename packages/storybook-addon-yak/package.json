@@ -48,7 +48,7 @@
     "typescript": "catalog:dev"
   },
   "peerDependencies": {
-    "next-yak": "workspace:*",
+    "next-yak": "workspace:^",
     "storybook": "^10.0.0"
   },
   "publishConfig": {
