@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.1.1
+
+### Patch Changes
+
+- e906d2a: Update docs
+
 ## 1.1.0
 
 ### Minor Changes
