@@ -1,5 +1,20 @@
 # next-yak
 
+## 9.1.0
+
+### Minor Changes
+
+- ddb0e93: Add deprecation warning for `:global()` selectors
+
+### Patch Changes
+
+- 3e4fc3b: Add experimental vite support
+- 846cc4c: Unified CSS import configuration with placeholder support
+- Updated dependencies [3e4fc3b]
+- Updated dependencies [ddb0e93]
+- Updated dependencies [846cc4c]
+  - yak-swc@9.1.0
+
 ## 9.0.0
 
 ### Patch Changes
