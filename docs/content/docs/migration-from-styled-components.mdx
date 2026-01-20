@@ -552,12 +552,19 @@ Just enable it in the next config file.
 ```js title="next.config.js"
 export default withYak({
   experiments: {
-    debug: {
-      filter: (path: string) => path.includes("myPage"),
-      type: "all", // or "css" or "js"
-    },
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
   },
-},nextConfig);
+}, nextConfig);
 ```
 
 And you should see the transformed files and styles. This can help you to understand what's going wrong.

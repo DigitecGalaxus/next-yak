@@ -120,41 +120,62 @@ We are happy about every contribution. Just write an issue or a pull request [he
 If your styles are not applied, the first thing you should check is the transformed output of your component.
 In order to do that, you can enable the `debug` option in the `withYak` function.
 
-<Tabs items={['next.config.ts',, 'next.config.js', 'next.config.mjs']}>
+<Tabs items={['next.config.ts', 'next.config.js', 'next.config.mjs']}>
 <Tab value="next.config.ts">
 ```ts
 export default withYak({
   experiments: {
-    debug: {
-      filter: (path: string) => path.includes("myPage"),
-      type: "all", // or "css" or "js"
-    },
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
   },
-}nextConfig);
+}, nextConfig);
 ```
 </Tab>
 <Tab value="next.config.js">
 ```js
 module.exports = withYak({
   experiments: {
-    debug: {
-      filter: (path: string) => path.includes("myPage"),
-      type: "all", // or "css" or "js"
-    },
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
   },
-}nextConfig);
+}, nextConfig);
 ```
 </Tab>
 <Tab value="next.config.mjs">
 ```js
 export default withYak({
   experiments: {
-    debug: {
-      filter: (path: string) => path.includes("myPage"),
-      type: "all", // or "css" or "js"
-    },
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
   },
-}nextConfig);
+}, nextConfig);
 ```
 </Tab>
 </Tabs>

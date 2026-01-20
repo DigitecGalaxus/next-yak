@@ -36,7 +36,7 @@ export default async function cssExtractLoader(
     yakPluginOptions,
     yakOptions: { experiments },
   } = this.getOptions();
-  const debugLog = createDebugLogger(this, experiments?.debug);
+  const debugLog = createDebugLogger(experiments?.debug, this.rootContext);
   const resolveTurbopack = this.getResolve({});
   const transform = createTransform(yakPluginOptions, yakSwcPluginPath);
 
@@ -65,10 +65,10 @@ export default async function cssExtractLoader(
     this.rootContext,
     sourceMap,
   );
-  debugLog("ts", result.code);
+  debugLog("ts", result.code, this.resourcePath);
 
   let css = extractCss(result.code, "Css");
-  debugLog("css", css);
+  debugLog("css", css, this.resourcePath);
 
   const { resolved } = await resolveCrossFileConstant(
     {
@@ -151,7 +151,7 @@ export default async function cssExtractLoader(
     `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
   );
 
-  debugLog("css-resolved", resolved);
+  debugLog("css-resolved", resolved, this.resourcePath);
   return callback(null, codeWithCrossFileResolved, result.map);
 }
 
