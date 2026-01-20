@@ -1,33 +1,60 @@
 import { relative } from "path";
-import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../../withYak/index.js";
+
+type DebugOptions = Required<YakConfigOptions>["experiments"]["debug"];
+type DebugType = NonNullable<
+  Exclude<DebugOptions, true | undefined>
+>["types"] extends Array<infer T> | undefined
+  ? T
+  : never;
 
 /**
  * Creates a debug logger function that conditionally logs messages
  * based on debug options and file paths.
  */
 export function createDebugLogger(
-  loaderContext: LoaderContext<unknown>,
-  debugOptions: Required<YakConfigOptions>["experiments"]["debug"],
+  debugOptions: DebugOptions | undefined,
+  rootPath: string,
 ) {
   if (!debugOptions) {
     return () => {};
   }
-  const currentPath = loaderContext._compiler
-    ? relative(loaderContext._compiler.context, loaderContext.resourcePath)
-    : loaderContext.resourcePath;
+
+  // Handle true (log all) vs object (with optional filtering)
+  const pattern = debugOptions === true ? undefined : debugOptions.pattern;
+  const typesArray = debugOptions === true ? undefined : debugOptions.types;
+
+  // Validate and pre-compile regex pattern
+  let compiledPattern: RegExp | null = null;
+  if (pattern) {
+    try {
+      compiledPattern = new RegExp(pattern);
+    } catch (error) {
+      throw new Error(
+        `Invalid debug pattern: "${pattern}" is not a valid regular expression. ${
+          error instanceof Error ? error.message : ""
+        }`,
+      );
+    }
+  }
+
+  const types = typesArray ? new Set(typesArray) : null;
+
   return (
-    messageType: "ts" | "css" | "css-resolved",
+    messageType: DebugType,
     message: string | Buffer<ArrayBufferLike> | undefined,
+    filePath: string,
   ) => {
-    // the path contains already the extension for the ts{x} file
-    const pathWithExtension =
-      messageType !== "ts" ? currentPath + `.${messageType}` : currentPath;
-    if (
-      debugOptions === true ||
-      new RegExp(debugOptions).test(pathWithExtension)
-    ) {
-      console.log("🐮 Yak", pathWithExtension, "\n\n", message);
+    // Filter by type if specified
+    if (types && !types.has(messageType)) {
+      return;
+    }
+
+    const relativePath = relative(rootPath, filePath);
+
+    // Filter by pattern if specified, or log all if no pattern
+    if (!compiledPattern || compiledPattern.test(relativePath)) {
+      console.log("🐮 Yak", `[${messageType}]`, relativePath, "\n\n", message);
     }
   };
 }
