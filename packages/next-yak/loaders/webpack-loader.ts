@@ -29,14 +29,17 @@ export default async function cssExtractLoader(
       );
     }
     const { experiments } = this.getOptions();
-    const debugLog = createDebugLogger(this, experiments?.debug);
+    const debugLog = createDebugLogger(
+      experiments?.debug,
+      this._compiler?.context ?? process.cwd(),
+    );
 
-    debugLog("ts", source);
+    debugLog("ts", source, this.resourcePath);
     const css = extractCss(source, experiments?.transpilationMode);
-    debugLog("css", css);
+    debugLog("css", css, this.resourcePath);
 
     return resolveCrossFileConstant(this, this.context, css).then((result) => {
-      debugLog("css-resolved", css);
+      debugLog("css-resolved", css, this.resourcePath);
       return callback(null, result, sourceMap);
     }, callback);
   });
