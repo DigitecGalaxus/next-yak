@@ -1,0 +1,9 @@
+{
+  "customSyntax": "postcss-styled-syntax",
+  "rules": {
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-properties": true,
+    "property-no-unknown": true,
+    "unit-no-unknown": true
+  }
+}

@@ -66,6 +66,7 @@ catalogs:
     next-themes: 0.4.6
     postcss: 8.5.6
     postcss-nested: 7.0.2
+    postcss-styled-syntax: 0.7.1
     prettier: 3.6.2
     raw-loader: 4.0.2
     react: 19.2.3
@@ -74,6 +75,7 @@ catalogs:
     shiki: 3.20.0
     shiki-magic-move: 1.2.1
     storybook: 10.1.11
+    stylelint: 17.0.0
     styled-components: 6.1.19
     swc-loader: 0.2.6
     tailwindcss: 4.1.16

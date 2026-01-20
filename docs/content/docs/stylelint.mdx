@@ -1,0 +1,166 @@
+---
+title: Stylelint
+description: Lint your CSS-in-JS code with Stylelint using postcss-styled-syntax.
+---
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Overview
+
+[Stylelint](https://stylelint.io/) is a powerful CSS linter that helps you avoid errors and enforce conventions. With `postcss-styled-syntax`, you can use Stylelint to lint CSS inside your next-yak template literals.
+
+## Installation
+
+Install Stylelint and postcss-styled-syntax in your project:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm install -D stylelint postcss-styled-syntax
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add -D stylelint postcss-styled-syntax
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add -D stylelint postcss-styled-syntax
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add -D stylelint postcss-styled-syntax
+```
+</Tab>
+</Tabs>
+
+## Configuration
+
+Create a `.stylelintrc.json` file in your project root:
+
+```json title=".stylelintrc.json"
+{
+  "customSyntax": "postcss-styled-syntax",
+  "rules": {
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-properties": true,
+    "property-no-unknown": true,
+    "unit-no-unknown": true
+  }
+}
+```
+
+For a more comprehensive ruleset, you can extend `stylelint-config-standard`:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm install -D stylelint-config-standard
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add -D stylelint-config-standard
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add -D stylelint-config-standard
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add -D stylelint-config-standard
+```
+</Tab>
+</Tabs>
+
+```json title=".stylelintrc.json"
+{
+  "extends": ["stylelint-config-standard"],
+  "customSyntax": "postcss-styled-syntax"
+}
+```
+
+## Usage
+
+Run Stylelint on your TypeScript/JavaScript files:
+
+```bash
+npx stylelint "**/*.{ts,tsx}"
+```
+
+Or add a script to your `package.json`:
+
+```json title="package.json"
+{
+  "scripts": {
+    "lint:css": "stylelint '**/*.{ts,tsx}'"
+  }
+}
+```
+
+## Example
+
+Stylelint will catch CSS errors inside your styled components:
+
+```tsx title="example.tsx"
+import { styled } from "next-yak";
+
+const Button = styled.button`
+  color: #gggggg;  /* ✗ Invalid hex color */
+  colr: red;       /* ✗ Unknown property "colr" */
+  width: 10pixels; /* ✗ Unknown unit "pixels" */
+`;
+```
+
+Running Stylelint will report these errors:
+
+```
+example.tsx
+  4:10  ✖  Unexpected invalid hex color "#gggggg"  color-no-invalid-hex
+  5:3   ✖  Unexpected unknown property "colr"      property-no-unknown
+  6:12  ✖  Unexpected unknown unit "pixels"        unit-no-unknown
+```
+
+## Interpolations
+
+`postcss-styled-syntax` handles JavaScript interpolations gracefully. Interpolations like `${props => props.$color}` or `${mixin}` are treated as placeholders and won't cause parse errors:
+
+```tsx title="example.tsx"
+import { styled, css } from "next-yak";
+
+const flexCenter = css`
+  display: flex;
+  align-items: center;
+`;
+
+const Button = styled.button<{ $color: string }>`
+  color: ${(props) => props.$color};  /* ✓ Interpolation handled */
+  ${flexCenter};                       /* ✓ Mixin handled */
+`;
+```
+
+## IDE Integration
+
+### VS Code
+
+Install the [Stylelint extension](https://marketplace.visualstudio.com/items?itemName=stylelint.vscode-stylelint) and add to your VS Code settings:
+
+```json title=".vscode/settings.json"
+{
+  "stylelint.validate": ["typescript", "typescriptreact", "javascript", "javascriptreact"]
+}
+```
+
+## How It Works
+
+`postcss-styled-syntax` parses your source files and identifies CSS template literals by looking for:
+
+- `styled.tag` patterns (e.g., `styled.div`, `styled.button`)
+- `styled(Component)` patterns
+- `styled.tag.attrs({})` patterns
+- `css` tagged template literals
+
+Since next-yak uses the same API as styled-components, `postcss-styled-syntax` works out of the box without any additional configuration.
