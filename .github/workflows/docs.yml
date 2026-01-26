@@ -34,6 +34,11 @@ jobs:
         with:
           ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
+      - name: Configure Git for Vercel
+        run: |
+          git config user.email "${{ secrets.VERCEL_DEPLOYER_EMAIL }}"
+          git config user.name "GitHub Actions"
+
       - name: Install pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
         with:
