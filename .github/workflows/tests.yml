@@ -8,6 +8,7 @@ on:
       - "packages/next-yak/**"
       - "packages/yak-swc/**"
       - "packages/storybook-addon-yak/**"
+      - "packages/eslint-plugin-yak/**"
       - ".github/workflows/tests.yml"
   pull_request:
     branches: ["main"]
@@ -16,6 +17,7 @@ on:
       - "packages/next-yak/**"
       - "packages/yak-swc/**"
       - "packages/storybook-addon-yak/**"
+      - "packages/eslint-plugin-yak/**"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
 
@@ -74,6 +76,9 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+      - name: Validate ESLint Plugin Docs
+        run: pnpm --filter eslint-plugin-yak check:docs
 
       - name: Test
         run: pnpm run test

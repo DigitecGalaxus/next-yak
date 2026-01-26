@@ -549,15 +549,25 @@ If you encounter issues during the migration process, you can enable debug mode 
 
 Just enable it in the next config file.
 
-```js title="next.config.js"
-export default withYak({
+```ts title="next.config.ts"
+import type { NextConfig } from 'next'
+import { withYak, type YakConfigOptions } from 'next-yak/withYak'
+
+const nextConfig: NextConfig = {
+  // your next.js config
+}
+
+const yakConfig: YakConfigOptions = {
   experiments: {
-    debug: {
-      filter: (path: string) => path.includes("myPage"),
-      type: "all", // or "css" or "js"
-    },
-  },
-},nextConfig);
+    // Enable debug mode.
+    // - Use 'true' for all files
+    // - Use a regex string to filter by path (e.g., "Logo", "page")
+    // - Use ".css$" to filter raw CSS or ".css-resolved$" for resolved CSS
+    debug: 'Logo'
+  }
+}
+
+export default withYak(yakConfig, nextConfig)
 ```
 
 And you should see the transformed files and styles. This can help you to understand what's going wrong.
