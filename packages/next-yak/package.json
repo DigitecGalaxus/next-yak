@@ -104,6 +104,18 @@
     "vite": "catalog:dev",
     "vitest": "catalog:dev"
   },
+  "peerDependencies": {
+    "next": ">=16.1.0",
+    "vite": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
+  },
   "files": [
     "dist",
     "loaders",
