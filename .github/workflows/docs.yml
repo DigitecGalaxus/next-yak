@@ -34,11 +34,6 @@ jobs:
         with:
           ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
 
-      - name: Configure Git for Vercel
-        run: |
-          git config user.email "${{ secrets.VERCEL_DEPLOYER_EMAIL }}"
-          git config user.name "GitHub Actions"
-
       - name: Install pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
         with:
@@ -91,6 +86,7 @@ jobs:
         id: deploy-preview
         if: env.IS_PRODUCTION == 'false'
         run: |
+          rm -rf .git # Remove the .git directory to avoid vercel to read the current author
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Preview deployment URL: $DEPLOYMENT_URL"
@@ -106,4 +102,6 @@ jobs:
 
       - name: Deploy to Vercel (Production)
         if: env.IS_PRODUCTION == 'true'
-        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          rm -rf .git # Remove the .git directory to avoid vercel to read the current author
+          vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
