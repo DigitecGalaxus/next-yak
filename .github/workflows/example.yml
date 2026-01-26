@@ -92,6 +92,7 @@ jobs:
         id: deploy-preview
         if: env.IS_PRODUCTION == 'false'
         run: |
+          rm -rf .git # Remove the .git directory to avoid vercel to read the current author
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Preview deployment URL: $DEPLOYMENT_URL"
@@ -107,4 +108,6 @@ jobs:
 
       - name: Deploy to Vercel (Production)
         if: env.IS_PRODUCTION == 'true'
-        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          rm -rf .git # Remove the .git directory to avoid vercel to read the current author
+          vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
