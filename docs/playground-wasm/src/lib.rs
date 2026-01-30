@@ -4,13 +4,13 @@ use either::{Left, Right};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use swc_core::binding_macros::wasm;
-use swc_core::binding_macros::wasm::{SingleThreadedComments, compiler};
+use swc_core::binding_macros::wasm::{compiler, SingleThreadedComments};
 use swc_core::common::{FileName, SourceFile};
 use swc_core::ecma::visit::swc_ecma_ast::*;
-use swc_core::ecma::visit::{VisitMutWith, visit_mut_pass};
+use swc_core::ecma::visit::{visit_mut_pass, VisitMutWith};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
-use yak_swc::yak_file::{YakFileVisitor, is_yak_file};
+use yak_swc::yak_file::{is_yak_file, YakFileVisitor};
 
 // Copied from build_transform_sync so that we can pass the same comments structure to
 // the yak pass.

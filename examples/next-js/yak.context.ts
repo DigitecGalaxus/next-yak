@@ -8,6 +8,7 @@ export async function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-  export interface YakTheme
-    extends Awaited<ReturnType<typeof getYakThemeContext>> {}
+  export interface YakTheme extends Awaited<
+    ReturnType<typeof getYakThemeContext>
+  > {}
 }
