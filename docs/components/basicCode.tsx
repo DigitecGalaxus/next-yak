@@ -49,12 +49,12 @@ const CodeWrapper = styled.div`
   ${colors.secondaryStatic};
   border: none;
 
-  & :global(.shiki) :global(.line) {
+  & .shiki .line {
     white-space: pre-wrap;
   }
 
-  :global(html.dark) & :global(.shiki),
-  :global(html.dark) & :global(.shiki) span {
+  html.dark & .shiki,
+  html.dark & .shiki span {
     color: var(--shiki-dark) !important;
     background-color: var(--shiki-dark-bg) !important;
   }

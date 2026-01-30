@@ -1,4 +1,6 @@
-# Deprecates :global() selectors in favor of native CSS transpilation (`yak/css-global-deprecated`)
+# yak/css-global-deprecated
+
+📝 Deprecates :global() selectors in favor of native CSS transpilation.
 
 <!-- end auto-generated rule header -->
 
