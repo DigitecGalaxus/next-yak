@@ -1,5 +1,8 @@
 ---
-"isolated-source-eval": patch
+"isolated-source-eval": major
 ---
 
-evaluate typescript files inside nodejs workers
+Evaluate Typescript files inside Node.js 24 workers
+
+Breaking Changes:
+Requires Node.js 24 LTS or newer

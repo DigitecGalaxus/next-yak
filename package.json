@@ -22,7 +22,7 @@
     "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && changeset publish"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "pnpm": {
     "overrides": {
