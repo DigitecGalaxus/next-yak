@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { resolve } from "node:path";
+import { resolve, join } from "node:path";
 import { createEvaluator, type Evaluator } from "../src/index.ts";
 
 const fixtures = resolve(import.meta.dirname, "fixtures");
@@ -122,7 +122,7 @@ describe("evaluate", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    expect(result.value.result).toBe("foo/bar");
+    expect(result.value.result).toBe(join("foo", "bar"));
 
     // Should only include the entry point, not node:path
     expect(result.dependencies).toEqual([fixture("uses-node-modules.ts")]);
@@ -267,6 +267,6 @@ describe("concurrent evaluations", () => {
 
     if (r1.ok) expect(r1.value.fontSize).toBe(16);
     if (r2.ok) expect(r2.value.medium).toBe(16);
-    if (r3.ok) expect(r3.value.result).toBe("foo/bar");
+    if (r3.ok) expect(r3.value.result).toBe(join("foo", "bar"));
   });
 });
