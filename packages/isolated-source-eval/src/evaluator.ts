@@ -43,6 +43,8 @@ interface PendingEvaluation {
   absolutePath: string;
   resolve: (result: EvaluateResult) => void;
   reject: (error: Error) => void;
+  /** Number of times this evaluation has been retried due to staleness detection. */
+  retryCount: number;
 }
 
 /**
@@ -93,6 +95,9 @@ function bootWorker(): { worker: Worker; ready: Promise<void> } {
 /** Default timeout for a single evaluation in milliseconds. */
 const DEFAULT_EVAL_TIMEOUT_MS = 30_000;
 
+/** Maximum number of staleness retries before giving up with an error. */
+const MAX_STALENESS_RETRIES = 3;
+
 /** Creates an evaluator that runs modules in isolated worker threads with dependency tracking. */
 export async function createEvaluator(): Promise<Evaluator> {
   const resultCache = new Map<string, EvaluateResult>();
@@ -116,6 +121,20 @@ export async function createEvaluator(): Promise<Evaluator> {
   let currentEval: PendingEvaluation | null = null;
   let currentTimeout: ReturnType<typeof setTimeout> | null = null;
   const queue: PendingEvaluation[] = [];
+  /**
+   * Tracks files passed to `invalidate()` while an evaluation is in-flight.
+   * When an evaluation completes, `handleResult()` checks whether any reported
+   * dependency intersects this set. If so, the result is stale — it's discarded,
+   * workers are swapped, and the evaluation is retried on a clean worker.
+   *
+   * This closes the "cold start" gap: if `evaluate("A")` is dispatched before
+   * `invalidate("B")` is called, and A depends on B, the dependency graph
+   * doesn't know about A→B yet. Without this set, the invalidation would be
+   * silently missed.
+   *
+   * Cleared in `swapWorkers()` because the new primary has a clean ESM cache.
+   */
+  const invalidatedDuringEval = new Set<string>();
   let disposed = false;
 
   /**
@@ -179,6 +198,35 @@ export async function createEvaluator(): Promise<Evaluator> {
 
     const pending = currentEval;
     currentEval = null;
+
+    // Staleness check: if a file was invalidated while this evaluation was
+    // in-flight and the result depends on it, discard the result and retry
+    // on a clean worker. Only checked for successes — errors don't report
+    // deps, and the file watcher will trigger another invalidation when the
+    // source is fixed.
+    if (msg.ok && invalidatedDuringEval.size > 0) {
+      const isStale = msg.dependencies.some((dep) =>
+        invalidatedDuringEval.has(dep),
+      );
+      if (isStale) {
+        if (pending.retryCount >= MAX_STALENESS_RETRIES) {
+          pending.resolve({
+            ok: false,
+            error: {
+              message: `Evaluation of ${pending.absolutePath} exceeded maximum staleness retries (${MAX_STALENESS_RETRIES})`,
+              stack: "",
+            },
+          });
+          processQueue();
+          return;
+        }
+        pending.retryCount++;
+        swapWorkers();
+        queue.unshift(pending);
+        processQueue();
+        return;
+      }
+    }
 
     let result: EvaluateResult;
     if (msg.ok) {
@@ -291,6 +339,11 @@ export async function createEvaluator(): Promise<Evaluator> {
     setupMessageHandler(primary);
 
     shadow = bootWorker();
+
+    // The new primary has a clean ESM cache, so any previously tracked
+    // invalidations are no longer relevant — the fresh worker will
+    // re-import everything from disk.
+    invalidatedDuringEval.clear();
   }
 
   function evaluate(absolutePath: string): Promise<EvaluateResult> {
@@ -316,23 +369,40 @@ export async function createEvaluator(): Promise<Evaluator> {
 
     return new Promise<EvaluateResult>((resolve, reject) => {
       const id = nextId++;
-      queue.push({ id, absolutePath, resolve, reject });
+      queue.push({ id, absolutePath, resolve, reject, retryCount: 0 });
       processQueue();
     });
   }
 
   function invalidate(absolutePath: string): void {
+    // Always track the invalidation so that in-flight evaluations whose
+    // dependency graph isn't populated yet (cold start) can detect staleness
+    // when they complete in handleResult().
+    invalidatedDuringEval.add(absolutePath);
+
     const entryPoints = reverseDeps.get(absolutePath);
     if (!entryPoints || entryPoints.size === 0) return;
 
-    // Only the result cache needs clearing — the dependency graph (forwardDeps /
-    // reverseDeps) is intentionally left intact. Stale graph entries are harmless
-    // because updateDeps() reconciles them on re-evaluation. Clearing them here
-    // would break invalidation chains: if entry A depends on B and C, clearing
-    // A's graph entries when B is invalidated would make a subsequent invalidation
-    // of C (before A is re-evaluated) miss A entirely.
     for (const entry of entryPoints) {
       resultCache.delete(entry);
+
+      // Clean up the dependency graph for invalidated entry points.
+      // Since we're about to swap workers and re-evaluate, the old graph
+      // entries are stale. Cleaning them here prevents phantom reverse
+      // entries from accumulating for removed dependencies.
+      const deps = forwardDeps.get(entry);
+      if (deps) {
+        for (const dep of deps) {
+          const entries = reverseDeps.get(dep);
+          if (entries) {
+            entries.delete(entry);
+            if (entries.size === 0) {
+              reverseDeps.delete(dep);
+            }
+          }
+        }
+        forwardDeps.delete(entry);
+      }
     }
 
     // If an evaluation is in-flight on the worker we're about to terminate,

@@ -192,6 +192,99 @@ describe("invalidation", () => {
     }
   });
 
+  it("detects cold-start invalidation and retries on clean worker", async () => {
+    evaluator = await createEvaluator();
+
+    // Start evaluating a slow module that depends on tokens.ts
+    const promise = evaluator.evaluate(fixture("slow-transitive.ts"));
+
+    // Wait for the evaluation to start but not finish (slow-transitive delays 200ms)
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Invalidate tokens.ts before the evaluation completes.
+    // The dependency graph doesn't know about slow-transitive → tokens yet,
+    // but the invalidation should be tracked and detected when the eval finishes.
+    evaluator.invalidate(fixture("tokens.ts"));
+
+    const result = await promise;
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.color).toBe("#ff0000");
+    }
+  });
+
+  it("cleans up reverseDeps after invalidation", async () => {
+    evaluator = await createEvaluator();
+    await evaluator.evaluate(fixture("transitive-theme.ts"));
+
+    // tokens.ts should be tracked as a dependency
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toContain(
+      fixture("transitive-theme.ts"),
+    );
+
+    // After invalidation, the graph should be cleaned up
+    evaluator.invalidate(fixture("tokens.ts"));
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toEqual([]);
+
+    // Re-evaluation should rebuild the graph
+    const result = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    expect(result.ok).toBe(true);
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toContain(
+      fixture("transitive-theme.ts"),
+    );
+  });
+
+  it("correctly rebuilds graph for multiple entry points sharing a dependency", async () => {
+    evaluator = await createEvaluator();
+
+    // Both transitive-theme and alt-theme depend on tokens.ts
+    await evaluator.evaluate(fixture("transitive-theme.ts"));
+    await evaluator.evaluate(fixture("alt-theme.ts"));
+
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toHaveLength(2);
+
+    // Invalidating tokens.ts clears the graph for both entry points
+    evaluator.invalidate(fixture("tokens.ts"));
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toEqual([]);
+
+    // Re-evaluate both — graph should be fully rebuilt
+    const r1 = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    const r2 = await evaluator.evaluate(fixture("alt-theme.ts"));
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+
+    // Both should be tracked again
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toHaveLength(2);
+
+    // A second invalidation of tokens.ts should still clear both
+    evaluator.invalidate(fixture("tokens.ts"));
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toEqual([]);
+
+    // And re-evaluation still works
+    const r3 = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    expect(r3.ok).toBe(true);
+    expect(r3).not.toBe(r1);
+  });
+
+  it("handles double invalidation correctly", async () => {
+    evaluator = await createEvaluator();
+    await evaluator.evaluate(fixture("transitive-theme.ts"));
+
+    // Two synchronous invalidations of the same file
+    evaluator.invalidate(fixture("tokens.ts"));
+    evaluator.invalidate(fixture("tokens.ts"));
+
+    // Should still re-evaluate correctly
+    const result = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.theme).toEqual({
+        color: "#ff0000",
+        padding: "8px",
+      });
+    }
+  });
+
   it("invalidateAll clears entire cache", async () => {
     evaluator = await createEvaluator();
     const result1 = await evaluator.evaluate(fixture("simple-theme.ts"));

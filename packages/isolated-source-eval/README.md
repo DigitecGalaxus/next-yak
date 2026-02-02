@@ -51,6 +51,38 @@ sequenceDiagram
     E-->>You: { ok: true, value, dependencies }
 ```
 
+### Invalidation flows
+
+There are two invalidation scenarios depending on whether the dependency graph is populated:
+
+**Standard invalidation** — the dependency graph knows about the relationship (e.g. A was already evaluated and depends on B). When B is invalidated, the evaluator clears A's cached result, cleans up the dependency graph, swaps workers (terminating the stale primary), and re-queues any in-flight evaluation.
+
+**Cold-start invalidation** — the dependency graph doesn't know about the relationship yet (e.g. `evaluate("A")` is dispatched, then `invalidate("B")` is called before A finishes, but A depends on B). In this case, `invalidate()` tracks B in an internal set. When A's evaluation completes and reports its dependencies, `handleResult()` detects that B is in the set, discards the stale result, swaps workers, and retries automatically.
+
+```mermaid
+sequenceDiagram
+    participant You as Your Code
+    participant E as Evaluator
+    participant P1 as Primary 1
+    participant P2 as Primary 2 (was Shadow)
+
+    You->>E: evaluate("A.ts")
+    E->>P1: import("A.ts")
+    Note right of P1: A.ts imports B.ts<br/>Still loading...
+
+    You->>E: invalidate("B.ts")
+    Note over E: No known dependents yet<br/>→ track B.ts in staleness set
+
+    P1-->>E: { value, deps: [A.ts, B.ts] }
+    Note over E: B.ts in staleness set!<br/>→ result is stale
+
+    E-xP1: terminate (stale cache)
+    Note over E: Swap workers (clears set)
+    E->>P2: import("A.ts") (retry)
+    P2-->>E: { value, deps: [A.ts, B.ts] }
+    E-->>You: { ok: true, value, deps }
+```
+
 Each evaluator manages two Node.js worker threads — a **primary** that handles evaluations and a **shadow** that sits idle with a clean module cache.
 
 Modules are loaded via native `import()`. A custom ESM loader hook (registered via `module.register()`) intercepts every resolve call to build the dependency tree. Only project source files are tracked — `node_modules` are excluded.
