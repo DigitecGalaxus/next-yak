@@ -1,7 +1,16 @@
-import { describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { compile } from "./utils/testCompiler";
 import path from "path";
 import { getFixtures, getSnapshot } from "./utils/fixtures";
+import { TestEnvironmentManager } from "./utils/TestEnvironmentManager";
+
+beforeAll(async () => {
+  await TestEnvironmentManager.removeAllFromDisk();
+});
+
+afterAll(async () => {
+  await TestEnvironmentManager.removeAllFromDisk();
+});
 
 describe("Yak Webpack e2e fixture tests", async () => {
   const fixtures = (await getFixtures()).map((fixture) => [fixture.name, fixture] as const);

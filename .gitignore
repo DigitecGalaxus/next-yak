@@ -10,3 +10,4 @@ target
 .vercel
 .swc
 .tanstack
+cross-file-tests/__tests__/.tmp/

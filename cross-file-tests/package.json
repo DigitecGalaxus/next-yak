@@ -10,15 +10,14 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@types/node": "catalog:dev",
     "vite": "catalog:dev",
     "vitest": "catalog:dev",
     "webpack": "catalog:dev",
     "swc-loader": "catalog:dev",
     "@swc/core": "catalog:core",
     "next-yak": "workspace:*",
-    "memfs": "catalog:dev",
-    "unionfs": "catalog:dev",
-    "fast-glob": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "yak-swc": "workspace:*",
+    "fast-glob": "catalog:dev"
   }
 }
