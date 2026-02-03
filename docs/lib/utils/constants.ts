@@ -1,8 +1,8 @@
 import { css } from "next-yak";
 
 export const theme = {
-  dark: ":global(html.dark) &",
-  light: ":global(html.light) &",
+  dark: "html.dark &",
+  light: "html.light &",
 };
 
 export const colors = {
