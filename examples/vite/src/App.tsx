@@ -243,9 +243,7 @@ function App() {
       >
         Atoms in styled components work if this is small, green and italic
       </Wrap>
-      <SpacingDemo>
-        .yak.ts tokens
-      </SpacingDemo>
+      <SpacingDemo>.yak.ts tokens</SpacingDemo>
       <Inputs />
     </main>
   );
