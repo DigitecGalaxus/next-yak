@@ -105,11 +105,20 @@ parentPort.on(
           ? { message: err.message, stack: err.stack ?? "" }
           : { message: String(err), stack: "" };
 
+      // Flush partial dependencies that the loader hook tracked before the
+      // error. This allows the evaluator to register them in the reverse
+      // dep map so that fixing the broken file triggers re-evaluation.
+      const deps = await requestDeps();
+      if (!deps.includes(msg.absolutePath)) {
+        deps.unshift(msg.absolutePath);
+      }
+
       parentPort!.postMessage({
         type: "result",
         id: msg.id,
         ok: false,
         error,
+        dependencies: deps,
       });
     }
   },

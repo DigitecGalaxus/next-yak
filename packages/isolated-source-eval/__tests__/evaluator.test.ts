@@ -285,6 +285,28 @@ describe("invalidation", () => {
     }
   });
 
+  it("tracks transitive deps on error so invalidation recovers", async () => {
+    evaluator = await createEvaluator();
+
+    // transitive-error.ts imports tokens.ts then throws
+    const result1 = await evaluator.evaluate(fixture("transitive-error.ts"));
+    expect(result1.ok).toBe(false);
+
+    // tokens.ts should still be tracked as a dependency despite the error
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toContain(
+      fixture("transitive-error.ts"),
+    );
+
+    // Invalidating the transitive dep should clear the cached error
+    evaluator.invalidate(fixture("tokens.ts"));
+
+    // Re-evaluation should produce a fresh result (re-runs on new worker,
+    // will still error since the fixture always throws — but it's a new result)
+    const result2 = await evaluator.evaluate(fixture("transitive-error.ts"));
+    expect(result2.ok).toBe(false);
+    expect(result2).not.toBe(result1);
+  });
+
   it("invalidateAll clears entire cache", async () => {
     evaluator = await createEvaluator();
     const result1 = await evaluator.evaluate(fixture("simple-theme.ts"));

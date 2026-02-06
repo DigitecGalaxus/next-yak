@@ -36,6 +36,7 @@ type WorkerResult =
       id: number;
       ok: false;
       error: { message: string; stack: string };
+      dependencies: string[];
     };
 
 interface PendingEvaluation {
@@ -244,9 +245,10 @@ export async function createEvaluator(): Promise<Evaluator> {
       updateDeps(pending.absolutePath, msg.dependencies);
     } else {
       result = { ok: false, error: msg.error };
-      // Even for errors, track the entry point itself so that invalidation
-      // can clear the cached error and allow a retry after the file is fixed.
-      updateDeps(pending.absolutePath, [pending.absolutePath]);
+      // Use the partial dependencies reported by the worker (files resolved
+      // before the error). This ensures transitive deps are registered in
+      // reverseDeps so that fixing a broken file triggers re-evaluation.
+      updateDeps(pending.absolutePath, msg.dependencies);
     }
 
     resultCache.set(pending.absolutePath, result);
