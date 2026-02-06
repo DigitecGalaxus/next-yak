@@ -1,6 +1,6 @@
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
-import type { Compilation, LoaderContext } from "webpack";
+import type { Compilation, LoaderContext, NormalModule } from "webpack";
 import {
   ModuleExport,
   ModuleExports,
@@ -76,12 +76,12 @@ function getParseContext(
                 for (const mod of compilation.modules) {
                   if (
                     "resource" in mod &&
-                    (mod as any).resource === modulePath
+                    (mod as NormalModule).resource === modulePath
                   ) {
-                    const errors = (mod as any).errors;
-                    if (Array.isArray(errors) && errors.length > 0) {
-                      const messages = errors
-                        .map((e: any) => e.message || String(e))
+                    const errors = mod.getErrors();
+                    if (errors) {
+                      const messages = Array.from(errors)
+                        .map((e) => e.message)
                         .filter(Boolean);
                       if (messages.length > 0) {
                         return reject(new Error(messages.join("\n")));

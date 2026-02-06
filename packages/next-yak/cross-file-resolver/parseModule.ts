@@ -1,4 +1,3 @@
-import { CauseError } from "./Errors.js";
 import { type Cache } from "./types.js";
 
 export async function parseModule(
@@ -46,9 +45,11 @@ export async function parseModule(
 
     return cached;
   } catch (error) {
-    throw new CauseError(`Error parsing file "${modulePath}"`, {
-      cause: error,
-    });
+    const causeMessage =
+      error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Error parsing file "${modulePath}"\n  Caused by: ${causeMessage}`,
+    );
   }
 }
 

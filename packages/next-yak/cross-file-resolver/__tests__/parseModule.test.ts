@@ -1,6 +1,5 @@
 import { test, assert, expect, vi } from "vitest";
 import { ModuleExports, ParsedModule, parseModule } from "../parseModule.js";
-import { CauseError } from "../Errors.js";
 import { Cache } from "../types.js";
 
 test("parse module with no yak import", async () => {
