@@ -101,6 +101,15 @@ const MAX_STALENESS_RETRIES = 3;
 /** Creates an evaluator that runs modules in isolated worker threads with dependency tracking. */
 export async function createEvaluator(): Promise<Evaluator> {
   const resultCache = new Map<string, EvaluateResult>();
+  /**
+   * Tracks in-flight evaluation promises by path. When `evaluate()` is called
+   * for a path that's already queued or being evaluated, the same promise is
+   * returned instead of queuing a duplicate. This prevents a second worker
+   * evaluation from producing incomplete dependencies (the ESM resolve hook
+   * only fires on cache misses — a second import on the same worker would
+   * miss transitive deps that are already in the ESM cache).
+   */
+  const inflight = new Map<string, Promise<EvaluateResult>>();
 
   /**
    * Two dependency maps provide O(1) lookups in both directions:
@@ -175,6 +184,7 @@ export async function createEvaluator(): Promise<Evaluator> {
         };
         updateDeps(pending.absolutePath, [pending.absolutePath]);
         resultCache.set(pending.absolutePath, result);
+        inflight.delete(pending.absolutePath);
         pending.resolve(result);
         processQueue();
       }
@@ -240,6 +250,7 @@ export async function createEvaluator(): Promise<Evaluator> {
     }
 
     resultCache.set(pending.absolutePath, result);
+    inflight.delete(pending.absolutePath);
     pending.resolve(result);
     processQueue();
   }
@@ -292,6 +303,19 @@ export async function createEvaluator(): Promise<Evaluator> {
     if (currentEval || queue.length === 0 || disposed) return;
 
     const next = queue.shift()!;
+
+    // A prior evaluation for the same path may have completed and cached
+    // while this item was queued (e.g. after invalidation + re-queue).
+    // Resolving from cache avoids dispatching to a worker where the module
+    // is already in the ESM cache (which would produce incomplete deps).
+    const alreadyCached = resultCache.get(next.absolutePath);
+    if (alreadyCached) {
+      inflight.delete(next.absolutePath);
+      next.resolve(alreadyCached);
+      processQueue();
+      return;
+    }
+
     currentEval = next;
 
     primary.ready.then(() => {
@@ -316,6 +340,7 @@ export async function createEvaluator(): Promise<Evaluator> {
         };
         updateDeps(next.absolutePath, [next.absolutePath]);
         resultCache.set(next.absolutePath, result);
+        inflight.delete(next.absolutePath);
         next.resolve(result);
 
         swapWorkers();
@@ -357,21 +382,26 @@ export async function createEvaluator(): Promise<Evaluator> {
       );
     }
 
-    // The result cache is critical for correctness, not just performance.
-    // The ESM loader hook only fires on cache misses — if a module was already
-    // imported by this worker, its transitive dependencies won't be reported
-    // again. By always returning the cached result here, we guarantee that
-    // evaluate() never re-posts to a worker that would return incomplete deps.
     const cached = resultCache.get(absolutePath);
     if (cached) {
       return Promise.resolve(cached);
     }
 
-    return new Promise<EvaluateResult>((resolve, reject) => {
+    // Deduplicate: if an evaluation is already queued or in-flight for this
+    // path, return the same promise. This prevents a second worker evaluation
+    // that would produce incomplete dependencies (the ESM resolve hook only
+    // fires on cache misses).
+    const pending = inflight.get(absolutePath);
+    if (pending) return pending;
+
+    const promise = new Promise<EvaluateResult>((resolve, reject) => {
       const id = nextId++;
       queue.push({ id, absolutePath, resolve, reject, retryCount: 0 });
       processQueue();
     });
+
+    inflight.set(absolutePath, promise);
+    return promise;
   }
 
   function invalidate(absolutePath: string): void {
@@ -385,6 +415,7 @@ export async function createEvaluator(): Promise<Evaluator> {
 
     for (const entry of entryPoints) {
       resultCache.delete(entry);
+      inflight.delete(entry);
 
       // Clean up the dependency graph for invalidated entry points.
       // Since we're about to swap workers and re-evaluate, the old graph
@@ -409,13 +440,13 @@ export async function createEvaluator(): Promise<Evaluator> {
     // capture it and re-queue at the front. The caller's promise will
     // resolve transparently with the result from the promoted shadow worker.
     clearEvalTimeout();
-    const inflight = currentEval;
+    const inflightEval = currentEval;
     currentEval = null;
 
     swapWorkers();
 
-    if (inflight) {
-      queue.unshift(inflight);
+    if (inflightEval) {
+      queue.unshift(inflightEval);
     }
 
     processQueue();
@@ -423,17 +454,18 @@ export async function createEvaluator(): Promise<Evaluator> {
 
   function invalidateAll(): void {
     resultCache.clear();
+    inflight.clear();
     forwardDeps.clear();
     reverseDeps.clear();
 
     clearEvalTimeout();
-    const inflight = currentEval;
+    const inflightEval = currentEval;
     currentEval = null;
 
     swapWorkers();
 
-    if (inflight) {
-      queue.unshift(inflight);
+    if (inflightEval) {
+      queue.unshift(inflightEval);
     }
 
     processQueue();
@@ -459,6 +491,7 @@ export async function createEvaluator(): Promise<Evaluator> {
       pending.reject(new Error("Evaluator has been disposed"));
     }
     queue.length = 0;
+    inflight.clear();
 
     await Promise.all([primary.worker.terminate(), shadow.worker.terminate()]);
   }

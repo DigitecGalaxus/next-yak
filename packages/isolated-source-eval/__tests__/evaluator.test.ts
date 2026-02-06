@@ -345,6 +345,59 @@ describe("dispose", () => {
 });
 
 describe("concurrent evaluations", () => {
+  it("concurrent evaluate() calls for the same path return full dependencies", async () => {
+    evaluator = await createEvaluator();
+
+    // Two concurrent calls for the same transitive module
+    const [r1, r2] = await Promise.all([
+      evaluator.evaluate(fixture("transitive-theme.ts")),
+      evaluator.evaluate(fixture("transitive-theme.ts")),
+    ]);
+
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+    if (!r1.ok || !r2.ok) return;
+
+    // Both should return the same value
+    expect(r1.value).toEqual(r2.value);
+
+    // Both should include the transitive dependency
+    expect(r1.dependencies).toContain(fixture("tokens.ts"));
+    expect(r2.dependencies).toContain(fixture("tokens.ts"));
+  });
+
+  it("concurrent evaluate() calls followed by invalidation of transitive dep still works", async () => {
+    evaluator = await createEvaluator();
+
+    // Two concurrent calls — same scenario as the vite plugin where
+    // App.tsx.css and ButtonB.tsx.css both evaluate tokens.yak.ts
+    const [r1, r2] = await Promise.all([
+      evaluator.evaluate(fixture("transitive-theme.ts")),
+      evaluator.evaluate(fixture("transitive-theme.ts")),
+    ]);
+
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+
+    // The transitive dep (tokens.ts) should be tracked in the reverse dep map
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toContain(
+      fixture("transitive-theme.ts"),
+    );
+
+    // Invalidating the transitive dep should clear the cache
+    evaluator.invalidate(fixture("tokens.ts"));
+
+    // Re-evaluation should produce a fresh result (different reference)
+    const r3 = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    expect(r3.ok).toBe(true);
+    expect(r3).not.toBe(r1);
+
+    // And the dependency graph should be rebuilt
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toContain(
+      fixture("transitive-theme.ts"),
+    );
+  });
+
   it("handles multiple evaluate() calls correctly (serialized)", async () => {
     evaluator = await createEvaluator();
 
