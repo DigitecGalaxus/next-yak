@@ -1,5 +1,13 @@
 # next-yak
 
+## 9.1.1
+
+### Patch Changes
+
+- f90c65b: Add optional peer dependencies
+- 60e8041: fix HMR for CSS in Vite
+  - yak-swc@9.1.1
+
 ## 9.1.0
 
 ### Minor Changes
