@@ -83,6 +83,7 @@
     "@babel/parser": "catalog:core",
     "@babel/traverse": "catalog:core",
     "@swc/core": "catalog:core",
+    "isolated-source-eval": "workspace:*",
     "yak-swc": "9.1.0"
   },
   "devDependencies": {

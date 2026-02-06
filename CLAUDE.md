@@ -203,7 +203,7 @@ For Vite, debug logs are controlled the same way via plugin options.
 
 ## Prerequisites
 
-- Node.js >= 22
+- Node.js >= 24
 - pnpm >= 10.15.0
 - Rust toolchain (install from rust-lang.org, not brew)
 - WASM target: `rustup target add wasm32-wasip1`

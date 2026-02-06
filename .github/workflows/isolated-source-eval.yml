@@ -1,0 +1,39 @@
+name: isolated-source-eval
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/isolated-source-eval/**"
+      - ".github/workflows/isolated-source-eval.yml"
+  pull_request:
+    paths:
+      - "packages/isolated-source-eval/**"
+      - ".github/workflows/isolated-source-eval.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - run: pnpm install
+
+      - run: pnpm --filter isolated-source-eval test -- --run

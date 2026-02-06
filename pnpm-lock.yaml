@@ -640,6 +640,21 @@ importers:
         specifier: catalog:dev
         version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.7.1)
 
+  packages/isolated-source-eval:
+    devDependencies:
+      '@types/node':
+        specifier: catalog:dev
+        version: 24.9.2
+      tsup:
+        specifier: catalog:dev
+        version: 8.5.0(@swc/core@1.15.8(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+      vitest:
+        specifier: catalog:dev
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.3.0)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.7.1)
+
   packages/next-yak:
     dependencies:
       '@babel/parser':
@@ -651,6 +666,9 @@ importers:
       '@swc/core':
         specifier: catalog:core
         version: 1.15.5(@swc/helpers@0.5.17)
+      isolated-source-eval:
+        specifier: workspace:*
+        version: link:../isolated-source-eval
       yak-swc:
         specifier: workspace:*
         version: link:../yak-swc
@@ -11508,7 +11526,7 @@ snapshots:
     dependencies:
       magic-string: 0.30.21
       mlly: 1.8.0
-      rollup: 4.52.5
+      rollup: 4.54.0
 
   flat-cache@3.2.0:
     dependencies:
@@ -14693,7 +14711,7 @@ snapshots:
       picocolors: 1.1.1
       postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.7.1)
       resolve-from: 5.0.0
-      rollup: 4.52.5
+      rollup: 4.54.0
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tinyexec: 0.3.2
@@ -14722,7 +14740,7 @@ snapshots:
       picocolors: 1.1.1
       postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.7.1)
       resolve-from: 5.0.0
-      rollup: 4.52.5
+      rollup: 4.54.0
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tinyexec: 0.3.2
