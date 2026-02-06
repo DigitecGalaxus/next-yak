@@ -1,3 +1,4 @@
+import { CauseError } from "./Errors.js";
 import { type Cache } from "./types.js";
 
 export async function parseModule(
@@ -26,7 +27,7 @@ export async function parseModule(
     }
 
     if (context.cache?.parse === undefined) {
-      return uncachedParseModule(context, modulePath);
+      return await uncachedParseModule(context, modulePath);
     }
 
     const cached = context.cache.parse.get(modulePath);
@@ -45,8 +46,9 @@ export async function parseModule(
 
     return cached;
   } catch (error) {
-    throw new Error(
-      `Error parsing file ${modulePath}: ${(error as Error).message}`,
+    throw new CauseError(
+      `Error parsing file "${modulePath}"`,
+      { cause: error },
     );
   }
 }

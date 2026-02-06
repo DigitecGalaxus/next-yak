@@ -66,7 +66,35 @@ function getParseContext(
     async getTransformed(modulePath) {
       const transformedSource = new Promise<string>((resolve, reject) => {
         loader.loadModule(modulePath, (err, source) => {
-          if (err) return reject(err);
+          if (err) {
+            // When webpack reports "The loaded module contains errors",
+            // the actual errors are stored on the module in the compilation.
+            // Extract and report the real errors for better debugging.
+            const compilation = loader._compilation;
+            if (compilation) {
+              try {
+                for (const mod of compilation.modules) {
+                  if (
+                    "resource" in mod &&
+                    (mod as any).resource === modulePath
+                  ) {
+                    const errors = (mod as any).errors;
+                    if (Array.isArray(errors) && errors.length > 0) {
+                      const messages = errors
+                        .map((e: any) => e.message || String(e))
+                        .filter(Boolean);
+                      if (messages.length > 0) {
+                        return reject(new Error(messages.join("\n")));
+                      }
+                    }
+                  }
+                }
+              } catch {
+                // Ignore errors while trying to extract module errors
+              }
+            }
+            return reject(err);
+          }
           let sourceString: string;
           if (typeof source === "string") {
             sourceString = source;
