@@ -46,10 +46,9 @@ export async function parseModule(
 
     return cached;
   } catch (error) {
-    throw new CauseError(
-      `Error parsing file "${modulePath}"`,
-      { cause: error },
-    );
+    throw new CauseError(`Error parsing file "${modulePath}"`, {
+      cause: error,
+    });
   }
 }
 
