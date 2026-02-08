@@ -45,8 +45,7 @@ export async function parseModule(
 
     return cached;
   } catch (error) {
-    const causeMessage =
-      error instanceof Error ? error.message : String(error);
+    const causeMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
       `Error parsing file "${modulePath}"\n  Caused by: ${causeMessage}`,
     );
