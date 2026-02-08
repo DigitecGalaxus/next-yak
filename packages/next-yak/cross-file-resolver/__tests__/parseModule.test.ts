@@ -470,6 +470,48 @@ test("parse .yak module extensions", async () => {
   assert.strictEqual(parsedModule5.type, "regular");
 });
 
+test("wraps errors from extractExports with file path", async () => {
+  const path = "/path/to/module.js";
+
+  await expect(
+    parseModule(
+      {
+        extractExports() {
+          throw new Error("The loaded module contains errors");
+        },
+        getTransformed() {
+          return { code: "" };
+        },
+      },
+      path,
+    ),
+  ).rejects.toThrow(
+    `Error parsing file "${path}"\n  Caused by: The loaded module contains errors`,
+  );
+});
+
+test("wraps errors from getTransformed with file path", async () => {
+  const path = "/path/to/module.js";
+
+  await expect(
+    parseModule(
+      {
+        extractExports() {
+          return { importYak: true, named: {}, all: [] };
+        },
+        getTransformed() {
+          throw new Error(
+            'The shorthand access to the variable "$foo" is not allowed',
+          );
+        },
+      },
+      path,
+    ),
+  ).rejects.toThrow(
+    `Error parsing file "${path}"\n  Caused by: The shorthand access to the variable "$foo" is not allowed`,
+  );
+});
+
 test("parse .yak module with cache multiple times extract/transform/evaluate each time", async () => {
   const path = "/path/to/module.yak.js";
 
