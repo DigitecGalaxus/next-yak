@@ -1,6 +1,6 @@
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
-import type { Compilation, LoaderContext, NormalModule } from "webpack";
+import type { Compilation, LoaderContext } from "webpack";
 import {
   ModuleExport,
   ModuleExports,
@@ -74,10 +74,7 @@ function getParseContext(
             if (compilation) {
               try {
                 for (const mod of compilation.modules) {
-                  if (
-                    "resource" in mod &&
-                    (mod as NormalModule).resource === modulePath
-                  ) {
+                  if ("resource" in mod && mod.resource === modulePath) {
                     const errors = mod.getErrors();
                     if (errors) {
                       const messages = Array.from(errors)
