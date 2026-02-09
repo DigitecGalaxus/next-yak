@@ -1,4 +1,6 @@
-# Enforces that expression in styled/css literals from next-yak use semicolons (`yak/enforce-semicolon`)
+# yak/enforce-semicolon
+
+📝 Enforces that expression in styled/css literals from next-yak use semicolons.
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 

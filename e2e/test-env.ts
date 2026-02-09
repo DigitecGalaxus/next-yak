@@ -20,7 +20,7 @@ import type { Page, TestInfo } from "@playwright/test";
 export interface FsTmp {
   /** Absolute path to the .tmp/<case> dir */
   cwd: string;
-  /** URL path to navigate to ("/" for Next.js, "/index.html" for Vite) */
+  /** URL path to navigate to */
   url: string;
   /** The bundler being tested */
   bundlerName: string;

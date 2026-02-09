@@ -559,15 +559,19 @@ const nextConfig: NextConfig = {
 
 const yakConfig: YakConfigOptions = {
   experiments: {
-    // Enable debug mode.
-    // - Use 'true' for all files
-    // - Use a regex string to filter by path (e.g., "Logo", "page")
-    // - Use ".css$" to filter raw CSS or ".css-resolved$" for resolved CSS
-    debug: 'Logo'
-  }
-}
+    // Enable for all files
+    debug: true,
 
-export default withYak(yakConfig, nextConfig)
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
+  },
+}, nextConfig);
 ```
 
 And you should see the transformed files and styles. This can help you to understand what's going wrong.

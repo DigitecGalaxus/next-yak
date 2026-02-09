@@ -24,7 +24,7 @@ export default async function Page(props: {
     <DocsPage
       toc={page.data.toc}
       full={page.data.full}
-      article={page.data.full ? { className: "full-width" } : {}}
+      className={page.data.full ? "full-width" : undefined}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>

@@ -7,8 +7,6 @@
   },
   "scripts": {
     "test": "node --experimental-strip-types run.ts",
-    "test:vite": "node --experimental-strip-types run.ts vite",
-    "test:next-webpack": "node --experimental-strip-types run.ts next-app-webpack",
     "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
   },
   "devDependencies": {
