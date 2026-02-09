@@ -32,11 +32,14 @@ export type YakConfigOptions = {
   displayNames?: boolean;
   experiments?: {
     /**
-     * A regex pattern to filter files based on their path.
-     * Use ".css$" to filter the raw CSS transpilation and ".css-resolved$" for resolved CSS
-     * Use true to enable debug mode for all files
+     * Debug logging for transformed files.
+     * - `true` - log all files
+     * - `object` - filter by pattern and/or output types (at least one required)
      */
-    debug?: boolean | string;
+    debug?:
+      | true
+      | { pattern: string; types?: Array<"ts" | "css" | "css-resolved"> }
+      | { pattern?: string; types: Array<"ts" | "css" | "css-resolved"> };
     transpilationMode?: "CssModule" | "Css";
     /**
      * Suppress deprecation warnings for :global() selectors during migration period

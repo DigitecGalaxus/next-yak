@@ -7,6 +7,7 @@ import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
+import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
@@ -361,35 +362,6 @@ function transform(
       },
     },
   });
-}
-
-/**
- * Creates a debug logger function that conditionally logs messages
- * based on debug options and file paths.
- */
-export function createDebugLogger(
-  debugOptions: Required<YakConfigOptions>["experiments"]["debug"],
-  root: string,
-) {
-  if (!debugOptions) {
-    return () => {};
-  }
-
-  return (
-    messageType: "ts" | "css" | "css-resolved",
-    message: string | Buffer<ArrayBufferLike> | undefined,
-    filePath: string,
-  ) => {
-    // the path contains already the extension for the ts{x} file
-    const pathWithExtension =
-      messageType !== "ts" ? filePath + `.${messageType}` : filePath;
-    if (
-      debugOptions === true ||
-      new RegExp(debugOptions).test(pathWithExtension)
-    ) {
-      console.log("🐮 Yak", relative(root, pathWithExtension), "\n\n", message);
-    }
-  };
 }
 
 /**
