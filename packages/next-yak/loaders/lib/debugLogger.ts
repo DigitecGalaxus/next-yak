@@ -65,13 +65,12 @@ export function createDebugLogger(
  * Detects deprecated debug option shapes and throws helpful migration errors.
  * TODO: Remove this function in the next major version.
  */
-function throwOnDeprecatedDebugOptions(
-  debugOptions: DebugOptions,
-): void {
+function throwOnDeprecatedDebugOptions(debugOptions: DebugOptions): void {
   // Old API: debug: "regex-string"
   if (typeof debugOptions === "string") {
-    const suggestion = suggestTypesForExtensionPattern(debugOptions)
-      ?? `debug: { pattern: "${debugOptions}" }`;
+    const suggestion =
+      suggestTypesForExtensionPattern(debugOptions) ??
+      `debug: { pattern: "${debugOptions}" }`;
     throw new Error(
       `The debug option no longer accepts a string. Please update your config:\n` +
         `  Before: debug: "${debugOptions}"\n` +
@@ -109,9 +108,7 @@ function throwOnDeprecatedDebugOptions(
  * or null if the pattern doesn't match.
  */
 function suggestTypesForExtensionPattern(pattern: string): string | null {
-  const extensionMatch = pattern.match(
-    /\.\(?(?:css-resolved|css)\)?\$?$/,
-  );
+  const extensionMatch = pattern.match(/\.\(?(?:css-resolved|css)\)?\$?$/);
   if (!extensionMatch) {
     return null;
   }

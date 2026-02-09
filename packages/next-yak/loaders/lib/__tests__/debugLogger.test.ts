@@ -95,20 +95,14 @@ test("throws on invalid regex pattern", () => {
 });
 
 test("throws on old string API", () => {
-  expect(() =>
-    createDebugLogger("Logo" as any, "/root"),
-  ).toThrow(
-    'Before: debug: "Logo"\n' +
-    '  After:  debug: { pattern: "Logo" }',
+  expect(() => createDebugLogger("Logo" as any, "/root")).toThrow(
+    'Before: debug: "Logo"\n' + '  After:  debug: { pattern: "Logo" }',
   );
 });
 
 test("throws on old string API with .css$ and suggests types", () => {
-  expect(() =>
-    createDebugLogger(".css$" as any, "/root"),
-  ).toThrow(
-    'Before: debug: ".css$"\n' +
-    '  After:  debug: { types: ["css"] }',
+  expect(() => createDebugLogger(".css$" as any, "/root")).toThrow(
+    'Before: debug: ".css$"\n' + '  After:  debug: { types: ["css"] }',
   );
 });
 
@@ -117,24 +111,20 @@ test("throws on old string API with path + .css-resolved$ and suggests both", ()
     createDebugLogger("Button.css-resolved$" as any, "/root"),
   ).toThrow(
     'Before: debug: "Button.css-resolved$"\n' +
-    '  After:  debug: { pattern: "Button", types: ["css-resolved"] }',
+      '  After:  debug: { pattern: "Button", types: ["css-resolved"] }',
   );
 });
 
 test("throws on old { filter, type } API", () => {
   expect(() =>
     createDebugLogger({ filter: () => true, type: "all" } as any, "/root"),
-  ).toThrow(
-    'The debug option no longer accepts { filter, type }',
-  );
+  ).toThrow("The debug option no longer accepts { filter, type }");
 });
 
 test("throws when pattern uses old .css$ file extension convention", () => {
-  expect(() =>
-    createDebugLogger({ pattern: ".css$" }, "/root"),
-  ).toThrow(
+  expect(() => createDebugLogger({ pattern: ".css$" }, "/root")).toThrow(
     'Before: debug: { pattern: ".css$" }\n' +
-    '  After:  debug: { types: ["css"] }',
+      '  After:  debug: { types: ["css"] }',
   );
 });
 
@@ -143,15 +133,13 @@ test("throws when pattern uses old .css-resolved$ file extension convention", ()
     createDebugLogger({ pattern: ".css-resolved$" }, "/root"),
   ).toThrow(
     'Before: debug: { pattern: ".css-resolved$" }\n' +
-    '  After:  debug: { types: ["css-resolved"] }',
+      '  After:  debug: { types: ["css-resolved"] }',
   );
 });
 
 test("throws when pattern combines path and old .css$ extension convention", () => {
-  expect(() =>
-    createDebugLogger({ pattern: "Button.css$" }, "/root"),
-  ).toThrow(
+  expect(() => createDebugLogger({ pattern: "Button.css$" }, "/root")).toThrow(
     'Before: debug: { pattern: "Button.css$" }\n' +
-    '  After:  debug: { pattern: "Button", types: ["css"] }',
+      '  After:  debug: { pattern: "Button", types: ["css"] }',
   );
 });
