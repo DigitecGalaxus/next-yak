@@ -5,10 +5,10 @@ import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import {
-  PanelGroup,
+  Group,
   Panel,
-  PanelResizeHandle,
-  ImperativePanelHandle,
+  Separator,
+  PanelImperativeHandle,
 } from "react-resizable-panels";
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
@@ -46,7 +46,7 @@ export default dynamic(
       // list of refs to keep track of the models
       const modelRefs = useRef<Array<any>>([]);
       const highlighter = use(highlighterPromise);
-      const compiledPanelRef = useRef<ImperativePanelHandle>(null);
+      const compiledPanelRef = useRef<PanelImperativeHandle>(null);
       const [minify, setMinify] = useState(false);
       const [showComments, setShowComments] = useState(true);
       const initialInput = useMemo(
@@ -142,9 +142,8 @@ export default dynamic(
               }}
             />
           </div>
-          <PanelGroup
-            autoSaveId="horizontal"
-            direction="horizontal"
+          <Group
+            orientation="horizontal"
             style={{
               paddingInline: "1rem",
               fontSize: "14px",
@@ -418,7 +417,7 @@ export default dynamic(
                 />
               </CodeBlockTabs>
             </Panel>
-            <PanelResizeHandle
+            <Separator
               id="horizontal"
               css={css`
                 display: flex;
@@ -442,9 +441,9 @@ export default dynamic(
                   d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                 ></path>
               </svg>
-            </PanelResizeHandle>
+            </Separator>
             <Panel defaultSize={50}>
-              <PanelGroup autoSaveId="vertical" direction="vertical">
+              <Group orientation="vertical">
                 <Panel
                   defaultSize={70}
                   style={{
@@ -460,7 +459,7 @@ export default dynamic(
                   </ErrorBoundaryWithSnapshot>
                 </Panel>
                 <div>
-                  <PanelResizeHandle
+                  <Separator
                     id="vertical"
                     css={css`
                       display: flex;
@@ -485,7 +484,7 @@ export default dynamic(
                         d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2m-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                       ></path>
                     </svg>
-                  </PanelResizeHandle>
+                  </Separator>
 
                   <div
                     style={{
@@ -504,10 +503,10 @@ export default dynamic(
                       onClick={() => {
                         const panel = compiledPanelRef.current;
                         if (panel) {
-                          if (panel.getSize() > 0) {
+                          if (panel.getSize().asPercentage > 0) {
                             panel.collapse();
                           } else {
-                            panel.expand(30);
+                            panel.expand();
                           }
                         }
                       }}
@@ -555,7 +554,7 @@ export default dynamic(
                   collapsible
                   collapsedSize={0}
                   defaultSize={30}
-                  ref={compiledPanelRef}
+                  panelRef={compiledPanelRef}
                   style={{
                     borderColor: "var(--color-fd-border)",
                     borderWidth: "0 1px 1px 1px",
@@ -641,9 +640,9 @@ export default dynamic(
                     ) : null}
                   </CodeBlockTabs>
                 </Panel>
-              </PanelGroup>
+              </Group>
             </Panel>
-          </PanelGroup>
+          </Group>
         </>
       );
     };

@@ -87,7 +87,7 @@ const variables = css`
   --switch-offset: calc((var(--switch-height) - var(--circle-diameter)) / 2);
   --switch-transition: all 0.2s cubic-bezier(0.27, 0.2, 0.25, 1.51);
 
-  :global(html.light) & {
+  html.light & {
     --switch-bg: hsl(0, 0%, 75%);
     --switch-checked-bg: hsl(95.5, 30.4%, 68.4%);
   }
@@ -106,7 +106,7 @@ const variables = css`
   --icon-checkmark-color: var(--switch-checked-bg);
   --icon-checkmark-size: 10px;
 
-  :global(html.light) & {
+  html.light & {
     --icon-cross-color: hsl(0, 0%, 45%);
     --icon-checkmark-color: hsl(0, 0%, 45%);
   }

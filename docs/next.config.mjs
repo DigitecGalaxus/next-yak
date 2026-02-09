@@ -22,4 +22,11 @@ const config = {
   },
 };
 
-export default withYak(withMDX(config));
+export default withYak(
+  {
+    experiments: {
+      transpilationMode: "Css",
+    },
+  },
+  withMDX(config),
+);

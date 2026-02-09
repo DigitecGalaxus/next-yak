@@ -1,7 +1,7 @@
 [package]
 name = "playground-wasm"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 workspace = "../../packages/yak-swc"
 
 [lib]
@@ -14,7 +14,7 @@ __plugin = []
 [dependencies]
 anyhow = "1.0.100"
 console_error_panic_hook = "0.1.7"
-js-sys = "0.3.83"
+js-sys = "0.3.85"
 serde = { version = "1.0.228", features = ["derive"] }
 serde-wasm-bindgen = {version = "0.6.5"}
 # enable the js flag for the getrandom transitive dependency
@@ -22,8 +22,10 @@ getrandom = { version = "*", features = ["wasm_js"] }
 swc_core = { workspace = true, features = [
     "ecma_ast_serde",
     "binding_macro_wasm",
+    "ecma_transforms_module",
+    "base_module",
 ] }
-wasm-bindgen = "0.2"
+wasm-bindgen = "0.2.108"
 yak_swc = { version = "0.1.0", path = "../../packages/yak-swc/yak_swc", default-features = false }
 either = "1.15.0"
 tsify = "0.5.6"
