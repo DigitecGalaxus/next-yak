@@ -1,9 +1,11 @@
 # isolated-source-eval
 
-Evaluate TypeScript and JavaScript modules in isolated worker threads. Get back serializable exports and a full transitive dependency list — useful for bundler plugins, dev servers, and build tools that need to execute user code without polluting the host process
+> Internal module of next-yak. Not published as a standalone package.
+
+Evaluate TypeScript and JavaScript modules in isolated worker threads. Get back serializable exports and a full transitive dependency list — used by the Vite plugin to evaluate user code at build time without polluting the host process.
 
 ```ts
-import { createEvaluator } from "isolated-source-eval";
+import { createEvaluator } from "./isolated-source-eval/index.ts";
 
 const evaluator = await createEvaluator();
 
@@ -90,14 +92,6 @@ Modules are loaded via native `import()`. A custom ESM loader hook (registered v
 When a file changes, call `invalidate()`. The primary worker (with its stale ESM cache) is terminated, the shadow is promoted instantly, and a new shadow boots in the background. No restart latency.
 
 Node 24+ strips TypeScript types natively, so `.ts` files work without compilation.
-
-## Install
-
-```bash
-npm install isolated-source-eval
-```
-
-Requires **Node.js >= 24.0.0**.
 
 ## API
 

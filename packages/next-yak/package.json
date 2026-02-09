@@ -77,13 +77,12 @@
     "test:types:code": "tsc -p tsconfig.json",
     "test:types:test": "tsc -p ./runtime/__tests__/tsconfig.json",
     "test:watch": "vitest --watch",
-    "prettier": "npx prettier --write \"./{loaders,cross-file-resolver,runtime,withYak}/**/*.{ts,tsx,js,jsx}\""
+    "prettier": "npx prettier --write \"./{loaders,cross-file-resolver,runtime,withYak,isolated-source-eval}/**/*.{ts,tsx,js,jsx}\" \"!**/fixtures/syntax-error.ts\""
   },
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@babel/traverse": "catalog:core",
     "@swc/core": "catalog:core",
-    "isolated-source-eval": "workspace:*",
     "yak-swc": "9.1.0"
   },
   "devDependencies": {

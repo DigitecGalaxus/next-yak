@@ -712,21 +712,6 @@ importers:
         specifier: catalog:dev
         version: 4.0.18(@types/node@25.2.2)(jiti@2.6.1)(jsdom@28.0.0)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.7.1)
 
-  packages/isolated-source-eval:
-    devDependencies:
-      '@types/node':
-        specifier: catalog:dev
-        version: 25.2.2
-      tsup:
-        specifier: catalog:dev
-        version: 8.5.1(@swc/core@1.15.11(@swc/helpers@0.5.18))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.7.1)
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.3
-      vitest:
-        specifier: catalog:dev
-        version: 4.0.18(@types/node@25.2.2)(jiti@2.6.1)(jsdom@28.0.0)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.7.1)
-
   packages/next-yak:
     dependencies:
       '@babel/parser':
@@ -738,9 +723,6 @@ importers:
       '@swc/core':
         specifier: catalog:core
         version: 1.15.11(@swc/helpers@0.5.18)
-      isolated-source-eval:
-        specifier: workspace:*
-        version: link:../isolated-source-eval
       yak-swc:
         specifier: workspace:*
         version: link:../yak-swc

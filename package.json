@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "changeset": "changeset",
-    "build": "pnpm run --filter=isolated-source-eval build && pnpm run --filter=next-yak build",
+    "build": "pnpm run --filter=next-yak build",
     "build:swc": "pnpm run --filter=yak-swc build",
     "example": "pnpm --filter=next-yak-example run dev",
     "example:vite": "pnpm --filter=vite-yak-example run dev",
@@ -20,7 +20,7 @@
     "test:snapshots": "pnpm --filter=next-yak --filter=yak-swc run test:snapshots",
     "test:e2e": "pnpm --filter=next-yak-e2e test",
     "watch": "pnpm run --filter=next-yak watch",
-    "release": "pnpm run --filter=yak-swc build && pnpm run --filter=isolated-source-eval build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && changeset publish"
+    "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && changeset publish"
   },
   "engines": {
     "node": ">=24"

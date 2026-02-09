@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { resolve, join } from "node:path";
-import { createEvaluator, type Evaluator } from "../src/index.ts";
+import { createEvaluator, type Evaluator } from "../index.ts";
 
 const fixtures = resolve(import.meta.dirname, "fixtures");
 const fixture = (name: string) => resolve(fixtures, name);

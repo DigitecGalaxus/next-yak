@@ -1,5 +1,8 @@
 import { Options, transform as swcTransform } from "@swc/core";
-import { createEvaluator, type Evaluator } from "isolated-source-eval";
+import {
+  createEvaluator,
+  type Evaluator,
+} from "../isolated-source-eval/index.js";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";

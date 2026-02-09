@@ -2,7 +2,6 @@
 node_modules
 **/docs/dist
 **/next-yak/dist
-**/isolated-source-eval/dist
 **/eslint-plugin-yak/dist
 **/storybook-addon-yak/dist
 examples/**/dist
