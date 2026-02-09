@@ -34,9 +34,11 @@ For each (bundler x case), `run.ts`:
 ## Running
 
 ```bash
-pnpm --filter next-yak-e2e test                   # all bundlers x all cases
-pnpm --filter next-yak-e2e test next-app-webpack  # just Next.js with webpack
-pnpm --filter next-yak-e2e test vite              # just Vite
+pnpm --filter next-yak-e2e test                     # all bundlers x all cases
+pnpm --filter next-yak-e2e test next-app-webpack    # just Next.js with webpack
+pnpm --filter next-yak-e2e test vite                # just Vite
+
+pnpm --filter next-yak-e2e test vite yak-file-mixin # just Vite with the "yak-file-mixin" case
 ```
 
 ## Adding a test case

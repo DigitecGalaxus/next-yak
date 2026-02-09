@@ -1,0 +1,17 @@
+{
+  "name": "e2e-vite8",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "vite": "8.0.0-beta.13",
+    "@vitejs/plugin-react-swc": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
