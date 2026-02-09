@@ -1,7 +1,7 @@
 import { Options, transform as swcTransform } from "@swc/core";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { createContext, runInContext } from "node:vm";
 import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
