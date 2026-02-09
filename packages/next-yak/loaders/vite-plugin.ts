@@ -279,6 +279,25 @@ export async function viteYak(
         }
       },
     },
+
+    // Vite's default HMR only updates the JS module when a source file changes.
+    // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
+    // which Vite doesn't know is derived from the source file. Without explicit
+    // invalidation here, the browser keeps stale CSS after edits.
+    hotUpdate({ modules, file, type }) {
+      if (type !== "update" && type !== "create") return;
+      if (!sourceFileRegex.test(file)) return;
+
+      // The SWC plugin generates virtual module paths relative to root
+      // (via {{__MODULE_PATH__}}), so we must match that format.
+      const relativePath = relative(root, file);
+      const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
+      const mod = this.environment.moduleGraph.getModuleById(virtualId);
+      if (mod) {
+        this.environment.moduleGraph.invalidateModule(mod);
+        return [...modules, mod];
+      }
+    },
   };
 }
 

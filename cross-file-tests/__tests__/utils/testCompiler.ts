@@ -1,63 +1,49 @@
 import { withYak, type YakConfigOptions } from "next-yak/withYak";
 import webpack from "webpack";
-import { createFsFromVolume, Volume } from "memfs";
-import path from "path";
-import { ufs } from "unionfs";
-import * as fs from "fs";
+import path from "node:path";
+import { TestEnvironmentManager } from "./TestEnvironmentManager";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 /**
  * Main compilation function that orchestrates the entire process.
- * Sets up file systems, creates Webpack config, attaches listeners,
+ * Sets up a temporary file environment, creates Webpack config, attaches listeners,
  * applies Yak configuration, and runs the Webpack compiler.
  */
 export const compile = async (
   files: Record<string, string>,
   yakConfig: YakConfigOptions = {},
 ): Promise<Record<string, string>> => {
-  const { hybridFileSystem } = setupFileSystems(files);
-  const webpackConfig = createWebpackConfig(files);
-  const compileResults = attachLoaderCompilationListener(webpackConfig);
-  const configWithYak = await applyYakConfig(webpackConfig, yakConfig);
-  await runWebpackCompiler(configWithYak, hybridFileSystem);
-  return compileResults;
-};
-
-/** 
- * Sets up the memory and hybrid file systems based on the provided files.
- * Creates a memory file system, populates it with the given files, and combines
- * it with the real file system to create a hybrid file system for Webpack.
- */
-const setupFileSystems = (files: Record<string, string>) => {
-  const memoryFileSystem = createFsFromVolume(new Volume());
-  Object.entries(files).forEach(([filename, file]) => {
-    const fullpath = path.resolve(__dirname, filename);
-    memoryFileSystem.mkdirSync(path.dirname(fullpath), { recursive: true });
-    memoryFileSystem.writeFileSync(fullpath, file);
-  });
-  // Webpack loaders should be read from the real file system
-  // @ts-ignore
-  const hybridFileSystem = ufs.use(fs).use(memoryFileSystem);
-  return { memoryFileSystem, hybridFileSystem };
+  const env = await TestEnvironmentManager.createEnvironment(files);
+  try {
+    const webpackConfig = createWebpackConfig(files, env.dir);
+    const compileResults = attachLoaderCompilationListener(webpackConfig, env.dir);
+    const configWithYak = await applyYakConfig(webpackConfig, yakConfig);
+    await runWebpackCompiler(configWithYak);
+    await env.cleanup();
+    return compileResults;
+  } catch (error) {
+    await env.cleanup();
+    throw error;
+  }
 };
 
 /**
  * Creates a Webpack configuration object based on the provided files.
  * Sets up entry points, output settings, module rules, and resolve options.
  */
-const createWebpackConfig = (files: Record<string, string>): webpack.Configuration => {
+const createWebpackConfig = (files: Record<string, string>, tmpDir: string): webpack.Configuration => {
   const entry = Object.entries(files)
     // take only the first file as the entry point
     .find(([name]) => name.endsWith("index.tsx")) ||
     // fallback to the first file
     Object.entries(files)[0];
   return {
-    context: __dirname,
+    context: tmpDir,
     mode: "development",
     entry: Object.fromEntries([[path.basename(entry[0]), entry[0]] as const]),
     output: {
-      path: "/dist",
+      path: path.join(tmpDir, "dist"),
       filename: "[name].js",
     },
     module: {
@@ -101,7 +87,7 @@ const attachSWCLoader = (webpackConfig: webpack.Configuration) => {
  * This listener captures the compilation results for each module,
  * filtering out node_modules and dist files to allow inspection of the loader results
  */
-const attachLoaderCompilationListener = (webpackConfig: webpack.Configuration): Record<string, string> => {
+const attachLoaderCompilationListener = (webpackConfig: webpack.Configuration, tmpDir: string): Record<string, string> => {
   const compileResults: Record<string, string> = {};
   webpackConfig.plugins = webpackConfig.plugins || [];
   webpackConfig.plugins.push({
@@ -121,7 +107,7 @@ const attachLoaderCompilationListener = (webpackConfig: webpack.Configuration): 
           }
           const result = String(module._source?._value || "");
           const isCss = module.resource.endsWith(".css");
-          compileResults[path.relative(__dirname, module.resource)] = (isCss
+          compileResults[path.relative(tmpDir, module.resource)] = (isCss
             ? // Remove the first and second line (injected by comment-loader.js)
               result.split("\n").slice(1, -1).join("\n")
             : result).trim();
@@ -152,15 +138,14 @@ const applyYakConfig = async (webpackConfig: webpack.Configuration, yakConfig: Y
 };
 
 /**
- * Runs the Webpack compiler with the given configuration and file system.
+ * Runs the Webpack compiler with the given configuration.
  * Returns a promise that resolves only if there are no compilation errors.
  */
-const runWebpackCompiler = (config: webpack.Configuration, fileSystem: any): Promise<void> => {
+const runWebpackCompiler = (config: webpack.Configuration): Promise<void> => {
   const compiler = webpack(config);
-  // @ts-ignore
-  compiler.inputFileSystem = fileSystem;
-  // @ts-ignore
-  compiler.outputFileSystem = fileSystem;
+  if (!compiler) {
+    return Promise.reject(new Error("Failed to create Webpack compiler"));
+  }
 
   return new Promise<void>((resolve, reject) => {
     compiler.run((err, stats) => {
