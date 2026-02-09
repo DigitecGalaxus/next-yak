@@ -1,0 +1,86 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "./package.json"
+      - "packages/next-yak/**"
+      - "packages/yak-swc/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "./package.json"
+      - "packages/next-yak/**"
+      - "packages/yak-swc/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 24
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+        name: Install pnpm
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Add wasm32 targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
+
+      - name: Enable Rust caching
+        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2
+        with:
+          workspaces: packages/yak-swc
+
+      - name: Build SWC plugin
+        run: pnpm run build:swc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Install Playwright browsers
+        run: pnpm --filter next-yak-e2e exec playwright install chromium
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e

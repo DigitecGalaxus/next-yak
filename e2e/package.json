@@ -1,0 +1,23 @@
+{
+  "name": "next-yak-e2e",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./test-env.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types run.ts",
+    "test:vite": "node --experimental-strip-types run.ts vite",
+    "test:next-webpack": "node --experimental-strip-types run.ts next-app-webpack",
+    "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@types/node": "catalog:dev",
+    "next-yak": "workspace:*",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "prettier": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
