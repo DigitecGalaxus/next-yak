@@ -1,0 +1,52 @@
+{
+  "name": "create-next-yak",
+  "version": "0.0.0",
+  "description": "Automatic setup for next-yak in Next.js and Vite projects",
+  "homepage": "https://yak.js.org/",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak"
+  },
+  "bugs": {
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "css-in-js",
+    "styled-components",
+    "next-yak",
+    "nextjs",
+    "vite",
+    "create"
+  ],
+  "bin": {
+    "create-next-yak": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "vitest --watch=false",
+    "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm test"
+  },
+  "dependencies": {
+    "magicast": "^0.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:dev"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
+  ],
+  "author": {
+    "name": "Jan Nicklas"
+  }
+}
