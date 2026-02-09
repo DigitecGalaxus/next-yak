@@ -1,6 +1,7 @@
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
-import type { Compilation, LoaderContext } from "webpack";
+import type { Compilation, Compiler, LoaderContext } from "webpack";
+import type { Evaluator } from "../../isolated-source-eval/index.js";
 import {
   ModuleExport,
   ModuleExports,
@@ -110,7 +111,22 @@ function getParseContext(
       return { code: await transformedSource };
     },
     async evaluateYakModule(modulePath) {
-      return loader.importModule(modulePath);
+      const evaluator = (
+        loader._compiler as Compiler & { yakEvaluator?: Evaluator }
+      )?.yakEvaluator;
+      if (!evaluator) {
+        throw new Error(
+          "YakEvaluatorPlugin is not configured. Add `new YakEvaluatorPlugin()` to your webpack plugins.",
+        );
+      }
+      const result = await evaluator.evaluate(modulePath);
+      if (!result.ok) throw new Error(result.error.message);
+      // Register all transitive dependencies so webpack re-processes
+      // when any dependency of the .yak module changes
+      for (const dep of result.dependencies) {
+        loader.addDependency(dep);
+      }
+      return result.value;
     },
     transpilationMode: loader.getOptions().experiments?.transpilationMode,
   };
