@@ -15,9 +15,9 @@
     "docs": "pnpm --filter=docs run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "prettier": "pnpm run --recursive --if-present prettier",
-    "test": "pnpm run build && pnpm --filter=next-yak --filter=cross-file-tests --filter=next-yak-example run \"/test($|:types)/\"",
+    "test": "pnpm run build && pnpm --filter=next-yak --filter=next-yak-example run \"/test($|:types)/\"",
     "test:watch": "pnpm --filter=next-yak run test:watch",
-    "test:snapshots": "pnpm --filter=next-yak --filter=cross-file-tests --filter=yak-swc run test:snapshots",
+    "test:snapshots": "pnpm --filter=next-yak --filter=yak-swc run test:snapshots",
     "test:e2e": "pnpm --filter=next-yak-e2e test",
     "watch": "pnpm run --filter=next-yak watch",
     "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && changeset publish"
