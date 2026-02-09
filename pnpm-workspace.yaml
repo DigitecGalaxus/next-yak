@@ -59,7 +59,7 @@ catalogs:
     jest: 30.2.0
     jest-environment-jsdom: 30.2.0
     js-base64: 3.7.8
-    jsdom: 27.4.0
+    jsdom: 28.0.0
     lz-string: 1.5.0
     memfs: 4.56.10
     next: 16.1.6
