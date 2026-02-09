@@ -26,7 +26,7 @@ export async function parseModule(
     }
 
     if (context.cache?.parse === undefined) {
-      return uncachedParseModule(context, modulePath);
+      return await uncachedParseModule(context, modulePath);
     }
 
     const cached = context.cache.parse.get(modulePath);
@@ -45,8 +45,9 @@ export async function parseModule(
 
     return cached;
   } catch (error) {
+    const causeMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Error parsing file ${modulePath}: ${(error as Error).message}`,
+      `Error parsing file "${modulePath}"\n  Caused by: ${causeMessage}`,
     );
   }
 }
