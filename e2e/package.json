@@ -6,7 +6,7 @@
     ".": "./test-env.ts"
   },
   "scripts": {
-    "test": "node --experimental-strip-types run.ts",
+    "test": "node run.ts",
     "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
   },
   "devDependencies": {
