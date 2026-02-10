@@ -1,5 +1,11 @@
 # yak-swc
 
+## 9.2.0
+
+### Patch Changes
+
+- bc1f82e: Updated dependencies
+
 ## 9.1.0
 
 ### Minor Changes
