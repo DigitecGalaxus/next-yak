@@ -91,7 +91,7 @@ Modules are loaded via native `import()`. A custom ESM loader hook (registered v
 
 When a file changes, call `invalidate()`. The primary worker (with its stale ESM cache) is terminated, the shadow is promoted instantly, and a new shadow boots in the background. No restart latency.
 
-Node 24+ strips TypeScript types natively, so `.ts` files work without compilation.
+Node 22.18.0+ strips TypeScript types natively, so `.ts` files work without compilation.
 
 ## API
 
@@ -166,7 +166,7 @@ await evaluator.dispose();
 
 | Constraint | Detail |
 |---|---|
-| Node 24+ | Required for stable type stripping. |
+| Node 22.18.0+ | Required for native type stripping. |
 | Serializable exports only | Uses `postMessage` (structured clone). Functions, Symbols, WeakMaps, and class instances will produce an `{ ok: false }` error. Export plain data instead. |
 | No sandboxing | Evaluated code runs with full Node.js privileges. This is designed for trusted project source files. |
 | No file watching | This package does not watch the filesystem. Consumers are responsible for calling `invalidate()` when files change. |

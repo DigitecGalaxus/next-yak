@@ -1,5 +1,5 @@
 ---
-"next-yak": major
+"next-yak": minor
 ---
 
-Evaluate Typescript files inside Node.js 24 workers with types stripped out
+Evaluate TypeScript files inside Node.js workers with types stripped out

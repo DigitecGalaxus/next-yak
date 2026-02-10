@@ -53,7 +53,7 @@ interface PendingEvaluation {
  *
  * In production the compiled `.js` file exists in `dist/` — we prefer that.
  * During development (vitest runs against source), only the `.ts` file exists.
- * Node 24+ handles `.ts` natively via strip-types, so the fallback works
+ * Node 22.18.0+ handles `.ts` natively via strip-types, so the fallback works
  * without any flags or loaders.
  */
 function resolveWorkerPath(): string {
@@ -70,7 +70,7 @@ function resolveWorkerPath(): string {
  * The loader hook data URL is passed via `workerData` rather than having
  * the worker import it from a sibling module. This avoids a module
  * resolution mismatch: source files use `.ts` extensions (required by
- * Node 24 strip-types) while compiled output uses `.js` (rewritten by tsc
+ * Node strip-types) while compiled output uses `.js` (rewritten by tsc
  * via `rewriteRelativeImportExtensions`). Since the worker file would need
  * to import loader-hooks with the right extension for its context, passing
  * the data URL through workerData eliminates the problem entirely.

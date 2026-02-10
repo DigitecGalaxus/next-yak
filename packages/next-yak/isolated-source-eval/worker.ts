@@ -2,12 +2,12 @@
  * Worker thread entry point for isolated module evaluation.
  *
  * Each worker is a full Node.js environment with its own ESM module cache.
- * Modules are loaded via dynamic `import()` — Node 24+ strips TypeScript
+ * Modules are loaded via dynamic `import()` — Node 22.18.0+ strips TypeScript
  * types natively, so no compilation step or flags are needed.
  *
  * The loader hook data URL is received via `workerData` rather than
  * importing it from a sibling module. This avoids a cross-file import
- * resolution problem: Node 24's strip-types requires `.ts` extensions in
+ * resolution problem: Node's strip-types requires `.ts` extensions in
  * source, but compiled output uses `.js`. Passing the URL through
  * `workerData` sidesteps this entirely since the worker file has no
  * local imports beyond node built-ins.
