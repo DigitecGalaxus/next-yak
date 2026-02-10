@@ -4,7 +4,7 @@
  * For each (bundler x case), assembles a self-contained app in
  * bundlers/<bundler>/.tmp/<case>/ and spawns Playwright against it.
  *
- * Usage: node --experimental-strip-types run.ts [bundler] [case]
+ * Usage: node run.ts [bundler] [case]
  */
 
 import { spawn } from "node:child_process";
