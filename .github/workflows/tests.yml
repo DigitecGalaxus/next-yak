@@ -77,6 +77,9 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Build Storybook Addon
+        run: pnpm run --filter=storybook-addon-yak build
+
       - name: Validate ESLint Plugin Docs
         run: pnpm --filter eslint-plugin-yak check:docs
 
