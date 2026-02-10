@@ -2,8 +2,9 @@ packages:
   - packages/*
   - examples/*
   - benchmarks
-  - cross-file-tests
   - docs
+  - e2e
+  - e2e/bundlers/*
 
 catalogs:
   core:
