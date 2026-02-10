@@ -1,7 +1,6 @@
 name: autofix.ci
 on:
   pull_request:
-    branches-ignore: ["changeset-release/main"]
   push:
     branches: ["main"]
   workflow_dispatch:
@@ -11,6 +10,7 @@ permissions:
 
 jobs:
   autofix:
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
