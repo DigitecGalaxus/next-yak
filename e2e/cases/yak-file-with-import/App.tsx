@@ -1,11 +1,13 @@
-import { styled } from "next-yak";
-import { spacing, brandColor } from "./tokens.yak.ts";
-
-const Box = styled.div`
-  padding: ${spacing}px;
-  color: ${brandColor};
-`;
+import { Accordion } from "./Accordion.tsx";
+import { Button } from "./Button.tsx";
+import { Card } from "./Card.tsx";
 
 export default function App() {
-  return <Box data-testid="box">Yak file with import</Box>;
+  return (
+    <>
+      <Accordion />
+      <Button />
+      <Card />
+    </>
+  );
 }
