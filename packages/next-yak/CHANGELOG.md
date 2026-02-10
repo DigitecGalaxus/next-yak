@@ -1,5 +1,20 @@
 # next-yak
 
+## 9.2.0
+
+### Minor Changes
+
+- 87091fe: Improve the debugging API
+
+### Patch Changes
+
+- f90c65b: Add optional peer dependencies
+- 60e8041: fix HMR for CSS in Vite
+- 8c1b6f1: Export the YakComponent type to fix TS4023 errors when re-exporting styled components with declaration emit enabled
+- 0841721: Report transformation errors during cross file resolve
+- Updated dependencies [bc1f82e]
+  - yak-swc@9.2.0
+
 ## 9.1.0
 
 ### Minor Changes
