@@ -61,66 +61,75 @@ export default async function cssExtractLoader(
     );
   };
 
-  const result = await transform(
-    code,
-    this.resourcePath,
-    this.rootContext,
-    sourceMap,
-  );
-  debugLog("ts", result.code, this.resourcePath);
+  try {
+    const result = await transform(
+      code,
+      this.resourcePath,
+      this.rootContext,
+      sourceMap,
+    );
+    debugLog("ts", result.code, this.resourcePath);
 
-  let css = extractCss(result.code, "Css");
-  debugLog("css", css, this.resourcePath);
+    let css = extractCss(result.code, "Css");
+    debugLog("css", css, this.resourcePath);
 
-  const { resolved } = await resolveCrossFileConstant(
-    {
-      parse: (modulePath) => {
-        return parseModule(
-          {
-            transpilationMode: "Css",
-            extractExports: async (modulePath) => {
-              const sourceContents = await fsReadFile(modulePath);
-              return parseExports(sourceContents);
+    const { resolved } = await resolveCrossFileConstant(
+      {
+        parse: (modulePath) => {
+          return parseModule(
+            {
+              transpilationMode: "Css",
+              extractExports: async (modulePath) => {
+                const sourceContents = await fsReadFile(modulePath);
+                return parseExports(sourceContents);
+              },
+              getTransformed: async (modulePath) => {
+                const sourceContent = await fsReadFile(modulePath);
+                return transform(sourceContent, modulePath, this.rootContext);
+              },
+              evaluateYakModule: async (modulePath: string) => {
+                crossFileDeps.add(modulePath);
+                const { evaluateYakModule } =
+                  await import("./turbo-evaluator.js");
+                return evaluateYakModule(modulePath, (dep) =>
+                  crossFileDeps.add(dep),
+                );
+              },
             },
-            getTransformed: async (modulePath) => {
-              const sourceContent = await fsReadFile(modulePath);
-              return transform(sourceContent, modulePath, this.rootContext);
-            },
-            evaluateYakModule: async (modulePath: string) => {
-              crossFileDeps.add(modulePath);
-              const { evaluateYakModule } =
-                await import("./turbo-evaluator.js");
-              return evaluateYakModule(modulePath, (dep) =>
-                crossFileDeps.add(dep),
-              );
-            },
-          },
-          modulePath,
-        );
+            modulePath,
+          );
+        },
+        resolve: resolveFn,
       },
-      resolve: resolveFn,
-    },
-    this.resourcePath,
-    css,
-  );
+      this.resourcePath,
+      css,
+    );
 
-  // Register cross-file dependencies so turbopack re-runs this loader
-  // when any dependency changes (analogous to webpack's this.addDependency)
-  for (const dep of crossFileDeps) {
-    this.addDependency(dep);
+    // Register cross-file dependencies so turbopack re-runs this loader
+    // when any dependency changes (analogous to webpack's this.addDependency)
+    for (const dep of crossFileDeps) {
+      this.addDependency(dep);
+    }
+
+    const dataUrl = result.code
+      .split("\n")
+      .find((line) => line.includes("data:text/css;base64"))!;
+
+    const codeWithCrossFileResolved = result.code.replace(
+      dataUrl,
+      `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
+    );
+
+    debugLog("css-resolved", resolved, this.resourcePath);
+    return callback(null, codeWithCrossFileResolved, result.map);
+  } catch (error) {
+    // Register cross-file dependencies even on error so turbopack re-runs
+    // this loader when a broken dependency is fixed.
+    for (const dep of crossFileDeps) {
+      this.addDependency(dep);
+    }
+    return callback(error instanceof Error ? error : new Error(String(error)));
   }
-
-  const dataUrl = result.code
-    .split("\n")
-    .find((line) => line.includes("data:text/css;base64"))!;
-
-  const codeWithCrossFileResolved = result.code.replace(
-    dataUrl,
-    `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
-  );
-
-  debugLog("css-resolved", resolved, this.resourcePath);
-  return callback(null, codeWithCrossFileResolved, result.map);
 }
 
 function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
