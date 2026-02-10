@@ -1,7 +1,6 @@
 import { transform as swcTransform } from "@swc/core";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
-import { createContext, runInContext } from "node:vm";
 import type { LoaderContext } from "webpack";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
@@ -50,14 +49,17 @@ export default async function cssExtractLoader(
     });
   };
 
-  const fsReadFile = (filePath: string) =>
-    new Promise<string>((resolve, reject) =>
+  const crossFileDeps = new Set<string>();
+  const fsReadFile = (filePath: string) => {
+    crossFileDeps.add(filePath);
+    return new Promise<string>((resolve, reject) =>
       this.fs.readFile(filePath, "utf-8", (err, result) => {
         if (err) return reject(err);
         if (!result) return reject(new Error(`File not found: ${filePath}`));
         resolve(result);
       }),
     );
+  };
 
   const result = await transform(
     code,
@@ -85,52 +87,12 @@ export default async function cssExtractLoader(
               return transform(sourceContent, modulePath, this.rootContext);
             },
             evaluateYakModule: async (modulePath: string) => {
-              const code = await fsReadFile(modulePath);
-
-              const transformed = await swcTransform(code, {
-                filename: modulePath,
-                sourceFileName: modulePath,
-                jsc: {
-                  transform: {
-                    react: { runtime: "automatic" },
-                  },
-                  experimental: {
-                    plugins: [[yakSwcPluginPath, yakPluginOptions]],
-                  },
-                },
-                module: {
-                  type: "commonjs",
-                },
-              });
-
-              const moduleObject = { exports: {} };
-              const context = createContext({
-                require: (path: string) => {
-                  throw new Error(
-                    `Yak files cannot have imports in turbopack.\n` +
-                      `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
-                      `Yak files should be self-contained and only export constants or styled components.\n` +
-                      `This will be resolved once Vercel adds "this.importModule" support for turbopack.`,
-                  );
-                },
-                __filename: modulePath,
-                __dirname: dirname(modulePath),
-                global: {},
-                console,
-                Buffer,
-                process,
-                setTimeout,
-                clearTimeout,
-                setInterval,
-                clearInterval,
-                setImmediate,
-                clearImmediate,
-                exports: moduleObject.exports,
-                module: moduleObject,
-              });
-              runInContext(transformed.code, context);
-
-              return moduleObject.exports;
+              crossFileDeps.add(modulePath);
+              const { evaluateYakModule } =
+                await import("./turbo-evaluator.js");
+              return evaluateYakModule(modulePath, (dep) =>
+                crossFileDeps.add(dep),
+              );
             },
           },
           modulePath,
@@ -141,6 +103,12 @@ export default async function cssExtractLoader(
     this.resourcePath,
     css,
   );
+
+  // Register cross-file dependencies so turbopack re-runs this loader
+  // when any dependency changes (analogous to webpack's this.addDependency)
+  for (const dep of crossFileDeps) {
+    this.addDependency(dep);
+  }
 
   const dataUrl = result.code
     .split("\n")

@@ -11,8 +11,8 @@ export type EvaluateResult =
 export interface Evaluator {
   /** Evaluate a module and return its exports plus the full transitive dependency list. */
   evaluate(absolutePath: string): Promise<EvaluateResult>;
-  /** Clear cached results for every entry point that transitively depends on the given file. */
-  invalidate(absolutePath: string): void;
+  /** Clear cached results for every entry point that transitively depends on the given file(s). */
+  invalidate(...absolutePaths: string[]): void;
   /** Clear the entire result cache and swap workers. */
   invalidateAll(): void;
   /** Return entry point paths that would be affected by invalidate(absolutePath). */
@@ -406,23 +406,35 @@ export async function createEvaluator(): Promise<Evaluator> {
     return promise;
   }
 
-  function invalidate(absolutePath: string): void {
-    // Always track the invalidation so that in-flight evaluations whose
-    // dependency graph isn't populated yet (cold start) can detect staleness
-    // when they complete in handleResult().
-    invalidatedDuringEval.add(absolutePath);
+  function invalidate(...absolutePaths: string[]): void {
+    if (absolutePaths.length === 0) return;
 
-    const entryPoints = reverseDeps.get(absolutePath);
-    if (!entryPoints || entryPoints.size === 0) return;
+    // Track all invalidations for cold-start detection (in-flight evaluations
+    // whose dependency graph isn't populated yet).
+    for (const path of absolutePaths) {
+      invalidatedDuringEval.add(path);
+    }
 
-    for (const entry of entryPoints) {
+    // Collect all affected entry points across all changed files.
+    const allEntryPoints = new Set<string>();
+    for (const path of absolutePaths) {
+      const entryPoints = reverseDeps.get(path);
+      if (entryPoints) {
+        for (const entry of entryPoints) {
+          allEntryPoints.add(entry);
+        }
+      }
+    }
+
+    // If no cached entry points are affected, return early. The cold-start
+    // set (invalidatedDuringEval) will catch in-flight evaluations.
+    if (allEntryPoints.size === 0) return;
+
+    // Clear caches and clean dependency graphs for all affected entry points.
+    for (const entry of allEntryPoints) {
       resultCache.delete(entry);
       inflight.delete(entry);
 
-      // Clean up the dependency graph for invalidated entry points.
-      // Since we're about to swap workers and re-evaluate, the old graph
-      // entries are stale. Cleaning them here prevents phantom reverse
-      // entries from accumulating for removed dependencies.
       const deps = forwardDeps.get(entry);
       if (deps) {
         for (const dep of deps) {
@@ -438,9 +450,7 @@ export async function createEvaluator(): Promise<Evaluator> {
       }
     }
 
-    // If an evaluation is in-flight on the worker we're about to terminate,
-    // capture it and re-queue at the front. The caller's promise will
-    // resolve transparently with the result from the promoted shadow worker.
+    // Capture in-flight evaluation, swap workers ONCE, and re-queue.
     clearEvalTimeout();
     const inflightEval = currentEval;
     currentEval = null;
