@@ -50,6 +50,13 @@ export default async function cssExtractLoader(
   };
 
   const crossFileDeps = new Set<string>();
+  let evaluate:
+    | Awaited<
+        ReturnType<
+          typeof import("./turbo-evaluator.js").createCompilationEvaluator
+        >
+      >
+    | undefined;
   const fsReadFile = (filePath: string) => {
     crossFileDeps.add(filePath);
     return new Promise<string>((resolve, reject) =>
@@ -89,11 +96,14 @@ export default async function cssExtractLoader(
               },
               evaluateYakModule: async (modulePath: string) => {
                 crossFileDeps.add(modulePath);
-                const { evaluateYakModule } =
-                  await import("./turbo-evaluator.js");
-                return evaluateYakModule(modulePath, (dep) =>
-                  crossFileDeps.add(dep),
-                );
+                /*
+                 * Turbopack doesn't let us know when a compilation start so by using a singleton evaluator we
+                 * we can at least ensture that we scan for file modifications only once per loader call
+                 */
+                evaluate ??= await (
+                  await import("./turbo-evaluator.js")
+                ).createCompilationEvaluator();
+                return evaluate(modulePath, (dep) => crossFileDeps.add(dep));
               },
             },
             modulePath,
