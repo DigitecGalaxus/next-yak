@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build-and-deploy:
@@ -66,6 +67,14 @@ jobs:
 
       - name: Build with SWC
         run: pnpm run build:swc
+
+      - name: Build playground WASM
+        run: wasm-pack build docs/playground-wasm --out-dir docs/playground-wasm/out --out-name index --target web
+
+      - name: Download WASM versions for playground
+        run: bash docs/scripts/download-wasm-versions.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest

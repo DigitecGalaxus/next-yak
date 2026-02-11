@@ -11,3 +11,4 @@ target
 .swc
 .tanstack
 cross-file-tests/__tests__/.tmp/
+docs/public/wasm/

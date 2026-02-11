@@ -6,16 +6,19 @@ export type TWorkerMess = number[];
 
 let transformFn: typeof transform;
 
-const initializeWasm = async () => {
+const initializeWasm = async (wasmUrl?: string) => {
   const {
     default: init,
     start,
     transform,
   } = await import("../../../playground-wasm/out");
-  await init();
+  if (wasmUrl) {
+    await init(wasmUrl);
+  } else {
+    await init();
+  }
   start();
   transformFn = transform;
-  self.postMessage("workerReady");
 };
 
 const onmessage = async (event: MessageEvent<TranspileInput>) => {
@@ -43,6 +46,34 @@ const onmessage = async (event: MessageEvent<TranspileInput>) => {
   }
 };
 
-initializeWasm().then(() => {
-  addEventListener("message", onmessage);
-});
+addEventListener(
+  "message",
+  async (event: MessageEvent) => {
+    if (event.data?.type === "init") {
+      try {
+        await initializeWasm(event.data.wasmUrl);
+        self.postMessage("workerReady");
+      } catch (e) {
+        // If loading external WASM failed, fall back to bundled WASM
+        if (event.data.wasmUrl) {
+          try {
+            await initializeWasm();
+            self.postMessage("workerReady");
+          } catch (fallbackError) {
+            self.postMessage(
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : String(fallbackError),
+            );
+          }
+        } else {
+          self.postMessage(
+            e instanceof Error ? e.message : String(e),
+          );
+        }
+      }
+      addEventListener("message", onmessage);
+    }
+  },
+  { once: true },
+);

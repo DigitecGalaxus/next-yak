@@ -10,6 +10,7 @@
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
     "build:wasm:opt": "wasm-pack build ./playground-wasm --out-dir ./out --out-name index --target web",
+    "download:wasm-versions": "bash scripts/download-wasm-versions.sh",
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
     "start": "next start",

@@ -71,3 +71,29 @@ jobs:
           title: Release new version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install wasm-pack
+        if: steps.changesets.outputs.published == 'true'
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build playground WASM
+        if: steps.changesets.outputs.published == 'true'
+        run: wasm-pack build docs/playground-wasm --out-dir docs/playground-wasm/out --out-name index --target web
+
+      - name: Upload WASM to release
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          VERSION=$(node -p "require('./packages/next-yak/package.json').version")
+          TAG="yak-swc@${VERSION}"
+          # Check if the release exists before uploading
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" \
+              docs/playground-wasm/out/index.js \
+              docs/playground-wasm/out/index_bg.wasm \
+              --clobber
+            echo "Uploaded WASM assets to release $TAG"
+          else
+            echo "Release $TAG not found, skipping WASM upload"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

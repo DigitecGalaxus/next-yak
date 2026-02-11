@@ -37,6 +37,7 @@ type TranspileResult = {
 
 export const useTranspile = (
   initialProps?: TranspileInput,
+  version?: string,
 ): [TranspileResult, (props: TranspileInput) => void] => {
   const workerRef = useRef<Worker | null>(null);
   const [result, setResult] = useState<TranspileResult>({
@@ -123,7 +124,10 @@ export const useTranspile = (
     [],
   );
 
+  const lastTranspileInput = useRef<TranspileInput | undefined>(undefined);
+
   const transpile = useCallback((props: TranspileInput) => {
+    lastTranspileInput.current = props;
     if (workerRef.current) {
       workerRef.current.postMessage(props);
     } else {
@@ -153,7 +157,7 @@ export const useTranspile = (
   const workerOnMessage = useCallback(
     (event: MessageEvent) => {
       if (event.data === "workerReady") {
-        setIsWorkerReady(true); // Set state to true
+        setIsWorkerReady(true);
       } else {
         workerOnMessagePostInit(event);
       }
@@ -168,17 +172,20 @@ export const useTranspile = (
     workerRef.current = worker;
     worker.onmessage = workerOnMessage;
     setIsWorkerReady(false);
+    const wasmUrl = version ? `/wasm/${version}/index_bg.wasm` : undefined;
+    worker.postMessage({ type: "init", wasmUrl });
 
     return () => {
       workerRef.current?.terminate();
       workerRef.current = null;
       setIsWorkerReady(false);
     };
-  }, [workerOnMessage]);
+  }, [workerOnMessage, version]);
 
   useEffect(() => {
-    if (isWorkerReady && initialProps) {
-      transpile(initialProps);
+    if (isWorkerReady) {
+      const input = lastTranspileInput.current ?? initialProps;
+      if (input) transpile(input);
     }
   }, [isWorkerReady, transpile, initialProps]);
 

@@ -27,12 +27,18 @@ import {
   CodeBlockTabsTrigger,
 } from "fumadocs-ui/components/codeblock";
 
+type VersionEntry = { version: string; label: string };
+
 export default dynamic(
   async function load() {
     return function Editor({
       initialState,
+      versions,
+      defaultVersion,
     }: {
       initialState: Record<string, string>;
+      versions: VersionEntry[];
+      defaultVersion: string;
     }) {
       const themeConfig = useTheme();
       const [tab, setTab] = useState("index");
@@ -49,6 +55,9 @@ export default dynamic(
       const compiledPanelRef = useRef<PanelImperativeHandle>(null);
       const [minify, setMinify] = useState(false);
       const [showComments, setShowComments] = useState(true);
+      const [version, setVersion] = useState(defaultVersion);
+      const versionRef = useRef(version);
+      versionRef.current = version;
       const initialInput = useMemo(
         () => ({
           mainFile: {
@@ -75,7 +84,7 @@ export default dynamic(
         [initialInput],
       );
 
-      const [transpileResult, transpile] = useTranspile(initialInput);
+      const [transpileResult, transpile] = useTranspile(initialInput, version);
 
       const updateCode = useCallback(
         (minify?: boolean, showComments?: boolean) => {
@@ -119,9 +128,10 @@ export default dynamic(
         <>
           <div
             css={css`
-              margin: 1rem 2rem;
+              margin: 1rem 1rem;
               display: flex;
               justify-content: flex-end;
+              align-items: center;
               gap: 1rem;
             `}
           >
@@ -141,6 +151,43 @@ export default dynamic(
                 setShowComments(val);
               }}
             />
+            <label
+              css={css`
+                display: inline-flex;
+                align-items: center;
+                font-size: 14px;
+                color: var(--color-fd-muted-foreground);
+              `}
+            >
+              Version
+              <select
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                disabled={versions.length <= 1}
+                css={css`
+                  font-size: 14px;
+                  margin-inline-start: 12px;
+                  height: 24px;
+                  padding: 0 4px 0 8px;
+                  border-radius: 6px;
+                  border: 1px solid var(--color-fd-border);
+                  background: var(--color-fd-background);
+                  color: var(--color-fd-muted-foreground);
+                  cursor: pointer;
+
+                  &:disabled {
+                    opacity: 0.7;
+                    cursor: default;
+                  }
+                `}
+              >
+                {versions.map((v) => (
+                  <option key={v.version} value={v.version}>
+                    v{v.version}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           <Group
             orientation="horizontal"
@@ -376,6 +423,9 @@ export default dynamic(
                           "q",
                           compressWithDictionary(filterOutNodeModules(mapped)),
                         );
+                        if (versionRef.current !== defaultVersion) {
+                          urlSearchParams.set("v", versionRef.current);
+                        }
                         window.history.replaceState(
                           null,
                           "",
