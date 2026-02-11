@@ -165,14 +165,14 @@ await evaluator.dispose();
 
 ## Constraints
 
-| Constraint                | Detail                                                                                                                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Node 22.18.0+             | Required for native type stripping.                                                                                                                                                  |
-| Serializable exports only | Uses `postMessage` (structured clone). Functions, Symbols, WeakMaps, and class instances will produce an `{ ok: false }` error. Export plain data instead.                           |
-| No sandboxing             | Evaluated code runs with full Node.js privileges. This is designed for trusted project source files.                                                                                 |
-| No file watching          | This package does not watch the filesystem. Consumers are responsible for calling `invalidate()` when files change.                                                                  |
-| Type stripping only       | TypeScript enums, namespaces, and parameter properties are not supported — only type annotations are stripped.                                                                       |
-| Error caching             | Evaluation errors (syntax errors, non-serializable exports) are cached like successes. Call `invalidate()` after fixing the source file to clear the cached error and allow a retry. |
+| Constraint | Detail |
+|---|---|
+| Node 22.18.0+ | Required for native type stripping. |
+| Serializable exports only | Uses `postMessage` (structured clone). Functions, Symbols, WeakMaps, and class instances will produce an `{ ok: false }` error. Export plain data instead. |
+| No sandboxing | Evaluated code runs with full Node.js privileges. This is designed for trusted project source files. |
+| No file watching | This package does not watch the filesystem. Consumers are responsible for calling `invalidate()` when files change. |
+| Type stripping only | TypeScript enums, namespaces, and parameter properties are not supported — only type annotations are stripped. |
+| Error caching | Evaluation errors (syntax errors, non-serializable exports) are cached like successes. Call `invalidate()` after fixing the source file to clear the cached error and allow a retry. |
 
 ## License
 

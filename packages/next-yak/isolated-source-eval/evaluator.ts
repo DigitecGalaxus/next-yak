@@ -450,7 +450,9 @@ export async function createEvaluator(): Promise<Evaluator> {
       }
     }
 
-    // Capture in-flight evaluation, swap workers ONCE, and re-queue.
+    // If an evaluation is in-flight on the worker we're about to terminate,
+    // capture it and re-queue at the front. The caller's promise will
+    // resolve transparently with the result from the promoted shadow worker.
     clearEvalTimeout();
     const inflightEval = currentEval;
     currentEval = null;
