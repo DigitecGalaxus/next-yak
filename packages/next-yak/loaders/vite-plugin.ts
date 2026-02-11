@@ -1,8 +1,11 @@
 import { Options, transform as swcTransform } from "@swc/core";
+import {
+  createEvaluator,
+  type Evaluator,
+} from "../isolated-source-eval/index.js";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
-import { createContext, runInContext } from "node:vm";
 import { type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
@@ -70,6 +73,7 @@ export async function viteYak(
   const virtualModuleRegex = /^virtual:yak-css:/;
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   const yakSwcPath = await findYakSwcPlugin();
+  const evaluator: Evaluator = await createEvaluator();
   return {
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
@@ -159,71 +163,14 @@ export async function viteYak(
                   },
                   evaluateYakModule: async (modulePath: string) => {
                     this.addWatchFile(modulePath);
-                    const sourceContent = await this.fs.readFile(modulePath, {
-                      encoding: "utf8",
-                    });
-
-                    const transformed = await swcTransform(sourceContent, {
-                      filename: modulePath,
-                      sourceFileName: modulePath,
-                      ...yakOptions.swcOptions,
-                      jsc: {
-                        ...yakOptions.swcOptions?.jsc,
-                        experimental: {
-                          plugins: [
-                            [
-                              yakSwcPath,
-                              {
-                                minify: yakOptions.minify,
-                                basePath: root,
-                                prefix: yakOptions.prefix,
-                                displayNames: yakOptions.displayNames,
-                                suppressDeprecationWarnings:
-                                  yakOptions.experiments
-                                    ?.suppressDeprecationWarnings,
-                                importMode: {
-                                  value:
-                                    "virtual:yak-css:{{__MODULE_PATH__}}.css",
-                                  transpilation: "Css",
-                                  encoding: "None",
-                                },
-                              },
-                            ],
-                          ],
-                        },
-                      },
-                      module: {
-                        type: "commonjs",
-                      },
-                    });
-
-                    const moduleObject = { exports: {} };
-                    const context = createContext({
-                      require: (path: string) => {
-                        throw new Error(
-                          `Yak files cannot have imports in vite.\n` +
-                            `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
-                            `Yak files should be self-contained and only export constants or styled components.\n`,
-                        );
-                      },
-                      __filename: modulePath,
-                      __dirname: dirname(modulePath),
-                      global: {},
-                      console,
-                      Buffer,
-                      process,
-                      setTimeout,
-                      clearTimeout,
-                      setInterval,
-                      clearInterval,
-                      setImmediate,
-                      clearImmediate,
-                      exports: moduleObject.exports,
-                      module: moduleObject,
-                    });
-                    runInContext(transformed.code, context);
-
-                    return moduleObject.exports;
+                    const result = await evaluator.evaluate(modulePath);
+                    if (!result.ok) {
+                      throw new Error(result.error.message);
+                    }
+                    for (const dep of result.dependencies) {
+                      this.addWatchFile(dep);
+                    }
+                    return result.value;
                   },
                 },
                 modulePath,
@@ -248,6 +195,16 @@ export async function viteYak(
         debugLog("css-resolved", resolved, originalId);
         return resolved;
       },
+    },
+
+    configureServer(server) {
+      server.watcher.on("change", (file) => {
+        evaluator.invalidate(file);
+      });
+    },
+
+    async buildEnd() {
+      await evaluator.dispose();
     },
 
     transform: {

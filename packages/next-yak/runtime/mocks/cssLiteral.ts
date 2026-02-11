@@ -21,6 +21,24 @@ export const css: typeof cssInternal = (
   styles: TemplateStringsArray,
   ...args: unknown[]
 ) => {
+  // When called in yak files as a template tag (without SWC transformation),
+  // return { __yak: rawCss } so the cross-file resolver can
+  // extract the mixin value from evaluated .yak files.
+  if (Array.isArray(styles) && "raw" in styles) {
+    let rawCss = styles[0];
+    for (let i = 0; i < args.length; i++) {
+      const interpolation = args[i];
+      rawCss +=
+        interpolation &&
+        typeof interpolation === "object" &&
+        "__yak" in interpolation
+          ? (interpolation as { __yak: string }).__yak
+          : String(interpolation);
+      rawCss += styles[i + 1];
+    }
+    return { __yak: rawCss } as any;
+  }
+
   const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
   for (const arg of args as Array<string | Function | object>) {
     // Dynamic CSS e.g.

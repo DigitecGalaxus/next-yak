@@ -14,7 +14,7 @@
  *
  * Warning for production:
  * - If these exports are used in a production build, styles will not be applied correctly
- * - Ensure your build process is configured to use the next-yak Babel plugin
+ * - Ensure your build process is configured to use the next-yak SWC plugin
  *
  * For maintainers:
  * - Keep this API surface in sync with the actual implementation in next-yak/internal

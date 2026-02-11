@@ -8,6 +8,7 @@ import { HighContrastToggle } from "./HighContrastToggle";
 import { typography } from "./mixins";
 import { mixins, tokens } from "./constants";
 import defaultColor from "./constantColors";
+import { spacing } from "./tokens.yak";
 
 const headline = css<{ $primary?: boolean }>`
   ${typography.h1};
@@ -95,7 +96,7 @@ const FancyButton = styled(Button)`
   color: #fff;
   background: linear-gradient(
     149deg,
-    #ae52eb 0%,
+    #5552eb 0%,
     rgba(253, 29, 29, 1) 50%,
     rgba(252, 176, 69, 1) 100%
   );
@@ -123,6 +124,13 @@ const StyledLink = styled.a`
 
 const NestedConstantText = styled.span`
   color: ${tokens.colors.orange};
+`;
+
+const SpacingDemo = styled.div`
+  padding: ${spacing};
+  background: #ff1cd9;
+  border-radius: 40px;
+  border: 2px solid #ffb8f1;
 `;
 
 const ToBeWrapped = styled.div<{ $primary: boolean }>`
@@ -235,6 +243,7 @@ function App() {
       >
         Atoms in styled components work if this is small, green and italic
       </Wrap>
+      <SpacingDemo>.yak.ts tokens</SpacingDemo>
       <Inputs />
     </main>
   );

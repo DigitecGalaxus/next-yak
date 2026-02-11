@@ -92,6 +92,26 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/withYak",
   },
+  // isolated-source-eval (main entry)
+  {
+    entryPoints: ["isolated-source-eval/index.ts"],
+    format: ["esm"],
+    sourcemap: true,
+    clean: false,
+    dts: true,
+    target: "es2022",
+    outDir: "dist/isolated-source-eval",
+  },
+  // isolated-source-eval worker (loaded at runtime, must be separate file)
+  {
+    entryPoints: ["isolated-source-eval/worker.ts"],
+    format: ["esm"],
+    sourcemap: true,
+    clean: false,
+    dts: false,
+    target: "es2022",
+    outDir: "dist/isolated-source-eval",
+  },
   // loaders
   {
     entryPoints: ["loaders/vite-plugin.ts"],
@@ -102,6 +122,8 @@ export default defineConfig([
     external: [
       // all non relative imports must be load from node_modules
       /^(?!\.)/,
+      // isolated-source-eval must not be bundled (worker path would break)
+      /\.\.\/isolated-source-eval\//,
     ],
     noExternal: [],
     dts: true,
@@ -119,6 +141,8 @@ export default defineConfig([
     external: [
       // all non relative imports must be load from node_modules
       /^(?!\.)/,
+      // isolated-source-eval must not be bundled (worker path would break)
+      /\.\.\/isolated-source-eval\//,
     ],
     noExternal: [],
     dts: true,

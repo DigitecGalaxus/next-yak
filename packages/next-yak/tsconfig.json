@@ -13,11 +13,12 @@
     "checkJs": true,
     "maxNodeModuleJsDepth": 0,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true
   },
   "exclude": ["**/node_modules/**/*", "**/__tests__/**/*"],
-  "include": ["runtime/**/*", "loaders/**/*", "withYak/**/*"]
+  "include": ["runtime/**/*", "loaders/**/*", "withYak/**/*", "isolated-source-eval/**/*"]
 }
