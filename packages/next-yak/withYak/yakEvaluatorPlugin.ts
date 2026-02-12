@@ -14,9 +14,7 @@ export class YakEvaluatorPlugin {
     compiler.hooks.watchRun.tapPromise("YakEvaluatorPlugin", async () => {
       const evaluator = await evaluatorPromise;
       if (compiler.modifiedFiles) {
-        for (const file of compiler.modifiedFiles) {
-          evaluator.invalidate(file);
-        }
+        evaluator.invalidate(...compiler.modifiedFiles);
       }
     });
 
