@@ -316,6 +316,68 @@ describe("invalidation", () => {
     const result2 = await evaluator.evaluate(fixture("simple-theme.ts"));
     expect(result1).not.toBe(result2); // Different reference
   });
+
+  it("invalidate with no args is a no-op", async () => {
+    evaluator = await createEvaluator();
+    const result1 = await evaluator.evaluate(fixture("simple-theme.ts"));
+
+    evaluator.invalidate();
+
+    const result2 = await evaluator.evaluate(fixture("simple-theme.ts"));
+    expect(result1).toBe(result2); // Same reference — cache untouched
+  });
+
+  it("invalidate with multiple args clears only affected entry points", async () => {
+    evaluator = await createEvaluator();
+
+    // Evaluate two unrelated modules
+    const themeResult = await evaluator.evaluate(
+      fixture("transitive-theme.ts"),
+    );
+    const simpleResult = await evaluator.evaluate(fixture("simple-theme.ts"));
+
+    // Invalidate tokens.ts — only transitive-theme.ts depends on it
+    evaluator.invalidate(fixture("tokens.ts"));
+
+    const themeResult2 = await evaluator.evaluate(
+      fixture("transitive-theme.ts"),
+    );
+    const simpleResult2 = await evaluator.evaluate(fixture("simple-theme.ts"));
+
+    expect(themeResult2).not.toBe(themeResult); // Re-evaluated
+    expect(simpleResult2).toBe(simpleResult); // Cache survived
+  });
+
+  it("invalidate with multiple args handles shared dependents", async () => {
+    evaluator = await createEvaluator();
+
+    // Both depend on tokens.ts
+    await evaluator.evaluate(fixture("transitive-theme.ts"));
+    await evaluator.evaluate(fixture("alt-theme.ts"));
+
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toHaveLength(2);
+
+    // Batch invalidate
+    evaluator.invalidate(fixture("tokens.ts"));
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toEqual([]);
+
+    // Both re-evaluate correctly
+    const r1 = await evaluator.evaluate(fixture("transitive-theme.ts"));
+    const r2 = await evaluator.evaluate(fixture("alt-theme.ts"));
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+    expect(evaluator.getDependentsOf(fixture("tokens.ts"))).toHaveLength(2);
+  });
+
+  it("invalidate with untracked files is a no-op", async () => {
+    evaluator = await createEvaluator();
+    const result1 = await evaluator.evaluate(fixture("simple-theme.ts"));
+
+    evaluator.invalidate("/some/untracked/file.ts");
+
+    const result2 = await evaluator.evaluate(fixture("simple-theme.ts"));
+    expect(result1).toBe(result2); // Cache untouched
+  });
 });
 
 describe("getDependentsOf", () => {

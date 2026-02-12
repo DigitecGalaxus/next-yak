@@ -12,10 +12,10 @@ const evaluator = await createEvaluator();
 const result = await evaluator.evaluate("/absolute/path/to/theme.ts");
 
 if (result.ok) {
-  result.value;        // { default: ..., namedExport: ... }
+  result.value; // { default: ..., namedExport: ... }
   result.dependencies; // ["/absolute/path/to/theme.ts", "/absolute/path/to/tokens.ts"]
 } else {
-  result.error;        // { message: string, stack: string }
+  result.error; // { message: string, stack: string }
 }
 ```
 
@@ -127,15 +127,16 @@ type EvaluateResult =
 
 Concurrent calls are queued and executed one at a time to keep dependency tracking accurate.
 
-### `evaluator.invalidate(absolutePath)`
+### `evaluator.invalidate(...absolutePaths)`
 
-Clears cached results for every entry point that transitively depends on the given file, then swaps workers to ensure a clean module cache. If an evaluation is in-flight, it's transparently retried on the fresh worker.
+Clears cached results for every entry point that transitively depends on the given file(s), then swaps workers to ensure a clean module cache. If an evaluation is in-flight, it's transparently retried on the fresh worker. Accepts one or more paths.
 
 ```ts
 evaluator.invalidate("/project/src/tokens.ts");
+evaluator.invalidate("/project/src/a.ts", "/project/src/b.ts");
 ```
 
-Silent no-op if the path isn't in any tracked dependency set.
+Silent no-op if no paths are provided or none are in any tracked dependency set.
 
 ### `evaluator.invalidateAll()`
 
