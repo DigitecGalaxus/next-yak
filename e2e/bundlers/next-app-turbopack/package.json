@@ -1,0 +1,17 @@
+{
+  "name": "e2e-next-app-turbopack",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "next": "catalog:dev",
+    "next-yak": "workspace:*",
+    "yak-swc": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
