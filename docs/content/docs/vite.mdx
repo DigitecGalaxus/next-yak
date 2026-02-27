@@ -56,6 +56,10 @@ viteYak({
   // optional custom path to your yak context file
   // (relative to the project root)
   contextPath: "yak.context",
+  // base path for CSS virtual module resolution (default: Vite's root)
+  // useful in monorepo setups where source files live outside the Vite root
+  // relative paths are resolved from Vite's project root
+  basePath: "../..",
   experiments: {
     // enable logging of transformed TS/CSS
     debug: false,
