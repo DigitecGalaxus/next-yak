@@ -1,14 +1,14 @@
 import { Options, transform as swcTransform } from "@swc/core";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, relative, resolve } from "node:path";
+import { type Plugin } from "vite";
+import { parseModule } from "../cross-file-resolver/parseModule.js";
+import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import {
   createEvaluator,
   type Evaluator,
 } from "../isolated-source-eval/index.js";
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, isAbsolute, relative, resolve } from "node:path";
-import { type Plugin } from "vite";
-import { parseModule } from "../cross-file-resolver/parseModule.js";
-import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
@@ -111,11 +111,7 @@ export async function viteYak(
       }
     },
     configResolved(config) {
-      if (!basePath) {
-        basePath = config.root;
-      } else if (!isAbsolute(basePath)) {
-        basePath = resolve(config.root, basePath);
-      }
+      basePath = basePath ? resolve(config.root, basePath) : config.root;
       debugLog = createDebugLogger(yakOptions.experiments?.debug, basePath);
     },
     resolveId: {
@@ -134,9 +130,7 @@ export async function viteYak(
         // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
         // The path is relative to basePath — resolve to absolute for Vite's file APIs
         const relativeId = id.slice(17, -4);
-        const originalId = isAbsolute(relativeId)
-          ? relativeId
-          : resolve(basePath, relativeId);
+        const originalId = resolve(basePath, relativeId);
         this.addWatchFile(originalId);
 
         const sourceContent = await this.fs.readFile(originalId, {
