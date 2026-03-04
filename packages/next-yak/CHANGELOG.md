@@ -1,5 +1,18 @@
 # next-yak
 
+## 9.3.0
+
+### Minor Changes
+
+- 2e9ad49: Evaluate TypeScript files inside Node.js workers with types stripped out
+
+### Patch Changes
+
+- e414bca: Add basePath as new vite plugin option for monorepo setups
+- f7ef4cc: Fix theme augmentation
+- 7e2614b: Fix vite plugin HMR under windows
+  - yak-swc@9.3.0
+
 ## 9.2.0
 
 ### Minor Changes
