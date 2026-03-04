@@ -6,7 +6,7 @@ import {
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
-import { type Plugin } from "vite";
+import { normalizePath, type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
@@ -248,7 +248,7 @@ export async function viteYak(
 
       // The SWC plugin generates virtual module paths relative to root
       // (via {{__MODULE_PATH__}}), so we must match that format.
-      const relativePath = relative(root, file);
+      const relativePath = normalizePath(relative(root, file));
       const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
       if (mod) {
