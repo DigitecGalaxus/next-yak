@@ -230,7 +230,7 @@ export async function viteYak(
       async handler(code, id) {
         try {
           const filePath = id.split("?")[0];
-          if (!hasWarnedAboutBasePath && !userOptions.basePath) {
+          if (!hasWarnedAboutBasePath) {
             const relPath = relative(basePath, filePath);
             if (relPath.startsWith("..")) {
               hasWarnedAboutBasePath = true;
