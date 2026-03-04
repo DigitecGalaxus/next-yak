@@ -52,7 +52,7 @@ export function createDebugLogger(
       return;
     }
 
-    const relativePath = relative(rootPath, filePath);
+    const relativePath = relative(rootPath, filePath).replaceAll("\\", "/");
 
     // Filter by pattern if specified, or log all if no pattern
     if (!compiledPattern || compiledPattern.test(relativePath)) {
