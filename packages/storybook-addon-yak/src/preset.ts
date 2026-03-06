@@ -1,4 +1,4 @@
-import { resolveYakContext } from "next-yak/withYak";
+import { resolveYakContext, YakEvaluatorPlugin } from "next-yak/withYak";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path, { dirname } from "node:path";
@@ -202,6 +202,10 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   for (const rule of config.module.rules) {
     processRule(rule);
   }
+
+  // Add YakEvaluatorPlugin for cross-file constant resolution
+  config.plugins = config.plugins || [];
+  config.plugins.push(new YakEvaluatorPlugin());
 
   // Set up context alias for theming
   const yakContext = resolveYakContext(

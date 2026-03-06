@@ -89,6 +89,13 @@ export default defineConfig([
     sourcemap: true,
     clean: false,
     dts: true,
+    external: [
+      // all non relative imports must be load from node_modules
+      /^(?!\.)/,
+      // isolated-source-eval must not be bundled (worker path would break)
+      /\.\.\/isolated-source-eval\//,
+    ],
+    noExternal: [],
     target: "es2022",
     outDir: "dist/withYak",
   },
