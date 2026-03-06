@@ -438,6 +438,34 @@ importers:
         specifier: catalog:dev
         version: 5.9.3
 
+  e2e/bundlers/next-app-turbopack:
+    dependencies:
+      next:
+        specifier: catalog:dev
+        version: 16.1.6(@babel/core@7.28.5)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-yak:
+        specifier: workspace:*
+        version: link:../../../packages/next-yak
+      react:
+        specifier: catalog:dev
+        version: 19.2.4
+      react-dom:
+        specifier: catalog:dev
+        version: 19.2.4(react@19.2.4)
+      yak-swc:
+        specifier: workspace:*
+        version: link:../../../packages/yak-swc
+    devDependencies:
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.13
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.13)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+
   e2e/bundlers/next-app-webpack:
     dependencies:
       next:
