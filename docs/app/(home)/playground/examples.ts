@@ -10,10 +10,12 @@ export const examples = {
     description:
       "A simple example of using Next Yak to create a styled component with a logo.",
     files: {
-      index: `import { styled, css } from "next-yak";    
+      index: `import { styled, css } from "next-yak";
+import { useState } from "react";
 import { Title } from "./other";
 
 export default function Component() {
+  const [small, setSmall] = useState(false);
   return (
     <Center>
       <div
@@ -21,17 +23,25 @@ export default function Component() {
         max-width: 400px;
       \`}
       >
-        <img
+        <YakImage
+          $small={small}
+          onClick={() => setSmall(!small)}
           src="/img/yak-jumping.png"
-          css={css\`
-            max-width: 100%;
-          \`}
         />
         <Title>Next-Yak</Title>
       </div>
     </Center>
   );
 }
+
+const YakImage = styled.img<{ $small?: boolean }>\`
+  max-width: 100%;
+  transition: max-width 0.3s;
+  cursor: pointer;
+  \${({ $small }) => $small && css\`
+    max-width: 75%;
+  \`}
+\`;
 
 const Center = styled.div\`
   display: grid;
