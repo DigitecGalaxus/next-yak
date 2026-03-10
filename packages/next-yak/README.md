@@ -279,8 +279,8 @@ const Container = styled.div`
 
 ## Yak shaving
 
-While trying to get next-yak to work properly we stumbled across several bugs.  
-Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
+While trying to get next-yak to work properly we stumbled across several bugs.
+Thanks for merging our prs fixes in next.js, webpack, postcss and qwik ❤️
 
 <details>
   <summary>PRS</summary>
@@ -294,7 +294,10 @@ Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
   - https://github.com/webpack-contrib/mini-css-extract-plugin/pull/1084
   - https://github.com/vercel/next.js/pull/62733
   - https://github.com/vercel/next.js/pull/64551
-  
+  - https://github.com/QwikDev/qwik/pull/8351
+  - https://github.com/vercel/next.js/pull/89600
+  - https://github.com/vercel/next.js/pull/89901
+
 </details>
 
 <details>

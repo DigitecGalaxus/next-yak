@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "paths": {
+      "next-yak": ["./runtime/index.ts"],
       "next-yak/context/baseContext": ["./runtime/context/baseContext.tsx"],
       "next-yak/context": ["./runtime/context/index.tsx"]
     },
