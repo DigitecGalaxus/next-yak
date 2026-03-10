@@ -34,7 +34,7 @@ export default function Component() {
   );
 }
 
-const YakImage = styled.img\`
+const YakImage = styled.img<{ $small?: boolean }>\`
   max-width: 100%;
   transition: max-width 0.3s;
   cursor: pointer;
