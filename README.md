@@ -280,7 +280,7 @@ const Container = styled.div`
 ## Yak shaving
 
 While trying to get next-yak to work properly we stumbled across several bugs.
-Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
+Thanks for merging our prs fixes in next.js, webpack, postcss and qwik ❤️
 
 <details>
   <summary>PRS</summary>
@@ -300,6 +300,9 @@ Thanks for merging our prs fixes in next.js, webpack and postcss ❤️
 - https://github.com/webpack/webpack/pull/19012 (CSS Order without side effects)
 - https://github.com/swc-project/swc/issues/3934 (Browser SWC Plugin support)
 - https://github.com/parcel-bundler/lightningcss/issues/889 (add cssmodules-pure-no-check)
+- https://github.com/QwikDev/qwik/pull/8351 (fix virtual CSS module resolution in dev SSR)
+- https://github.com/vercel/next.js/pull/89600 (expose this._compilation to webpack loaders in Turbopack)
+- https://github.com/vercel/next.js/pull/89901 (exempt data URL CSS from Pages Router global CSS restriction)
 
 [![nexrt-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
 

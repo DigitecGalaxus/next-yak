@@ -1,14 +1,14 @@
 import { Options, transform as swcTransform } from "@swc/core";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, relative, resolve } from "node:path";
+import { normalizePath, type Plugin } from "vite";
+import { parseModule } from "../cross-file-resolver/parseModule.js";
+import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import {
   createEvaluator,
   type Evaluator,
 } from "../isolated-source-eval/index.js";
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, relative, resolve } from "node:path";
-import { type Plugin } from "vite";
-import { parseModule } from "../cross-file-resolver/parseModule.js";
-import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
@@ -16,6 +16,14 @@ import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
 
 type ViteYakPluginOptions = YakConfigOptions & {
+  /**
+   * Base path for resolving CSS virtual module paths.
+   * Relative paths are resolved from Vite's project root.
+   * In monorepo setups where source files live outside the Vite project root,
+   * set this to the monorepo root to avoid broken CSS imports.
+   * @defaultValue Vite's resolved `root`
+   */
+  basePath?: string;
   swcOptions?: Omit<
     Options,
     | "filename"
@@ -67,8 +75,9 @@ export async function viteYak(
   };
   yakOptions.displayNames =
     userOptions.displayNames ?? yakOptions.displayNames ?? !yakOptions.minify;
-  let root = process.cwd();
-  const debugLog = createDebugLogger(yakOptions.experiments?.debug, root);
+  let basePath = userOptions.basePath ?? "";
+  let hasWarnedAboutBasePath = false;
+  let debugLog: ReturnType<typeof createDebugLogger> = () => {};
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
   const virtualModuleRegex = /^virtual:yak-css:/;
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
@@ -80,7 +89,7 @@ export async function viteYak(
     config: (config) => {
       const context = resolveYakContext(
         yakOptions.contextPath,
-        config.root ?? root,
+        config.root ?? process.cwd(),
       );
 
       if (!context) {
@@ -102,7 +111,8 @@ export async function viteYak(
       }
     },
     configResolved(config) {
-      root = config.root;
+      basePath = basePath ? resolve(config.root, basePath) : config.root;
+      debugLog = createDebugLogger(yakOptions.experiments?.debug, basePath);
     },
     resolveId: {
       filter: {
@@ -118,7 +128,9 @@ export async function viteYak(
       },
       async handler(id) {
         // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
-        const originalId = id.slice(17, -4);
+        // The path is relative to basePath — resolve to absolute for Vite's file APIs
+        const relativeId = id.slice(17, -4);
+        const originalId = resolve(basePath, relativeId);
         this.addWatchFile(originalId);
 
         const sourceContent = await this.fs.readFile(originalId, {
@@ -127,7 +139,7 @@ export async function viteYak(
         const code = await transform(
           sourceContent,
           originalId,
-          root,
+          basePath,
           yakSwcPath,
           yakOptions,
         );
@@ -156,7 +168,7 @@ export async function viteYak(
                     return transform(
                       sourceContent,
                       modulePath,
-                      root,
+                      basePath,
                       yakSwcPath,
                       yakOptions,
                     );
@@ -217,10 +229,23 @@ export async function viteYak(
       },
       async handler(code, id) {
         try {
+          const filePath = id.split("?")[0];
+          if (!hasWarnedAboutBasePath) {
+            const relPath = relative(basePath, filePath);
+            if (relPath.startsWith("..")) {
+              hasWarnedAboutBasePath = true;
+              console.warn(
+                `[next-yak] Source file "${filePath}" is outside the project root "${basePath}".\n` +
+                  `This may cause CSS resolution issues in monorepo setups.\n` +
+                  `Set the "basePath" option to your monorepo root:\n\n` +
+                  `  viteYak({ basePath: "/absolute/path/to/monorepo/root" })\n`,
+              );
+            }
+          }
           const result = await transform(
             code,
-            id.split("?")[0],
-            root,
+            filePath,
+            basePath,
             yakSwcPath,
             yakOptions,
           );
@@ -246,9 +271,9 @@ export async function viteYak(
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
-      // The SWC plugin generates virtual module paths relative to root
+      // The SWC plugin generates virtual module paths relative to basePath
       // (via {{__MODULE_PATH__}}), so we must match that format.
-      const relativePath = relative(root, file);
+      const relativePath = normalizePath(relative(basePath, file));
       const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
       if (mod) {

@@ -1,0 +1,17 @@
+{
+  "name": "e2e-next-pages-turbopack",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "next": "16.2.0-canary.85",
+    "next-yak": "workspace:*",
+    "yak-swc": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

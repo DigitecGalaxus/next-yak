@@ -54,7 +54,7 @@ export default defineConfig([
     sourcemap: true,
     clean: false,
     dts: true,
-    external: ["react"],
+    external: ["react", "next-yak"],
     target: "es2022",
     outDir: "dist/context",
   },
