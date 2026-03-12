@@ -1,7 +1,6 @@
 import { transform as swcTransform } from "@swc/core";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
-import { createContext, runInContext } from "node:vm";
 import type { LoaderContext } from "webpack";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
@@ -50,109 +49,97 @@ export default async function cssExtractLoader(
     });
   };
 
-  const fsReadFile = (filePath: string) =>
-    new Promise<string>((resolve, reject) =>
+  const crossFileDeps = new Set<string>();
+  let evaluate:
+    | Awaited<
+        ReturnType<
+          typeof import("./turbo-evaluator.js").createCompilationEvaluator
+        >
+      >
+    | undefined;
+  const fsReadFile = (filePath: string) => {
+    crossFileDeps.add(filePath);
+    return new Promise<string>((resolve, reject) =>
       this.fs.readFile(filePath, "utf-8", (err, result) => {
         if (err) return reject(err);
         if (!result) return reject(new Error(`File not found: ${filePath}`));
         resolve(result);
       }),
     );
+  };
 
-  const result = await transform(
-    code,
-    this.resourcePath,
-    this.rootContext,
-    sourceMap,
-  );
-  debugLog("ts", result.code, this.resourcePath);
+  try {
+    const result = await transform(
+      code,
+      this.resourcePath,
+      this.rootContext,
+      sourceMap,
+    );
+    debugLog("ts", result.code, this.resourcePath);
 
-  let css = extractCss(result.code, "Css");
-  debugLog("css", css, this.resourcePath);
+    let css = extractCss(result.code, "Css");
+    debugLog("css", css, this.resourcePath);
 
-  const { resolved } = await resolveCrossFileConstant(
-    {
-      parse: (modulePath) => {
-        return parseModule(
-          {
-            transpilationMode: "Css",
-            extractExports: async (modulePath) => {
-              const sourceContents = await fsReadFile(modulePath);
-              return parseExports(sourceContents);
+    const { resolved } = await resolveCrossFileConstant(
+      {
+        parse: (modulePath) => {
+          return parseModule(
+            {
+              transpilationMode: "Css",
+              extractExports: async (modulePath) => {
+                const sourceContents = await fsReadFile(modulePath);
+                return parseExports(sourceContents);
+              },
+              getTransformed: async (modulePath) => {
+                const sourceContent = await fsReadFile(modulePath);
+                return transform(sourceContent, modulePath, this.rootContext);
+              },
+              evaluateYakModule: async (modulePath: string) => {
+                crossFileDeps.add(modulePath);
+                /*
+                 * Turbopack doesn't let us know when a compilation start so by using a singleton evaluator we
+                 * we can at least ensture that we scan for file modifications only once per loader call
+                 */
+                evaluate ??= await (
+                  await import("./turbo-evaluator.js")
+                ).createCompilationEvaluator();
+                return evaluate(modulePath, (dep) => crossFileDeps.add(dep));
+              },
             },
-            getTransformed: async (modulePath) => {
-              const sourceContent = await fsReadFile(modulePath);
-              return transform(sourceContent, modulePath, this.rootContext);
-            },
-            evaluateYakModule: async (modulePath: string) => {
-              const code = await fsReadFile(modulePath);
-
-              const transformed = await swcTransform(code, {
-                filename: modulePath,
-                sourceFileName: modulePath,
-                jsc: {
-                  transform: {
-                    react: { runtime: "automatic" },
-                  },
-                  experimental: {
-                    plugins: [[yakSwcPluginPath, yakPluginOptions]],
-                  },
-                },
-                module: {
-                  type: "commonjs",
-                },
-              });
-
-              const moduleObject = { exports: {} };
-              const context = createContext({
-                require: (path: string) => {
-                  throw new Error(
-                    `Yak files cannot have imports in turbopack.\n` +
-                      `Found require/import usage in: ${modulePath} to import: ${path}.\n` +
-                      `Yak files should be self-contained and only export constants or styled components.\n` +
-                      `This will be resolved once Vercel adds "this.importModule" support for turbopack.`,
-                  );
-                },
-                __filename: modulePath,
-                __dirname: dirname(modulePath),
-                global: {},
-                console,
-                Buffer,
-                process,
-                setTimeout,
-                clearTimeout,
-                setInterval,
-                clearInterval,
-                setImmediate,
-                clearImmediate,
-                exports: moduleObject.exports,
-                module: moduleObject,
-              });
-              runInContext(transformed.code, context);
-
-              return moduleObject.exports;
-            },
-          },
-          modulePath,
-        );
+            modulePath,
+          );
+        },
+        resolve: resolveFn,
       },
-      resolve: resolveFn,
-    },
-    this.resourcePath,
-    css,
-  );
+      this.resourcePath,
+      css,
+    );
 
-  const dataUrl = result.code
-    .split("\n")
-    .find((line) => line.includes("data:text/css;base64"))!;
+    // Register cross-file dependencies so turbopack re-runs this loader
+    // when any dependency changes (analogous to webpack's this.addDependency)
+    for (const dep of crossFileDeps) {
+      this.addDependency(dep);
+    }
 
-  const codeWithCrossFileResolved = result.code.replace(
-    dataUrl,
-    `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
-  );
+    const dataUrl = result.code
+      .split("\n")
+      .find((line) => line.includes("data:text/css;base64"))!;
 
-  debugLog("css-resolved", resolved, this.resourcePath);
-  return callback(null, codeWithCrossFileResolved, result.map);
+    const codeWithCrossFileResolved = result.code.replace(
+      dataUrl,
+      `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
+    );
+
+    debugLog("css-resolved", resolved, this.resourcePath);
+    return callback(null, codeWithCrossFileResolved, result.map);
+  } catch (error) {
+    // Register cross-file dependencies even on error so turbopack re-runs
+    // this loader when a broken dependency is fixed.
+    for (const dep of crossFileDeps) {
+      this.addDependency(dep);
+    }
+    return callback(error instanceof Error ? error : new Error(String(error)));
+  }
 }
 
 function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
