@@ -459,17 +459,15 @@ impl YakTransform for TransformStyled {
     yak_imports: &mut YakImports,
   ) -> YakTransformResult {
     let mut arguments: Vec<ExprOrSpread> = vec![];
-    if !declarations.is_empty() || self.is_exported {
-      // As yak generates the final class name, this name can use it directly in the js code
-      arguments.push(
-        Expr::Lit(Lit::Str(Str {
-          span: DUMMY_SP,
-          value: self.class_name.clone().into(),
-          raw: None,
-        }))
-        .into(),
-      );
-    }
+    // Always pass the class name so the component can be used as a selector
+    arguments.push(
+      Expr::Lit(Lit::Str(Str {
+        span: DUMMY_SP,
+        value: self.class_name.clone().into(),
+        raw: None,
+      }))
+      .into(),
+    );
     arguments.extend(runtime_expressions.into_iter().map(ExprOrSpread::from));
     if !runtime_css_variables.is_empty() {
       arguments.push(
