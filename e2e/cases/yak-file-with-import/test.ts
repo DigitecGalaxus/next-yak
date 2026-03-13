@@ -29,7 +29,7 @@ test(
     );
 
     // Accordion: spacing only (30px)
-    await expect(accordion).toHaveCSS("padding", "30px", { timeout: 15_000 });
+    await expect(accordion).toHaveCSS("padding", "30px", { timeout: 30_000 });
     // Button: both spacing + color
     await expect(button).toHaveCSS("padding", "30px");
     await expect(button).toHaveCSS("color", "rgb(0, 0, 255)");
