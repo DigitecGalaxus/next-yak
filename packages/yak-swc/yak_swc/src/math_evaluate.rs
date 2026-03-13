@@ -8,7 +8,10 @@ use crate::variable_visitor::VariableVisitor;
 pub fn try_evaluate(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<f64> {
   match expr {
     Expr::Ident(_) | Expr::Member(_) => {
-      if let Some(scoped_variable_reference) = extract_ident_and_parts(expr) {
+      // Don't report errors — try_evaluate is speculative. A non-static member
+      // expression (e.g. SIZES[size]) just means it's not a compile-time constant,
+      // and will be handled as a runtime expression by later branches.
+      if let Some(scoped_variable_reference) = extract_ident_and_parts(expr, false) {
         let value = variable_visitor.get_const_value(&scoped_variable_reference);
         match value {
           Some(expr) => try_evaluate(&expr, variable_visitor),
