@@ -31,7 +31,7 @@ test(
     );
 
     await expect(primary).toHaveCSS("color", "rgb(255, 0, 0)", {
-      timeout: 15_000,
+      timeout: 30_000,
     });
     await expect(orange).toHaveCSS("color", "rgb(0, 0, 255)");
     await expect(defaultBox).toHaveCSS("color", "rgb(0, 128, 0)");

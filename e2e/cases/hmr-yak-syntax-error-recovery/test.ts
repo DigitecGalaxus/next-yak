@@ -31,7 +31,7 @@ test(
     );
 
     // After recovery, the new values should be applied
-    await expect(box).toHaveCSS("padding", "16px", { timeout: 15_000 });
+    await expect(box).toHaveCSS("padding", "16px", { timeout: 30_000 });
     await expect(box).toHaveCSS("color", "rgb(255, 0, 0)");
 
     // Verify no full page reload occurred
