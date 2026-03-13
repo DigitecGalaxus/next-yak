@@ -153,6 +153,9 @@ where
   has_user_global: bool,
   /// Flag to suppress deprecation warnings
   suppress_deprecation_warnings: bool,
+  /// Flag to track if we are inside a runtime expression (arrow function body)
+  /// Used to suppress errors for non-static member expressions
+  inside_runtime_expression: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -187,6 +190,7 @@ where
       default_export_comment: None,
       has_user_global: false,
       suppress_deprecation_warnings,
+      inside_runtime_expression: false,
     }
   }
 
@@ -314,7 +318,7 @@ where
         // Handle constants in css expressions
         // e.g. styled.button`color: ${primary};` (Ident)
         // e.g. styled.button`color: ${colors.primary};` (MemberExpression)
-        else if let Some(scoped_name) = extract_ident_and_parts(expr) {
+        else if let Some(scoped_name) = extract_ident_and_parts(expr, true) {
           // Known StyledComponents, Mixin or Animations in the same file
           if let Some(referenced_yak_css) = self.variable_name_selector_mapping.get(&scoped_name) {
             let (new_state, new_declarations) = parse_css(referenced_yak_css, css_state);
@@ -545,7 +549,10 @@ ${{() => {var}}};\n",
             css_state = Some(new_state);
           }
 
+          let was_inside_runtime_expression = self.inside_runtime_expression;
+          self.inside_runtime_expression = true;
           expr.visit_mut_children_with(self);
+          self.inside_runtime_expression = was_inside_runtime_expression;
 
           // If the expression is outside a css property value
           // it is probably a nested css expression
@@ -805,7 +812,9 @@ where
     // const highlight = css`color: red;`
     // const Button = styled.button`${({$active}) => $active && highlight};`
     if self.is_inside_css_expression() {
-      if let Some(scoped_name) = extract_ident_and_parts(n) {
+      // Suppress errors inside runtime expressions (arrow function bodies) —
+      // e.g. SIZES[size].width is valid runtime code, not a malformed static reference.
+      if let Some(scoped_name) = extract_ident_and_parts(n, !self.inside_runtime_expression) {
         if let Some(constant_value) = self.variables.get_const_value(&scoped_name) {
           if let Expr::TaggedTpl(tpl) = *constant_value {
             if is_valid_tagged_tpl(&tpl, self.yak_imports().yak_css_idents()) {
