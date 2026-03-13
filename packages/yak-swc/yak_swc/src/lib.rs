@@ -631,39 +631,46 @@ where
           last_import_index += 1;
         }
 
-        module.body.insert(
-          last_import_index,
-          ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
-            phase: Default::default(),
-            span: DUMMY_SP,
-            specifiers: vec![],
-            src: Box::new(Str {
+        // Only add the CSS import if there are actual styles in the module
+        let has_css = self
+          .all_css_rules
+          .iter()
+          .any(|rule| !rule.trim().is_empty());
+        if has_css {
+          module.body.insert(
+            last_import_index,
+            ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
+              phase: Default::default(),
               span: DUMMY_SP,
-              value: {
-                let resolved_value = self
-                  .import_mode
-                  .value
-                  .replace(
-                    "{{__MODULE_PATH__}}",
-                    self.naming_convention.get_file_name(),
+              specifiers: vec![],
+              src: Box::new(Str {
+                span: DUMMY_SP,
+                value: {
+                  let resolved_value = self
+                    .import_mode
+                    .value
+                    .replace(
+                      "{{__MODULE_PATH__}}",
+                      self.naming_convention.get_file_name(),
+                    )
+                    .replace("{{__BASE_NAME__}}", &basename);
+                  format!(
+                    "{resolved_value}{}",
+                    match self.import_mode.encoding {
+                      ImportModeEncoding::Base64 =>
+                        BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
+                      ImportModeEncoding::None => "".to_string(),
+                    }
                   )
-                  .replace("{{__BASE_NAME__}}", &basename);
-                format!(
-                  "{resolved_value}{}",
-                  match self.import_mode.encoding {
-                    ImportModeEncoding::Base64 =>
-                      BASE64_STANDARD.encode(self.all_css_rules.join("")).into(),
-                    ImportModeEncoding::None => "".to_string(),
-                  }
-                )
-              }
-              .into(),
-              raw: None,
-            }),
-            type_only: false,
-            with: None,
-          })),
-        );
+                }
+                .into(),
+                raw: None,
+              }),
+              type_only: false,
+              with: None,
+            })),
+          );
+        }
       }
     }
   }
