@@ -111,7 +111,17 @@ async function runBundlerCases(bundler: string): Promise<Result[]> {
   return results;
 }
 
-const results = (await Promise.all(bundlers.map(runBundlerCases))).flat();
+const isCI = !!process.env.CI;
+let results: Result[];
+if (isCI) {
+  // Run sequentially in CI to avoid resource contention
+  results = [];
+  for (const bundler of bundlers) {
+    results.push(...(await runBundlerCases(bundler)));
+  }
+} else {
+  results = (await Promise.all(bundlers.map(runBundlerCases))).flat();
+}
 
 // ---------------------------------------------------------------------------
 // Summary
