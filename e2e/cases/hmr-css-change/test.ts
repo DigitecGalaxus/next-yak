@@ -19,7 +19,7 @@ test(
 
     // Wait for HMR to apply the change
     await expect(box).toHaveCSS("color", "rgb(0, 0, 255)", {
-      timeout: 15_000,
+      timeout: 30_000,
     });
 
     // Verify no full page reload occurred

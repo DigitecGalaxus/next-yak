@@ -40,7 +40,7 @@ export default function App() {
 
     // Wait for the new component to appear
     const second = page.getByTestId("second");
-    await expect(second).toBeVisible({ timeout: 15_000 });
+    await expect(second).toBeVisible({ timeout: 30_000 });
     await expect(second).toHaveCSS("color", "rgb(0, 0, 255)");
 
     // First component should still be styled

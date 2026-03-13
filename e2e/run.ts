@@ -68,14 +68,7 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
     const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
     const prefix = styleText(color, `[${bundler}/${caseName}]`);
     const child = spawn(
-      "pnpm",
-      [
-        "exec",
-        "playwright",
-        "test",
-        "--config",
-        `bundlers/${bundler}/playwright.config.ts`,
-      ],
+      `pnpm exec playwright test --config bundlers/${bundler}/playwright.config.ts`,
       {
         cwd: e2eRoot,
         env: { ...process.env, BUNDLER: bundler, CASE: caseName },
