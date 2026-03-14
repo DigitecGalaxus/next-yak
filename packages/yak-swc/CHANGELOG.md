@@ -1,5 +1,13 @@
 # yak-swc
 
+## 9.4.0
+
+### Patch Changes
+
+- caac236: Fix false "Could not parse member expression" error for dynamic computed member access in runtime expressions (e.g. `SIZES[size].width`)
+- f7198df: Skip empty CSS imports
+- e77edd3: Fix referencing components without any styles
+
 ## 9.3.0
 
 ## 9.2.0
