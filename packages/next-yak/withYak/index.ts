@@ -74,6 +74,15 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
         encoding: "Base64",
       },
     });
+  } else if (process.env.NEXT_RSPACK === "true") {
+    addYakRspack(nextConfig, yakOptions, {
+      ...yakPluginOptions,
+      importMode: {
+        value: "data:text/css;base64,",
+        transpilation: "Css",
+        encoding: "Base64",
+      },
+    });
   } else {
     addYakWebpack(nextConfig, yakOptions, {
       ...yakPluginOptions,
@@ -139,6 +148,72 @@ function addYakTurbopack(
       // Relative is quite dangerous here as it relies on the cwd being the starting point
       `./${path.relative(process.cwd(), yakContext)}`;
   }
+}
+
+/**
+ * Configure Rspack with yak turbo-loader for CSS-in-JS transformation.
+ * Rspack doesn't support webpack's `loadModule` API, so we use the self-contained
+ * turbo-loader which runs SWC directly and outputs data URL CSS imports.
+ * @param nextConfig - Next.js configuration object
+ * @param yakOptions - Yak configuration options
+ * @param yakPluginOptions - Processed plugin options for yak-swc
+ */
+function addYakRspack(
+  nextConfig: NextConfig,
+  yakOptions: YakConfigOptions,
+  yakPluginOptions: {
+    minify: boolean;
+    basePath: string;
+    prefix?: string;
+    displayNames: boolean;
+    importMode: {
+      value: string;
+      transpilation: string;
+      encoding: string;
+    };
+  },
+) {
+  const yakLoader = removeUndefinedRecursive({
+    loader: path.join(currentDir, "../loaders/turbo-loader.cjs"),
+    options: {
+      yakOptions: yakOptions,
+      yakPluginOptions: yakPluginOptions,
+    },
+  }) as { loader: string; options: {} };
+
+  const previousConfig = nextConfig.webpack;
+  nextConfig.webpack = (webpackConfig, options) => {
+    if (previousConfig) {
+      webpackConfig = previousConfig(webpackConfig, options);
+    }
+
+    webpackConfig.module.rules.push({
+      test: /\.(js|jsx|cjs|mjs|ts|tsx|cts|mts)$/,
+      ...yakLoader,
+      enforce: "pre" as const,
+    });
+
+    // Enable native CSS support and handle data:text/css imports
+    webpackConfig.experiments = {
+      ...webpackConfig.experiments,
+      css: true,
+    };
+    webpackConfig.module.rules.push({
+      scheme: "data",
+      mimetype: "text/css",
+      type: "css/auto",
+    });
+
+    const yakContext = resolveYakContext(
+      yakOptions.contextPath,
+      webpackConfig.context || process.cwd(),
+    );
+    if (yakContext) {
+      webpackConfig.resolve.alias["next-yak/context/baseContext"] = yakContext;
+    }
+
+    return webpackConfig;
+  };
 }
 
 /**
