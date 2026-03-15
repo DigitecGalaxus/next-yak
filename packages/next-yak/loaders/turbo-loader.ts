@@ -131,6 +131,7 @@ export default async function cssExtractLoader(
     );
 
     debugLog("css-resolved", resolved, this.resourcePath);
+    // Rspack passes source maps as JSON strings, but webpack expects objects
     const outputMap =
       typeof result.map === "string" ? JSON.parse(result.map) : result.map;
     return callback(null, codeWithCrossFileResolved, outputMap);
@@ -154,6 +155,7 @@ function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
     // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
     swcTransform(data, {
       filename: modulePath,
+      // Rspack passes source maps as JSON strings, but SWC expects objects
       inputSourceMap: sourceMap
         ? typeof sourceMap === "string"
           ? JSON.parse(sourceMap)
