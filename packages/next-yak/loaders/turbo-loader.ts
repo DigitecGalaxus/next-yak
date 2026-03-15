@@ -131,7 +131,9 @@ export default async function cssExtractLoader(
     );
 
     debugLog("css-resolved", resolved, this.resourcePath);
-    return callback(null, codeWithCrossFileResolved, result.map);
+    const outputMap =
+      typeof result.map === "string" ? JSON.parse(result.map) : result.map;
+    return callback(null, codeWithCrossFileResolved, outputMap);
   } catch (error) {
     // Register cross-file dependencies even on error so turbopack re-runs
     // this loader when a broken dependency is fixed.
@@ -152,7 +154,11 @@ function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
     // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
     swcTransform(data, {
       filename: modulePath,
-      inputSourceMap: sourceMap,
+      inputSourceMap: sourceMap
+        ? typeof sourceMap === "string"
+          ? JSON.parse(sourceMap)
+          : sourceMap
+        : undefined,
       sourceMaps: true,
       sourceFileName: modulePath,
       sourceRoot: rootPath,
