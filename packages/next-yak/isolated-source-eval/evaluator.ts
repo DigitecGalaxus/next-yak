@@ -168,11 +168,13 @@ export async function createEvaluator(): Promise<Evaluator> {
 
   await Promise.all([primary.ready, shadow.ready]);
 
-  // Allow the process to exit naturally when the event loop is otherwise empty.
-  // Without this, the workers keep the event loop alive indefinitely — causing
-  // hangs in multi-environment Vite builds where no hook reliably disposes
-  // the evaluator after all environments are done.
-  // Must be called after setupMessageHandler since .on() can re-ref the worker.
+  /**
+   * Allow the process to exit naturally when the event loop is otherwise empty.
+   * Without this, the workers keep the event loop alive indefinitely — causing
+   * hangs in multi-environment Vite builds where no hook reliably disposes
+   * the evaluator after all environments are done.
+   * Must be called after setupMessageHandler since .on() can re-ref the worker.
+   */
   function unrefWorkers(primaryWorker: Worker, shadowWorker: Worker) {
     primaryWorker.unref();
     shadowWorker.unref();
