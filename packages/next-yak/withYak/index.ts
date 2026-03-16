@@ -4,6 +4,9 @@ import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { YakEvaluatorPlugin } from "./yakEvaluatorPlugin.js";
+export { YakEvaluatorPlugin };
+
 const currentDir =
   typeof __dirname !== "undefined"
     ? __dirname
@@ -173,6 +176,8 @@ function addYakWebpack(
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
     }
+
+    webpackConfig.plugins.push(new YakEvaluatorPlugin());
 
     webpackConfig.module.rules.push({
       test:
