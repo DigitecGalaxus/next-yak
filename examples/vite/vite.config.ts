@@ -13,4 +13,20 @@ export default defineConfig({
   },
   plugins: [react(), viteYak()],
   css: {},
+  environments: {
+    ssr: {
+      build: {
+        outDir: "dist/server",
+        rollupOptions: {
+          input: resolve(__dirname, "src/main.tsx"),
+        },
+      },
+    },
+  },
+  builder: {
+    async buildApp(builder) {
+      await builder.build(builder.environments.client!);
+      await builder.build(builder.environments.ssr!);
+    },
+  },
 });

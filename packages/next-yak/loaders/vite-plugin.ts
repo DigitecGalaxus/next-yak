@@ -215,7 +215,7 @@ export async function viteYak(
       });
     },
 
-    async buildEnd() {
+    async closeBundle() {
       await evaluator.dispose();
     },
 
