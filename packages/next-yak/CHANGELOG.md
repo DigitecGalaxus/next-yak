@@ -1,5 +1,18 @@
 # next-yak
 
+## 9.4.0
+
+### Minor Changes
+
+- b90e1b5: Add turbopack support with worker based .yak.ts evaluation
+
+### Patch Changes
+
+- Updated dependencies [caac236]
+- Updated dependencies [f7198df]
+- Updated dependencies [e77edd3]
+  - yak-swc@9.4.0
+
 ## 9.3.0
 
 ### Minor Changes
