@@ -213,10 +213,19 @@ export async function viteYak(
       server.watcher.on("change", (file) => {
         evaluator.invalidate(file);
       });
+      server.httpServer?.on("close", () => {
+        evaluator.dispose();
+      });
     },
 
-    async closeBundle() {
-      await evaluator.dispose();
+    // Runs once after all environment builds complete.
+    // Needed to clean up evaluator workers in long-lived processes
+    // (e.g. test runners) that call vite.build() repeatedly.
+    buildApp: {
+      order: "post" as const,
+      handler() {
+        return evaluator.dispose();
+      },
     },
 
     transform: {
