@@ -9,11 +9,14 @@ test(
     const box = page.getByTestId("image-box");
 
     const contentType = await box.evaluate(async (boxElement) => {
-      const url = getComputedStyle(boxElement).backgroundImage.match(/url\("(.+?)"\)/)?.[1];
+      const url =
+        getComputedStyle(boxElement).backgroundImage.match(
+          /url\("(.+?)"\)/,
+        )?.[1];
       const request = url ? await fetch(url) : null;
       return request?.headers.get("content-type") ?? "none";
     });
-    
+
     // Verify that the content type indicates an image (as some bundlers always serve a SPA fallback HTML file on 404)
     expect(contentType).toContain("image/");
   }),
