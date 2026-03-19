@@ -80,7 +80,7 @@ export async function viteYak(
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
   const virtualModuleRegex = /^virtual:yak-css:/;
-  const virtualCssModuleRegex = /^\0virtual:yak-css:/;
+  const yakVirtualCssRegex = /\.yak\.css$/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
   return {
@@ -119,18 +119,28 @@ export async function viteYak(
         id: virtualModuleRegex,
       },
       handler(id) {
-        return "\0" + id;
+        // Resolve to an absolute filesystem path so Vite's CSS pipeline can
+        // correctly resolve relative url() references (e.g. url("./icon.svg")).
+        // No \0 prefix — Vite uses the path's directory for url() resolution,
+        // and our load hook intercepts the module before disk reads.
+        const relativeCssPath = id.slice(16); // strip "virtual:yak-css:"
+        const absoluteCssPath = normalizePath(
+          resolve(basePath, relativeCssPath),
+        );
+        // Append .yak.css instead of keeping the SWC-generated .css suffix.
+        // The .yak.css convention (like .vanilla.css, .wyw-in-js.css) uniquely
+        // identifies our virtual modules while Rolldown sees .css for CSS processing.
+        const absoluteSourcePath = absoluteCssPath.slice(0, -4); // strip ".css"
+        return absoluteSourcePath + ".yak.css";
       },
     },
     load: {
       filter: {
-        id: virtualCssModuleRegex,
+        id: yakVirtualCssRegex,
       },
       async handler(id) {
-        // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
-        // The path is relative to basePath — resolve to absolute for Vite's file APIs
-        const relativeId = id.slice(17, -4);
-        const originalId = resolve(basePath, relativeId);
+        // Strip .yak.css suffix (8 chars) to get the original source file path
+        const originalId = id.slice(0, -8);
         this.addWatchFile(originalId);
 
         const sourceContent = await this.fs.readFile(originalId, {
@@ -271,10 +281,7 @@ export async function viteYak(
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
-      // The SWC plugin generates virtual module paths relative to basePath
-      // (via {{__MODULE_PATH__}}), so we must match that format.
-      const relativePath = normalizePath(relative(basePath, file));
-      const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
+      const virtualId = normalizePath(file) + ".yak.css";
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
       if (mod) {
         this.environment.moduleGraph.invalidateModule(mod);
