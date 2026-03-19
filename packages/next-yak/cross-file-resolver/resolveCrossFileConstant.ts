@@ -766,7 +766,11 @@ function posixNormalize(path: string): string {
   const result: string[] = [];
   for (const part of parts) {
     if (part === "." || part === "") continue;
-    if (part === ".." && result.length > 0 && result[result.length - 1] !== "..") {
+    if (
+      part === ".." &&
+      result.length > 0 &&
+      result[result.length - 1] !== ".."
+    ) {
       result.pop();
     } else {
       result.push(part);
