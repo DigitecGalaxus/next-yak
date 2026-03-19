@@ -150,6 +150,16 @@ export async function uncachedResolveCrossFileConstant(
                 : semicolon);
       }
 
+      // When inlining CSS from a different file, rewrite relative url() paths
+      // so they resolve correctly from the consuming file's directory
+      if (resolved.type !== "unresolved-tag" && resolved.source !== filePath) {
+        replacement = rewriteRelativeUrls(
+          String(replacement),
+          resolved.source,
+          filePath,
+        );
+      }
+
       result =
         result.slice(0, position) +
         String(replacement) +
@@ -692,3 +702,75 @@ export type ResolvedModule = {
   path: string;
   exports: ResolvedExports;
 };
+
+/**
+ * Rewrites relative url() paths in CSS when inlining a value from a different
+ * source file. Adjusts paths so they resolve correctly from the consumer's
+ * directory instead of the source's directory.
+ *
+ * Browser-compatible (no node:path dependency).
+ */
+function rewriteRelativeUrls(
+  css: string,
+  source: string,
+  consumer: string,
+): string {
+  const sourceDir = posixDirname(source);
+  const consumerDir = posixDirname(consumer);
+  if (sourceDir === consumerDir) return css;
+
+  const relPrefix = posixRelative(consumerDir, sourceDir);
+
+  // Match url() with relative paths starting with ./ or ../
+  // Naturally skips data:, http://, absolute paths, and #fragments
+  return css.replace(
+    /url\(\s*(["']?)(\.\.?\/[^"')\s]+)\1\s*\)/g,
+    (_match, quote: string, urlPath: string) => {
+      const rewritten = posixNormalize(relPrefix + "/" + urlPath);
+      return `url(${quote}${rewritten}${quote})`;
+    },
+  );
+}
+
+/** Extract the directory part of a POSIX path */
+function posixDirname(path: string): string {
+  const lastSlash = path.lastIndexOf("/");
+  return lastSlash === -1 ? "." : path.slice(0, lastSlash) || "/";
+}
+
+/** Compute a relative POSIX path from `from` to `to` (both must be absolute) */
+function posixRelative(from: string, to: string): string {
+  if (from === to) return "";
+  const fromParts = from.split("/").filter(Boolean);
+  const toParts = to.split("/").filter(Boolean);
+
+  // Find common prefix length
+  let common = 0;
+  while (
+    common < fromParts.length &&
+    common < toParts.length &&
+    fromParts[common] === toParts[common]
+  ) {
+    common++;
+  }
+
+  const ups = fromParts.length - common;
+  const downs = toParts.slice(common);
+  const parts = [...Array(ups).fill(".."), ...downs];
+  return parts.join("/") || ".";
+}
+
+/** Normalize a POSIX path (resolve . and .. segments) */
+function posixNormalize(path: string): string {
+  const parts = path.split("/");
+  const result: string[] = [];
+  for (const part of parts) {
+    if (part === "." || part === "") continue;
+    if (part === ".." && result.length > 0 && result[result.length - 1] !== "..") {
+      result.pop();
+    } else {
+      result.push(part);
+    }
+  }
+  return result.join("/") || ".";
+}
