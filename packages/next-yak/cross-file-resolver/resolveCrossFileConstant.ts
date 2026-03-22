@@ -689,7 +689,11 @@ export type ResolveContext = {
   exportAllLimit?: number;
   resolve: (specifier: string, importer: string) => Promise<string> | string;
   /** Rewrite a single relative url path when inlining CSS from `source` into `consumer`. */
-  rewriteRelativeCSSUrl?: (urlPath: string, source: string, consumer: string) => string;
+  rewriteRelativeCSSUrl?: (
+    urlPath: string,
+    source: string,
+    consumer: string,
+  ) => string;
 };
 
 type YakImportKind = "mixin" | "selector";
@@ -730,4 +734,3 @@ export type ResolvedModule = {
   path: string;
   exports: ResolvedExports;
 };
-
