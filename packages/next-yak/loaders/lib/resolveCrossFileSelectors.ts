@@ -157,8 +157,7 @@ export async function parseExports(
     // Derive importYak from top-level imports (no traverse needed)
     const importYak = ast.program.body.some(
       (node) =>
-        node.type === "ImportDeclaration" &&
-        node.source.value === "next-yak",
+        node.type === "ImportDeclaration" && node.source.value === "next-yak",
     );
 
     const moduleExports: ModuleExports = {
@@ -264,10 +263,7 @@ export async function parseExports(
 function unpackTSAsExpression(
   node: babel.types.TSAsExpression | babel.types.Expression,
 ): babel.types.Expression {
-  if (
-    node.type === "TSAsExpression" ||
-    node.type === "TSSatisfiesExpression"
-  ) {
+  if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
     return unpackTSAsExpression(
       (node as babel.types.TSAsExpression).expression,
     );
