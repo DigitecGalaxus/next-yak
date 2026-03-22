@@ -2,6 +2,7 @@ import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
+import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
 /**
@@ -38,7 +39,7 @@ export default async function cssExtractLoader(
     const css = extractCss(source, experiments?.transpilationMode);
     debugLog("css", css, this.resourcePath);
 
-    return resolveCrossFileConstant(this, this.context, css).then((result) => {
+    return resolveCrossFileConstant(this, this.context, css, rewriteRelativeCSSUrl).then((result) => {
       debugLog("css-resolved", result, this.resourcePath);
       return callback(null, result, sourceMap);
     }, callback);

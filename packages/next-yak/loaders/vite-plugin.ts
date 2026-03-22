@@ -12,6 +12,7 @@ import {
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
+import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
 
@@ -209,6 +210,7 @@ export async function viteYak(
               }
               return resolved.id;
             },
+            rewriteRelativeCSSUrl,
           },
           originalId,
           extractedCss,

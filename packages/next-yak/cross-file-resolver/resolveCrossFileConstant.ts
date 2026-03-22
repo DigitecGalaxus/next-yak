@@ -11,6 +11,12 @@ const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
   /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
 
+// Based on Vite's cssUrlRE — handles quoted/unquoted URLs, escapes, and avoids
+// matching @import or identifiers containing "url"
+// https://github.com/vitejs/vite/blob/main/packages/vite/src/node/plugins/css.ts
+const cssUrlRE =
+  /(?<!@import\s+)(?<=^|[^\w\-\u0080-\uffff])url\((\s*('[^']+'|"[^"]+")\s*|(?:\\.|[^'")\\])+)\)/g;
+
 /**
  * Resolves cross-file selectors in css files
  *
@@ -152,11 +158,31 @@ export async function uncachedResolveCrossFileConstant(
 
       // When inlining CSS from a different file, rewrite relative url() paths
       // so they resolve correctly from the consuming file's directory
-      if (resolved.type !== "unresolved-tag" && resolved.source !== filePath) {
-        replacement = rewriteRelativeUrls(
-          String(replacement),
-          resolved.source,
-          filePath,
+      if (
+        context.rewriteRelativeCSSUrl &&
+        resolved.type !== "unresolved-tag" &&
+        resolved.source !== filePath
+      ) {
+        replacement = String(replacement).replace(
+          cssUrlRE,
+          (match, rawUrl: string) => {
+            const trimmed = rawUrl.trim();
+            const quote =
+              trimmed[0] === "'" || trimmed[0] === '"' ? trimmed[0] : "";
+            const urlPath = quote ? trimmed.slice(1, -1) : trimmed;
+
+            // Only rewrite relative paths (./... or ../...)
+            if (!urlPath.startsWith("./") && !urlPath.startsWith("../")) {
+              return match;
+            }
+
+            const rewritten = context.rewriteRelativeCSSUrl!(
+              urlPath,
+              resolved.source,
+              filePath,
+            );
+            return `url(${quote}${rewritten}${quote})`;
+          },
         );
       }
 
@@ -662,6 +688,8 @@ export type ResolveContext = {
   };
   exportAllLimit?: number;
   resolve: (specifier: string, importer: string) => Promise<string> | string;
+  /** Rewrite a single relative url path when inlining CSS from `source` into `consumer`. */
+  rewriteRelativeCSSUrl?: (urlPath: string, source: string, consumer: string) => string;
 };
 
 type YakImportKind = "mixin" | "selector";
@@ -703,78 +731,3 @@ export type ResolvedModule = {
   exports: ResolvedExports;
 };
 
-/**
- * Rewrites relative url() paths in CSS when inlining a value from a different
- * source file. Adjusts paths so they resolve correctly from the consumer's
- * directory instead of the source's directory.
- *
- * Browser-compatible (no node:path dependency).
- */
-function rewriteRelativeUrls(
-  css: string,
-  source: string,
-  consumer: string,
-): string {
-  const sourceDir = posixDirname(source);
-  const consumerDir = posixDirname(consumer);
-  if (sourceDir === consumerDir) return css;
-
-  const relPrefix = posixRelative(consumerDir, sourceDir);
-
-  // Match url() with relative paths starting with ./ or ../
-  // Naturally skips data:, http://, absolute paths, and #fragments
-  return css.replace(
-    /url\(\s*(["']?)(\.\.?\/[^"')\s]+)\1\s*\)/g,
-    (_match, quote: string, urlPath: string) => {
-      const rewritten = posixNormalize(relPrefix + "/" + urlPath);
-      return `url(${quote}${rewritten}${quote})`;
-    },
-  );
-}
-
-/** Extract the directory part of a POSIX path */
-function posixDirname(path: string): string {
-  const lastSlash = path.lastIndexOf("/");
-  return lastSlash === -1 ? "." : path.slice(0, lastSlash) || "/";
-}
-
-/** Compute a relative POSIX path from `from` to `to` (both must be absolute) */
-function posixRelative(from: string, to: string): string {
-  if (from === to) return "";
-  const fromParts = from.split("/").filter(Boolean);
-  const toParts = to.split("/").filter(Boolean);
-
-  // Find common prefix length
-  let common = 0;
-  while (
-    common < fromParts.length &&
-    common < toParts.length &&
-    fromParts[common] === toParts[common]
-  ) {
-    common++;
-  }
-
-  const ups = fromParts.length - common;
-  const downs = toParts.slice(common);
-  const parts = [...Array(ups).fill(".."), ...downs];
-  return parts.join("/") || ".";
-}
-
-/** Normalize a POSIX path (resolve . and .. segments) */
-function posixNormalize(path: string): string {
-  const parts = path.split("/");
-  const result: string[] = [];
-  for (const part of parts) {
-    if (part === "." || part === "") continue;
-    if (
-      part === ".." &&
-      result.length > 0 &&
-      result[result.length - 1] !== ".."
-    ) {
-      result.pop();
-    } else {
-      result.push(part);
-    }
-  }
-  return result.join("/") || ".";
-}

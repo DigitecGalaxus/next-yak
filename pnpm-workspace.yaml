@@ -65,6 +65,7 @@ catalogs:
     memfs: 4.56.10
     next: 16.1.6
     next-themes: 0.4.6
+    pathe: 2.0.3
     postcss: 8.5.6
     postcss-nested: 7.0.2
     prettier: 3.8.1
