@@ -25,7 +25,7 @@ export async function resolveCrossFileConstant(
   loader: LoaderContext<{}>,
   pathContext: string,
   css: string,
-  rewriteRelativeCSSUrl?: ResolveContext["rewriteRelativeCSSUrl"],
+  rewriteRelativeCSSUrl: ResolveContext["rewriteRelativeCSSUrl"],
 ): Promise<string> {
   const { resolved } = await genericResolveCrossFileConstant(
     { ...getResolveContext(loader), rewriteRelativeCSSUrl },

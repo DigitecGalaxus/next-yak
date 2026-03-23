@@ -11,11 +11,8 @@ const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
   /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
 
-// Based on Vite's cssUrlRE — handles quoted/unquoted URLs, escapes, and avoids
-// matching @import or identifiers containing "url"
-// https://github.com/vitejs/vite/blob/main/packages/vite/src/node/plugins/css.ts
-const cssUrlRE =
-  /(?<!@import\s+)(?<=^|[^\w\-\u0080-\uffff])url\((\s*('[^']+'|"[^"]+")\s*|(?:\\.|[^'")\\])+)\)/g;
+// Matches CSS url() values — handles quoted and unquoted URLs with escapes
+const cssUrlRE = /url\((\s*('[^']+'|"[^"]+")\s*|(?:\\.|[^'")\\])+)\)/g;
 
 /**
  * Resolves cross-file selectors in css files
@@ -159,9 +156,9 @@ export async function uncachedResolveCrossFileConstant(
       // When inlining CSS from a different file, rewrite relative url() paths
       // so they resolve correctly from the consuming file's directory
       if (
-        context.rewriteRelativeCSSUrl &&
         resolved.type !== "unresolved-tag" &&
-        resolved.source !== filePath
+        resolved.source !== filePath &&
+        String(replacement).includes("url")
       ) {
         replacement = String(replacement).replace(
           cssUrlRE,
@@ -176,7 +173,7 @@ export async function uncachedResolveCrossFileConstant(
               return match;
             }
 
-            const rewritten = context.rewriteRelativeCSSUrl!(
+            const rewritten = context.rewriteRelativeCSSUrl(
               urlPath,
               resolved.source,
               filePath,
@@ -688,8 +685,11 @@ export type ResolveContext = {
   };
   exportAllLimit?: number;
   resolve: (specifier: string, importer: string) => Promise<string> | string;
-  /** Rewrite a single relative url path when inlining CSS from `source` into `consumer`. */
-  rewriteRelativeCSSUrl?: (
+  /**
+   * Rewrite a single relative url path when inlining CSS from `source` into `consumer`.
+   * e.g. `background: url("./images/sun.avif")` -> `background: url("../source/images/sun.avif")`
+   */
+  rewriteRelativeCSSUrl: (
     urlPath: string,
     source: string,
     consumer: string,

@@ -4,6 +4,9 @@ import path from "node:path";
  * Rewrites a single relative url path when inlining CSS from a different
  * source file. Adjusts the path so it resolves correctly from the consumer's
  * directory instead of the source's directory.
+ *
+ * e.g. `"./images/sun.avif"` in `/src/icons/styles.ts` becomes
+ * `"../icons/images/sun.avif"` when inlined into `/src/pages/home.ts`
  */
 export function rewriteRelativeCSSUrl(
   urlPath: string,

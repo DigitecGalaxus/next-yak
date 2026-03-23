@@ -12,8 +12,8 @@ import {
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
-import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 const require = createRequire(import.meta.url);
 
 type ViteYakPluginOptions = YakConfigOptions & {
@@ -34,6 +34,9 @@ type ViteYakPluginOptions = YakConfigOptions & {
     | "sourceRoot"
   >;
 };
+
+const YAK_VIRTUAL_CSS_SUFFIX = ".yak.css";
+const YAK_VIRTUAL_CSS_REGEX = new RegExp("\\.yak\\.css$");
 
 const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
   jsc: {
@@ -80,8 +83,6 @@ export async function viteYak(
   let hasWarnedAboutBasePath = false;
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
-  const virtualModuleRegex = /^virtual:yak-css:/;
-  const yakVirtualCssRegex = /\.yak\.css$/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
   return {
@@ -117,31 +118,23 @@ export async function viteYak(
     },
     resolveId: {
       filter: {
-        id: virtualModuleRegex,
+        id: YAK_VIRTUAL_CSS_REGEX,
       },
       handler(id) {
         // Resolve to an absolute filesystem path so Vite's CSS pipeline can
         // correctly resolve relative url() references (e.g. url("./icon.svg")).
         // No \0 prefix — Vite uses the path's directory for url() resolution,
         // and our load hook intercepts the module before disk reads.
-        const relativeCssPath = id.slice(16); // strip "virtual:yak-css:"
-        const absoluteCssPath = normalizePath(
-          resolve(basePath, relativeCssPath),
-        );
-        // Append .yak.css instead of keeping the SWC-generated .css suffix.
-        // The .yak.css convention (like .vanilla.css, .wyw-in-js.css) uniquely
-        // identifies our virtual modules while Rolldown sees .css for CSS processing.
-        const absoluteSourcePath = absoluteCssPath.slice(0, -4); // strip ".css"
-        return absoluteSourcePath + ".yak.css";
+        return normalizePath(resolve(basePath, id));
       },
     },
     load: {
       filter: {
-        id: yakVirtualCssRegex,
+        id: YAK_VIRTUAL_CSS_REGEX,
       },
       async handler(id) {
-        // Strip .yak.css suffix (8 chars) to get the original source file path
-        const originalId = id.slice(0, -8);
+        // Strip .yak.css suffix to get the original source file path
+        const originalId = id.slice(0, -YAK_VIRTUAL_CSS_SUFFIX.length);
         this.addWatchFile(originalId);
 
         const sourceContent = await this.fs.readFile(originalId, {
@@ -276,14 +269,14 @@ export async function viteYak(
     },
 
     // Vite's default HMR only updates the JS module when a source file changes.
-    // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
+    // The extracted CSS lives in a separate virtual module (*.yak.css)
     // which Vite doesn't know is derived from the source file. Without explicit
     // invalidation here, the browser keeps stale CSS after edits.
     hotUpdate({ modules, file, type }) {
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
-      const virtualId = normalizePath(file) + ".yak.css";
+      const virtualId = normalizePath(file) + YAK_VIRTUAL_CSS_SUFFIX;
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
       if (mod) {
         this.environment.moduleGraph.invalidateModule(mod);
@@ -343,7 +336,7 @@ function transform(
               suppressDeprecationWarnings:
                 yakOptions.experiments?.suppressDeprecationWarnings,
               importMode: {
-                value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
+                value: `{{__MODULE_PATH__}}${YAK_VIRTUAL_CSS_SUFFIX}`,
                 transpilation: "Css",
                 encoding: "None",
               },
