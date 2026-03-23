@@ -28,7 +28,7 @@ export async function resolveCrossFileConstant(
   rewriteRelativeCSSUrl: ResolveContext["rewriteRelativeCSSUrl"],
 ): Promise<string> {
   const { resolved } = await genericResolveCrossFileConstant(
-    { ...getResolveContext(loader), rewriteRelativeCSSUrl },
+    getResolveContext(loader, rewriteRelativeCSSUrl),
     loader.resourcePath,
     css,
   );
@@ -119,6 +119,7 @@ function getParseContext(
 
 function getResolveContext(
   loader: LoaderContext<YakConfigOptions>,
+  rewriteRelativeCSSUrl: ResolveContext["rewriteRelativeCSSUrl"],
 ): ResolveContext {
   const parseContext = getParseContext(loader);
   return {
@@ -126,6 +127,7 @@ function getResolveContext(
     resolve: async (specifier, importer) => {
       return resolveModule(loader, specifier, dirname(importer));
     },
+    rewriteRelativeCSSUrl,
   };
 }
 
