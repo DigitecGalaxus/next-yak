@@ -222,16 +222,20 @@ export async function parseExports(
 
       if (node.type === "ExportDefaultDeclaration") {
         if (node.declaration.type === "Identifier") {
+          // e.g. export default variableName;
+          // Save the identifier name to look up later
           defaultIdentifier = node.declaration.name;
         } else if (
           node.declaration.type === "FunctionDeclaration" ||
           node.declaration.type === "ClassDeclaration"
         ) {
+          // e.g. export default function() {...} or export default class {...}
           moduleExports.named["default"] = {
             type: "unsupported",
             hint: node.declaration.type,
           };
         } else {
+          // e.g. export default { ... } or export default "value"
           moduleExports.named["default"] = parseExportValueExpression(
             node.declaration as babel.types.Expression,
           );
