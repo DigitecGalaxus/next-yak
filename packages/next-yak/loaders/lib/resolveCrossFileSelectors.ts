@@ -1,5 +1,4 @@
 import { parse } from "@babel/parser";
-import traverse from "@babel/traverse";
 import type { Compilation, LoaderContext } from "webpack";
 import {
   ModuleExport,
@@ -149,35 +148,42 @@ export async function resolveModule(
 export async function parseExports(
   sourceContents: string,
 ): Promise<ModuleExports> {
-  const moduleExports: ModuleExports = {
-    importYak: true,
-    named: {},
-    all: [],
-  };
-
-  // Track variable declarations for lookup
-  const variableDeclarations: Record<string, babel.types.Expression> = {};
-
-  // Track default export identifier if present
-  let defaultIdentifier: string | null = null;
-
   try {
     const ast = parse(sourceContents, {
       sourceType: "module",
       plugins: ["jsx", "typescript"] as const,
     });
 
-    traverse.default(ast, {
-      // Track all variable declarations in the file
-      VariableDeclarator({ node }) {
-        if (node.id.type === "Identifier" && node.init) {
-          variableDeclarations[node.id.name] = node.init;
-        }
-      },
+    // Derive importYak from top-level imports (no traverse needed)
+    const importYak = ast.program.body.some(
+      (node) =>
+        node.type === "ImportDeclaration" && node.source.value === "next-yak",
+    );
 
-      ExportNamedDeclaration({ node }) {
+    const moduleExports: ModuleExports = {
+      importYak,
+      named: {},
+      all: [],
+    };
+
+    // Track variable declarations for default export lookup
+    const variableDeclarations: Record<string, babel.types.Expression> = {};
+    let defaultIdentifier: string | null = null;
+
+    for (const node of ast.program.body) {
+      // Track top-level variable declarations for default export lookup
+      if (node.type === "VariableDeclaration") {
+        for (const decl of node.declarations) {
+          if (decl.id.type === "Identifier" && decl.init) {
+            variableDeclarations[decl.id.name] = decl.init;
+          }
+        }
+      }
+
+      if (node.type === "ExportNamedDeclaration") {
         if (node.source) {
-          node.specifiers.forEach((specifier) => {
+          // export { x } from "./file", export { x as y } from "./file"
+          for (const specifier of node.specifiers) {
             if (
               specifier.type === "ExportSpecifier" &&
               specifier.exported.type === "Identifier" &&
@@ -185,40 +191,36 @@ export async function parseExports(
             ) {
               moduleExports.named[specifier.exported.name] = {
                 type: "re-export",
-                from: node.source!.value,
+                from: node.source.value,
                 name: specifier.local.name,
               };
             }
-          });
-        } else if (node.declaration?.type === "VariableDeclaration") {
-          node.declaration.declarations.forEach((declaration) => {
-            if (declaration.id.type === "Identifier" && declaration.init) {
-              const parsed = parseExportValueExpression(declaration.init);
-              if (parsed) {
-                moduleExports.named[declaration.id.name] = parsed;
-              }
-            }
-          });
-        }
-      },
-      ExportDeclaration({ node }) {
-        if ("specifiers" in node && node.source) {
-          const { specifiers, source } = node;
-          specifiers.forEach((specifier) => {
-            // export * as color from "./colors";
+            // export * as ns from "./file"
             if (
               specifier.type === "ExportNamespaceSpecifier" &&
               specifier.exported.type === "Identifier"
             ) {
               moduleExports.named[specifier.exported.name] = {
                 type: "namespace-re-export",
-                from: source.value,
+                from: node.source.value,
               };
             }
-          });
+          }
+        } else if (node.declaration?.type === "VariableDeclaration") {
+          // export const x = ...
+          for (const declaration of node.declaration.declarations) {
+            if (declaration.id.type === "Identifier" && declaration.init) {
+              variableDeclarations[declaration.id.name] = declaration.init;
+              const parsed = parseExportValueExpression(declaration.init);
+              if (parsed) {
+                moduleExports.named[declaration.id.name] = parsed;
+              }
+            }
+          }
         }
-      },
-      ExportDefaultDeclaration({ node }) {
+      }
+
+      if (node.type === "ExportDefaultDeclaration") {
         if (node.declaration.type === "Identifier") {
           // e.g. export default variableName;
           // Save the identifier name to look up later
@@ -238,11 +240,14 @@ export async function parseExports(
             node.declaration as babel.types.Expression,
           );
         }
-      },
-      ExportAllDeclaration({ node }) {
+      }
+
+      // export * from "./file"
+      if (node.type === "ExportAllDeclaration") {
         moduleExports.all.push(node.source.value);
-      },
-    });
+      }
+    }
+
     // If we found a default export that's an identifier, look up its value
     if (defaultIdentifier && variableDeclarations[defaultIdentifier]) {
       moduleExports.named["default"] = parseExportValueExpression(
@@ -257,13 +262,15 @@ export async function parseExports(
 }
 
 /**
- * Unpacks a TSAsExpression to its expression value
+ * Unpacks TS type assertions (as, satisfies) to the underlying expression
  */
 function unpackTSAsExpression(
   node: babel.types.TSAsExpression | babel.types.Expression,
 ): babel.types.Expression {
-  if (node.type === "TSAsExpression") {
-    return unpackTSAsExpression(node.expression);
+  if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
+    return unpackTSAsExpression(
+      (node as babel.types.TSAsExpression).expression,
+    );
   }
   return node;
 }

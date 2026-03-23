@@ -81,7 +81,6 @@
   },
   "dependencies": {
     "@babel/parser": "catalog:core",
-    "@babel/traverse": "catalog:core",
     "@swc/core": "catalog:core",
     "yak-swc": "9.4.0"
   },
@@ -89,7 +88,6 @@
     "@testing-library/jest-dom": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/babel__core": "catalog:dev",
-    "@types/babel__traverse": "catalog:dev",
     "@types/jest": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
