@@ -215,10 +215,6 @@ export async function viteYak(
       });
     },
 
-    async closeBundle() {
-      await evaluator.dispose();
-    },
-
     transform: {
       filter: {
         id: {
