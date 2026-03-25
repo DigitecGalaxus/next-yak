@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "next": "16.2.0-canary.85",
+    "next": "catalog:dev",
     "next-yak": "workspace:*",
     "yak-swc": "workspace:*",
     "react": "catalog:dev",

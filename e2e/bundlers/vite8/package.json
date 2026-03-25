@@ -8,7 +8,7 @@
     "react-dom": "catalog:dev"
   },
   "devDependencies": {
-    "vite": "8.0.0-beta.13",
+    "vite": "catalog:dev",
     "@vitejs/plugin-react-swc": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
