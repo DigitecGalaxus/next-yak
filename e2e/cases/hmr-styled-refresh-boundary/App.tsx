@@ -1,20 +1,27 @@
 import { useState } from "react";
-import { Section } from "./Section.tsx";
+import { DividerForPage, PAGE_CONFIG } from "./pageUtils.ts";
 
 /**
- * App imports a styled-only component from a separate file.
- * The counter state detects whether Fast Refresh preserved state
- * or a full reload occurred (which resets the counter to 0).
+ * App imports a styled component through a chain of non-boundary modules:
+ *   Divider.tsx (.name="yak") → barrel.ts (namespace export) → pageUtils.ts (mixed exports)
+ *
+ * This function also exports getPageConfig (non-component), making this
+ * module NOT a refresh boundary either. The HMR update propagates all the
+ * way to the entry point → abort → full reload.
  */
 export default function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <Section data-testid="section">
+    <div>
+      {PAGE_CONFIG.showDivider && <DividerForPage data-testid="divider" />}
       <span data-testid="counter">{count}</span>
       <button data-testid="increment" onClick={() => setCount((c) => c + 1)}>
         +1
       </button>
-    </Section>
+    </div>
   );
 }
+
+// Non-component export → makes this module NOT a refresh boundary
+export const getPageConfig = () => PAGE_CONFIG;

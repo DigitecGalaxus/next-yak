@@ -184,19 +184,6 @@ function addYakWebpack(
       options: yakOptions,
     });
 
-    // Register styled components with React Fast Refresh ($RefreshReg$).
-    // Without this, styled-only files are not recognized as component modules
-    // by SWC's react-refresh transform, causing full page reloads during HMR
-    // when the file is in the _app module graph.
-    if (options.dev && !options.isServer) {
-      webpackConfig.module.rules.push({
-        test: /\.(tsx|ts)$/,
-        enforce: "post" as const,
-        loader: path.join(currentDir, "../loaders/refresh-loader.cjs"),
-        exclude: /node_modules/,
-      });
-    }
-
     // With the following alias the internal next-yak code
     // is able to import a context which works for server components
     const yakContext = resolveYakContext(

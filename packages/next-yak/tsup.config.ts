@@ -136,7 +136,6 @@ export default defineConfig([
     entryPoints: [
       "loaders/webpack-loader.ts",
       "loaders/turbo-loader.ts",
-      "loaders/refresh-loader.ts",
     ],
     format: ["cjs"],
     minify: false,

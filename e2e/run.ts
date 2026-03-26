@@ -7,10 +7,50 @@
  * Usage: node run.ts [bundler] [case]
  */
 
-import { spawn } from "node:child_process";
+import { spawn, ChildProcess } from "node:child_process";
 import { readdir, rm, mkdir, access, cp } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { styleText } from "node:util";
+
+// ---------------------------------------------------------------------------
+// Process cleanup — ensure all spawned children are killed on exit / abort
+// ---------------------------------------------------------------------------
+
+const activeChildren = new Set<ChildProcess>();
+
+function killAllChildren() {
+  for (const child of activeChildren) {
+    // Kill the entire process group (negative PID) so dev servers
+    // spawned by Playwright are also terminated
+    if (child.pid) {
+      try {
+        process.kill(-child.pid, "SIGTERM");
+      } catch {
+        // Process group may already be gone — try the child directly
+        try {
+          child.kill("SIGTERM");
+        } catch {
+          // already exited
+        }
+      }
+    }
+  }
+  activeChildren.clear();
+}
+
+// Handle Ctrl+C and termination signals
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    console.log(
+      styleText("yellow", `\nReceived ${signal}, shutting down…`),
+    );
+    killAllChildren();
+    process.exit(128 + (signal === "SIGINT" ? 2 : 15));
+  });
+}
+
+// Safety net: clean up on normal exit too
+process.on("exit", killAllChildren);
 
 const e2eRoot = import.meta.dirname;
 
@@ -74,8 +114,11 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
         env: { ...process.env, BUNDLER: bundler, CASE: caseName },
         stdio: "pipe",
         shell: true,
+        detached: true, // Create a process group so we can kill the entire tree
       },
     );
+
+    activeChildren.add(child);
 
     child.stdout.on("data", (data: Buffer) => {
       for (const line of data.toString().split("\n")) {
@@ -88,7 +131,10 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
       }
     });
 
-    child.on("close", (code) => resolve(code === 0));
+    child.on("close", (code) => {
+      activeChildren.delete(child);
+      resolve(code === 0);
+    });
   });
 }
 
