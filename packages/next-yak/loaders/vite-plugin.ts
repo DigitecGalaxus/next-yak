@@ -78,6 +78,7 @@ export async function viteYak(
   let basePath = userOptions.basePath ?? "";
   let hasWarnedAboutBasePath = false;
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
+  let isServe = false;
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
   const virtualModuleRegex = /^virtual:yak-css:/;
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
@@ -113,6 +114,7 @@ export async function viteYak(
     configResolved(config) {
       basePath = basePath ? resolve(config.root, basePath) : config.root;
       debugLog = createDebugLogger(yakOptions.experiments?.debug, basePath);
+      isServe = config.command === "serve";
     },
     resolveId: {
       filter: {
@@ -215,10 +217,6 @@ export async function viteYak(
       });
     },
 
-    async buildEnd() {
-      await evaluator.dispose();
-    },
-
     transform: {
       filter: {
         id: {
@@ -248,6 +246,7 @@ export async function viteYak(
             basePath,
             yakSwcPath,
             yakOptions,
+            isServe,
           );
           debugLog("ts", result.code, id);
 
@@ -311,6 +310,7 @@ function transform(
   rootPath: string,
   yakSwcPath: string,
   yakOptions: ViteYakPluginOptions,
+  reactRefreshReg?: boolean,
 ) {
   // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
   return swcTransform(data, {
@@ -333,6 +333,7 @@ function transform(
               displayNames: yakOptions.displayNames,
               suppressDeprecationWarnings:
                 yakOptions.experiments?.suppressDeprecationWarnings,
+              ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               importMode: {
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",

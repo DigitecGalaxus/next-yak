@@ -35,5 +35,6 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.display_names,
     config.import_mode,
     config.suppress_deprecation_warnings,
+    config.react_refresh_reg,
   )))
 }

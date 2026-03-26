@@ -1,7 +1,7 @@
-import { Worker } from "node:worker_threads";
-import { fileURLToPath } from "node:url";
-import { isAbsolute } from "node:path";
 import { existsSync } from "node:fs";
+import { isAbsolute } from "node:path";
+import { fileURLToPath } from "node:url";
+import { Worker } from "node:worker_threads";
 import { createLoaderDataUrl } from "./loader-hooks.ts";
 
 export type EvaluateResult =
@@ -168,6 +168,18 @@ export async function createEvaluator(): Promise<Evaluator> {
 
   await Promise.all([primary.ready, shadow.ready]);
 
+  /**
+   * Allow the process to exit naturally when the event loop is otherwise empty.
+   * Without this, the workers keep the event loop alive indefinitely — causing
+   * hangs in multi-environment Vite builds where no hook reliably disposes
+   * the evaluator after all environments are done.
+   * Must be called after setupMessageHandler since .on() can re-ref the worker.
+   */
+  function unrefWorkers(primaryWorker: Worker, shadowWorker: Worker) {
+    primaryWorker.unref();
+    shadowWorker.unref();
+  }
+
   function setupMessageHandler(workerObj: { worker: Worker }) {
     workerObj.worker.on("message", (msg: WorkerResult) => {
       if (msg.type !== "result") return;
@@ -193,6 +205,7 @@ export async function createEvaluator(): Promise<Evaluator> {
   }
 
   setupMessageHandler(primary);
+  unrefWorkers(primary.worker, shadow.worker);
 
   function clearEvalTimeout() {
     if (currentTimeout !== null) {
@@ -366,6 +379,7 @@ export async function createEvaluator(): Promise<Evaluator> {
     setupMessageHandler(primary);
 
     shadow = bootWorker();
+    unrefWorkers(primary.worker, shadow.worker);
 
     // The new primary has a clean ESM cache, so any previously tracked
     // invalidations are no longer relevant — the fresh worker will

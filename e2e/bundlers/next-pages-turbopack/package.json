@@ -2,8 +2,11 @@
   "name": "e2e-next-pages-turbopack",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && next dev --turbopack -p 3004"
+  },
   "dependencies": {
-    "next": "16.2.0-canary.85",
+    "next": "catalog:dev",
     "next-yak": "workspace:*",
     "yak-swc": "workspace:*",
     "react": "catalog:dev",

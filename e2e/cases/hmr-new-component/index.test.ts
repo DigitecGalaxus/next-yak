@@ -16,7 +16,7 @@ test(
 
     // Add a second styled component via HMR
     await fsTmp.writeFile(
-      "App.tsx",
+      "index.tsx",
       `import { styled } from "next-yak";
 
 const First = styled.div\`

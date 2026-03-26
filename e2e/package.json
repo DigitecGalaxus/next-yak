@@ -10,7 +10,7 @@
     "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
   },
   "devDependencies": {
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "catalog:dev",
     "@types/node": "catalog:dev",
     "next-yak": "workspace:*",
     "@types/react": "catalog:dev",
