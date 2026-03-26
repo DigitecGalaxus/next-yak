@@ -82,5 +82,8 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter next-yak-e2e exec playwright install chromium
 
-      - name: Run e2e tests
+      - name: Run e2e dev tests
         run: pnpm run test:e2e
+
+      - name: Run e2e build tests
+        run: pnpm run test:e2e:build

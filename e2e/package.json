@@ -6,7 +6,8 @@
     ".": "./test-env.ts"
   },
   "scripts": {
-    "test": "node run.ts",
+    "test": "node runDevTests.ts",
+    "test:build": "node runBuildTests.ts",
     "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
   },
   "devDependencies": {

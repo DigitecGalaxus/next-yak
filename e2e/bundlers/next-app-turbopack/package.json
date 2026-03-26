@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && next dev --turbopack -p 3002"
+    "dev": "cd .tmp && next dev --turbopack -p 3002",
+    "build": "cd .tmp && next build",
+    "start": "cd .tmp && next start -p 3002"
   },
   "dependencies": {
     "next": "catalog:dev",
