@@ -81,7 +81,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       runtimeStylesFn,
       parentRuntimeStylesFn,
     );
-    const yak: React.FunctionComponent = (props) => {
+    const Yak: React.FunctionComponent = (props) => {
       // if the css component does not require arguments
       // it can be called without arguments and we skip calling useTheme()
       //
@@ -171,8 +171,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     };
 
     // Assign the yakComponentSymbol directly without forwardRef
-    return Object.assign(yak, {
-      [yakComponentSymbol]: [yak, mergedAttrsFn, runtimeStyleProcessor] as [
+    return Object.assign(Yak, {
+      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor] as [
         unknown,
         unknown,
         unknown,
