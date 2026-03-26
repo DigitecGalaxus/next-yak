@@ -974,7 +974,7 @@ where
           self.current_exported || is_default_exported,
           self.import_mode.transpilation_mode(),
         ))
-      },
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
