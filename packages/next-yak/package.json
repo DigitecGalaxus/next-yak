@@ -1,6 +1,6 @@
 {
   "name": "next-yak",
-  "version": "9.4.0",
+  "version": "9.4.1",
   "type": "module",
   "types": "./dist/",
   "sideEffects": false,
@@ -82,7 +82,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "9.4.0"
+    "yak-swc": "9.4.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:dev",
