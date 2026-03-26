@@ -202,13 +202,13 @@ async function assembleBundler(
   await expandBundlerTemplates(bundler, tmpDir, caseNames);
 }
 
-/** Copy a case's source files (except test.ts) into the destination directory. */
+/** Copy a case's source files (except index.test.ts) into the destination directory. */
 async function copyCase(caseName: string, caseDir: string): Promise<void> {
   const srcDir = join(e2eRoot, "cases", caseName);
   const entries = await readdir(srcDir, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (entry.name === "test.ts") continue; // tests run from cases/, not .tmp/
+    if (entry.name === "index.test.ts") continue; // tests run from cases/, not .tmp/
     await cp(join(srcDir, entry.name), join(caseDir, entry.name), {
       recursive: true,
     });
@@ -276,6 +276,74 @@ async function walkAndExpand(
   }
 }
 
+/**
+ * Parse named exports from a TypeScript/JavaScript file.
+ * Handles: export const/let/var/function/class, export { ... }, export type/interface.
+ * Does NOT return "default" (handled separately via `export { default }`).
+ */
+function parseNamedExports(source: string): string[] {
+  const names = new Set<string>();
+  // export const/let/var/function/class <name>
+  for (const m of source.matchAll(
+    /\bexport\s+(?:const|let|var|function|class)\s+(\w+)/g,
+  )) {
+    names.add(m[1]);
+  }
+  // export { foo, bar as baz }  (from '...' or local)
+  for (const m of source.matchAll(/\bexport\s*\{([^}]+)\}/g, )) {
+    for (const spec of m[1].split(",")) {
+      const trimmed = spec.trim();
+      if (!trimmed) continue;
+      // "foo as bar" → export name is "bar"; "foo" → export name is "foo"
+      const parts = trimmed.split(/\s+as\s+/);
+      const exported = (parts[1] ?? parts[0]).trim();
+      if (exported !== "default") names.add(exported);
+    }
+  }
+  // export type/interface <name>
+  for (const m of source.matchAll(
+    /\bexport\s+(?:type|interface)\s+(\w+)/g,
+  )) {
+    names.add(m[1]);
+  }
+  return [...names];
+}
+
+/**
+ * Expand `export * from ".../[case-name]/index.tsx"` lines by resolving the
+ * actual named exports from the case's index.tsx file. This avoids Next.js
+ * errors about `export *` in page files while preserving the same exports.
+ */
+async function expandStarExports(
+  content: string,
+  caseName: string,
+): Promise<string> {
+  const starRe = /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
+  let result = content;
+  for (const match of content.matchAll(starRe)) {
+    const specifier = match[1].replaceAll(CASE_NAME_PLACEHOLDER, caseName);
+    // All import specifiers reference paths relative to .tmp/, which mirrors
+    // the case layout under e2eRoot. Strip leading ../ segments and resolve
+    // from e2eRoot to find the original source file.
+    const cleaned = specifier.replace(/^(\.\.\/)+/, "");
+    const resolvedPath = join(e2eRoot, cleaned);
+    let replacement: string;
+    try {
+      const source = await readFile(resolvedPath, "utf-8");
+      const names = parseNamedExports(source);
+      if (names.length > 0) {
+        replacement = `export { ${names.join(", ")} } from "${specifier}";`;
+      } else {
+        replacement = `// no named exports in ${caseName}/index.tsx`;
+      }
+    } catch {
+      replacement = `// could not resolve exports for ${caseName}`;
+    }
+    result = result.replace(match[0], replacement);
+  }
+  return result;
+}
+
 /** Copy a file, replacing [case-name] in text file contents. */
 async function copyWithExpansion(
   srcPath: string,
@@ -284,11 +352,10 @@ async function copyWithExpansion(
 ): Promise<void> {
   const ext = srcPath.substring(srcPath.lastIndexOf("."));
   if (TEXT_EXTENSIONS.has(ext)) {
-    const content = await readFile(srcPath, "utf-8");
-    await writeFile(
-      destPath,
-      content.replaceAll(CASE_NAME_PLACEHOLDER, caseName),
-    );
+    let content = await readFile(srcPath, "utf-8");
+    content = await expandStarExports(content, caseName);
+    content = content.replaceAll(CASE_NAME_PLACEHOLDER, caseName);
+    await writeFile(destPath, content);
   } else {
     await cp(srcPath, destPath);
   }

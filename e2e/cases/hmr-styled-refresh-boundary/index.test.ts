@@ -25,12 +25,12 @@ test(
     });
 
     // Edit the styled-only file — change CSS color.
-    // The import chain is: Divider.tsx → barrel.ts → pageUtils.ts → App.tsx
+    // The import chain is: Divider.tsx → barrel.ts → pageUtils.ts → index.tsx
     // None of these modules are React Fast Refresh boundaries because:
     //   - Divider.tsx: styled() function .name = "yak" (lowercase, not recognized)
     //   - barrel.ts: has namespace export (not a component type)
     //   - pageUtils.ts: mixed exports (component + constant)
-    //   - App.tsx: mixed exports (component + function)
+    //   - index.tsx: mixed exports (component + function)
     // Without the fix, the update propagates to the entry point → full reload.
     const src = await fsTmp.readFile("Divider.tsx");
     await fsTmp.writeFile(
