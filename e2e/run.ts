@@ -290,7 +290,7 @@ function parseNamedExports(source: string): string[] {
     names.add(m[1]);
   }
   // export { foo, bar as baz }  (from '...' or local)
-  for (const m of source.matchAll(/\bexport\s*\{([^}]+)\}/g, )) {
+  for (const m of source.matchAll(/\bexport\s*\{([^}]+)\}/g)) {
     for (const spec of m[1].split(",")) {
       const trimmed = spec.trim();
       if (!trimmed) continue;
@@ -301,9 +301,7 @@ function parseNamedExports(source: string): string[] {
     }
   }
   // export type/interface <name>
-  for (const m of source.matchAll(
-    /\bexport\s+(?:type|interface)\s+(\w+)/g,
-  )) {
+  for (const m of source.matchAll(/\bexport\s+(?:type|interface)\s+(\w+)/g)) {
     names.add(m[1]);
   }
   return [...names];
@@ -318,7 +316,8 @@ async function expandStarExports(
   content: string,
   caseName: string,
 ): Promise<string> {
-  const starRe = /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
+  const starRe =
+    /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
   let result = content;
   for (const match of content.matchAll(starRe)) {
     const specifier = match[1].replaceAll(CASE_NAME_PLACEHOLDER, caseName);
