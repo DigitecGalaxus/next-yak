@@ -51,6 +51,7 @@ export type YakConfigOptions = {
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const minify = yakOptions.minify ?? process.env.NODE_ENV === "production";
+  const isDev = process.env.NODE_ENV !== "production";
   const yakPluginOptions = {
     minify,
     basePath: currentDir,
@@ -58,6 +59,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     displayNames: yakOptions.displayNames ?? !minify,
     suppressDeprecationWarnings:
       yakOptions.experiments?.suppressDeprecationWarnings ?? false,
+    ...(isDev ? { reactRefreshReg: true } : {}),
   };
 
   const transpilation =
