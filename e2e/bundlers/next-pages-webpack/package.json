@@ -2,6 +2,9 @@
   "name": "e2e-next-pages-webpack",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && next dev --webpack -p 3003"
+  },
   "dependencies": {
     "next": "catalog:dev",
     "next-yak": "workspace:*",
