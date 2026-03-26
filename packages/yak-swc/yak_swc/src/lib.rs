@@ -694,10 +694,14 @@ where
       }
 
       // Append $RefreshReg$ calls so React Fast Refresh treats
-      // styled-component-only modules as refresh boundaries
+      // styled-component-only modules as refresh boundaries.
+      // Double-guarded:
+      //   1. process.env.NODE_ENV !== "production" — tree-shaken by bundlers in prod
+      //   2. typeof $RefreshReg$ !== "undefined" — safe for SSR / test contexts
       if self.react_refresh_reg && !self.exported_styled_names.is_empty() {
+        let mut refresh_stmts: Vec<Stmt> = Vec::new();
         for name in &self.exported_styled_names {
-          module.body.push(ModuleItem::Stmt(Stmt::Expr(ExprStmt {
+          refresh_stmts.push(Stmt::Expr(ExprStmt {
             span: DUMMY_SP,
             expr: Box::new(Expr::Call(CallExpr {
               span: DUMMY_SP,
@@ -727,8 +731,70 @@ where
               type_args: None,
               ctxt: Default::default(),
             })),
-          })));
+          }));
         }
+        // if (process.env.NODE_ENV !== "production" && typeof $RefreshReg$ !== "undefined") { ... }
+        module.body.push(ModuleItem::Stmt(Stmt::If(IfStmt {
+          span: DUMMY_SP,
+          test: Box::new(Expr::Bin(BinExpr {
+            span: DUMMY_SP,
+            op: op!("&&"),
+            // process.env.NODE_ENV !== "production"
+            left: Box::new(Expr::Bin(BinExpr {
+              span: DUMMY_SP,
+              op: op!("!=="),
+              left: Box::new(Expr::Member(MemberExpr {
+                span: DUMMY_SP,
+                obj: Box::new(Expr::Member(MemberExpr {
+                  span: DUMMY_SP,
+                  obj: Box::new(Expr::Ident(Ident::new(
+                    "process".into(),
+                    DUMMY_SP,
+                    Default::default(),
+                  ))),
+                  prop: MemberProp::Ident(IdentName::new(
+                    "env".into(),
+                    DUMMY_SP,
+                  )),
+                })),
+                prop: MemberProp::Ident(IdentName::new(
+                  "NODE_ENV".into(),
+                  DUMMY_SP,
+                )),
+              })),
+              right: Box::new(Expr::Lit(Lit::Str(Str {
+                span: DUMMY_SP,
+                value: "production".into(),
+                raw: None,
+              }))),
+            })),
+            // typeof $RefreshReg$ !== "undefined"
+            right: Box::new(Expr::Bin(BinExpr {
+              span: DUMMY_SP,
+              op: op!("!=="),
+              left: Box::new(Expr::Unary(UnaryExpr {
+                span: DUMMY_SP,
+                op: op!("typeof"),
+                arg: Box::new(Expr::Ident(Ident::new(
+                  "$RefreshReg$".into(),
+                  DUMMY_SP,
+                  Default::default(),
+                ))),
+              })),
+              right: Box::new(Expr::Lit(Lit::Str(Str {
+                span: DUMMY_SP,
+                value: "undefined".into(),
+                raw: None,
+              }))),
+            })),
+          })),
+          cons: Box::new(Stmt::Block(BlockStmt {
+            span: DUMMY_SP,
+            stmts: refresh_stmts,
+            ctxt: Default::default(),
+          })),
+          alt: None,
+        })));
       }
     }
   }
