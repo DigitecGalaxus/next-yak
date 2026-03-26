@@ -18,17 +18,20 @@ import { styleText } from "node:util";
 
 const activeChildren = new Set<ChildProcess>();
 
-// On Ctrl+C the terminal sends SIGINT to the entire foreground process group,
-// so children (including dev servers started by Playwright) receive it too.
-// This handler force-kills any stragglers that don't exit promptly.
+// Each child is spawned with `detached: true` so it gets its own process group.
+// This lets us kill the entire tree (shell → pnpm → playwright → next dev) at
+// once with `process.kill(-pid, "SIGKILL")`. Without a process group, killing
+// the shell leaves grandchildren (like `next dev`) orphaned and holding ports.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
     console.log(styleText("yellow", `\nReceived ${signal}, shutting down…`));
     for (const child of activeChildren) {
-      try {
-        child.kill("SIGKILL");
-      } catch {
-        // already exited
+      if (child.pid) {
+        try {
+          process.kill(-child.pid, "SIGKILL");
+        } catch {
+          // already exited
+        }
       }
     }
     activeChildren.clear();
@@ -98,6 +101,7 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
         env: { ...process.env, BUNDLER: bundler, CASE: caseName },
         stdio: "pipe",
         shell: true,
+        detached: true,
       },
     );
 
