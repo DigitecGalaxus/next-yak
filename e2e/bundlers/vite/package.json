@@ -2,6 +2,9 @@
   "name": "e2e-vite",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && vite --port 5173"
+  },
   "dependencies": {
     "next-yak": "workspace:*",
     "react": "catalog:dev",

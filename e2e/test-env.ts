@@ -1,9 +1,10 @@
 /**
- * Test helper that gives each Playwright test access to the .tmp/<case>/ dir.
+ * Test helper that gives each Playwright test access to the case files dir.
  *
  * Wraps the test body so it receives an `FsTmp` object for reading/writing
- * files in the running dev server's directory. Modified files are automatically
- * restored after the test (important for HMR tests that mutate source files).
+ * files in the running dev server's case directory. Modified files are
+ * automatically restored after the test (important for HMR tests that mutate
+ * source files).
  */
 
 declare global {
@@ -18,7 +19,7 @@ import { resolve, join } from "node:path";
 import type { Page, TestInfo } from "@playwright/test";
 
 export interface FsTmp {
-  /** Absolute path to the .tmp/<case> dir */
+  /** Absolute path to the .tmp/cases/<case> dir */
   cwd: string;
   /** URL path to navigate to */
   url: string;
@@ -38,7 +39,14 @@ export function withTestEnv(
 ) {
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
     const bundlerName = testInfo.project.name;
-    const tmpDir = resolve(e2eRoot, "bundlers", bundlerName, ".tmp", caseName);
+    const tmpDir = resolve(
+      e2eRoot,
+      "bundlers",
+      bundlerName,
+      ".tmp",
+      "cases",
+      caseName,
+    );
     const srcDir = resolve(e2eRoot, "cases", caseName);
 
     const originals = new Map<string, string>();

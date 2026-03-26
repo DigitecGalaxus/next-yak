@@ -2,6 +2,9 @@
   "name": "e2e-next-app-turbopack",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && next dev --turbopack -p 3002"
+  },
   "dependencies": {
     "next": "catalog:dev",
     "next-yak": "workspace:*",
