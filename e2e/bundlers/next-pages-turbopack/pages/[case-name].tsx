@@ -1,4 +1,2 @@
-import App from "../cases/[case-name]/App.tsx";
-export default function Page() {
-  return <App />;
-}
+export { default } from "../cases/[case-name]/index.tsx";
+export * from "../cases/[case-name]/index.tsx";

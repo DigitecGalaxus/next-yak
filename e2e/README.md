@@ -13,8 +13,8 @@ e2e/
 ├── playwright-base.ts      # Shared Playwright config factory
 ├── cases/
 │   └── <name>/
-│       ├── App.tsx          # Component under test
-│       └── test.ts          # Playwright test
+│       ├── index.tsx          # Component under test
+│       └── index.test.ts          # Playwright test
 └── bundlers/
     └── <name>/
         ├── package.json        # Bundler dependencies (excluded from .tmp)
@@ -29,7 +29,7 @@ e2e/
 For each (bundler x case), `run.ts`:
 
 1. **Assembles** `bundlers/<bundler>/.tmp/<case>/` — copies case files first (they win), then fills in bundler template files that aren't already present
-2. **Spawns** `playwright test` with `BUNDLER` + `CASE` env vars — Playwright starts a dev server from `.tmp/<case>/` and runs `cases/<case>/test.ts`
+2. **Spawns** `playwright test` with `BUNDLER` + `CASE` env vars — Playwright starts a dev server from `.tmp/<case>/` and runs `cases/<case>/index.test.ts`
 
 ## Running
 
@@ -43,10 +43,10 @@ pnpm --filter next-yak-e2e test vite yak-file-mixin # just Vite with the "yak-fi
 
 ## Adding a test case
 
-Create `cases/<name>/App.tsx` and `cases/<name>/test.ts`:
+Create `cases/<name>/index.tsx` and `cases/<name>/index.test.ts`:
 
 ```tsx
-// cases/my-case/App.tsx
+// cases/my-case/index.tsx
 import { styled } from "next-yak";
 const Box = styled.div`background: blue;`;
 export default function App() {
@@ -55,7 +55,7 @@ export default function App() {
 ```
 
 ```ts
-// cases/my-case/test.ts
+// cases/my-case/index.test.ts
 import { test, expect } from "@playwright/test";
 import { withTestEnv } from "next-yak-e2e";
 

@@ -58,6 +58,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     displayNames: yakOptions.displayNames ?? !minify,
     suppressDeprecationWarnings:
       yakOptions.experiments?.suppressDeprecationWarnings ?? false,
+    reactRefreshReg: true,
   };
 
   const transpilation =

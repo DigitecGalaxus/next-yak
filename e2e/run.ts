@@ -12,7 +12,7 @@
  * Usage: node run.ts [bundler] [case]
  */
 
-import { spawn, type ChildProcess } from "node:child_process";
+import { execSync, spawn, type ChildProcess } from "node:child_process";
 import {
   readdir,
   rm,
@@ -29,28 +29,45 @@ import { styleText } from "node:util";
 const e2eRoot = import.meta.dirname;
 
 // ---------------------------------------------------------------------------
-// Process cleanup — ensure all spawned children are killed on exit / abort
+// Process cleanup — recursive tree kill for reliable shutdown
 // ---------------------------------------------------------------------------
 
 const activeChildren = new Set<ChildProcess>();
 
+/** Recursively find all descendant PIDs of a process. */
+function getDescendants(pid: number): number[] {
+  try {
+    const output = execSync(`pgrep -P ${pid}`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+    const children = output.split("\n").map(Number).filter(Boolean);
+    return [...children, ...children.flatMap(getDescendants)];
+  } catch {
+    return [];
+  }
+}
+
+/** SIGKILL a process and all its descendants (bottom-up). */
+function killTree(pid: number) {
+  if (process.platform === "win32") {
+    spawn("taskkill", ["/T", "/F", "/PID", String(pid)]);
+    return;
+  }
+  const pids = [...getDescendants(pid), pid];
+  for (const p of pids) {
+    try {
+      process.kill(p, "SIGKILL");
+    } catch {
+      // already exited
+    }
+  }
+}
+
 /** Kill all tracked child processes (and their process trees). */
 function killAllChildren() {
   for (const child of activeChildren) {
-    if (!child.pid) continue;
-    try {
-      if (process.platform === "win32") {
-        spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
-      } else {
-        process.kill(-child.pid, "SIGTERM");
-      }
-    } catch {
-      try {
-        child.kill("SIGTERM");
-      } catch {
-        // already exited
-      }
-    }
+    if (child.pid) killTree(child.pid);
   }
   activeChildren.clear();
 }
@@ -147,6 +164,7 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
         env: { ...process.env, BUNDLER: bundler, CASE: caseName },
         stdio: "pipe",
         shell: true,
+        detached: true,
       },
     );
 
@@ -201,13 +219,13 @@ async function assembleBundler(
   await expandBundlerTemplates(bundler, tmpDir, caseNames);
 }
 
-/** Copy a case's source files (except test.ts) into the destination directory. */
+/** Copy a case's source files (except index.test.ts) into the destination directory. */
 async function copyCase(caseName: string, caseDir: string): Promise<void> {
   const srcDir = join(e2eRoot, "cases", caseName);
   const entries = await readdir(srcDir, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (entry.name === "test.ts") continue; // tests run from cases/, not .tmp/
+    if (entry.name === "index.test.ts") continue; // tests run from cases/, not .tmp/
     await cp(join(srcDir, entry.name), join(caseDir, entry.name), {
       recursive: true,
     });
@@ -275,6 +293,73 @@ async function walkAndExpand(
   }
 }
 
+/**
+ * Parse named exports from a TypeScript/JavaScript file.
+ * Handles: export const/let/var/function/class, export { ... }, export type/interface.
+ * Does NOT return "default" (handled separately via `export { default }`).
+ */
+function parseNamedExports(source: string): string[] {
+  const names = new Set<string>();
+  // export const/let/var/function/class <name>
+  for (const m of source.matchAll(
+    /\bexport\s+(?:const|let|var|function|class)\s+(\w+)/g,
+  )) {
+    names.add(m[1]);
+  }
+  // export { foo, bar as baz }  (from '...' or local)
+  for (const m of source.matchAll(/\bexport\s*\{([^}]+)\}/g)) {
+    for (const spec of m[1].split(",")) {
+      const trimmed = spec.trim();
+      if (!trimmed) continue;
+      // "foo as bar" → export name is "bar"; "foo" → export name is "foo"
+      const parts = trimmed.split(/\s+as\s+/);
+      const exported = (parts[1] ?? parts[0]).trim();
+      if (exported !== "default") names.add(exported);
+    }
+  }
+  // export type/interface <name>
+  for (const m of source.matchAll(/\bexport\s+(?:type|interface)\s+(\w+)/g)) {
+    names.add(m[1]);
+  }
+  return [...names];
+}
+
+/**
+ * Expand `export * from ".../[case-name]/index.tsx"` lines by resolving the
+ * actual named exports from the case's index.tsx file. This avoids Next.js
+ * errors about `export *` in page files while preserving the same exports.
+ */
+async function expandStarExports(
+  content: string,
+  caseName: string,
+): Promise<string> {
+  const starRe =
+    /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
+  let result = content;
+  for (const match of content.matchAll(starRe)) {
+    const specifier = match[1].replaceAll(CASE_NAME_PLACEHOLDER, caseName);
+    // All import specifiers reference paths relative to .tmp/, which mirrors
+    // the case layout under e2eRoot. Strip leading ../ segments and resolve
+    // from e2eRoot to find the original source file.
+    const cleaned = specifier.replace(/^(\.\.\/)+/, "");
+    const resolvedPath = join(e2eRoot, cleaned);
+    let replacement: string;
+    try {
+      const source = await readFile(resolvedPath, "utf-8");
+      const names = parseNamedExports(source);
+      if (names.length > 0) {
+        replacement = `export { ${names.join(", ")} } from "${specifier}";`;
+      } else {
+        replacement = `// no named exports in ${caseName}/index.tsx`;
+      }
+    } catch {
+      replacement = `// could not resolve exports for ${caseName}`;
+    }
+    result = result.replace(match[0], replacement);
+  }
+  return result;
+}
+
 /** Copy a file, replacing [case-name] in text file contents. */
 async function copyWithExpansion(
   srcPath: string,
@@ -283,11 +368,10 @@ async function copyWithExpansion(
 ): Promise<void> {
   const ext = srcPath.substring(srcPath.lastIndexOf("."));
   if (TEXT_EXTENSIONS.has(ext)) {
-    const content = await readFile(srcPath, "utf-8");
-    await writeFile(
-      destPath,
-      content.replaceAll(CASE_NAME_PLACEHOLDER, caseName),
-    );
+    let content = await readFile(srcPath, "utf-8");
+    content = await expandStarExports(content, caseName);
+    content = content.replaceAll(CASE_NAME_PLACEHOLDER, caseName);
+    await writeFile(destPath, content);
   } else {
     await cp(srcPath, destPath);
   }
@@ -382,15 +466,7 @@ function killServer(child: ChildProcess): Promise<void> {
       return;
     }
 
-    if (process.platform === "win32") {
-      spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
-    } else {
-      try {
-        process.kill(-child.pid, "SIGTERM");
-      } catch {
-        child.kill("SIGTERM");
-      }
-    }
+    killTree(child.pid);
   });
 }
 

@@ -26,7 +26,7 @@ export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
 
   return defineConfig({
     testDir: resolve(e2eRoot, "cases", caseName),
-    testMatch: "test.ts",
+    testMatch: "index.test.ts",
     workers: 1,
 
     projects: [
