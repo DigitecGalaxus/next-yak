@@ -18,37 +18,23 @@ import { styleText } from "node:util";
 
 const activeChildren = new Set<ChildProcess>();
 
-function killAllChildren() {
-  for (const child of activeChildren) {
-    // Kill the entire process group (negative PID) so dev servers
-    // spawned by Playwright are also terminated
-    if (child.pid) {
-      try {
-        process.kill(-child.pid, "SIGTERM");
-      } catch {
-        // Process group may already be gone — try the child directly
-        try {
-          child.kill("SIGTERM");
-        } catch {
-          // already exited
-        }
-      }
-    }
-  }
-  activeChildren.clear();
-}
-
-// Handle Ctrl+C and termination signals
+// On Ctrl+C the terminal sends SIGINT to the entire foreground process group,
+// so children (including dev servers started by Playwright) receive it too.
+// This handler force-kills any stragglers that don't exit promptly.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
     console.log(styleText("yellow", `\nReceived ${signal}, shutting down…`));
-    killAllChildren();
+    for (const child of activeChildren) {
+      try {
+        child.kill("SIGKILL");
+      } catch {
+        // already exited
+      }
+    }
+    activeChildren.clear();
     process.exit(128 + (signal === "SIGINT" ? 2 : 15));
   });
 }
-
-// Safety net: clean up on normal exit too
-process.on("exit", killAllChildren);
 
 const e2eRoot = import.meta.dirname;
 
@@ -112,7 +98,6 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
         env: { ...process.env, BUNDLER: bundler, CASE: caseName },
         stdio: "pipe",
         shell: true,
-        detached: true, // Create a process group so we can kill the entire tree
       },
     );
 
