@@ -473,7 +473,9 @@ export function runScript(
       if (code === 0) {
         res();
       } else {
-        reject(new Error(`${script} failed for ${bundler} (exit code ${code})`));
+        reject(
+          new Error(`${script} failed for ${bundler} (exit code ${code})`),
+        );
       }
     });
   });
@@ -557,10 +559,20 @@ export async function runBundlerCases(
   const packageName = await readPackageName(bundler);
 
   if (options.buildScript) {
-    await runScript(bundler, packageName, options.buildScript, discoveredBundlers);
+    await runScript(
+      bundler,
+      packageName,
+      options.buildScript,
+      discoveredBundlers,
+    );
   }
 
-  const server = startServer(bundler, packageName, options.script, discoveredBundlers);
+  const server = startServer(
+    bundler,
+    packageName,
+    options.script,
+    discoveredBundlers,
+  );
 
   try {
     await waitForPort(port);

@@ -23,7 +23,12 @@ if (isCI) {
   results = [];
   for (const bundler of bundlers) {
     results.push(
-      ...(await runBundlerCases(bundler, cases, { script: "dev" }, discoveredBundlers)),
+      ...(await runBundlerCases(
+        bundler,
+        cases,
+        { script: "dev" },
+        discoveredBundlers,
+      )),
     );
   }
 } else {
