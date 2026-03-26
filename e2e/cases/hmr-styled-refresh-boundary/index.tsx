@@ -3,11 +3,11 @@ import { DividerForPage, PAGE_CONFIG } from "./pageUtils.ts";
 
 /**
  * App imports a styled component through a chain of non-boundary modules:
- *   Divider.tsx (.name="yak") → barrel.ts (namespace export) → pageUtils.ts (mixed exports)
+ *   Divider.tsx → barrel.ts (namespace export) → pageUtils.ts (mixed exports)
  *
- * This function also exports getPageConfig (non-component), making this
- * module NOT a refresh boundary either. The HMR update propagates all the
- * way to the entry point → abort → full reload.
+ * Divider.tsx is a refresh boundary thanks to yak's $RefreshReg$ injection.
+ * This module exports getPageConfig (non-component), making it NOT a
+ * refresh boundary — so it relies on Divider.tsx accepting the update.
  */
 export default function App() {
   const [count, setCount] = useState(0);

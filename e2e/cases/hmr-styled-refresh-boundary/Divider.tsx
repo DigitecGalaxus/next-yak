@@ -1,13 +1,10 @@
 /**
- * Styled-only file — the root cause of the HMR full reload.
+ * Styled-only file — exercises HMR refresh boundary detection.
  *
- * styled() returns a function with .name = "yak" (lowercase).
- * React's isLikelyComponentType checks .name for uppercase → returns false.
- * Without $RefreshReg$, this module is NOT a React Fast Refresh boundary.
- *
- * When this file is edited, the HMR update propagates up through every
- * parent module. If no parent is a boundary, it reaches the webpack entry
- * point and aborts → full page reload.
+ * The yak SWC plugin injects $RefreshReg$ for exported styled components
+ * so that this module is recognized as a React Fast Refresh boundary.
+ * Without that, the HMR update would propagate up through every parent
+ * module until it reaches the entry point → full page reload.
  */
 import { styled } from "next-yak";
 
