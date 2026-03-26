@@ -1,5 +1,16 @@
 # next-yak
 
+## 9.4.1
+
+### Patch Changes
+
+- 2da1696: Fix multi env evaluator lifecycle in shared environment builds
+- c1b8ad6: Drop @babel/traverse in favor of @babel/parser (smaller footprint and faster parsing)
+- 15f9faf: Update all dependencies
+- 680d9aa: Fix vite build hang with multi-environment builds
+- 2c58837: Fix React Fast Refresh full page reloads for styled-only files by renaming internal component function from `yak` to `Yak`
+  - yak-swc@9.4.1
+
 ## 9.4.0
 
 ### Minor Changes

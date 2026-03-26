@@ -1,5 +1,16 @@
 # storybook-addon-yak
 
+## 9.4.1
+
+### Patch Changes
+
+- Updated dependencies [2da1696]
+- Updated dependencies [c1b8ad6]
+- Updated dependencies [15f9faf]
+- Updated dependencies [680d9aa]
+- Updated dependencies [2c58837]
+  - next-yak@9.4.1
+
 ## 9.4.0
 
 ### Patch Changes
