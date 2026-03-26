@@ -254,10 +254,7 @@ async function walkAndExpand(
     ) {
       // Template file — create one copy per case
       for (const caseName of caseNames) {
-        const expandedRel = relPath.replaceAll(
-          CASE_NAME_PLACEHOLDER,
-          caseName,
-        );
+        const expandedRel = relPath.replaceAll(CASE_NAME_PLACEHOLDER, caseName);
         const destPath = join(tmpDir, expandedRel);
         await mkdir(join(destPath, ".."), { recursive: true });
         await copyWithExpansion(srcPath, destPath, caseName);
@@ -302,12 +299,7 @@ async function copyWithExpansion(
 
 /** Read the port from the bundler's playwright.config.ts. */
 async function readPort(bundler: string): Promise<number> {
-  const configPath = join(
-    e2eRoot,
-    "bundlers",
-    bundler,
-    "playwright.config.ts",
-  );
+  const configPath = join(e2eRoot, "bundlers", bundler, "playwright.config.ts");
   const configModule = await import(configPath);
   const config = configModule.default;
   // Playwright's defineConfig returns the object as-is
@@ -322,10 +314,7 @@ async function readPackageName(bundler: string): Promise<string> {
 }
 
 /** Start the bundler's dev server via its package.json "dev" script. */
-function startDevServer(
-  bundler: string,
-  packageName: string,
-): ChildProcess {
+function startDevServer(bundler: string, packageName: string): ChildProcess {
   const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
   const prefix = styleText(color, `[${bundler}/server]`);
 
