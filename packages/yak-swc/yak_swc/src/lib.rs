@@ -752,15 +752,9 @@ where
                     DUMMY_SP,
                     Default::default(),
                   ))),
-                  prop: MemberProp::Ident(IdentName::new(
-                    "env".into(),
-                    DUMMY_SP,
-                  )),
+                  prop: MemberProp::Ident(IdentName::new("env".into(), DUMMY_SP)),
                 })),
-                prop: MemberProp::Ident(IdentName::new(
-                  "NODE_ENV".into(),
-                  DUMMY_SP,
-                )),
+                prop: MemberProp::Ident(IdentName::new("NODE_ENV".into(), DUMMY_SP)),
               })),
               right: Box::new(Expr::Lit(Lit::Str(Str {
                 span: DUMMY_SP,
