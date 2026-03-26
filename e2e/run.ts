@@ -28,6 +28,45 @@ import { styleText } from "node:util";
 
 const e2eRoot = import.meta.dirname;
 
+// ---------------------------------------------------------------------------
+// Process cleanup — ensure all spawned children are killed on exit / abort
+// ---------------------------------------------------------------------------
+
+const activeChildren = new Set<ChildProcess>();
+
+/** Kill all tracked child processes (and their process trees). */
+function killAllChildren() {
+  for (const child of activeChildren) {
+    if (!child.pid) continue;
+    try {
+      if (process.platform === "win32") {
+        spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
+      } else {
+        process.kill(-child.pid, "SIGTERM");
+      }
+    } catch {
+      try {
+        child.kill("SIGTERM");
+      } catch {
+        // already exited
+      }
+    }
+  }
+  activeChildren.clear();
+}
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    console.log(styleText("yellow", `\nReceived ${signal}, shutting down…`));
+    killAllChildren();
+    process.exit(128 + (signal === "SIGINT" ? 2 : 15));
+  });
+}
+
+process.on("exit", killAllChildren);
+
+// ---------------------------------------------------------------------------
+
 const COLORS = ["cyan", "magenta", "yellow", "blue", "green", "red"] as const;
 
 /** Bundler-dir entries that should never be copied into .tmp */
@@ -111,6 +150,8 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
       },
     );
 
+    activeChildren.add(child);
+
     child.stdout.on("data", (data: Buffer) => {
       for (const line of data.toString().split("\n")) {
         if (line) process.stdout.write(`${prefix} ${line}\n`);
@@ -122,7 +163,10 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
       }
     });
 
-    child.on("close", (code) => resolve(code === 0));
+    child.on("close", (code) => {
+      activeChildren.delete(child);
+      resolve(code === 0);
+    });
   });
 }
 
@@ -307,6 +351,9 @@ function startDevServer(
     throw new Error(`Failed to start dev server for ${bundler}`);
   }
 
+  activeChildren.add(child);
+  child.on("close", () => activeChildren.delete(child));
+
   return child;
 }
 
@@ -332,7 +379,7 @@ function waitForPort(port: number, timeoutMs = 120_000): Promise<void> {
   });
 }
 
-/** Kill the server's entire process group and wait for it to exit. */
+/** Kill a single server process tree and wait for it to exit. */
 function killServer(child: ChildProcess): Promise<void> {
   return new Promise((resolve) => {
     if (child.killed || child.exitCode !== null) {
@@ -340,22 +387,21 @@ function killServer(child: ChildProcess): Promise<void> {
       return;
     }
     child.on("close", () => resolve());
-    // Kill the entire process group (negative pid) since we used detached: true
-    try {
-      process.kill(-child.pid!, "SIGTERM");
-    } catch {
-      child.kill("SIGTERM");
+
+    if (!child.pid) {
+      resolve();
+      return;
     }
-    // Force kill after 5s
-    setTimeout(() => {
-      if (!child.killed && child.exitCode === null) {
-        try {
-          process.kill(-child.pid!, "SIGKILL");
-        } catch {
-          child.kill("SIGKILL");
-        }
+
+    if (process.platform === "win32") {
+      spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
+    } else {
+      try {
+        process.kill(-child.pid, "SIGTERM");
+      } catch {
+        child.kill("SIGTERM");
       }
-    }, 5_000);
+    }
   });
 }
 
