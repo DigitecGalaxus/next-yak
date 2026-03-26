@@ -12,7 +12,7 @@
  * Usage: node run.ts [bundler] [case]
  */
 
-import { spawn, type ChildProcess } from "node:child_process";
+import { execSync, spawn, type ChildProcess } from "node:child_process";
 import {
   readdir,
   rm,
@@ -29,28 +29,45 @@ import { styleText } from "node:util";
 const e2eRoot = import.meta.dirname;
 
 // ---------------------------------------------------------------------------
-// Process cleanup — ensure all spawned children are killed on exit / abort
+// Process cleanup — recursive tree kill for reliable shutdown
 // ---------------------------------------------------------------------------
 
 const activeChildren = new Set<ChildProcess>();
 
+/** Recursively find all descendant PIDs of a process. */
+function getDescendants(pid: number): number[] {
+  try {
+    const output = execSync(`pgrep -P ${pid}`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+    const children = output.split("\n").map(Number).filter(Boolean);
+    return [...children, ...children.flatMap(getDescendants)];
+  } catch {
+    return [];
+  }
+}
+
+/** SIGKILL a process and all its descendants (bottom-up). */
+function killTree(pid: number) {
+  if (process.platform === "win32") {
+    spawn("taskkill", ["/T", "/F", "/PID", String(pid)]);
+    return;
+  }
+  const pids = [...getDescendants(pid), pid];
+  for (const p of pids) {
+    try {
+      process.kill(p, "SIGKILL");
+    } catch {
+      // already exited
+    }
+  }
+}
+
 /** Kill all tracked child processes (and their process trees). */
 function killAllChildren() {
   for (const child of activeChildren) {
-    if (!child.pid) continue;
-    try {
-      if (process.platform === "win32") {
-        spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
-      } else {
-        process.kill(-child.pid, "SIGTERM");
-      }
-    } catch {
-      try {
-        child.kill("SIGTERM");
-      } catch {
-        // already exited
-      }
-    }
+    if (child.pid) killTree(child.pid);
   }
   activeChildren.clear();
 }
@@ -382,15 +399,7 @@ function killServer(child: ChildProcess): Promise<void> {
       return;
     }
 
-    if (process.platform === "win32") {
-      spawn("taskkill", ["/T", "/F", "/PID", String(child.pid)]);
-    } else {
-      try {
-        process.kill(-child.pid, "SIGTERM");
-      } catch {
-        child.kill("SIGTERM");
-      }
-    }
+    killTree(child.pid);
   });
 }
 
