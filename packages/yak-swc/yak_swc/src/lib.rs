@@ -701,8 +701,9 @@ where
           let component_name = id.0.clone();
 
           // var _yak_c0 = ComponentName;
-          module.body.push(ModuleItem::Stmt(Stmt::Decl(Decl::Var(Box::new(
-            VarDecl {
+          module
+            .body
+            .push(ModuleItem::Stmt(Stmt::Decl(Decl::Var(Box::new(VarDecl {
               span: DUMMY_SP,
               ctxt: SyntaxContext::empty(),
               kind: VarDeclKind::Var,
@@ -726,8 +727,7 @@ where
                 }))),
                 definite: false,
               }],
-            },
-          )))));
+            })))));
 
           // $RefreshReg$(_yak_c0, "ComponentName");
           module.body.push(ModuleItem::Stmt(Stmt::Expr(ExprStmt {
