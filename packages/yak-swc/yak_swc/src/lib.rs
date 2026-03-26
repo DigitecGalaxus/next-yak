@@ -679,7 +679,6 @@ where
           );
         }
       }
-
     }
   }
 
@@ -909,15 +908,13 @@ where
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      "styled" if is_top_level => {
-        Box::new(TransformStyled::new(
-          &mut self.naming_convention,
-          current_variable_id.clone(),
-          self.display_names,
-          self.current_exported || is_default_exported,
-          self.import_mode.transpilation_mode(),
-        ))
-      }
+      "styled" if is_top_level => Box::new(TransformStyled::new(
+        &mut self.naming_convention,
+        current_variable_id.clone(),
+        self.display_names,
+        self.current_exported || is_default_exported,
+        self.import_mode.transpilation_mode(),
+      )),
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self

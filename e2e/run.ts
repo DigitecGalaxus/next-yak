@@ -41,9 +41,7 @@ function killAllChildren() {
 // Handle Ctrl+C and termination signals
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
-    console.log(
-      styleText("yellow", `\nReceived ${signal}, shutting down…`),
-    );
+    console.log(styleText("yellow", `\nReceived ${signal}, shutting down…`));
     killAllChildren();
     process.exit(128 + (signal === "SIGINT" ? 2 : 15));
   });
