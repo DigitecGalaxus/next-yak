@@ -2,6 +2,11 @@
   "name": "e2e-next-pages-rspack",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && next dev -p 3006",
+    "build": "cd .tmp && next build",
+    "start": "cd .tmp && next start -p 3006"
+  },
   "dependencies": {
     "next": "catalog:dev",
     "next-rspack": "catalog:dev",

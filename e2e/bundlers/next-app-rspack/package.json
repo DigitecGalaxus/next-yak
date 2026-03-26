@@ -2,6 +2,11 @@
   "name": "e2e-next-app-rspack",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && next dev -p 3005",
+    "build": "cd .tmp && next build",
+    "start": "cd .tmp && next start -p 3005"
+  },
   "dependencies": {
     "next": "catalog:dev",
     "next-rspack": "catalog:dev",
