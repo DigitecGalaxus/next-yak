@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && next dev --webpack -p 3001"
+    "dev": "cd .tmp && next dev --webpack -p 3001",
+    "build": "cd .tmp && next build",
+    "start": "cd .tmp && next start -p 3001"
   },
   "dependencies": {
     "next": "catalog:dev",
