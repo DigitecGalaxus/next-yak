@@ -156,6 +156,12 @@ where
   /// Flag to track if we are inside a runtime expression (arrow function body)
   /// Used to suppress errors for non-static member expressions
   inside_runtime_expression: bool,
+  /// Collects styled component variable names for React Fast Refresh registration.
+  /// When `display_names` is true (dev mode), each styled component needs to be
+  /// registered with `$RefreshReg$` so that React Fast Refresh recognizes it as a
+  /// component. Without this, styled-only files in the _app module graph cause
+  /// full page reloads instead of hot CSS updates.
+  refresh_reg_components: Vec<Id>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -191,6 +197,7 @@ where
       has_user_global: false,
       suppress_deprecation_warnings,
       inside_runtime_expression: false,
+      refresh_reg_components: Vec::new(),
     }
   }
 
@@ -679,6 +686,79 @@ where
           );
         }
       }
+
+      // Inject $RefreshReg$ calls for styled components so React Fast Refresh
+      // recognizes them as React components during HMR. Without this, files
+      // that export only styled() components trigger full page reloads when
+      // edited, because Fast Refresh treats them as "non-component modules".
+      //
+      // Emits at module scope (after all declarations):
+      //   var _yak_c0 = ComponentName;
+      //   $RefreshReg$(_yak_c0, "ComponentName");
+      if !self.refresh_reg_components.is_empty() {
+        for (i, id) in self.refresh_reg_components.iter().enumerate() {
+          let temp_var_name: Wtf8Atom = format!("_yak_c{i}").into();
+          let component_name = id.0.clone();
+
+          // var _yak_c0 = ComponentName;
+          module.body.push(ModuleItem::Stmt(Stmt::Decl(Decl::Var(Box::new(
+            VarDecl {
+              span: DUMMY_SP,
+              ctxt: SyntaxContext::empty(),
+              kind: VarDeclKind::Var,
+              declare: false,
+              decls: vec![VarDeclarator {
+                span: DUMMY_SP,
+                name: Pat::Ident(BindingIdent {
+                  id: Ident {
+                    span: DUMMY_SP,
+                    ctxt: SyntaxContext::empty(),
+                    sym: temp_var_name.clone(),
+                    optional: false,
+                  },
+                  type_ann: None,
+                }),
+                init: Some(Box::new(Expr::Ident(Ident {
+                  span: DUMMY_SP,
+                  ctxt: id.1,
+                  sym: component_name.clone(),
+                  optional: false,
+                }))),
+                definite: false,
+              }],
+            },
+          )))));
+
+          // $RefreshReg$(_yak_c0, "ComponentName");
+          module.body.push(ModuleItem::Stmt(Stmt::Expr(ExprStmt {
+            span: DUMMY_SP,
+            expr: Box::new(Expr::Call(CallExpr {
+              span: DUMMY_SP,
+              ctxt: SyntaxContext::empty(),
+              callee: Callee::Expr(Box::new(Expr::Ident(Ident {
+                span: DUMMY_SP,
+                ctxt: SyntaxContext::empty(),
+                sym: "$RefreshReg$".into(),
+                optional: false,
+              }))),
+              args: vec![
+                ExprOrSpread::from(Box::new(Expr::Ident(Ident {
+                  span: DUMMY_SP,
+                  ctxt: SyntaxContext::empty(),
+                  sym: temp_var_name,
+                  optional: false,
+                }))),
+                ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(Str {
+                  span: DUMMY_SP,
+                  value: component_name,
+                  raw: None,
+                })))),
+              ],
+              type_args: None,
+            })),
+          })));
+        }
+      }
     }
   }
 
@@ -908,13 +988,23 @@ where
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      "styled" if is_top_level => Box::new(TransformStyled::new(
-        &mut self.naming_convention,
-        current_variable_id.clone(),
-        self.display_names,
-        self.current_exported || is_default_exported,
-        self.import_mode.transpilation_mode(),
-      )),
+      "styled" if is_top_level => {
+        // Track styled components for React Fast Refresh registration.
+        // $RefreshReg$ is needed so Fast Refresh recognizes styled components
+        // as React components, preventing full reloads during HMR.
+        if self.display_names {
+          self
+            .refresh_reg_components
+            .push(current_variable_id.id.clone());
+        }
+        Box::new(TransformStyled::new(
+          &mut self.naming_convention,
+          current_variable_id.clone(),
+          self.display_names,
+          self.current_exported || is_default_exported,
+          self.import_mode.transpilation_mode(),
+        ))
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
