@@ -133,7 +133,11 @@ export default defineConfig([
     outDir: "dist/loaders",
   },
   {
-    entryPoints: ["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"],
+    entryPoints: [
+      "loaders/webpack-loader.ts",
+      "loaders/turbo-loader.ts",
+      "loaders/refresh-loader.ts",
+    ],
     format: ["cjs"],
     minify: false,
     sourcemap: true,
