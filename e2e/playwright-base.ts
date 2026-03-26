@@ -1,9 +1,9 @@
 /**
  * Shared Playwright config factory for bundler-specific configs.
  *
- * Each bundler's playwright.config.ts calls this with its dev server
- * details. The CASE env var (set by e2eEnvironment.ts) determines which case to test.
- * The dev server is managed by e2eEnvironment.ts — Playwright reuses it.
+ * Supports two modes:
+ * - Batch mode (CASES env var, comma-separated): one project per case, parallel workers
+ * - Single mode (CASE env var): one project, single worker (used for HMR tests)
  */
 
 import { defineConfig } from "@playwright/test";
@@ -13,33 +13,39 @@ interface BundlerPlaywrightConfig {
   name: string;
   /** URL pattern with [case-name] placeholder (e.g. "/[case-name]" or "/[case-name].html") */
   urlPattern: string;
-  /** Port the dev server listens on (managed by e2eEnvironment.ts) */
+  /** Port the server listens on (managed by e2eEnvironment.ts) */
   port: number;
 }
 
 export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
-  // CASE may be unset when e2eEnvironment.ts imports this config just to read the port
-  const caseName = process.env.CASE ?? "__placeholder__";
-
   const e2eRoot = import.meta.dirname;
-  const url = config.urlPattern.replaceAll("[case-name]", caseName);
 
-  return defineConfig({
+  // CASES (comma-separated) for batch mode, CASE for single-case (HMR) mode
+  const caseList = process.env.CASES
+    ? process.env.CASES.split(",")
+    : [process.env.CASE ?? "__placeholder__"];
+
+  const isBatch = caseList.length > 1;
+
+  const projects = caseList.map((caseName) => ({
+    name: isBatch ? `${config.name}/${caseName}` : config.name,
     testDir: resolve(e2eRoot, "cases", caseName),
     testMatch: "index.test.ts",
-    workers: 1,
+    metadata: {
+      url: config.urlPattern.replaceAll("[case-name]", caseName),
+      urlPattern: config.urlPattern,
+      bundlerName: config.name,
+    },
+    use: { baseURL: `http://localhost:${config.port}` },
+  }));
 
-    projects: [
-      {
-        name: config.name,
-        use: { baseURL: `http://localhost:${config.port}` },
-        metadata: { url, urlPattern: config.urlPattern },
-      },
-    ],
+  return defineConfig({
+    workers: isBatch ? undefined : 1,
+    projects,
 
     webServer: {
       // Playwright requires a webServer.command, but e2eEnvironment.ts manages the actual
-      // dev server externally. This no-op command + reuseExistingServer tells
+      // server externally. This no-op command + reuseExistingServer tells
       // Playwright to verify the port is already open instead of starting one.
       command: "echo 'server managed by e2eEnvironment.ts'",
       port: config.port,

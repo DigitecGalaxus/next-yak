@@ -532,6 +532,53 @@ export function runPlaywright(
   });
 }
 
+/**
+ * Spawn a single Playwright process that runs all given cases in parallel
+ * (one Playwright project per case, multiple workers).
+ */
+export function runPlaywrightBatch(
+  bundler: string,
+  caseNames: string[],
+  discoveredBundlers: string[],
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
+    const prefix = styleText(color, `[${bundler}]`);
+    const child = spawn(
+      `pnpm exec playwright test --config bundlers/${bundler}/playwright.config.ts`,
+      {
+        cwd: e2eRoot,
+        env: {
+          ...process.env,
+          BUNDLER: bundler,
+          CASES: caseNames.join(","),
+        },
+        stdio: "pipe",
+        shell: true,
+        detached: true,
+      },
+    );
+
+    activeChildren.add(child);
+
+    child.stdout.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stdout.write(`${prefix} ${line}\n`);
+      }
+    });
+    child.stderr.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stderr.write(`${prefix} ${line}\n`);
+      }
+    });
+
+    child.on("close", (code) => {
+      activeChildren.delete(child);
+      resolve(code === 0);
+    });
+  });
+}
+
 // ---------------------------------------------------------------------------
 // High-level runner
 // ---------------------------------------------------------------------------
@@ -544,8 +591,12 @@ export interface RunOptions {
 }
 
 /**
- * Assemble all cases, optionally build, start a server, run Playwright per
- * case, then tear down the server.
+ * Assemble all cases, optionally build, start a server, run Playwright,
+ * then tear down the server.
+ *
+ * Non-HMR cases run in a single batched Playwright process with parallel
+ * workers. HMR cases run sequentially (one process each) since they modify
+ * files on the dev server.
  */
 export async function runBundlerCases(
   bundler: string,
@@ -578,7 +629,25 @@ export async function runBundlerCases(
     await waitForPort(port);
 
     const results: Result[] = [];
-    for (const caseName of cases) {
+    const hmrCases = cases.filter((c) => c.startsWith("hmr-"));
+    const nonHmrCases = cases.filter((c) => !c.startsWith("hmr-"));
+
+    // Batch all non-HMR cases in one Playwright process (parallel workers)
+    if (nonHmrCases.length > 0) {
+      const start = Date.now();
+      const passed = await runPlaywrightBatch(
+        bundler,
+        nonHmrCases,
+        discoveredBundlers,
+      );
+      const durationMs = Date.now() - start;
+      for (const caseName of nonHmrCases) {
+        results.push({ bundler, caseName, passed, durationMs });
+      }
+    }
+
+    // HMR cases run sequentially — they modify files on the dev server
+    for (const caseName of hmrCases) {
       const start = Date.now();
       const passed = await runPlaywright(bundler, caseName, discoveredBundlers);
       results.push({
@@ -588,6 +657,7 @@ export async function runBundlerCases(
         durationMs: Date.now() - start,
       });
     }
+
     return results;
   } finally {
     await killServer(server);
