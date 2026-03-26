@@ -1,15 +1,8 @@
 /**
- * E2E test orchestrator.
+ * Shared e2e test infrastructure.
  *
- * For each bundler, assembles a self-contained app in
- * bundlers/<bundler>/.tmp/ with ALL cases mounted as routes,
- * starts ONE dev server, and runs Playwright for each case.
- *
- * Template files in bundler directories use [case-name] as a placeholder
- * in both file paths and file contents. During assembly, these are expanded
- * once per test case (e.g. app/[case-name]/page.tsx → app/styled-basic/page.tsx).
- *
- * Usage: node run.ts [bundler] [case]
+ * Provides assembly, server lifecycle, Playwright runner, and summary
+ * reporting used by both runDevTests.ts and runBuildTests.ts.
  */
 
 import { execSync, spawn, type ChildProcess } from "node:child_process";
@@ -26,7 +19,7 @@ import { createConnection } from "node:net";
 import { join, resolve, relative } from "node:path";
 import { styleText } from "node:util";
 
-const e2eRoot = import.meta.dirname;
+export const e2eRoot = import.meta.dirname;
 
 // ---------------------------------------------------------------------------
 // Process cleanup — recursive tree kill for reliable shutdown
@@ -83,6 +76,8 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
 process.on("exit", killAllChildren);
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 const COLORS = ["cyan", "magenta", "yellow", "blue", "green", "red"] as const;
 
@@ -116,76 +111,43 @@ const CASE_NAME_PLACEHOLDER = "[case-name]";
 // ---------------------------------------------------------------------------
 
 /** Find all bundler dirs that have a playwright.config.ts */
-const bundlerEntries = await readdir(join(e2eRoot, "bundlers"), {
-  withFileTypes: true,
-});
-const discoveredBundlers: string[] = [];
-for (const entry of bundlerEntries) {
-  if (!entry.isDirectory()) continue;
-  try {
-    await access(join(e2eRoot, "bundlers", entry.name, "playwright.config.ts"));
-    discoveredBundlers.push(entry.name);
-  } catch {
-    // No playwright config — not a bundler
+export async function discoverBundlers(): Promise<string[]> {
+  const bundlerEntries = await readdir(join(e2eRoot, "bundlers"), {
+    withFileTypes: true,
+  });
+  const discovered: string[] = [];
+  for (const entry of bundlerEntries) {
+    if (!entry.isDirectory()) continue;
+    try {
+      await access(
+        join(e2eRoot, "bundlers", entry.name, "playwright.config.ts"),
+      );
+      discovered.push(entry.name);
+    } catch {
+      // No playwright config — not a bundler
+    }
   }
+  return discovered;
 }
 
 /** Find all test case directories */
-const caseEntries = await readdir(join(e2eRoot, "cases"), {
-  withFileTypes: true,
-});
-const allCases = caseEntries
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name);
-
-// ---------------------------------------------------------------------------
-// CLI args
-// ---------------------------------------------------------------------------
-
-const bundlers = process.argv[2] ? [process.argv[2]] : discoveredBundlers;
-const cases = process.argv[3] ? [process.argv[3]] : allCases;
-
-interface Result {
-  bundler: string;
-  caseName: string;
-  passed: boolean;
-  durationMs: number;
+export async function discoverCases(): Promise<string[]> {
+  const caseEntries = await readdir(join(e2eRoot, "cases"), {
+    withFileTypes: true,
+  });
+  return caseEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
 }
 
-/** Spawn Playwright for a single case against an already-running server. */
-function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
-    const prefix = styleText(color, `[${bundler}/${caseName}]`);
-    const child = spawn(
-      `pnpm exec playwright test --config bundlers/${bundler}/playwright.config.ts`,
-      {
-        cwd: e2eRoot,
-        env: { ...process.env, BUNDLER: bundler, CASE: caseName },
-        stdio: "pipe",
-        shell: true,
-        detached: true,
-      },
-    );
-
-    activeChildren.add(child);
-
-    child.stdout.on("data", (data: Buffer) => {
-      for (const line of data.toString().split("\n")) {
-        if (line) process.stdout.write(`${prefix} ${line}\n`);
-      }
-    });
-    child.stderr.on("data", (data: Buffer) => {
-      for (const line of data.toString().split("\n")) {
-        if (line) process.stderr.write(`${prefix} ${line}\n`);
-      }
-    });
-
-    child.on("close", (code) => {
-      activeChildren.delete(child);
-      resolve(code === 0);
-    });
-  });
+/** Parse CLI args for [bundler] [case] filtering. */
+export function parseCLIArgs(
+  discoveredBundlers: string[],
+  allCases: string[],
+): { bundlers: string[]; cases: string[] } {
+  const bundlers = process.argv[2] ? [process.argv[2]] : discoveredBundlers;
+  const cases = process.argv[3] ? [process.argv[3]] : allCases;
+  return { bundlers, cases };
 }
 
 // ---------------------------------------------------------------------------
@@ -200,7 +162,7 @@ function runPlaywright(bundler: string, caseName: string): Promise<boolean> {
  *    are duplicated per case with the placeholder replaced in both path and
  *    content; other files are copied once as shared files.
  */
-async function assembleBundler(
+export async function assembleBundler(
   bundler: string,
   caseNames: string[],
 ): Promise<void> {
@@ -378,11 +340,11 @@ async function copyWithExpansion(
 }
 
 // ---------------------------------------------------------------------------
-// Dev server lifecycle
+// Server lifecycle
 // ---------------------------------------------------------------------------
 
 /** Read the port from the bundler's playwright.config.ts. */
-async function readPort(bundler: string): Promise<number> {
+export async function readPort(bundler: string): Promise<number> {
   const configPath = join(e2eRoot, "bundlers", bundler, "playwright.config.ts");
   const configModule = await import(configPath);
   const config = configModule.default;
@@ -391,18 +353,23 @@ async function readPort(bundler: string): Promise<number> {
 }
 
 /** Read the package name from the bundler's package.json. */
-async function readPackageName(bundler: string): Promise<string> {
+export async function readPackageName(bundler: string): Promise<string> {
   const pkgPath = join(e2eRoot, "bundlers", bundler, "package.json");
   const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
   return pkg.name;
 }
 
-/** Start the bundler's dev server via its package.json "dev" script. */
-function startDevServer(bundler: string, packageName: string): ChildProcess {
+/** Start a bundler server via a package.json script (e.g. "dev" or "start"). */
+export function startServer(
+  bundler: string,
+  packageName: string,
+  script: string,
+  discoveredBundlers: string[],
+): ChildProcess {
   const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
   const prefix = styleText(color, `[${bundler}/server]`);
 
-  const child = spawn(`pnpm --filter=${packageName} dev`, {
+  const child = spawn(`pnpm --filter=${packageName} ${script}`, {
     cwd: resolve(e2eRoot, ".."),
     stdio: "pipe",
     shell: true,
@@ -421,7 +388,7 @@ function startDevServer(bundler: string, packageName: string): ChildProcess {
   });
 
   if (!child.pid) {
-    throw new Error(`Failed to start dev server for ${bundler}`);
+    throw new Error(`Failed to start server for ${bundler}`);
   }
 
   activeChildren.add(child);
@@ -431,7 +398,7 @@ function startDevServer(bundler: string, packageName: string): ChildProcess {
 }
 
 /** Wait for a TCP port to accept connections. */
-function waitForPort(port: number, timeoutMs = 120_000): Promise<void> {
+export function waitForPort(port: number, timeoutMs = 120_000): Promise<void> {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     function tryConnect() {
@@ -453,7 +420,7 @@ function waitForPort(port: number, timeoutMs = 120_000): Promise<void> {
 }
 
 /** Kill a single server process tree and wait for it to exit. */
-function killServer(child: ChildProcess): Promise<void> {
+export function killServer(child: ChildProcess): Promise<void> {
   return new Promise((resolve) => {
     if (child.killed || child.exitCode !== null) {
       resolve();
@@ -470,20 +437,142 @@ function killServer(child: ChildProcess): Promise<void> {
   });
 }
 
+/** Run a pnpm script (e.g. "build") and wait for it to complete. */
+export function runScript(
+  bundler: string,
+  packageName: string,
+  script: string,
+  discoveredBundlers: string[],
+): Promise<void> {
+  return new Promise((res, reject) => {
+    const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
+    const prefix = styleText(color, `[${bundler}/${script}]`);
+
+    const child = spawn(`pnpm --filter=${packageName} ${script}`, {
+      cwd: resolve(e2eRoot, ".."),
+      stdio: "pipe",
+      shell: true,
+      detached: true,
+    });
+
+    activeChildren.add(child);
+
+    child.stdout.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stdout.write(`${prefix} ${line}\n`);
+      }
+    });
+    child.stderr.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stderr.write(`${prefix} ${line}\n`);
+      }
+    });
+
+    child.on("close", (code) => {
+      activeChildren.delete(child);
+      if (code === 0) {
+        res();
+      } else {
+        reject(
+          new Error(`${script} failed for ${bundler} (exit code ${code})`),
+        );
+      }
+    });
+  });
+}
+
 // ---------------------------------------------------------------------------
-// Run all cases for a bundler against a single dev server
+// Playwright runner
 // ---------------------------------------------------------------------------
 
+export interface Result {
+  bundler: string;
+  caseName: string;
+  passed: boolean;
+  durationMs: number;
+}
+
+/** Spawn Playwright for a single case against an already-running server. */
+export function runPlaywright(
+  bundler: string,
+  caseName: string,
+  discoveredBundlers: string[],
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
+    const prefix = styleText(color, `[${bundler}/${caseName}]`);
+    const child = spawn(
+      `pnpm exec playwright test --config bundlers/${bundler}/playwright.config.ts`,
+      {
+        cwd: e2eRoot,
+        env: { ...process.env, BUNDLER: bundler, CASE: caseName },
+        stdio: "pipe",
+        shell: true,
+        detached: true,
+      },
+    );
+
+    activeChildren.add(child);
+
+    child.stdout.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stdout.write(`${prefix} ${line}\n`);
+      }
+    });
+    child.stderr.on("data", (data: Buffer) => {
+      for (const line of data.toString().split("\n")) {
+        if (line) process.stderr.write(`${prefix} ${line}\n`);
+      }
+    });
+
+    child.on("close", (code) => {
+      activeChildren.delete(child);
+      resolve(code === 0);
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// High-level runner
+// ---------------------------------------------------------------------------
+
+export interface RunOptions {
+  /** The script to start the server (e.g. "dev" or "start") */
+  script: string;
+  /** Optional build script to run before starting the server (e.g. "build") */
+  buildScript?: string;
+}
+
 /**
- * Assemble all cases, start one dev server, run Playwright per case, then
- * tear down the server.
+ * Assemble all cases, optionally build, start a server, run Playwright per
+ * case, then tear down the server.
  */
-async function runBundlerCases(bundler: string): Promise<Result[]> {
+export async function runBundlerCases(
+  bundler: string,
+  cases: string[],
+  options: RunOptions,
+  discoveredBundlers: string[],
+): Promise<Result[]> {
   await assembleBundler(bundler, cases);
 
   const port = await readPort(bundler);
   const packageName = await readPackageName(bundler);
-  const server = startDevServer(bundler, packageName);
+
+  if (options.buildScript) {
+    await runScript(
+      bundler,
+      packageName,
+      options.buildScript,
+      discoveredBundlers,
+    );
+  }
+
+  const server = startServer(
+    bundler,
+    packageName,
+    options.script,
+    discoveredBundlers,
+  );
 
   try {
     await waitForPort(port);
@@ -491,7 +580,7 @@ async function runBundlerCases(bundler: string): Promise<Result[]> {
     const results: Result[] = [];
     for (const caseName of cases) {
       const start = Date.now();
-      const passed = await runPlaywright(bundler, caseName);
+      const passed = await runPlaywright(bundler, caseName, discoveredBundlers);
       results.push({
         bundler,
         caseName,
@@ -503,30 +592,6 @@ async function runBundlerCases(bundler: string): Promise<Result[]> {
   } finally {
     await killServer(server);
   }
-}
-
-const isCI = !!process.env.CI;
-let results: Result[];
-if (isCI) {
-  // Run sequentially in CI to avoid resource contention
-  results = [];
-  for (const bundler of bundlers) {
-    results.push(...(await runBundlerCases(bundler)));
-  }
-} else {
-  results = (await Promise.all(bundlers.map(runBundlerCases))).flat();
-}
-
-// ---------------------------------------------------------------------------
-// Summary
-// ---------------------------------------------------------------------------
-
-printSummary(results);
-
-const failures = results.filter((result) => !result.passed).length;
-if (failures > 0) {
-  console.error(styleText("red", `\n${failures} test suite(s) failed.`));
-  process.exit(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -583,7 +648,7 @@ function table(title: string, headers: string[], rows: string[][]): string {
 }
 
 /** Print per-case and aggregate result tables. */
-function printSummary(results: Result[]): void {
+export function printSummary(results: Result[]): void {
   if (results.length === 0) return;
 
   console.log("\n");

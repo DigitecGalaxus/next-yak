@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && vite --port 5173"
+    "dev": "cd .tmp && vite --port 5173",
+    "build": "cd .tmp && vite build",
+    "start": "cd .tmp && vite preview --port 5173"
   },
   "dependencies": {
     "next-yak": "workspace:*",
