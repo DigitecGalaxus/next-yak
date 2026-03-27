@@ -3,7 +3,7 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when .yak.ts dependency changes",
-  withTestEnv("yak-file", async (fsTmp, page) => {
+  withTestEnv("hmr-yak-file", async (fsTmp, page) => {
     await page.goto(fsTmp.url);
 
     const box = page.getByTestId("box");

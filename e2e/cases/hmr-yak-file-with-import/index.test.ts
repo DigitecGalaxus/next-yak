@@ -3,7 +3,7 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when shared base dependency changes across multiple component files",
-  withTestEnv("yak-file-with-import", async (fsTmp, page) => {
+  withTestEnv("hmr-yak-file-with-import", async (fsTmp, page) => {
     await page.goto(fsTmp.url);
 
     const accordion = page.getByTestId("accordion");

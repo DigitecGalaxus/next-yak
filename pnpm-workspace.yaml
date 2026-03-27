@@ -8,83 +8,83 @@ packages:
 
 catalogs:
   core:
-    "@babel/parser": ^7.29.0
-    "@babel/traverse": ^7.29.0
-    "@swc/core": 1.15.11
+    "@babel/parser": ^7.29.2
+    "@swc/core": 1.15.21
     "@swc/counter": 0.1.3
   dev:
     "@babel/preset-typescript": 7.28.5
-    "@changesets/cli": 2.29.8
-    "@codspeed/benchmark.js-plugin": 5.1.0
-    "@eslint/eslintrc": 3.3.3
+    "@changesets/cli": 2.30.0
+    "@codspeed/benchmark.js-plugin": 5.2.0
+    "@eslint/eslintrc": 3.3.5
     "@monaco-editor/react": 4.7.0
-    "@next/eslint-plugin-next": 16.1.6
-    "@next/mdx": 16.1.6
+    "@next/eslint-plugin-next": 16.2.1
+    "@next/mdx": 16.2.1
+    "@playwright/test": 1.58.2
     "@radix-ui/react-switch": 1.2.6
-    "@shikijs/monaco": 3.22.0
-    "@shikijs/transformers": 3.22.0
-    "@storybook/addon-docs": 10.2.7
+    "@shikijs/monaco": 4.0.2
+    "@shikijs/transformers": 4.0.2
+    "@storybook/addon-docs": 10.3.3
     "@storybook/addon-webpack5-compiler-swc": 4.0.2
-    "@storybook/react": 10.2.7
-    "@storybook/react-vite": 10.2.7
-    "@storybook/react-webpack5": 10.2.7
-    "@swc/helpers": 0.5.18
-    "@tailwindcss/postcss": 4.1.18
+    "@storybook/react": 10.3.3
+    "@storybook/react-vite": 10.3.3
+    "@storybook/react-webpack5": 10.3.3
+    "@swc/helpers": 0.5.19
+    "@tailwindcss/postcss": 4.2.2
     "@testing-library/dom": 10.4.1
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
     "@types/babel__core": 7.20.5
-    "@types/babel__traverse": 7.28.0
     "@types/benchmark": 2.1.5
     "@types/jest": 30.0.0
     "@types/mdx": 2.0.13
-    "@types/node": 25.2.2
-    "@types/react": 19.2.13
+    "@types/node": 25.5.0
+    "@types/react": 19.2.14
     "@types/react-dom": 19.2.3
     "@types/webpack": 5.28.5
-    "@typescript-eslint/rule-tester": 8.54.0
-    "@typescript-eslint/utils": 8.54.0
-    "@vitejs/plugin-react": 5.1.3
-    "@vitejs/plugin-react-swc": 4.2.3
-    autoprefixer: 10.4.24
+    "@typescript-eslint/rule-tester": 8.57.2
+    "@typescript-eslint/utils": 8.57.2
+    "@vercel/analytics": 2.0.1
+    "@vitejs/plugin-react": 6.0.1
+    "@vitejs/plugin-react-swc": 4.3.0
+    autoprefixer: 10.4.27
     benchmark: 2.1.4
-    eslint: 9.39.2
-    eslint-config-next: 16.1.6
-    eslint-doc-generator: 3.0.2
+    eslint: 10.1.0
+    eslint-config-next: 16.2.1
+    eslint-doc-generator: 3.3.1
     fast-glob: 3.3.3
     fflate: 0.8.2
-    fumadocs-core: 16.5.2
-    fumadocs-mdx: 14.2.7
-    fumadocs-twoslash: 3.1.13
-    fumadocs-ui: 16.5.2
-    jest: 30.2.0
-    jest-environment-jsdom: 30.2.0
+    fumadocs-core: 16.7.5
+    fumadocs-mdx: 14.2.11
+    fumadocs-twoslash: 3.1.14
+    fumadocs-ui: 16.7.5
+    jest: 30.3.0
+    jest-environment-jsdom: 30.3.0
     js-base64: 3.7.8
-    jsdom: 28.0.0
+    jsdom: 29.0.1
     lz-string: 1.5.0
-    memfs: 4.56.10
-    next: 16.1.6
+    memfs: 4.57.1
+    next: 16.2.1
     next-themes: 0.4.6
     pathe: 2.0.3
-    postcss: 8.5.6
+    postcss: 8.5.8
     postcss-nested: 7.0.2
     prettier: 3.8.1
     raw-loader: 4.0.2
     react: 19.2.4
     react-dom: 19.2.4
-    react-resizable-panels: 4.6.2
-    shiki: 3.22.0
-    shiki-magic-move: 1.2.1
-    storybook: 10.2.7
-    styled-components: 6.3.9
+    react-resizable-panels: 4.7.6
+    shiki: 4.0.2
+    shiki-magic-move: 1.3.0
+    storybook: 10.3.3
+    styled-components: 6.3.12
     swc-loader: 0.2.7
-    tailwindcss: 4.1.18
+    tailwindcss: 4.2.2
     tree-kill: 1.2.2
     tsup: 8.5.1
     tsx: 4.21.0
     typescript: 5.9.3
     unionfs: 4.6.0
-    vite: 7.3.1
-    vitest: 4.0.18
+    vite: 8.0.2
+    vitest: 4.1.1
     wasm-pack: 0.14.0
-    webpack: 5.105.0
+    webpack: 5.105.4

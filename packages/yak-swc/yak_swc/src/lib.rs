@@ -73,6 +73,11 @@ pub struct Config {
   /// Suppress deprecation warnings for :global() selectors
   #[serde(default)]
   pub suppress_deprecation_warnings: bool,
+  /// Append `$RefreshReg$` calls for every exported styled component so that
+  /// React Fast Refresh treats the module as a refresh boundary.
+  /// Enable this in development to prevent full-page reloads on CSS-only edits.
+  #[serde(default)]
+  pub react_refresh_reg: bool,
 }
 
 impl Config {
@@ -98,6 +103,7 @@ impl Default for Config {
       display_names: Default::default(),
       import_mode: Config::import_mode_default(),
       suppress_deprecation_warnings: Default::default(),
+      react_refresh_reg: Default::default(),
     }
   }
 }
@@ -156,6 +162,10 @@ where
   /// Flag to track if we are inside a runtime expression (arrow function body)
   /// Used to suppress errors for non-static member expressions
   inside_runtime_expression: bool,
+  /// Append $RefreshReg$ calls for exported styled components
+  react_refresh_reg: bool,
+  /// Names of exported styled components to register with $RefreshReg$
+  exported_styled_names: Vec<String>,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -170,6 +180,7 @@ where
     display_names: bool,
     import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
+    react_refresh_reg: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -191,6 +202,8 @@ where
       has_user_global: false,
       suppress_deprecation_warnings,
       inside_runtime_expression: false,
+      react_refresh_reg,
+      exported_styled_names: Vec::new(),
     }
   }
 
@@ -679,6 +692,104 @@ where
           );
         }
       }
+
+      // Append $RefreshReg$ calls so React Fast Refresh treats
+      // styled-component-only modules as refresh boundaries.
+      // Double-guarded:
+      //   1. process.env.NODE_ENV !== "production" — tree-shaken by bundlers in prod
+      //   2. typeof $RefreshReg$ !== "undefined" — safe for SSR / test contexts
+      if self.react_refresh_reg && !self.exported_styled_names.is_empty() {
+        let mut refresh_stmts: Vec<Stmt> = Vec::new();
+        for name in &self.exported_styled_names {
+          refresh_stmts.push(Stmt::Expr(ExprStmt {
+            span: DUMMY_SP,
+            expr: Box::new(Expr::Call(CallExpr {
+              span: DUMMY_SP,
+              callee: Callee::Expr(Box::new(Expr::Ident(Ident::new(
+                "$RefreshReg$".into(),
+                DUMMY_SP,
+                Default::default(),
+              )))),
+              args: vec![
+                ExprOrSpread {
+                  spread: None,
+                  expr: Box::new(Expr::Ident(Ident::new(
+                    name.clone().into(),
+                    DUMMY_SP,
+                    Default::default(),
+                  ))),
+                },
+                ExprOrSpread {
+                  spread: None,
+                  expr: Box::new(Expr::Lit(Lit::Str(Str {
+                    span: DUMMY_SP,
+                    value: name.clone().into(),
+                    raw: None,
+                  }))),
+                },
+              ],
+              type_args: None,
+              ctxt: Default::default(),
+            })),
+          }));
+        }
+        // if (process.env.NODE_ENV !== "production" && typeof $RefreshReg$ !== "undefined") { ... }
+        module.body.push(ModuleItem::Stmt(Stmt::If(IfStmt {
+          span: DUMMY_SP,
+          test: Box::new(Expr::Bin(BinExpr {
+            span: DUMMY_SP,
+            op: op!("&&"),
+            // process.env.NODE_ENV !== "production"
+            left: Box::new(Expr::Bin(BinExpr {
+              span: DUMMY_SP,
+              op: op!("!=="),
+              left: Box::new(Expr::Member(MemberExpr {
+                span: DUMMY_SP,
+                obj: Box::new(Expr::Member(MemberExpr {
+                  span: DUMMY_SP,
+                  obj: Box::new(Expr::Ident(Ident::new(
+                    "process".into(),
+                    DUMMY_SP,
+                    Default::default(),
+                  ))),
+                  prop: MemberProp::Ident(IdentName::new("env".into(), DUMMY_SP)),
+                })),
+                prop: MemberProp::Ident(IdentName::new("NODE_ENV".into(), DUMMY_SP)),
+              })),
+              right: Box::new(Expr::Lit(Lit::Str(Str {
+                span: DUMMY_SP,
+                value: "production".into(),
+                raw: None,
+              }))),
+            })),
+            // typeof $RefreshReg$ !== "undefined"
+            right: Box::new(Expr::Bin(BinExpr {
+              span: DUMMY_SP,
+              op: op!("!=="),
+              left: Box::new(Expr::Unary(UnaryExpr {
+                span: DUMMY_SP,
+                op: op!("typeof"),
+                arg: Box::new(Expr::Ident(Ident::new(
+                  "$RefreshReg$".into(),
+                  DUMMY_SP,
+                  Default::default(),
+                ))),
+              })),
+              right: Box::new(Expr::Lit(Lit::Str(Str {
+                span: DUMMY_SP,
+                value: "undefined".into(),
+                raw: None,
+              }))),
+            })),
+          })),
+          cons: Box::new(Stmt::Block(BlockStmt {
+            span: DUMMY_SP,
+            stmts: refresh_stmts,
+            ctxt: Default::default(),
+          })),
+          alt: None,
+        })));
+      }
     }
   }
 
@@ -908,13 +1019,22 @@ where
 
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
-      "styled" if is_top_level => Box::new(TransformStyled::new(
-        &mut self.naming_convention,
-        current_variable_id.clone(),
-        self.display_names,
-        self.current_exported || is_default_exported,
-        self.import_mode.transpilation_mode(),
-      )),
+      "styled" if is_top_level => {
+        // Track exported styled component names for $RefreshReg$ injection
+        if self.react_refresh_reg && (self.current_exported || is_default_exported) {
+          let name = current_variable_id.to_readable_string();
+          if name != "default" {
+            self.exported_styled_names.push(name);
+          }
+        }
+        Box::new(TransformStyled::new(
+          &mut self.naming_convention,
+          current_variable_id.clone(),
+          self.display_names,
+          self.current_exported || is_default_exported,
+          self.import_mode.transpilation_mode(),
+        ))
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -1157,6 +1277,7 @@ mod tests {
             encoding: ImportModeEncoding::None,
           },
           false,
+          false,
         ))
       },
       &input,
@@ -1188,6 +1309,7 @@ mod tests {
             transpilation: TranspilationMode::Css,
             encoding: ImportModeEncoding::Base64,
           },
+          false,
           false,
         ))
       },
@@ -1221,6 +1343,7 @@ mod tests {
             encoding: ImportModeEncoding::None,
           },
           false,
+          false,
         ))
       },
       &input,
@@ -1252,6 +1375,7 @@ mod tests {
             transpilation: TranspilationMode::Css,
             encoding: ImportModeEncoding::Base64,
           },
+          false,
           false,
         ))
       },

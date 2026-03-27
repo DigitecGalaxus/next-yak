@@ -3,7 +3,7 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when cross-file dependency changes",
-  withTestEnv("cross-file-import", async (fsTmp, page) => {
+  withTestEnv("hmr-cross-file-import", async (fsTmp, page) => {
     await page.goto(fsTmp.url);
 
     const primary = page.getByTestId("primary");

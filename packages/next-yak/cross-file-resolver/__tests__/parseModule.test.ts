@@ -418,7 +418,7 @@ test("parse .yak module", async () => {
           },
         },
       },
-      function: { type: "unsupported", hint: "() => {\n          }" },
+      function: { type: "unsupported", hint: "() => {}" },
     },
   });
 });

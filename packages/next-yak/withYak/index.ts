@@ -58,6 +58,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     displayNames: yakOptions.displayNames ?? !minify,
     suppressDeprecationWarnings:
       yakOptions.experiments?.suppressDeprecationWarnings ?? false,
+    reactRefreshReg: true,
   };
 
   const transpilation =
@@ -121,11 +122,12 @@ function addYakTurbopack(
   nextConfig.turbopack.rules ||= {};
 
   const ruleKey = "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}";
-  nextConfig.turbopack.rules[ruleKey] = {
-    loaders: [],
+  const rule = {
+    loaders: [] as { loader: string; options: {} }[],
     ...nextConfig.turbopack.rules[ruleKey],
   };
-  nextConfig.turbopack.rules[ruleKey].loaders.push(yakLoader);
+  rule.loaders.push(yakLoader);
+  nextConfig.turbopack.rules[ruleKey] = rule;
 
   // Configure resolveAlias for custom yak context (similar to webpack)
   // This allows users to provide a custom context file that will be used
