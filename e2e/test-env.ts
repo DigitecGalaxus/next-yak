@@ -38,7 +38,9 @@ export function withTestEnv(
   fn: (fsTmp: FsTmp, page: Page) => Promise<void>,
 ) {
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
-    const bundlerName = testInfo.project.name;
+    const bundlerName =
+      (testInfo.project.metadata as { bundlerName?: string }).bundlerName ??
+      testInfo.project.name;
     const tmpDir = resolve(
       e2eRoot,
       "bundlers",
