@@ -75,6 +75,41 @@ Unlike in `styled-components`, the nesting selector is required to be used in or
 
 We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
 
+### css-global-deprecated
+
+Warns about usage of `:global()` selectors, which are deprecated and will be removed in the next major version in favor of native CSS transpilation.
+
+Example:
+
+```tsx title="example.tsx"
+const Button = styled.button`
+//[!code --]
+  :global(html) {
+//[!code --]
+    background: white;
+//[!code --]
+  }
+//[!code ++]
+  html {
+//[!code ++]
+    background: white;
+//[!code ++]
+  }
+`;
+```
+
+#### Reason why
+
+The `:global()` selector was originally needed to opt out of CSS Modules scoping. With the new native CSS transpilation mode, styles are no longer scoped through CSS Modules, making `:global()` unnecessary.
+
+To migrate, enable native CSS transpilation in your `next.config.js`:
+
+```js
+experiments: { transpilationMode: 'Css' }
+```
+
+See the [migration guide](/docs/migration-to-native-css) for more details.
+
 ### enforce-semicolon
 
 Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier.
