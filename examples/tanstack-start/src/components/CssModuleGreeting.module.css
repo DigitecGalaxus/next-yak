@@ -1,0 +1,13 @@
+.wrapper {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: system-ui, sans-serif;
+}
+
+.headline {
+  color: #e85d04;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 2rem;
+}
