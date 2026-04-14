@@ -132,7 +132,8 @@ export async function viteYak(
         // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
         // The path is relative to basePath — resolve to absolute for Vite's file APIs
         const queryStringStart = id.indexOf("?");
-        const queryString = queryStringStart === -1 ? "" : id.slice(queryStringStart);
+        const queryString =
+          queryStringStart === -1 ? "" : id.slice(queryStringStart);
         const relativeId = id.slice(17, -4 - queryString.length);
         const originalId = resolve(basePath, relativeId);
         this.addWatchFile(originalId);
@@ -204,7 +205,7 @@ export async function viteYak(
               return resolved.id;
             },
           },
-          originalId  + queryString,
+          originalId + queryString,
           extractedCss,
         );
 

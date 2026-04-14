@@ -8,97 +8,97 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as ServerComponentRouteImport } from './routes/server-component'
-import { Route as CssModuleRouteImport } from './routes/css-module'
-import { Route as ClockRouteImport } from './routes/clock'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as ServerComponentRouteImport } from "./routes/server-component";
+import { Route as CssModuleRouteImport } from "./routes/css-module";
+import { Route as ClockRouteImport } from "./routes/clock";
+import { Route as IndexRouteImport } from "./routes/index";
 
 const ServerComponentRoute = ServerComponentRouteImport.update({
-  id: '/server-component',
-  path: '/server-component',
+  id: "/server-component",
+  path: "/server-component",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CssModuleRoute = CssModuleRouteImport.update({
-  id: '/css-module',
-  path: '/css-module',
+  id: "/css-module",
+  path: "/css-module",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ClockRoute = ClockRouteImport.update({
-  id: '/clock',
-  path: '/clock',
+  id: "/clock",
+  path: "/clock",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/clock': typeof ClockRoute
-  '/css-module': typeof CssModuleRoute
-  '/server-component': typeof ServerComponentRoute
+  "/": typeof IndexRoute;
+  "/clock": typeof ClockRoute;
+  "/css-module": typeof CssModuleRoute;
+  "/server-component": typeof ServerComponentRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/clock': typeof ClockRoute
-  '/css-module': typeof CssModuleRoute
-  '/server-component': typeof ServerComponentRoute
+  "/": typeof IndexRoute;
+  "/clock": typeof ClockRoute;
+  "/css-module": typeof CssModuleRoute;
+  "/server-component": typeof ServerComponentRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/clock': typeof ClockRoute
-  '/css-module': typeof CssModuleRoute
-  '/server-component': typeof ServerComponentRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/clock": typeof ClockRoute;
+  "/css-module": typeof CssModuleRoute;
+  "/server-component": typeof ServerComponentRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/clock' | '/css-module' | '/server-component'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/clock' | '/css-module' | '/server-component'
-  id: '__root__' | '/' | '/clock' | '/css-module' | '/server-component'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "/clock" | "/css-module" | "/server-component";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/clock" | "/css-module" | "/server-component";
+  id: "__root__" | "/" | "/clock" | "/css-module" | "/server-component";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ClockRoute: typeof ClockRoute
-  CssModuleRoute: typeof CssModuleRoute
-  ServerComponentRoute: typeof ServerComponentRoute
+  IndexRoute: typeof IndexRoute;
+  ClockRoute: typeof ClockRoute;
+  CssModuleRoute: typeof CssModuleRoute;
+  ServerComponentRoute: typeof ServerComponentRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/server-component': {
-      id: '/server-component'
-      path: '/server-component'
-      fullPath: '/server-component'
-      preLoaderRoute: typeof ServerComponentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/css-module': {
-      id: '/css-module'
-      path: '/css-module'
-      fullPath: '/css-module'
-      preLoaderRoute: typeof CssModuleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/clock': {
-      id: '/clock'
-      path: '/clock'
-      fullPath: '/clock'
-      preLoaderRoute: typeof ClockRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/server-component": {
+      id: "/server-component";
+      path: "/server-component";
+      fullPath: "/server-component";
+      preLoaderRoute: typeof ServerComponentRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/css-module": {
+      id: "/css-module";
+      path: "/css-module";
+      fullPath: "/css-module";
+      preLoaderRoute: typeof CssModuleRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/clock": {
+      id: "/clock";
+      path: "/clock";
+      fullPath: "/clock";
+      preLoaderRoute: typeof ClockRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -107,16 +107,16 @@ const rootRouteChildren: RootRouteChildren = {
   ClockRoute: ClockRoute,
   CssModuleRoute: CssModuleRoute,
   ServerComponentRoute: ServerComponentRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }
