@@ -355,7 +355,10 @@ function parseObjectExpression(
  */
 function extractUnsupportedSource(
   loc:
-    | { start: { line: number; column: number }; end: { line: number; column: number } }
+    | {
+        start: { line: number; column: number };
+        end: { line: number; column: number };
+      }
     | null
     | undefined,
   code: string | undefined,

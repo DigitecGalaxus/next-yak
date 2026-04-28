@@ -868,8 +868,7 @@ test("Error: unsupported export from a regular .ts file shows a Rust-style snipp
   await expect(() =>
     resolveCrossFileConstant(
       createParseContext({
-        "/foo/colors.ts":
-          "const v = '--bg';\nexport const bg = `var(${v})`;",
+        "/foo/colors.ts": "const v = '--bg';\nexport const bg = `var(${v})`;",
       }),
       "/foo/bar.ts",
       `--yak-css-import: url("./colors.ts:bg",selector) {}`,
