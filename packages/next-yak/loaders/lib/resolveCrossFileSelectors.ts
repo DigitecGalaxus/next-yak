@@ -5,6 +5,7 @@ import {
   ModuleExports,
   ParseContext,
   ParsedModule,
+  UnsupportedExportSource,
   parseModule,
 } from "../../cross-file-resolver/parseModule.js";
 import {
@@ -211,7 +212,10 @@ export async function parseExports(
           for (const declaration of node.declaration.declarations) {
             if (declaration.id.type === "Identifier" && declaration.init) {
               variableDeclarations[declaration.id.name] = declaration.init;
-              const parsed = parseExportValueExpression(declaration.init);
+              const parsed = parseExportValueExpression(
+                declaration.init,
+                sourceContents,
+              );
               if (parsed) {
                 moduleExports.named[declaration.id.name] = parsed;
               }
@@ -233,11 +237,16 @@ export async function parseExports(
           moduleExports.named["default"] = {
             type: "unsupported",
             hint: node.declaration.type,
+            source: extractUnsupportedSource(
+              node.declaration.loc,
+              sourceContents,
+            ),
           };
         } else {
           // e.g. export default { ... } or export default "value"
           moduleExports.named["default"] = parseExportValueExpression(
             node.declaration as babel.types.Expression,
+            sourceContents,
           );
         }
       }
@@ -252,6 +261,7 @@ export async function parseExports(
     if (defaultIdentifier && variableDeclarations[defaultIdentifier]) {
       moduleExports.named["default"] = parseExportValueExpression(
         variableDeclarations[defaultIdentifier],
+        sourceContents,
       );
     }
 
@@ -277,6 +287,7 @@ function unpackTSAsExpression(
 
 function parseExportValueExpression(
   node: babel.types.Expression,
+  code?: string,
 ): ModuleExport {
   // ignores `as` casts so it doesn't interfere with the ast node type detection
   const expression = unpackTSAsExpression(node);
@@ -302,13 +313,21 @@ function parseExportValueExpression(
   ) {
     return { type: "constant", value: expression.quasis[0].value.raw };
   } else if (expression.type === "ObjectExpression") {
-    return { type: "record", value: parseObjectExpression(expression) };
+    return {
+      type: "record",
+      value: parseObjectExpression(expression, code),
+    };
   }
-  return { type: "unsupported", hint: expression.type };
+  return {
+    type: "unsupported",
+    hint: expression.type,
+    source: extractUnsupportedSource(expression.loc, code),
+  };
 }
 
 function parseObjectExpression(
   node: babel.types.ObjectExpression,
+  code?: string,
 ): Record<string, ModuleExport> {
   let result: Record<string, ModuleExport> = {};
   for (const property of node.properties) {
@@ -319,6 +338,7 @@ function parseObjectExpression(
       const key = property.key.name;
       const parsed = parseExportValueExpression(
         property.value as babel.types.Expression,
+        code,
       );
       if (parsed) {
         result[key] = parsed;
@@ -326,6 +346,28 @@ function parseObjectExpression(
     }
   }
   return result;
+}
+
+/**
+ * Pull the structural source-location data the error formatter needs to
+ * render a snippet — the formatter (not this parser) is responsible for
+ * any presentation. Returns undefined if loc or source text is missing.
+ */
+function extractUnsupportedSource(
+  loc:
+    | { start: { line: number; column: number }; end: { line: number; column: number } }
+    | null
+    | undefined,
+  code: string | undefined,
+): UnsupportedExportSource | undefined {
+  if (!loc || !code) return undefined;
+  const lineText = code.split(/\r?\n/)[loc.start.line - 1];
+  if (lineText === undefined) return undefined;
+  return {
+    start: { line: loc.start.line, column: loc.start.column },
+    end: { line: loc.end.line, column: loc.end.column },
+    lineText,
+  };
 }
 
 const DIRNAME_POSIX_REGEX =
