@@ -2,26 +2,26 @@
 title: Getting started
 description: How to get started with next-yak
 ---
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 # next-yak
 
-**next-yak** is a CSS-in-JS solution tailored for [Next.js](https://nextjs.org/) that seamlessly combines
-the expressive power of styled-components syntax with efficient build-time extraction of CSS using
-Next.js's built-in CSS configuration.
+**next-yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
 
-| next-yak         | Next.js         | Vite             | react            | swc_core         |
-|------------------|-----------------|------------------|------------------|------------------|
-| 9.x              | >= 16.1.0       | >= 7.0.0 (9.1+)  | 19.x             | 50.2.3           |
-| 8.x              | >= 16.0.0       | -                | 19.x             | 45.0.1           |
-| 7.x              | >= 15.4.4       | -                | 19.x             | 38.0.1           |
-| 6.x              | >= 15.4.1       | -                | 19.x             | 27.0.6           |
-| 5.x              | >= 15.2.1       | -                | 19.x             | 16.0.0           |
-| 4.x              | >= 15.0.4       | -                | 19.x             | 5.0.1            |
-| 3.x              | 15.x            | -                | 18.x / 19.x      | 3.0.2            |
-| 2.x              | 14.x            | -                | 18.x / 19.x      | 0.279.0          |
+Works with **Next.js** (Webpack & Turbopack), **[Vite 7+](/docs/vite)** (react-router, tanstack start, and more), and **[Storybook](/docs/storybook)**.
+
+| next-yak | Next.js   | Vite            | react       | swc_core |
+| -------- | --------- | --------------- | ----------- | -------- |
+| 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
+| 8.x      | >= 16.0.0 | -               | 19.x        | 45.0.1   |
+| 7.x      | >= 15.4.4 | -               | 19.x        | 38.0.1   |
+| 6.x      | >= 15.4.1 | -               | 19.x        | 27.0.6   |
+| 5.x      | >= 15.2.1 | -               | 19.x        | 16.0.0   |
+| 4.x      | >= 15.0.4 | -               | 19.x        | 5.0.1    |
+| 3.x      | 15.x      | -               | 18.x / 19.x | 3.0.2    |
+| 2.x      | 14.x      | -               | 18.x / 19.x | 0.279.0  |
 
 ## Installation
 
@@ -35,39 +35,45 @@ Install next-yak dependency using your favorite package manager.
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
 <Tab value="npm">
 ```bash
-# For Next.js >= 16.1.0
+# For next.js >= 16.1.0 or vite
 npm i next-yak@latest
 
 # For other next.js versions use a specific version
+
 npm i next-yak@2
-```
+
+````
 </Tab>
 <Tab value="pnpm">
 ```bash
-# For Next.js >= 16.1.0
+# For Next.js >= 16.1.0 or vite
 pnpm i next-yak@latest
 
 # For other next.js versions use a specific version
 pnpm i next-yak@2
-```
+````
+
 </Tab>
 <Tab value="yarn">
 ```bash
-# For Next.js >= 16.1.0
+# For next.js >= 16.1.0 or vite
 yarn i next-yak@latest
 
 # For other next.js versions use a specific version
+
 yarn i next-yak@2
-```
+
+````
 </Tab>
 <Tab value="bun">
 ```bash
-# For Next.js >= 16.1.0
+# For next.js >= 16.1.0 or vite
 bun i next-yak@latest
 
 # For other next.js versions use a specific version
 bun i next-yak@2
-```
+````
+
 </Tab>
 </Tabs>
 </Step>
@@ -75,43 +81,34 @@ bun i next-yak@2
 
 ### Enable next-yak
 
-Add next-yak to your next configuration file:
+Add next-yak to your configuration file:
 
-<Tabs items={['next.config.ts', 'next.config.js', 'next.config.mjs']}>
+<Tabs items={['next.config.ts', 'vite.config.ts']}>
 <Tab value="next.config.ts">
 ```ts
 import type { NextConfig } from 'next'
 import { withYak } from "next-yak/withYak";
 
 const nextConfig: NextConfig = {
-  // your next.js config
+// your next.js config
 }
 
 export default withYak(nextConfig);
 ```
 </Tab>
-<Tab value="next.config.js">
-```js
-const { withYak } = require("next-yak/withYak");
+<Tab value="vite.config.ts">
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import { viteYak } from "next-yak/vite";
 
-const nextConfig = {
-  // your next.js config
-};
-
-module.exports = withYak(nextConfig);
+export default defineConfig({
+  //...
+  plugins: [viteYak(), react()], // ideally this is before the react plugin
+});
 ```
 </Tab>
-<Tab value="next.config.mjs">
-```js
-import { withYak } from "next-yak/withYak";
 
-const nextConfig = {
-  // your next.js config
-};
-
-export default withYak(nextConfig);
-```
-</Tab>
 </Tabs>
 </Step>
 <Step>
@@ -123,9 +120,8 @@ If you used `styled-components` before, you'll feel right at home.
 
 Here's a simple example:
 
-
 ```jsx title="app/page.tsx"
-import { styled } from 'next-yak';
+import { styled } from "next-yak";
 
 const StyledDiv = styled.div`
   color: #333;
@@ -133,14 +129,12 @@ const StyledDiv = styled.div`
   background-color: #f0f0f0;
 `;
 
-function HomePage() {
+export default function HomePage() {
   return <StyledDiv>Hello, next-yak!</StyledDiv>;
 }
-
-export default HomePage;
 ```
 
-You're now ready to use next-yak in your Next.js project and if you need to migrate from styled-components, you can follow the [migration guide](/docs/migration-from-styled-components).
+You're now ready to use next-yak in your project and if you need to migrate from styled-components, you can follow the [migration guide](/docs/migration-from-styled-components).
 
 </Step>
 
@@ -148,4 +142,8 @@ You're now ready to use next-yak in your Next.js project and if you need to migr
 
 ## Using with Vite
 
-Since v9.1.0, next-yak also supports Vite. If you're using Vite instead of Next.js, check out the [Vite guide](/docs/vite) for setup instructions.
+Since v9.1.0, next-yak supports Vite 7+ (including Vite 8 with OXC/Rolldown). Check out the [Vite guide](/docs/vite) for more setup instructions.
+
+## Using with Storybook
+
+The addon `storybook-addon-yak` enables next-yak in Storybook 10+ with both Vite and Webpack builders. See the [Storybook guide](/docs/storybook) for details.
