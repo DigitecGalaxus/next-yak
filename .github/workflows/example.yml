@@ -1,8 +1,8 @@
 name: Build and Deploy examples/next-js
 
 env:
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 on:
@@ -14,12 +14,7 @@ on:
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
       - ".github/workflows/example.yml"
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: "Pull Request Number"
-        required: true
-        type: string
+  workflow_dispatch: # manual re-deploy of main
 
 permissions:
   contents: read
@@ -32,16 +27,10 @@ jobs:
   build-and-deploy:
     name: Build and deploy example
     runs-on: ubuntu-latest
-    # Define whether this is a production deployment
-    env:
-      IS_PRODUCTION: ${{ github.event_name == 'push' }}
-      PR_NUMBER: ${{ github.event.inputs.pr_number }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
-          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
           persist-credentials: false
 
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -82,35 +71,13 @@ jobs:
       - name: Link Vercel project
         run: vercel link --yes
 
-      # Preview deployment (for workflow_dispatch)
-      - name: Pull Vercel environment information (Preview)
-        if: env.IS_PRODUCTION == 'false'
-        run: vercel pull --yes --environment=preview
-
-      - name: Build project artifacts (Preview)
-        if: env.IS_PRODUCTION == 'false'
-        run: vercel build
-
-      - name: Deploy to Vercel (Preview)
-        id: deploy-preview
-        if: env.IS_PRODUCTION == 'false'
-        run: |
-          rm -rf .git # Remove the .git directory to avoid vercel to read the current author
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt)
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "Preview deployment URL: $DEPLOYMENT_URL"
-
-      # Production deployment (for main branch pushes)
-      - name: Pull Vercel environment information (Production)
-        if: env.IS_PRODUCTION == 'true'
+      - name: Pull Vercel environment information
         run: vercel pull --yes --environment=production
 
-      - name: Build project artifacts (Production)
-        if: env.IS_PRODUCTION == 'true'
+      - name: Build project artifacts
         run: vercel build --prod
 
-      - name: Deploy to Vercel (Production)
-        if: env.IS_PRODUCTION == 'true'
+      - name: Deploy to Vercel
         run: |
           rm -rf .git # Remove the .git directory to avoid vercel to read the current author
           vercel deploy --prebuilt --prod
