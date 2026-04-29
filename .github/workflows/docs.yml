@@ -2,6 +2,7 @@ name: Build and Deploy docs
 env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 on:
   push:
@@ -22,8 +23,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
+    name: Build and deploy docs site
     runs-on: ubuntu-latest
     env:
       IS_PRODUCTION: ${{ github.event_name == 'push' }}
@@ -33,6 +39,7 @@ jobs:
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
@@ -49,12 +56,8 @@ jobs:
       - name: Install node_modules
         run: pnpm install
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@6d653acede28d24f02e3cd41383119e8b1b35921 # master
-        with:
-          toolchain: stable
-          targets: wasm32-wasip1, wasm32-unknown-unknown
-          components: clippy, rustfmt
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -71,37 +74,37 @@ jobs:
         run: npm install -g vercel@latest
 
       - name: Link Vercel project
-        run: vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel link --yes
 
       # Preview deployment (for pull requests, manual triggers, and non-main pushes)
       - name: Pull Vercel environment information (Preview)
         if: env.IS_PRODUCTION == 'false'
-        run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=preview
 
       - name: Build project artifacts (Preview)
         if: env.IS_PRODUCTION == 'false'
-        run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build
 
       - name: Deploy to Vercel (Preview)
         id: deploy-preview
         if: env.IS_PRODUCTION == 'false'
         run: |
           rm -rf .git # Remove the .git directory to avoid vercel to read the current author
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }})
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt)
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Preview deployment URL: $DEPLOYMENT_URL"
 
       # Production deployment (for main branch pushes)
       - name: Pull Vercel environment information (Production)
         if: env.IS_PRODUCTION == 'true'
-        run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production
 
       - name: Build project artifacts (Production)
         if: env.IS_PRODUCTION == 'true'
-        run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod
 
       - name: Deploy to Vercel (Production)
         if: env.IS_PRODUCTION == 'true'
         run: |
           rm -rf .git # Remove the .git directory to avoid vercel to read the current author
-          vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod

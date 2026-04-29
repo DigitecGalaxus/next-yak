@@ -8,25 +8,28 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   autofix:
+    name: autofix.ci
     if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          persist-credentials: false
 
       - name: Install Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           node-version: 22
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@6d653acede28d24f02e3cd41383119e8b1b35921 # master
-        with:
-          toolchain: stable
-          targets: wasm32-wasip1, wasm32-unknown-unknown
-          components: clippy, rustfmt
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
       - name: Enable caching
         uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2
         with:

@@ -1,0 +1,37 @@
+name: Zizmor
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/**"
+      - ".github/zizmor.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/zizmor.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  zizmor:
+    name: Zizmor static analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
+        with:
+          upload-sarif: false
