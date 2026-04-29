@@ -79,7 +79,7 @@ catalogs:
     swc-loader: 0.2.7
     tailwindcss: 4.2.2
     tree-kill: 1.2.2
-    tsup: 8.5.1
+    tsdown: 0.21.10
     tsx: 4.21.0
     typescript: 5.9.3
     unionfs: 4.6.0

@@ -17,7 +17,7 @@ import type {
 // links to one file for react server components and
 // to another file for classic react components
 import { useTheme } from "next-yak/context";
-import type { YakTheme } from "./context/index.d.ts";
+import type { YakTheme } from "./context/index.tsx";
 
 /**
  * This Symbol is a fake theme which was used instead of the real one from the context

@@ -1,4 +1,4 @@
-import type { YakTheme } from "./index.d.ts";
+import type { YakTheme } from "./index.ts";
 import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 export const yakComponentSymbol = Symbol("yak");

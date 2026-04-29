@@ -25,7 +25,7 @@
 // links to one file for react server components and
 // to another file for classic react components
 export { useTheme, YakThemeProvider } from "next-yak/context";
-export type { YakTheme } from "./context/index.d.ts";
+export type { YakTheme } from "./context/index.tsx";
 
 export type { GenericYakComponentOf, YakComponent } from "./publicStyledApi.ts";
 
