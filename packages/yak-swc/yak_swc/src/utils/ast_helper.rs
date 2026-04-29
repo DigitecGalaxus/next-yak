@@ -121,6 +121,27 @@ pub fn extract_ident_and_parts(
   }
 }
 
+/// Strip TypeScript type-only wrappers and parentheses from an expression so
+/// the underlying value (e.g. a tagged template literal) becomes visible to
+/// the static analysis. This lets users write code like
+/// `const highlight = css\`color: red;\` as unknown as ReturnType<typeof css>`
+/// without confusing the const-value lookup.
+pub fn unwrap_type_casts(expr: &Expr) -> &Expr {
+  let mut current = expr;
+  loop {
+    current = match current {
+      Expr::TsAs(inner) => &inner.expr,
+      Expr::TsTypeAssertion(inner) => &inner.expr,
+      Expr::TsConstAssertion(inner) => &inner.expr,
+      Expr::TsNonNull(inner) => &inner.expr,
+      Expr::TsInstantiation(inner) => &inner.expr,
+      Expr::TsSatisfies(inner) => &inner.expr,
+      Expr::Paren(inner) => &inner.expr,
+      _ => return current,
+    };
+  }
+}
+
 /// Get a constant template literal from an expression
 pub fn is_valid_tagged_tpl(tagged_tpl: &TaggedTpl, literal_names: &FxHashSet<Id>) -> bool {
   let TaggedTpl { tag, .. } = tagged_tpl;
