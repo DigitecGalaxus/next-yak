@@ -93,6 +93,10 @@ pub fn extract_ident_and_parts(
   expr: &Expr,
   report_errors: bool,
 ) -> Option<ScopedVariableReference> {
+  // See through TypeScript-only wrappers and parentheses so e.g.
+  // `${(StyledSvg as MyType)}` or `${colors!.primary}` is recognized as a
+  // selector / constant reference.
+  let expr = unwrap_type_casts(expr);
   match &expr {
     Expr::Member(member_expr) => member_expr_to_strings(member_expr).map_or_else(
       || {
