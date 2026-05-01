@@ -96,12 +96,19 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-vercel-output
-          path: .vercel/output
+          path: |
+            .vercel/output
+            pnpm-lock.yaml
+            pnpm-workspace.yaml
+            package.json
+            packages
+            examples/next-js
+            !**/node_modules
+            !examples/next-js/.next
+            !packages/yak-swc/target
           retention-days: 1
           if-no-files-found: error
-          # `.vercel/output/functions/*.func/.vc-config.json` are hidden files
-          # that Vercel needs server-side to ingest the prebuilt output.
-          # Without this, the deploy fails with "Could not load function config".
+          # Hidden files like `.vc-config.json` and `.npmrc` would otherwise be stripped
           include-hidden-files: true
 
       - name: Upload deploy metadata
