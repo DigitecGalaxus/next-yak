@@ -13,6 +13,14 @@ export class CauseError extends Error {
 
 export class ResolveError extends CauseError {}
 
+/**
+ * Thrown for `unsupported` exports. Subclassed so the surrounding
+ * `resolveModuleExport` catch can recognise that the error already
+ * carries its own "Unable to resolve … in module …" wrapper and
+ * doesn't need another one stacked on top.
+ */
+export class UnsupportedExportError extends ResolveError {}
+
 export class CircularDependencyError extends CauseError {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);

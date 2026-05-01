@@ -863,3 +863,57 @@ test("Do not mistake loopback with circular dependency", async () => {
     "/foo/d.js",
   ]);
 });
+
+test("Error: unsupported export from a regular .ts file shows a Rust-style snippet", async () => {
+  await expect(() =>
+    resolveCrossFileConstant(
+      createParseContext({
+        "/foo/colors.ts": "const v = '--bg';\nexport const bg = `var(${v})`;",
+      }),
+      "/foo/bar.ts",
+      `--yak-css-import: url("./colors.ts:bg",selector) {}`,
+    ),
+  ).rejects
+    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
+  Caused by: Unable to resolve "bg" in module "/foo/colors.ts"
+  Caused by: \`bg\` is not a string or number literal (got a TemplateLiteral).
+   --> /foo/colors.ts:2:19
+      |
+    2 | export const bg = \`var(\${v})\`;
+      |                   ^^^^^^^^^^^ TemplateLiteral
+  help: rename "/foo/colors.ts" to "/foo/colors.yak.ts" so its exports run at build time
+        (or replace \`bg\` with a literal value)
+  see:  https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files`);
+});
+
+test("Error: unsupported value from an evaluated .yak.ts file explains supported types", async () => {
+  await expect(() =>
+    resolveCrossFileConstant(
+      {
+        parse: (modulePath: string) =>
+          parseModule(
+            {
+              extractExports: () => ({
+                importYak: false,
+                named: {},
+                all: [],
+              }),
+              getTransformed: () => ({ code: "" }),
+              evaluateYakModule: async () => ({ flag: true }),
+            },
+            modulePath,
+          ),
+        resolve(specifier: string, importer: string) {
+          return path.resolve(path.dirname(importer), specifier);
+        },
+      },
+      "/foo/bar.ts",
+      `--yak-css-import: url("./tokens.yak.ts:flag",selector) {}`,
+    ),
+  ).rejects
+    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
+  Caused by: Unable to resolve "flag" in module "/foo/tokens.yak.ts"
+  Caused by: \`flag\` evaluated to a value that cannot be inlined into CSS (got \`true\`).
+  help: replace it with a string, number, or plain object/array of those
+  see:  https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files`);
+});
