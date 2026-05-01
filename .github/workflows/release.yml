@@ -62,8 +62,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install latest npm
-        run: npm install -g npm@latest
+      - name: Install npm with trusted-publishing support
+        run: |
+          corepack enable
+          corepack prepare npm@11.11.0 --activate
 
       # changesets/action runs `git push` directly, so it needs an authenticated remote.
       # Done explicitly here (rather than via checkout's persist-credentials) so the
