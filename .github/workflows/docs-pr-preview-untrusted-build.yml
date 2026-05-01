@@ -1,0 +1,116 @@
+name: Docs PR preview untrusted build
+
+# Builds .vercel/output for the docs site on every PR and uploads it as an
+# artifact. Runs in the untrusted-PR security context which means it has NO
+# access to VERCEL_TOKEN. The companion workflow `docs-pr-preview-deploy.yml`
+# picks up the artifact via workflow_run and performs the actual deploy.
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "packages/yak-swc/**"
+      - "packages/next-yak/**"
+      - ".github/workflows/docs-pr-preview-*.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_PROJECT_ID: ${{ vars.VERCEL_DOCS_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+
+jobs:
+  build:
+    name: Build docs preview output
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+        with:
+          workspaces: packages/yak-swc
+
+      - name: Build SWC plugin
+        run: pnpm run build:swc
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@52.0.0
+
+      # Stub `.vercel/project.json` so `vercel build` knows which project to
+      # build for, without needing `vercel pull` (which requires the token).
+      # `settings.framework` + `settings.rootDirectory` are required. Without
+      # them `vercel build` exits with `project_settings_required`. Other
+      # framework defaults are inferred by the CLI.
+      - name: Stub Vercel project link
+        run: |
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s","settings":{"framework":"nextjs","rootDirectory":"docs"}}' \
+            "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+
+      - name: Build Vercel output
+        run: vercel build
+
+      - name: Save deploy metadata
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p deploy-meta
+          printf '%s' "$PR_NUMBER" > deploy-meta/pr_number.txt
+          printf '%s' "$HEAD_SHA" > deploy-meta/head_sha.txt
+
+      - name: Upload Vercel build output
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docs-vercel-output
+          path: |
+            .vercel/output
+            pnpm-lock.yaml
+            pnpm-workspace.yaml
+            package.json
+            packages
+            docs
+            !**/node_modules
+            !packages/yak-swc/target
+          retention-days: 1
+          if-no-files-found: error
+          # Hidden files like `.vc-config.json` and `.npmrc` would otherwise be stripped.
+          include-hidden-files: true
+
+      - name: Upload deploy metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docs-deploy-meta
+          path: deploy-meta
+          retention-days: 1
+          if-no-files-found: error
