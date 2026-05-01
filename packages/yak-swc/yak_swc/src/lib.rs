@@ -505,6 +505,27 @@ ${{() => {var}}};\n",
           self.current_css_state.clone_from(&css_state);
 
           let is_inside_property_value = css_state.as_ref().unwrap().is_inside_property_value;
+          let is_inside_at_rule = css_state.as_ref().unwrap().is_inside_at_rule;
+
+          // Reject dynamic interpolations inside at-rule queries
+          // e.g. styled.div`@media ${(p) => p.theme.query} { ... }`
+          // CSS variables (var(--x)) are not valid syntax in @media / @container queries,
+          // so the dynamic value cannot be reified at runtime. Surface a clear error
+          // instead of silently dropping the interpolation.
+          if is_inside_at_rule {
+            HANDLER.with(|handler| {
+              handler
+                .struct_span_err(
+                  expr.span(),
+                  "Dynamic values are not supported inside at-rule queries (e.g. @media, @container).\n\
+                   The query is evaluated by the browser before any CSS variables resolve, so a runtime expression cannot be inserted here.\n\
+                   Use a static string or import a constant instead, e.g.:\n\n\
+                   const desktop = \"(min-width: 768px)\";\n\
+                   styled.div`@media ${desktop} { ... }`",
+                )
+                .emit();
+            });
+          }
 
           // If the expression is inside a css property value
           // it has to be replaced with a css variable

@@ -1,0 +1,12 @@
+  x Dynamic values are not supported inside at-rule queries (e.g. @media, @container).
+  | The query is evaluated by the browser before any CSS variables resolve, so a runtime expression cannot be inserted here.
+  | Use a static string or import a constant instead, e.g.:
+  | 
+  | const desktop = "(min-width: 768px)";
+  | styled.div`@media ${desktop} { ... }`
+   ,-[input.js:8:1]
+ 7 | 
+ 8 |   @media ${(p) => p.theme.queries.desktopAndAbove} {
+   :            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 9 |     display: none;
+   `----
