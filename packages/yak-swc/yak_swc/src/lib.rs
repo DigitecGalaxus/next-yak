@@ -535,15 +535,43 @@ ${{() => {var}}};\n",
             if is_top_level {
               verify_valid_property_value_expr(expr);
             }
+            // Detect an expression wrapped in matching string quotes:
+            // e.g. styled.input`&::before { content: "${(p) => p.$placeholder}"; }`
+            // CSS treats `var(--x)` inside a string literal as literal text
+            // rather than a variable reference, so the surrounding quotes
+            // must be stripped for the substitution to work as expected.
+            //
+            // Only triggers when the opening quote is the most-recent character.
+            // Partial interpolations like `content: "Hello ${val}"` are left
+            // alone.
+            let state = css_state.as_ref().unwrap();
+            let wrapping_quote = state.is_inside_string.filter(|&quote| {
+              pair.next_quasi.is_some_and(|nq| nq.raw.starts_with(quote))
+                && state.pending_css_segment.ends_with(quote)
+            });
+            if wrapping_quote.is_some() {
+              let state = css_state.as_mut().unwrap();
+              state.pending_css_segment.pop();
+              state.current_declaration.value.pop();
+              state.is_inside_string = None;
+            }
             // Check if the next quasi starts with a unit
             // e.g. styled.button`left: ${({$x}) => $x}px;`
-            let unit = if let Some(next_quasi) = pair.next_quasi {
+            let unit = if wrapping_quote.is_some() {
+              None
+            } else if let Some(next_quasi) = pair.next_quasi {
               extract_leading_css_unit(next_quasi.raw.as_str())
             } else {
               None
             };
-            // The css code offset is used to remove the unit from the next css code
-            css_code_offset = unit.map_or(0, |unit_str| unit_str.len());
+            // The css code offset is used to remove the unit from the next
+            // css code, or to skip the closing quote when the expression was
+            // wrapped in string quotes.
+            css_code_offset = if wrapping_quote.is_some() {
+              1
+            } else {
+              unit.map_or(0, |unit_str| unit_str.len())
+            };
 
             let readable_name = format!(
               "{}__{}",
