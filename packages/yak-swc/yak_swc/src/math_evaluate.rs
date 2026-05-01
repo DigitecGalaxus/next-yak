@@ -1,11 +1,14 @@
 use swc_core::ecma::ast::*;
 
-use crate::utils::ast_helper::extract_ident_and_parts;
+use crate::utils::ast_helper::{extract_ident_and_parts, unwrap_type_casts};
 use crate::variable_visitor::VariableVisitor;
 
 /// Try to evaluate a given expression
 /// e.g. `2 + 3 * 4` will return `14`
 pub fn try_evaluate(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<f64> {
+  // See through TypeScript-only wrappers and parentheses so e.g.
+  // `${(5 as const) * 2}` or `${someConst as number + 10}` evaluates statically.
+  let expr = unwrap_type_casts(expr);
   match expr {
     Expr::Ident(_) | Expr::Member(_) => {
       // Don't report errors — try_evaluate is speculative. A non-static member
@@ -62,7 +65,6 @@ pub fn try_evaluate(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<f
         }
       }
     }
-    Expr::Paren(paren_expr) => try_evaluate(&paren_expr.expr, variable_visitor),
     _ => None,
   }
 }

@@ -25,8 +25,8 @@
     "build:playground": "cargo build -p playground-wasm --release --target=wasm32-unknown-unknown",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
     "prettier": "cargo fmt --all",
-    "test": "cargo test",
-    "test:snapshots": "cd yak_swc && UPDATE=1 cargo test"
+    "test": "cargo test -- --include-ignored",
+    "test:snapshots": "cd yak_swc && UPDATE=1 cargo test -- --include-ignored"
   },
   "files": [],
   "preferUnplugged": true,
