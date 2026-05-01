@@ -7,7 +7,7 @@ name: Docs PR preview deploy
 
 on:
   workflow_run:
-    workflows: ["Docs PR preview build"]
+    workflows: ["Docs PR preview untrusted build"]
     types: [completed]
 
 permissions:

@@ -7,7 +7,7 @@ name: Example PR preview deploy
 
 on:
   workflow_run:
-    workflows: ["Example PR preview build"]
+    workflows: ["Example PR preview untrusted build"]
     types: [completed]
 
 permissions:

@@ -1,4 +1,4 @@
-name: Example PR preview build
+name: Example PR preview untrusted build
 
 # Builds .vercel/output for the docs site on every PR and uploads it as an
 # artifact. Runs in the untrusted-PR security context which means it has NO
