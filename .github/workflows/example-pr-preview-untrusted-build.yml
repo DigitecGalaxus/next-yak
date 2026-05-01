@@ -104,7 +104,6 @@ jobs:
             packages
             examples/next-js
             !**/node_modules
-            !examples/next-js/.next
             !packages/yak-swc/target
           retention-days: 1
           if-no-files-found: error
