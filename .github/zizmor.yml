@@ -1,0 +1,16 @@
+# Zizmor project configuration.
+# https://docs.zizmor.sh/configuration/
+
+rules:
+  dangerous-triggers:
+    # The PR-preview deploy workflows intentionally use `workflow_run` —
+    # that's the GitHub-recommended secure pattern for handling untrusted
+    # PR code: the build runs in the unprivileged PR context, uploads the
+    # built `.vercel/output` as an artifact, then this workflow runs in
+    # the trusted base-branch context, downloads the artifact, and calls
+    # `vercel deploy --prebuilt`. PR code is never executed in the deploy
+    # workflow. The only values from the untrusted artifact (PR number and
+    # head SHA) are validated against strict regexes before being used.
+    ignore:
+      - docs-pr-preview-deploy.yml
+      - example-pr-preview-deploy.yml
