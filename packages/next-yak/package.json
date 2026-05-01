@@ -23,14 +23,17 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./static": {
+      "types": "./dist/static/index.d.ts",
       "import": "./dist/static/index.js",
       "require": "./dist/static/index.cjs"
     },
     "./internal": {
+      "types": "./dist/internal.d.ts",
       "import": "./dist/internal.js",
       "require": "./dist/internal.cjs"
     },
@@ -40,24 +43,29 @@
       "require": "./dist/withYak/index.cjs"
     },
     "./context/baseContext": {
+      "types": "./dist/context/baseContext.d.ts",
       "import": "./dist/context/baseContext.js",
       "require": "./dist/context/baseContext.cjs"
     },
     "./context": {
       "react-server": {
+        "types": "./dist/context/index.server.d.ts",
         "import": "./dist/context/index.server.js",
         "require": "./dist/context/index.server.cjs"
       },
       "default": {
+        "types": "./dist/context/index.d.ts",
         "import": "./dist/context/index.js",
         "require": "./dist/context/index.cjs"
       }
     },
     "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
       "require": "./dist/jsx-runtime.cjs",
       "import": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
+      "types": "./dist/jsx-dev-runtime.d.ts",
       "require": "./dist/jsx-dev-runtime.cjs",
       "import": "./dist/jsx-dev-runtime.js"
     },
@@ -103,14 +111,22 @@
     "vitest": "catalog:dev"
   },
   "peerDependencies": {
+    "@types/react": ">=18",
     "next": ">=16.1.0",
+    "react": ">=18.0.0",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
     "next": {
       "optional": true
     },
     "vite": {
+      "optional": true
+    },
+    "react": {
       "optional": true
     }
   },
