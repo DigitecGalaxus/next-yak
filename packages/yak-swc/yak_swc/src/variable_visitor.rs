@@ -164,14 +164,12 @@ impl Fold for VariableVisitor {}
 impl VisitMut for VariableVisitor {
   /// Visit export default expressions to store the variable name
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    match n.expr.as_ref() {
-      Expr::Ident(ident) => {
-        self.default_export = Some(ScopedVariableReference::new(
-          ident.to_id(),
-          vec![ident.sym.clone().into()],
-        ));
-      }
-      _ => {}
+    // See through TS casts (e.g. `export default Button as Foo`)
+    if let Expr::Ident(ident) = unwrap_type_casts(n.expr.as_ref()) {
+      self.default_export = Some(ScopedVariableReference::new(
+        ident.to_id(),
+        vec![ident.sym.clone().into()],
+      ));
     }
     n.visit_mut_children_with(self);
   }
