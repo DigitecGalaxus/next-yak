@@ -74,6 +74,14 @@ jobs:
           mkdir -p .vercel
           printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
 
+      # `vercel deploy --prebuilt` still hits the Vercel API to fetch project
+      # info and validates that the dashboard's configured `rootDirectory`
+      # exists on disk, even though `--prebuilt` only uploads `.vercel/output`
+      # and never enters that directory. Create the path as an empty stub so
+      # the check passes; nothing is read from it.
+      - name: Stub rootDirectory path for prebuilt deploy
+        run: mkdir -p docs
+
       - name: Install Vercel CLI
         run: npm install -g vercel@52.0.0
 
