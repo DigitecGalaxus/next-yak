@@ -3,9 +3,15 @@ import type {
   ModuleExport,
   ParsedModule,
   RecordExport,
+  UnsupportedExportSource,
 } from "./parseModule.js";
 import { Cache } from "./types.js";
-import { CauseError, CircularDependencyError, ResolveError } from "./Errors.js";
+import {
+  CauseError,
+  CircularDependencyError,
+  ResolveError,
+  UnsupportedExportError,
+} from "./Errors.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
@@ -441,6 +447,7 @@ async function resolveModuleExport(
   specifiers: string[],
   seen: Set<string>,
 ): Promise<ResolvedCssImport> {
+  const failureMessage = `Unable to resolve "${specifiers.join(".")}" in module "${filePath}"`;
   try {
     switch (moduleExport.type) {
       case "re-export": {
@@ -545,18 +552,100 @@ async function resolveModuleExport(
           value: moduleExport.value,
         };
       }
+      case "unsupported": {
+        throw new UnsupportedExportError(failureMessage, {
+          cause: explainUnsupported(
+            filePath,
+            specifiers.join("."),
+            moduleExport.hint,
+            moduleExport.source,
+          ),
+        });
+      }
     }
   } catch (error) {
-    throw new ResolveError(
-      `Unable to resolve "${specifiers.join(".")}" in module "${filePath}"`,
-      { cause: error },
+    // UnsupportedExportError already carries this frame's "Unable to resolve …"
+    // wrapper, so it bubbles up unchanged to avoid duplicating the line.
+    if (error instanceof UnsupportedExportError) {
+      throw error;
+    }
+    throw new ResolveError(failureMessage, { cause: error });
+  }
+}
+
+function explainUnsupported(
+  filePath: string,
+  specifier: string,
+  hint: string | undefined,
+  source: UnsupportedExportSource | undefined,
+): string {
+  const isYakFile = /\.yak\.(?:ts|tsx|js|jsx)$/.test(filePath);
+  const docs =
+    "https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files";
+  const snippet = source
+    ? renderSourceSnippet(filePath, source, hint ?? "")
+    : undefined;
+
+  const lines: string[] = [];
+  if (isYakFile) {
+    const got = hint ? ` (got \`${hint}\`)` : "";
+    lines.push(
+      `\`${specifier}\` evaluated to a value that cannot be inlined into CSS${got}.`,
     );
+    if (snippet) lines.push(snippet);
+    lines.push(
+      `  help: replace it with a string, number, or plain object/array of those`,
+      `  see:  ${docs}`,
+    );
+    return lines.join("\n");
   }
 
-  throw new ResolveError(
-    `Unable to resolve "${specifiers.join(".")}" in module "${filePath}"`,
-    { cause: `unknown type "${moduleExport.type}"` },
+  const got = hint ? ` (got a ${hint})` : "";
+  lines.push(`\`${specifier}\` is not a string or number literal${got}.`);
+  if (snippet) lines.push(snippet);
+  lines.push(
+    `  help: rename "${filePath}" to "${suggestYakFileName(filePath)}" so its exports run at build time`,
+    `        (or replace \`${specifier}\` with a literal value)`,
+    `  see:  ${docs}`,
   );
+  return lines.join("\n");
+}
+
+function suggestYakFileName(filePath: string): string {
+  const match = filePath.match(/^(.*)\.(ts|tsx|js|jsx)$/);
+  if (!match) return filePath;
+  return `${match[1]}.yak.${match[2]}`;
+}
+
+/**
+ * Render a Rust-compiler-style snippet from a structural source location:
+ *
+ *      --> /foo/colors.ts:5:18
+ *       |
+ *     5 | export const bg = `var(${v})`;
+ *       |                   ^^^^^^^^^^^^ TemplateLiteral
+ */
+function renderSourceSnippet(
+  filePath: string,
+  source: UnsupportedExportSource,
+  label: string,
+): string {
+  const startLine = source.start.line;
+  const startCol = source.start.column;
+  const sameLine = source.end.line === startLine;
+  const caretLen = sameLine
+    ? Math.max(1, source.end.column - startCol)
+    : Math.max(1, source.lineText.length - startCol);
+
+  const lineNumStr = String(startLine);
+  const gutterPad = " ".repeat(lineNumStr.length);
+
+  return [
+    `   --> ${filePath}:${startLine}:${startCol + 1}`,
+    `    ${gutterPad} |`,
+    `    ${lineNumStr} | ${source.lineText}`,
+    `    ${gutterPad} | ${" ".repeat(startCol)}${"^".repeat(caretLen)} ${label}`,
+  ].join("\n");
 }
 
 function resolveSpecifierInRecord(

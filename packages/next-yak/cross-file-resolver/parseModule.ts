@@ -176,7 +176,25 @@ export type RecordExport = {
   type: "record";
   value: Record<string, ModuleExport>;
 };
-export type UnsupportedExport = { type: "unsupported"; hint?: string };
+export type UnsupportedExport = {
+  type: "unsupported";
+  hint?: string;
+  /**
+   * Source location of the offending expression. Populated by the parser
+   * when it has access to source text; left undefined for runtime-evaluated
+   * yak modules. The error formatter is responsible for any rendering.
+   */
+  source?: UnsupportedExportSource;
+};
+
+export type UnsupportedExportSource = {
+  /** 1-based line number, 0-based column — same convention as Babel `loc`. */
+  start: { line: number; column: number };
+  end: { line: number; column: number };
+  /** The text of `start.line` from the original source — kept so the
+   * error formatter can render a snippet without re-reading the file. */
+  lineText: string;
+};
 export type ReExport = { type: "re-export"; name: string; from: string };
 export type NamespaceReExport = { type: "namespace-re-export"; from: string };
 export type TagTemplateExport = { type: "tag-template" };
