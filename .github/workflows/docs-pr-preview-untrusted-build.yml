@@ -101,7 +101,6 @@ jobs:
             packages
             docs
             !**/node_modules
-            !docs/.next
             !packages/yak-swc/target
           retention-days: 1
           if-no-files-found: error
