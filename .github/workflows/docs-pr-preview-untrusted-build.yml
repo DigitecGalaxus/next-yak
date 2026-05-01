@@ -68,10 +68,14 @@ jobs:
 
       # Stub `.vercel/project.json` so `vercel build` knows which project to
       # build for, without needing `vercel pull` (which requires the token).
+      # `settings.framework` + `settings.rootDirectory` are required. Without
+      # them `vercel build` exits with `project_settings_required`. Other
+      # framework defaults are inferred by the CLI.
       - name: Stub Vercel project link
         run: |
           mkdir -p .vercel
-          printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+          printf '{"projectId":"%s","orgId":"%s","settings":{"framework":"nextjs","rootDirectory":"docs"}}' \
+            "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
 
       - name: Build Vercel output
         run: vercel build

@@ -1,8 +1,8 @@
 name: Example PR preview untrusted build
 
-# Builds .vercel/output for the docs site on every PR and uploads it as an
+# Builds .vercel/output for the example app on every PR and uploads it as an
 # artifact. Runs in the untrusted-PR security context which means it has NO
-# access to VERCEL_TOKEN. The companion workflow `docs-pr-preview-deploy.yml`
+# access to VERCEL_TOKEN. The companion workflow `example-pr-preview-deploy.yml`
 # picks up the artifact via workflow_run and performs the actual deploy.
 
 on:
@@ -71,10 +71,14 @@ jobs:
 
       # Stub `.vercel/project.json` so `vercel build` knows which project to
       # build for, without needing `vercel pull` (which requires the token).
+      # `settings.framework` + `settings.rootDirectory` are required. Without
+      # them `vercel build` exits with `project_settings_required`. Other
+      # framework defaults are inferred by the CLI.
       - name: Stub Vercel project link
         run: |
           mkdir -p .vercel
-          printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+          printf '{"projectId":"%s","orgId":"%s","settings":{"framework":"nextjs","rootDirectory":"examples/next-js"}}' \
+            "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
 
       - name: Build Vercel output
         run: vercel build
