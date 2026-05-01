@@ -2,8 +2,9 @@
 title: Features
 description: Next-yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
 ---
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 ## Static CSS
 
@@ -12,7 +13,7 @@ You can write your styles as you normally would with styled-components.
 During build time, these styles are extracted, and your component is assigned a class that encapsulates these styles.
 
 ```jsx title="my-component.tsx"
-import { styled } from 'next-yak';
+import { styled } from "next-yak";
 
 const Headline = styled.h1`
   font-size: 2rem;
@@ -21,8 +22,8 @@ const Headline = styled.h1`
 `;
 
 const Component = () => {
-  return <Headline>Hello there!</Headline>
-}
+  return <Headline>Hello there!</Headline>;
+};
 ```
 
 <details>
@@ -267,14 +268,13 @@ const Header = styled.nav('.Header',
 </Tabs>
 </details>
 
-
 ## Animations
 
 In order to create CSS animations, you can use the `keyframes` API and specify the keyframes for the animation
 you want to create. This can be used in your animation declarations within the same file.
 
 ```jsx title="my-component.tsx"
-import { keyframes, styled } from 'next-yak';
+import { keyframes, styled } from "next-yak";
 
 const fadeIn = keyframes`
   0% {
@@ -283,11 +283,11 @@ const fadeIn = keyframes`
   100% {
     opacity: 1;
   }
-`
+`;
 
 const FadeInButton = styled.button`
   animation: 1s ${fadeIn} ease-out;
-`
+`;
 ```
 
 <details>
@@ -358,10 +358,10 @@ const MyComp = styled.div`
 You can also make it dynamic, where the props are passed to the mixin.
 
 ```jsx title="my-component.tsx"
-import { css, styled } from 'next-yak';
+import { css, styled } from "next-yak";
 
 const mixin = css`
-  color: ${(props) => props.$green ? 'green' : 'blue'};
+  color: ${(props) => (props.$green ? "green" : "blue")};
 `;
 
 const MyComp = styled.div`
@@ -485,7 +485,9 @@ const Box = styled.div('.Box', {
 ## Theming
 
 <Callout type="info">
-  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak now supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs seamlessly.
+  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are
+  async. Next-yak supports async `getYakThemeContext()` functions, allowing
+  you to await these server-side APIs seamlessly.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
@@ -497,26 +499,26 @@ For static design tokens like colors, spacing, typography, and other unchanging 
 ```tsx
 // theme.ts
 export const colors = {
-  primary: '#009688',
-  secondary: '#ff5722',
-  background: '#ffffff'
-}
+  primary: "#009688",
+  secondary: "#ff5722",
+  background: "#ffffff",
+};
 
 export const spacing = {
-  xs: '4px',
-  sm: '8px',
-  md: '16px',
-  lg: '32px'
-}
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "32px",
+};
 
 // Button.tsx
-import { styled } from 'next-yak'
-import { colors, spacing } from './theme'
+import { styled } from "next-yak";
+import { colors, spacing } from "./theme";
 
 const Button = styled.button`
   background: ${colors.primary};
   padding: ${spacing.md};
-`
+`;
 ```
 
 This approach has better performance because these values can be extracted and optimized during build time, whereas context values are resolved at runtime.
@@ -532,16 +534,18 @@ const isNewDesign: () => boolean | undefined = () => true;
 
 // ---cut---
 export async function getYakThemeContext() {
-    return {
-        brandName: getMyBrandName() ?? 'myDefaultBrand',
-        featureFlags: {
-            newDesign: isNewDesign() ?? false
-        }
-    }
+  return {
+    brandName: getMyBrandName() ?? "myDefaultBrand",
+    featureFlags: {
+      newDesign: isNewDesign() ?? false,
+    },
+  };
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme extends Awaited<
+    ReturnType<typeof getYakThemeContext>
+  > {}
 }
 ```
 
@@ -555,16 +559,16 @@ const getMyBrandName: () => string | undefined = () => "test";
 const isNewDesign: () => boolean | undefined = () => true;
 
 export async function getYakThemeContext() {
-    return {
-        brandName: getMyBrandName() ?? 'myDefaultBrand',
-        featureFlags: {
-            newDesign: isNewDesign() ?? false
-        }
-    }
+  return {
+    brandName: getMyBrandName() ?? "myDefaultBrand",
+    featureFlags: {
+      newDesign: isNewDesign() ?? false,
+    },
+  };
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
 }
 
 // ---cut---
@@ -609,17 +613,19 @@ const Button = styled.button`
 Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs seamlessly:
 
 ```tsx
-import { cookies } from 'next/headers'
+import { cookies } from "next/headers";
 
 export async function getYakThemeContext() {
-    const cookieStore = await cookies()
-    return {
-        highContrast: cookieStore.get("highContrast")?.value === "true"
-    }
+  const cookieStore = await cookies();
+  return {
+    highContrast: cookieStore.get("highContrast")?.value === "true",
+  };
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme extends Awaited<
+    ReturnType<typeof getYakThemeContext>
+  > {}
 }
 ```
 
@@ -632,11 +638,19 @@ it allows you to write local styles for certain elements on your page. Different
 selectors that target wrapped elements.
 
 ```jsx title="my-component.tsx"
-import { css } from 'next-yak';
+import { css } from "next-yak";
 
 const Component = () => {
-  return <div css={css`color: red;`}>Hello there!</div>
-}
+  return (
+    <div
+      css={css`
+        color: red;
+      `}
+    >
+      Hello there!
+    </div>
+  );
+};
 ```
 
 It's meant for simple styling requirements, where you don't have to think about a name for a specialized component.
@@ -646,11 +660,15 @@ The `css` prop is allowed on any element that can accept `className` and `style`
 If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
 
 ```jsx title="my-component.tsx"
-import { css } from 'next-yak';
+import { css } from "next-yak";
 
 const Component = (props) => {
-  return <div css={atoms('bg-red-500', props.primary && 'bg-blue-500')}>Hello there!</div>
-}
+  return (
+    <div css={atoms("bg-red-500", props.primary && "bg-blue-500")}>
+      Hello there!
+    </div>
+  );
+};
 ```
 
 ### TypeScript
@@ -660,11 +678,11 @@ To use it with the correct types just add the following line to the top of the f
 ```tsx title="my-component.tsx"
 /** @jsxImportSource next-yak */ // [!code hl]
 
-import { css } from 'next-yak';
+import { css } from "next-yak";
 
 const Component = () => {
-  return <div css={{ color: 'red' }}>Hello there!</div>
-}
+  return <div css={{ color: "red" }}>Hello there!</div>;
+};
 ```
 
 Or just add this to your `tsconfig.json` and all your css props will have the correct types.
@@ -677,6 +695,73 @@ Or just add this to your `tsconfig.json` and all your css props will have the co
 }
 ```
 
+## Cross-File Imports
+
+next-yak supports importing constants, mixins, and selectors from normal modules or `.yak` files. This works consistently across all bundlers (webpack, Turbopack, and Vite).
+
+### Build-Time Constants with `.yak` Files
+
+`.yak.ts` / `.yak.tsx` files are evaluated at build time, which means you can use real JavaScript logic to compute values that then become part of your static CSS. This is the key difference from ordinary `.ts` files. You can map, iterate, and calculate at build time.
+
+```tsx title="theme/spacing.yak.ts"
+export const spacing = {
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "32px",
+};
+
+export const spacingTokens = Object.entries(spacing).reduce(
+  (acc, [key, value]) => ({
+    ...acc,
+    [key]: `padding: ${value}; margin: ${value};`,
+  }),
+  {} as Record<string, string>,
+);
+```
+
+```tsx title="components/Box.tsx"
+import { styled, css } from "next-yak";
+import { spacingTokens } from "../theme/spacing.yak";
+
+const Box = styled.div`
+  ${css`
+    ${spacingTokens["sm"]}
+  `}
+  ${css`
+    ${spacingTokens["md"]}
+  `}
+`;
+```
+
+Here `spacingTokens` is computed at build time: an ordinary `.ts` file would keep `Object.entries()` and `.reduce()` as runtime code, but a `.yak` file evaluates these expressions and inlines the final object. The resulting CSS contains fully static class names. Which means no JavaScript runs for these styles at runtime, even though their values were computed with array operations. You can reference any key like `spacingTokens["sm"]` as a build-time constant.
+
+This also works for generating media query ranges, animation durations from a config, or any other calculated value.
+
+### Importing Mixins Across Files
+
+You can also import CSS mixins defined with `css` from other regular modules:
+
+```tsx title="mixins.tsx"
+import { css } from "next-yak";
+
+export const truncate = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+```
+
+```tsx title="components/Label.tsx"
+import { styled } from "next-yak";
+import { truncate } from "../mixins";
+
+const Label = styled.span`
+  ${truncate}
+  max-width: 200px;
+`;
+```
+
 ## Generic Yak Component
 
 If you use `next-yak` to wrap a generic component, you can use the `GenericYakComponentOf` component to preserve the type of your component while still being able to use it as a regular yak component.
@@ -687,15 +772,16 @@ import { type GenericYakComponentOf, styled } from "next-yak";
 
 type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
 
-const MyGenericComponent: GenericComponentType = (props) =>
-  <div {...props}>hello</div>;
+const MyGenericComponent: GenericComponentType = (props) => (
+  <div {...props}>hello</div>
+);
 
 const StyledComponent = styled(MyGenericComponent)`
   color: red;
 ` as GenericYakComponentOf<GenericComponentType>;
 
 // usage
-<StyledComponent<{myProp: string}> myProp="test" />
+<StyledComponent<{ myProp: string }> myProp="test" />;
 ```
 
 This also works for cases where you want to add properties that are not part of the generic component's props.
@@ -706,8 +792,9 @@ import { type GenericYakComponentOf, styled } from "next-yak";
 
 type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
 
-const MyGenericComponent: GenericComponentType = (props) =>
-  <div {...props}>hello</div>;
+const MyGenericComponent: GenericComponentType = (props) => (
+  <div {...props}>hello</div>
+);
 
 type MyAdditionalProps = {
   additionalProp: string;
@@ -718,5 +805,5 @@ const StyledComponent = styled(MyGenericComponent)`
 ` as GenericYakComponentOf<GenericComponentType, MyAdditionalProps>;
 
 // usage
-<StyledComponent<{myProp: string}> myProp="test" additionalProp="me" />
+<StyledComponent<{ myProp: string }> myProp="test" additionalProp="me" />;
 ```
