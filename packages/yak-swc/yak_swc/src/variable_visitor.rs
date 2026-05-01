@@ -3,6 +3,7 @@ use swc_core::atoms::Wtf8Atom;
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 
+use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::cross_file_selectors::ImportKind;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -179,7 +180,11 @@ impl VisitMut for VariableVisitor {
     var.decls.iter_mut().for_each(|decl| {
       if let Pat::Ident(ident) = &decl.name {
         if let Some(init) = &decl.init {
-          self.variables.insert(ident.to_id(), init.clone());
+          // Strip TypeScript casts (e.g. `as unknown as Foo`) so downstream
+          // code can match the underlying tagged-template / literal value.
+          self
+            .variables
+            .insert(ident.to_id(), Box::new(unwrap_type_casts(init).clone()));
         }
       }
     });
