@@ -3,20 +3,25 @@ title: FAQ
 ---
 import { Callout } from 'fumadocs-ui/components/callout';
 
-## Is next-yak production ready?
+## General questions
 
-Yes, `next-yak` is production ready.
+### Is next-yak production ready?
 
-Digitec Galaxus, the biggest online retailer in Switzerland, is using `next-yak` in production with a few thousand components
-and saw a significant improvement in their CSS and web vitals performance especially on mobile devices. You can read more about their journey in their [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
+Yes, `next-yak` is production ready and battle-tested at scale.
 
-## Can I use next-yak with other frameworks than Next.js?
+[Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors next-yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
 
-Yes! Since v9.1.0, next-yak supports [Vite](/docs/vite) in addition to Next.js. This works with vanilla Vite, Vite with Rolldown, react-router, and tanstack-start.
+### What frameworks and bundlers does next-yak support?
 
-Feel free to ask for adding support for other frameworks in our GitHub issue tracker and we will give it a thought.
+next-yak has first-class support for multiple frameworks and bundlers:
 
-## Can I mix/combine next-yak with other CSS-in-JS libraries?
+- **Next.js** with both **Webpack** and **Turbopack**
+- **[Vite](/docs/vite)** 7+ (including Vite 8 with OXC/Rolldown), since v9.1.0. Any vite-based framework works: react-router, tanstack start, and more
+- **[Storybook](/docs/storybook)** 10+ with both Vite and Webpack builders via the `storybook-addon-yak` addon
+
+Feel free to ask for adding support for other frameworks in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we will give it a thought.
+
+### Can I mix/combine next-yak with other CSS-in-JS libraries?
 
 Yes, you can use next-yak with other CSS-in-JS libraries.
 
@@ -40,16 +45,51 @@ const Button = styled.button`
 If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See the [Migration to native CSS](/docs/migration-to-native-css) guide for details.
 </Callout>
 
-## I get a compile time error in my app router page
+### Can I reference a component in another component?
 
-At the moment, there is an issue with styles in files that use the [metadata api](https://nextjs.org/docs/app/building-your-application/optimizing/metadata) of next.js.
+Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
 
-We have an open issue for this problem and are working on a solution.
-See the [open next.js issue here](https://github.com/vercel/next.js/issues/67591)
+```jsx title="my-component.tsx"
+import { styled } from 'next-yak';
 
-If it's not this issue, please read it carefully as it should indicate how to fix the problem.
+const Button = styled.button`
+	background: #BF4F74;
+`;
 
-## I get an error about selector that are not pure
+const Nav = styled.nav`
+	background: #BF4F74;
+	${Button} {
+		color: white;
+	}
+`;
+```
+
+### Why does next-yak always generate CSS variables when the values are static references that are known at build time?
+
+It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
+and add errors if we detect that a value is static but a CSS variable is used.
+
+### Can I use next-yak with TypeScript?
+
+Yes, `next-yak` is fully type safe.
+
+### Can I contribute to next-yak?
+
+Yes.
+
+We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/DigitecGalaxus/next-yak)
+
+## Troubleshooting
+
+### I get a compile time error in my app router page
+
+This is a known issue with Webpack when styles are used in files that also use the [metadata API](https://nextjs.org/docs/app/building-your-application/optimizing/metadata) of Next.js. See the [open Next.js issue](https://github.com/vercel/next.js/issues/67591) for details.
+
+If you are using Webpack, switching to Turbopack resolves this issue. With Turbopack enabled, styled components and the metadata API work together without problems.
+
+If it's not this issue, please read the error carefully as it should indicate how to fix the problem.
+
+### I get an error about selector that are not pure
 
 If you see an error like `Selector "h1" is not pure (pure selectors must contain at least one local class or id)`, this is coming from PostCSS and CSS Modules, not from next-yak directly.
 
@@ -81,41 +121,7 @@ export default withYak({
 
 See the [Migration to native CSS](/docs/migration-to-native-css) guide for more details.
 
-## Can I reference a component in another component?
-
-Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
-
-```jsx title="my-component.tsx"
-import { styled } from 'next-yak';
-
-const Button = styled.button`
-	background: #BF4F74;
-`;
-
-const Nav = styled.nav`
-	background: #BF4F74;
-	${Button} {
-		color: white;
-	}
-`;
-```
-
-## Why does next-yak always generate CSS variables when the values are static references that are known at build time?
-
-It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
-and add errors if we detect that a value is static but a CSS variable is used.
-
-## Can I use next-yak with TypeScript?
-
-Yes, `next-yak` is fully type safe.
-
-## Can I contribute to next-yak?
-
-Yes.
-
-We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/DigitecGalaxus/next-yak)
-
-## My styles are not applied
+### My styles are not applied
 
 If your styles are not applied, the first thing you should check is the transformed output of your component.
 In order to do that, you can enable the `debug` option in the `withYak` function.
