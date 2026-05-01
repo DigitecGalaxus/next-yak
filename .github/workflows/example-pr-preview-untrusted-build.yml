@@ -99,6 +99,10 @@ jobs:
           path: .vercel/output
           retention-days: 1
           if-no-files-found: error
+          # `.vercel/output/functions/*.func/.vc-config.json` are hidden files
+          # that Vercel needs server-side to ingest the prebuilt output.
+          # Without this, the deploy fails with "Could not load function config".
+          include-hidden-files: true
 
       - name: Upload deploy metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
