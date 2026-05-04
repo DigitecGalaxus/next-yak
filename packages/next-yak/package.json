@@ -1,26 +1,41 @@
 {
   "name": "next-yak",
   "version": "9.4.1",
-  "type": "module",
-  "types": "./dist/",
-  "sideEffects": false,
-  "license": "MIT",
   "description": "next-yak is a CSS-in-JS solution tailored for Next.js that seamlessly combines the expressive power of styled-components syntax with efficient build-time extraction of CSS using Next.js's built-in CSS configuration",
+  "keywords": [
+    "css-in-js",
+    "next.js",
+    "react",
+    "styled-components",
+    "typescript"
+  ],
   "homepage": "https://yak.js.org/",
+  "bugs": {
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Jan Nicklas"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/DigitecGalaxus/next-yak.git"
   },
-  "bugs": {
-    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
-  },
-  "keywords": [
-    "next.js",
-    "css-in-js",
-    "styled-components",
-    "react",
-    "typescript"
+  "files": [
+    "dist",
+    "loaders",
+    "runtime",
+    "withYak",
+    "LICENSE"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -76,6 +91,9 @@
       "import": "./dist/loaders/vite-plugin.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
     "build": "tsdown",
@@ -129,23 +147,5 @@
     "react": {
       "optional": true
     }
-  },
-  "files": [
-    "dist",
-    "loaders",
-    "runtime",
-    "withYak",
-    "LICENSE"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "maintainers": [
-    {
-      "name": "Luca Schneider"
-    }
-  ],
-  "author": {
-    "name": "Jan Nicklas"
   }
 }

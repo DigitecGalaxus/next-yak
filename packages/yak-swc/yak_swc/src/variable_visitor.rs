@@ -3,6 +3,7 @@ use swc_core::atoms::Wtf8Atom;
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 
+use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::cross_file_selectors::ImportKind;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -163,14 +164,12 @@ impl Fold for VariableVisitor {}
 impl VisitMut for VariableVisitor {
   /// Visit export default expressions to store the variable name
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    match n.expr.as_ref() {
-      Expr::Ident(ident) => {
-        self.default_export = Some(ScopedVariableReference::new(
-          ident.to_id(),
-          vec![ident.sym.clone().into()],
-        ));
-      }
-      _ => {}
+    // See through TS casts (e.g. `export default Button as Foo`)
+    if let Expr::Ident(ident) = unwrap_type_casts(n.expr.as_ref()) {
+      self.default_export = Some(ScopedVariableReference::new(
+        ident.to_id(),
+        vec![ident.sym.clone().into()],
+      ));
     }
     n.visit_mut_children_with(self);
   }
@@ -179,7 +178,11 @@ impl VisitMut for VariableVisitor {
     var.decls.iter_mut().for_each(|decl| {
       if let Pat::Ident(ident) = &decl.name {
         if let Some(init) = &decl.init {
-          self.variables.insert(ident.to_id(), init.clone());
+          // Strip TypeScript casts (e.g. `as unknown as Foo`) so downstream
+          // code can match the underlying tagged-template / literal value.
+          self
+            .variables
+            .insert(ident.to_id(), Box::new(unwrap_type_casts(init).clone()));
         }
       }
     });

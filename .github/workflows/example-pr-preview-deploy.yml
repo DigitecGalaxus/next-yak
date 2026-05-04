@@ -1,0 +1,125 @@
+name: Example PR preview deploy
+
+# Runs in the trusted base-branch context with access to VERCEL_TOKEN.
+# Downloads the build artifact uploaded by the build workflow, recreates
+# `node_modules` and uploads the prebuilt output to Vercel.
+
+on:
+  workflow_run:
+    workflows: ["Example PR preview untrusted build"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+jobs:
+  deploy:
+    name: Deploy example preview to Vercel
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # comment the preview URL on the PR
+      actions: read # download artifacts from the triggering run
+    steps:
+      - name: Download Vercel build output
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: example-vercel-output
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download deploy metadata
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: example-deploy-meta
+          path: deploy-meta
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Validate metadata strictly
+      - name: Read and validate deploy metadata
+        id: meta
+        run: |
+          PR_NUMBER=$(cat deploy-meta/pr_number.txt)
+          HEAD_SHA=$(cat deploy-meta/head_sha.txt)
+          if ! printf '%s' "$PR_NUMBER" | grep -qE '^[0-9]+$'; then
+            echo "::error::Invalid PR number in artifact"
+            exit 1
+          fi
+          if ! printf '%s' "$HEAD_SHA" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "::error::Invalid head SHA in artifact"
+            exit 1
+          fi
+          {
+            echo "pr_number=$PR_NUMBER"
+            echo "head_sha=$HEAD_SHA"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Stub Vercel project link
+        run: |
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+
+      # `vercel deploy --prebuilt` walks each function's `filePathMap` and
+      # checks every referenced file exists. Many entries point into
+      # `node_modules/.pnpm/...`, so we recreate node_modules from the
+      # lockfile and never executing PR code.
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies (no scripts, no pnpmfile)
+        run: pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@52.0.0
+
+      - name: Deploy prebuilt output to Vercel
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt)
+          # The URL gets interpolated into a PR comment; reject anything that
+          # isn't a plausible vercel.app deployment URL before trusting it.
+          if ! printf '%s' "$DEPLOYMENT_URL" | grep -qE '^https://[a-z0-9.-]+\.vercel\.app/?$'; then
+            echo "::error::Vercel CLI returned an unexpected deployment URL"
+            exit 1
+          fi
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.meta.outputs.head_sha }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          marker="<!-- example-pr-preview-bot -->"
+          short_sha="${HEAD_SHA:0:7}"
+          body=$(printf '%s\n🧪 **Example preview**: %s\nBuilt from `%s`' "$marker" "$PREVIEW_URL" "$short_sha")
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq "[.[] | select(.body | startswith(\"$marker\"))][0].id")
+          if [ -n "$existing" ] && [ "$existing" != "null" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body"
+          else
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
