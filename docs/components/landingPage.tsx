@@ -42,7 +42,9 @@ export const LandingPage = ({ version }: { version: string }) => {
           </Link>{" "}
           CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
           syntax, get build-time CSS extraction and full <Strong>RSC</Strong>{" "}
-          compatibility.
+          compatibility. Works with <Strong>Next.js</Strong>,{" "}
+          <Strong>Vite</Strong> (e.g. react-router, TanStack Start), and{" "}
+          <Strong>Storybook</Strong>
         </p>
       </Description>
 
@@ -95,8 +97,8 @@ export const LandingPage = ({ version }: { version: string }) => {
       >
         Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
         about its{" "}
-        <Link href="/docs/how-does-it-work">
-          <Strong>Zero-Runtime</Strong>
+        <Link href="/docs/how-does-it-work#the-runtime-part">
+          <Strong>zero runtime</Strong>
         </Link>{" "}
         approach in the docs or take a look at the{" "}
         <Link href="/docs/comparison">
@@ -109,7 +111,14 @@ export const LandingPage = ({ version }: { version: string }) => {
           marginBottom: "1rem",
         }}
       >
-        The performance was validated across many thousands of real-world users:
+        Validated across millions of real-world users at{" "}
+        <Link
+          href="https://www.galaxus.ch/en/page/next-yak-innovation-made-in-zurich-part-2-37910"
+          target="_blank"
+        >
+          <Strong>Digitec Galaxus</Strong>
+        </Link>
+        , Switzerland&apos;s largest e-commerce platform:
       </p>
       <List>
         <li>
@@ -135,40 +144,35 @@ export const LandingPage = ({ version }: { version: string }) => {
       <List>
         <li>
           <EnumTitle>
-            <Strong>Next.js</Strong> Compatibility
+            <Strong>Multi-Framework</Strong>
           </EnumTitle>
-          Works smoothly with both React Server and Client Components
+          First-class support for Next.js (Webpack & Turbopack), Vite 7+
+          (react-router, TanStack Start, ...), and Storybook
         </li>
         <li>
           <EnumTitle>
-            <Strong>Build-Time</Strong> CSS
+            <Strong>Zero-Runtime CSS</Strong>
           </EnumTitle>
-          Reduces load time by handling CSS during the build phase, using
-          Next.js built-in CSS features
+          Extracts CSS at compile time with zero runtime overhead
         </li>
         <li>
           <EnumTitle>
-            <Strong>Zero Runtime</Strong>
+            <Strong>React Server Components</Strong>
           </EnumTitle>
-          Operates with minimal impact, simply changing CSS classes without
-          modifying the CSSOM or DOM
+          Works seamlessly with both Server and Client Components
         </li>
         <li>
           <EnumTitle>
-            <Strong>Standard CSS</Strong> Syntax
+            <Strong>Standard CSS Syntax</Strong>
           </EnumTitle>
-          Write styles in familiar, easy-to-use CSS
+          Write familiar CSS with full nesting, keyframes, and media query
+          support
         </li>
         <li>
-          <EnumTitle>Integrates with Atomic CSS</EnumTitle>
-          Easily combines with atomic CSS frameworks like Tailwind CSS for more
-          design options
-        </li>
-        <li>
-          <EnumTitle>No significant build-time overhead</EnumTitle>
-          Doesn't increase the build time significantly, by only transforming
-          statically as much as possible without the need to evaluate arbitrary
-          JavaScript.
+          <EnumTitle>
+            <Strong>Integrates with atomic CSS</Strong>
+          </EnumTitle>
+          Combines with utility-first frameworks like Tailwind CSS
         </li>
       </List>
       <ErrorBoundary fallback={null}>

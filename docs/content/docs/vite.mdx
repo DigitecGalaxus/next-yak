@@ -7,14 +7,14 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 # Using next-yak with Vite
 
-While next-yak is built primarily for Next.js, you can also use it in a Vite setup via the `viteYak` plugin. This works with vanilla Vite, Vite will Rolldown and even with react-router and tanstack-start.
+next-yak has first-class Vite support via the `viteYak` plugin and any Vite-based framework works out of the box.
 
 This page shows how to:
 
 - Configure Vite to use next-yak
 - Define a theme context for `YakThemeProvider`
 - Migrate from styled-components
-- Start from scratch if you dont use any CSS-in-JS yet
+- Start from scratch if you don't use any CSS-in-JS yet
 
 ## Install dependencies
 
@@ -76,13 +76,9 @@ The Vite plugin automatically aliases `next-yak/context/baseContext` to this fil
 export function getYakThemeContext() {
   if (typeof document !== "undefined") {
     const cookies = document.cookie.split(";");
-    const highContrastCookie = cookies.find((cookie) =>
-      cookie.trim().startsWith("highContrast="),
-    );
+    const highContrastCookie = cookies.find((cookie) => cookie.trim().startsWith("highContrast="));
 
-    const highContrast = highContrastCookie
-      ? highContrastCookie.split("=")[1] === "true"
-      : false;
+    const highContrast = highContrastCookie ? highContrastCookie.split("=")[1] === "true" : false;
 
     return { highContrast };
   }
@@ -197,19 +193,10 @@ end up in regular CSS files handled by Vites CSS pipeline.
 next-yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files.
 In Vite, these files are evaluated in a sandboxed context.
 
-You usually **do not need** a `.yak` file for simple string constants – those can live in normal `.ts` modules and be imported as usual.
+You usually **do not need** a `.yak` file for simple string constants, those can live in normal `.ts` modules and be imported as usual.
 Yak files become useful when you want to run a bit of TypeScript/JavaScript at build time
 (e.g. generate a design token scale, expand objects, or normalize data) and then inject the
-_result_ into your styles.
-
-<Callout>
-**Important:** In Vite, yak files must be self-contained.
-They cannot import other modules. If a yak file uses `import` / `require`,
-you'll see an error like:
-
-`Yak files cannot have imports in vite. Yak files should be self-contained and only export constants or styled components.`
-
-</Callout>
+result into your styles.
 
 ### Example: build-time design tokens
 

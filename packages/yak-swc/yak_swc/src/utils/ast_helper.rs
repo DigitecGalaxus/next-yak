@@ -93,6 +93,10 @@ pub fn extract_ident_and_parts(
   expr: &Expr,
   report_errors: bool,
 ) -> Option<ScopedVariableReference> {
+  // See through TypeScript-only wrappers and parentheses so e.g.
+  // `${(StyledSvg as MyType)}` or `${colors!.primary}` is recognized as a
+  // selector / constant reference.
+  let expr = unwrap_type_casts(expr);
   match &expr {
     Expr::Member(member_expr) => member_expr_to_strings(member_expr).map_or_else(
       || {
@@ -118,6 +122,27 @@ pub fn extract_ident_and_parts(
       vec![ident.sym.clone().into()],
     )),
     _ => None,
+  }
+}
+
+/// Strip TypeScript type-only wrappers and parentheses from an expression so
+/// the underlying value (e.g. a tagged template literal) becomes visible to
+/// the static analysis. This lets users write code like
+/// `const highlight = css\`color: red;\` as unknown as ReturnType<typeof css>`
+/// without confusing the const-value lookup.
+pub fn unwrap_type_casts(expr: &Expr) -> &Expr {
+  let mut current = expr;
+  loop {
+    current = match current {
+      Expr::TsAs(inner) => &inner.expr,
+      Expr::TsTypeAssertion(inner) => &inner.expr,
+      Expr::TsConstAssertion(inner) => &inner.expr,
+      Expr::TsNonNull(inner) => &inner.expr,
+      Expr::TsInstantiation(inner) => &inner.expr,
+      Expr::TsSatisfies(inner) => &inner.expr,
+      Expr::Paren(inner) => &inner.expr,
+      _ => return current,
+    };
   }
 }
 
