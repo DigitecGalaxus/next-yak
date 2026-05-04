@@ -5,6 +5,10 @@ const outExtensions: UserConfig["outExtensions"] = ({ format }) => ({
   dts: format === "cjs" ? ".d.cts" : ".d.ts",
 });
 
+// Strip JSDoc to match esbuild defaults (tsup parity); keep annotation
+// comments like `@__PURE__` so downstream tree-shakers can still see them.
+const stripJsdoc = { comments: { jsdoc: false } } as const;
+
 export default defineConfig([
   // runtime
   {
@@ -13,23 +17,12 @@ export default defineConfig([
     minify: true,
     sourcemap: true,
     clean: true,
-    dts: false,
-    deps: { neverBundle: [/^react($|\/)/, "next-yak/context"] },
+    dts: true,
+    deps: { neverBundle: [/^react($|\/)/, /^next-yak\/context$/] },
     target: "es2022",
     outDir: "dist",
     outExtensions,
-  },
-  // runtime types (has to be separate because it includes context types)
-  {
-    entry: ["runtime/index.ts"],
-    format: ["cjs", "esm"],
-    dts: {
-      emitDtsOnly: true,
-    },
-    deps: { neverBundle: [/^react($|\/)/] },
-    target: "es2022",
-    outDir: "dist",
-    outExtensions,
+    outputOptions: stripJsdoc,
   },
   // internal
   {
@@ -38,10 +31,11 @@ export default defineConfig([
     minify: false,
     sourcemap: true,
     dts: true,
-    deps: { neverBundle: [/^react($|\/)/, "next-yak/context"] },
+    deps: { neverBundle: [/^react($|\/)/, /^next-yak\/context$/] },
     target: "es2022",
     outDir: "dist",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // static
   {
@@ -52,6 +46,7 @@ export default defineConfig([
     clean: true,
     dts: true,
     deps: { neverBundle: [/^react($|\/)/] },
+    outputOptions: { ...stripJsdoc, codeSplitting: false },
     target: "es2022",
     outDir: "dist/static",
     outExtensions,
@@ -68,6 +63,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/context",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // client context
   {
@@ -81,6 +77,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/context",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // server context
   {
@@ -96,6 +93,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/context",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // withYak (next.js config plugin)
   {
@@ -108,6 +106,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/withYak",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // isolated-source-eval (main entry)
   {
@@ -119,6 +118,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/isolated-source-eval",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // isolated-source-eval worker (loaded at runtime, must be separate file)
   {
@@ -130,6 +130,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist/isolated-source-eval",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // loaders
   {
@@ -146,9 +147,12 @@ export default defineConfig([
         /^node:/,
         // isolated-source-eval must not be bundled (worker path would break)
         /\.\.\/isolated-source-eval\//,
+        // withYak is shipped as its own entry. Keep its types as re-imports
+        // in the loader `.d.ts` rather than inlining them
+        /\.\.\/withYak\//,
       ],
     },
-    outputOptions: { codeSplitting: false },
+    outputOptions: { ...stripJsdoc, codeSplitting: false },
     dts: true,
     platform: "node",
     target: "es2022",
@@ -158,7 +162,7 @@ export default defineConfig([
   // webpack-loader and turbo-loader each need to be a self-contained CJS
   // file (Next.js loads them by path, no sibling chunks), so they're built
   // separately with codeSplitting disabled.
-  ...(["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"].map(
+  ...["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"].map(
     (loaderEntry): UserConfig => ({
       entry: [loaderEntry],
       format: ["cjs"],
@@ -173,16 +177,19 @@ export default defineConfig([
           /^node:/,
           // isolated-source-eval must not be bundled (worker path would break)
           /\.\.\/isolated-source-eval\//,
+          // withYak is shipped as its own entry. Keep its types as re-imports
+          // in the loader `.d.ts` rather than inlining them
+          /\.\.\/withYak\//,
         ],
       },
-      outputOptions: { codeSplitting: false },
+      outputOptions: { ...stripJsdoc, codeSplitting: false },
       dts: true,
       platform: "node",
       target: "es2022",
       outDir: "dist/loaders",
       outExtensions,
     }),
-  )),
+  ),
   // jsx-runtime
   {
     entry: ["runtime/jsx-runtime.ts"],
@@ -195,6 +202,7 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
   // jsx-runtime-dev
   {
@@ -208,5 +216,6 @@ export default defineConfig([
     target: "es2022",
     outDir: "dist",
     outExtensions,
+    outputOptions: stripJsdoc,
   },
 ]);
