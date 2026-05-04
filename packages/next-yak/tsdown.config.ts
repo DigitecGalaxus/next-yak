@@ -17,12 +17,34 @@ export default defineConfig([
     minify: true,
     sourcemap: true,
     clean: true,
-    dts: true,
+    dts: false,
     deps: { neverBundle: [/^react($|\/)/, /^next-yak\/context$/] },
     target: "es2022",
     outDir: "dist",
     outExtensions,
     outputOptions: stripJsdoc,
+  },
+  // runtime types: separate so `YakTheme` is inlined into dist/index.d.ts
+  // (consumers augment via `declare module "next-yak"`). The plugin works
+  // around tsdown ignoring `dts.emitDtsOnly` on the CJS main build.
+  {
+    entry: ["runtime/index.ts"],
+    format: ["cjs", "esm"],
+    dts: { emitDtsOnly: true },
+    deps: { neverBundle: [/^react($|\/)/] },
+    target: "es2022",
+    outDir: "dist",
+    outExtensions,
+    plugins: [
+      {
+        name: "drop-non-dts",
+        generateBundle(_, bundle) {
+          for (const fileName of Object.keys(bundle)) {
+            if (!/\.d\.[cm]?ts$/.test(fileName)) delete bundle[fileName];
+          }
+        },
+      },
+    ],
   },
   // internal
   {
