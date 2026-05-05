@@ -96,8 +96,8 @@
   },
   "scripts": {
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build && npm run test && npm run test:types:code && npm run test:types:test",
-    "build": "tsup",
-    "watch": "tsup --watch",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
     "test": "vitest run",
     "test:snapshots": "vitest run -u",
     "test:types:code": "tsc -p tsconfig.json",
@@ -123,7 +123,7 @@
     "jsdom": "catalog:dev",
     "next": "catalog:dev",
     "react": "catalog:dev",
-    "tsup": "catalog:dev",
+    "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
     "vitest": "catalog:dev"
