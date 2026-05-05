@@ -27,8 +27,8 @@ export async function runLoaderForSingleFile(
   mockLoader.resourcePath = entry;
 
   const p = createAsyncPromise(mockLoader);
-  // @ts-expect-error Types don't add up
-  webpackLoader.default.call(mockLoader, "", undefined);
+  // @ts-expect-error MockLoaderContext only implements the subset of LoaderContext we need
+  webpackLoader.call(mockLoader, "", undefined);
   return (await p) as string;
 }
 

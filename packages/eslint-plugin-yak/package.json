@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
+    "@typescript-eslint/parser": "catalog:dev",
     "@typescript-eslint/rule-tester": "catalog:dev",
     "eslint-doc-generator": "catalog:dev",
     "tsdown": "catalog:dev",

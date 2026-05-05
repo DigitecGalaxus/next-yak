@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2019",
     "lib": ["DOM"],
+    "types": ["node"],
     "jsx": "react",
     "moduleResolution": "bundler",
     "allowJs": true,
