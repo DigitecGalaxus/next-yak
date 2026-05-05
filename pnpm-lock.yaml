@@ -172,6 +172,9 @@ catalogs:
     next-themes:
       specifier: 0.4.6
       version: 0.4.6
+    pathe:
+      specifier: 2.0.3
+      version: 2.0.3
     postcss:
       specifier: 8.5.8
       version: 8.5.8
@@ -352,6 +355,9 @@ importers:
       next-yak:
         specifier: workspace:*
         version: link:../packages/next-yak
+      pathe:
+        specifier: catalog:dev
+        version: 2.0.3
       prettier:
         specifier: catalog:dev
         version: 3.8.1

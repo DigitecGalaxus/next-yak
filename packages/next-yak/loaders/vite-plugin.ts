@@ -13,6 +13,7 @@ import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 const require = createRequire(import.meta.url);
 
 type ViteYakPluginOptions = YakConfigOptions & {
@@ -33,6 +34,9 @@ type ViteYakPluginOptions = YakConfigOptions & {
     | "sourceRoot"
   >;
 };
+
+const YAK_VIRTUAL_CSS_SUFFIX = ".yak.css";
+const YAK_VIRTUAL_CSS_REGEX = new RegExp("\\.yak\\.css$");
 
 const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
   jsc: {
@@ -80,8 +84,6 @@ export async function viteYak(
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
   let isServe = false;
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
-  const virtualModuleRegex = /^virtual:yak-css:/;
-  const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
   return {
@@ -118,21 +120,23 @@ export async function viteYak(
     },
     resolveId: {
       filter: {
-        id: virtualModuleRegex,
+        id: YAK_VIRTUAL_CSS_REGEX,
       },
       handler(id) {
-        return "\0" + id;
+        // Resolve to an absolute filesystem path so Vite's CSS pipeline can
+        // correctly resolve relative url() references (e.g. url("./icon.svg")).
+        // No \0 prefix — Vite uses the path's directory for url() resolution,
+        // and our load hook intercepts the module before disk reads.
+        return normalizePath(resolve(basePath, id));
       },
     },
     load: {
       filter: {
-        id: virtualCssModuleRegex,
+        id: YAK_VIRTUAL_CSS_REGEX,
       },
       async handler(id) {
-        // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
-        // The path is relative to basePath — resolve to absolute for Vite's file APIs
-        const relativeId = id.slice(17, -4);
-        const originalId = resolve(basePath, relativeId);
+        // Strip .yak.css suffix to get the original source file path
+        const originalId = id.slice(0, -YAK_VIRTUAL_CSS_SUFFIX.length);
         this.addWatchFile(originalId);
 
         const sourceContent = await this.fs.readFile(originalId, {
@@ -201,6 +205,7 @@ export async function viteYak(
               }
               return resolved.id;
             },
+            rewriteRelativeCSSUrl,
           },
           originalId,
           extractedCss,
@@ -263,17 +268,14 @@ export async function viteYak(
     },
 
     // Vite's default HMR only updates the JS module when a source file changes.
-    // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
+    // The extracted CSS lives in a separate virtual module (*.yak.css)
     // which Vite doesn't know is derived from the source file. Without explicit
     // invalidation here, the browser keeps stale CSS after edits.
     hotUpdate({ modules, file, type }) {
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
-      // The SWC plugin generates virtual module paths relative to basePath
-      // (via {{__MODULE_PATH__}}), so we must match that format.
-      const relativePath = normalizePath(relative(basePath, file));
-      const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
+      const virtualId = normalizePath(file) + YAK_VIRTUAL_CSS_SUFFIX;
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
       if (mod) {
         this.environment.moduleGraph.invalidateModule(mod);
@@ -335,7 +337,7 @@ function transform(
                 yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               importMode: {
-                value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
+                value: `{{__MODULE_PATH__}}${YAK_VIRTUAL_CSS_SUFFIX}`,
                 transpilation: "Css",
                 encoding: "None",
               },

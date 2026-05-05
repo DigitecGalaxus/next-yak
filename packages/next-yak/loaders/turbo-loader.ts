@@ -7,6 +7,7 @@ import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFil
 import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
+import { rewriteRelativeCSSUrl } from "./lib/rewriteRelativeUrls.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
 const universalRequire =
@@ -110,6 +111,7 @@ export default async function cssExtractLoader(
           );
         },
         resolve: resolveFn,
+        rewriteRelativeCSSUrl,
       },
       this.resourcePath,
       css,
