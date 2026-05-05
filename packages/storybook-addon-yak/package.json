@@ -33,8 +33,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build"
   },
   "files": [
@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/node": "catalog:dev",
     "next-yak": "workspace:*",
-    "tsup": "catalog:dev",
+    "tsdown": "catalog:dev",
     "typescript": "catalog:dev"
   },
   "peerDependencies": {

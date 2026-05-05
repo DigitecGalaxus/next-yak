@@ -21,7 +21,7 @@
     "generate:codspeed:nested-components": "tsx ./codspeed/nested-components/gen.ts",
     "lighthouse": "node ./lighthouse/lighthouse.mjs",
     "codspeed": "pnpm run generate:letters && pnpm run generate:codspeed && pnpm run codspeed:build && pnpm run codspeed:run",
-    "codspeed:build": "tsup ./codspeed/index.bench.tsx --sourcemap inline --format esm --target node20 --clean --outDir ./codspeed/dist --external benchmark --external react --external next-yak --external styled-components --external react-dom --external @codspeed/benchmark.js-plugin",
+    "codspeed:build": "tsdown ./codspeed/index.bench.tsx --no-config --sourcemap --format esm --target node20 --out-dir ./codspeed/dist --deps.neverBundle benchmark --deps.neverBundle react --deps.neverBundle next-yak --deps.neverBundle styled-components --deps.neverBundle react-dom --deps.neverBundle @codspeed/benchmark.js-plugin",
     "codspeed:run": "NODE_ENV=production node ./codspeed/dist/index.bench.mjs"
   },
   "dependencies": {
@@ -40,7 +40,7 @@
     "@types/react-dom": "catalog:dev",
     "benchmark": "catalog:dev",
     "tree-kill": "catalog:dev",
-    "tsup": "catalog:dev",
+    "tsdown": "catalog:dev",
     "tsx": "catalog:dev",
     "typescript": "catalog:dev"
   }

@@ -6,7 +6,8 @@
       "next-yak/context": ["./runtime/context/index.tsx"]
     },
     "target": "ES2019",
-    "lib": ["DOM"],
+    "lib": ["DOM", "ESNext.Disposable"],
+    "types": ["node", "babel__core", "webpack"],
     "jsx": "react",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
