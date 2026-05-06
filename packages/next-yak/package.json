@@ -38,57 +38,104 @@
   "types": "./dist/",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./static": {
-      "types": "./dist/static/index.d.ts",
-      "import": "./dist/static/index.js",
-      "require": "./dist/static/index.cjs"
+      "import": {
+        "types": "./dist/static/index.d.ts",
+        "default": "./dist/static/index.js"
+      },
+      "require": {
+        "types": "./dist/static/index.d.cts",
+        "default": "./dist/static/index.cjs"
+      }
     },
     "./internal": {
-      "types": "./dist/internal.d.ts",
-      "import": "./dist/internal.js",
-      "require": "./dist/internal.cjs"
+      "import": {
+        "types": "./dist/internal.d.ts",
+        "default": "./dist/internal.js"
+      },
+      "require": {
+        "types": "./dist/internal.d.cts",
+        "default": "./dist/internal.cjs"
+      }
     },
     "./withYak": {
-      "types": "./dist/withYak/index.d.ts",
-      "import": "./dist/withYak/index.js",
-      "require": "./dist/withYak/index.cjs"
+      "import": {
+        "types": "./dist/withYak/index.d.ts",
+        "default": "./dist/withYak/index.js"
+      },
+      "require": {
+        "types": "./dist/withYak/index.d.cts",
+        "default": "./dist/withYak/index.cjs"
+      }
     },
     "./context/baseContext": {
-      "types": "./dist/context/baseContext.d.ts",
-      "import": "./dist/context/baseContext.js",
-      "require": "./dist/context/baseContext.cjs"
+      "import": {
+        "types": "./dist/context/baseContext.d.ts",
+        "default": "./dist/context/baseContext.js"
+      },
+      "require": {
+        "types": "./dist/context/baseContext.d.cts",
+        "default": "./dist/context/baseContext.cjs"
+      }
     },
     "./context": {
       "react-server": {
-        "types": "./dist/context/index.server.d.ts",
-        "import": "./dist/context/index.server.js",
-        "require": "./dist/context/index.server.cjs"
+        "import": {
+          "types": "./dist/context/index.server.d.ts",
+          "default": "./dist/context/index.server.js"
+        },
+        "require": {
+          "types": "./dist/context/index.server.d.cts",
+          "default": "./dist/context/index.server.cjs"
+        }
       },
       "default": {
-        "types": "./dist/context/index.d.ts",
-        "import": "./dist/context/index.js",
-        "require": "./dist/context/index.cjs"
+        "import": {
+          "types": "./dist/context/index.d.ts",
+          "default": "./dist/context/index.js"
+        },
+        "require": {
+          "types": "./dist/context/index.d.cts",
+          "default": "./dist/context/index.cjs"
+        }
       }
     },
     "./jsx-runtime": {
-      "types": "./dist/jsx-runtime.d.ts",
-      "require": "./dist/jsx-runtime.cjs",
-      "import": "./dist/jsx-runtime.js"
+      "import": {
+        "types": "./dist/jsx-runtime.d.ts",
+        "default": "./dist/jsx-runtime.js"
+      },
+      "require": {
+        "types": "./dist/jsx-runtime.d.cts",
+        "default": "./dist/jsx-runtime.cjs"
+      }
     },
     "./jsx-dev-runtime": {
-      "types": "./dist/jsx-dev-runtime.d.ts",
-      "require": "./dist/jsx-dev-runtime.cjs",
-      "import": "./dist/jsx-dev-runtime.js"
+      "import": {
+        "types": "./dist/jsx-dev-runtime.d.ts",
+        "default": "./dist/jsx-dev-runtime.js"
+      },
+      "require": {
+        "types": "./dist/jsx-dev-runtime.d.cts",
+        "default": "./dist/jsx-dev-runtime.cjs"
+      }
     },
     "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
     "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.cjs",
     "./vite": {
-      "types": "./dist/loaders/vite-plugin.d.ts",
-      "import": "./dist/loaders/vite-plugin.js"
+      "import": {
+        "types": "./dist/loaders/vite-plugin.d.ts",
+        "default": "./dist/loaders/vite-plugin.js"
+      }
     }
   },
   "publishConfig": {
