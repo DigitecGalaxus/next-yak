@@ -26,9 +26,8 @@ const MTIMES_KEY = Symbol.for("next-yak-mtimes");
  * spawns a loader pool which could cause a lot of file watchers to be created which can cause performance issues and hitting OS limits
  */
 const getFileModificationTimes = () =>
-  ((globalThis as typeof globalThis & { [MTIMES_KEY]?: Map<string, number> })[
-    MTIMES_KEY
-  ] ??= new Map<string, number>());
+  ((globalThis as typeof globalThis & { [MTIMES_KEY]?: Map<string, number> })[MTIMES_KEY] ??=
+    new Map<string, number>());
 
 /**
  * Returns the shared evaluator, creating it on first call.
@@ -43,10 +42,9 @@ export const getEvaluatorSingleton = async (): Promise<Evaluator> => {
     [EVALUATOR_KEY]?: Promise<Evaluator>;
   };
   if (!processGlobal[EVALUATOR_KEY]) {
-    processGlobal[EVALUATOR_KEY] =
-      import("../isolated-source-eval/index.js").then(({ createEvaluator }) =>
-        createEvaluator(),
-      );
+    processGlobal[EVALUATOR_KEY] = import("../isolated-source-eval/index.js").then(
+      ({ createEvaluator }) => createEvaluator(),
+    );
     // Kill the worker threads when the process exits
     process.on("beforeExit", async () => {
       const evaluator = await processGlobal[EVALUATOR_KEY]!;
@@ -61,9 +59,7 @@ export const getEvaluatorSingleton = async (): Promise<Evaluator> => {
  * same dependency. This function detects which dependencies actually changed
  * on disk and invalidates them once — this prevents re-evaluating the same module multiple times in the same compilation
  */
-function invalidateDependenciesWithDiskModifications(
-  evaluator: Evaluator,
-): void {
+function invalidateDependenciesWithDiskModifications(evaluator: Evaluator): void {
   const modificationTimes = getFileModificationTimes();
   const modifiedDependencies: string[] = [];
   for (const [dep, lastModificationTime] of modificationTimes) {
@@ -112,10 +108,7 @@ function recordModificationTimes(deps: string[]): void {
  *   trace from the worker thread is preserved.
  */
 export async function createCompilationEvaluator(): Promise<
-  (
-    modulePath: string,
-    onDependency?: (dep: string) => void,
-  ) => Promise<Record<string, unknown>>
+  (modulePath: string, onDependency?: (dep: string) => void) => Promise<Record<string, unknown>>
 > {
   const evaluator = await getEvaluatorSingleton();
   invalidateDependenciesWithDiskModifications(evaluator);

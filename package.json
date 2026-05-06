@@ -1,8 +1,10 @@
 {
   "name": "next-yak-root",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "description": "Mono repository root for next-yak a performant css-in-js solution",
+  "license": "MIT",
+  "author": "Jan Nicklas",
   "workspaces": [
     "packages/*"
   ],
@@ -14,7 +16,11 @@
     "example:vite": "pnpm --filter=vite-yak-example run dev",
     "docs": "pnpm --filter=docs run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
-    "prettier": "pnpm run --recursive --if-present prettier",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format:rust": "pnpm run --filter=yak-swc format",
     "test": "pnpm run build && pnpm --filter=next-yak --filter=next-yak-example run \"/test($|:types)/\"",
     "test:watch": "pnpm --filter=next-yak run test:watch",
     "test:snapshots": "pnpm --filter=next-yak --filter=yak-swc run test:snapshots",
@@ -23,19 +29,19 @@
     "watch": "pnpm run --filter=next-yak watch",
     "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && npm_config_ignore_scripts=true changeset publish"
   },
+  "devDependencies": {
+    "@changesets/cli": "catalog:dev",
+    "eslint-plugin-yak": "workspace:*",
+    "oxfmt": "catalog:dev",
+    "oxlint": "catalog:dev"
+  },
   "engines": {
     "node": ">=22.18.0"
   },
+  "packageManager": "pnpm@10.15.0",
   "pnpm": {
     "overrides": {
       "yak-swc": "workspace:*"
     }
-  },
-  "packageManager": "pnpm@10.15.0",
-  "author": "Jan Nicklas",
-  "license": "MIT",
-  "devDependencies": {
-    "@changesets/cli": "catalog:dev",
-    "prettier": "catalog:dev"
   }
 }

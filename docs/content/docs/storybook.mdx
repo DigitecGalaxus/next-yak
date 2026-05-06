@@ -4,7 +4,7 @@ description: Use next-yak with Storybook.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 # Using next-yak with Storybook
 
@@ -15,27 +15,11 @@ It supports both Vite and Webpack builders.
 
 Install the addon alongside next-yak:
 
-<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
-<Tab value="npm">
-```bash
-npm i -D storybook-addon-yak
-```
-</Tab>
-<Tab value="pnpm">
-```bash
-pnpm i -D storybook-addon-yak
-```
-</Tab>
-<Tab value="yarn">
-```bash
-yarn add -D storybook-addon-yak
-```
-</Tab>
-<Tab value="bun">
-```bash
-bun add -D storybook-addon-yak
-```
-</Tab>
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">```bash npm i -D storybook-addon-yak ```</Tab>
+  <Tab value="pnpm">```bash pnpm i -D storybook-addon-yak ```</Tab>
+  <Tab value="yarn">```bash yarn add -D storybook-addon-yak ```</Tab>
+  <Tab value="bun">```bash bun add -D storybook-addon-yak ```</Tab>
 </Tabs>
 
 ## Configuration (Vite)
@@ -47,10 +31,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: [
-    "@storybook/addon-docs",
-    "storybook-addon-yak",
-  ],
+  addons: ["@storybook/addon-docs", "storybook-addon-yak"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
@@ -63,7 +44,8 @@ export default config;
 ## Configuration (Webpack)
 
 <Callout>
-Webpack requires the SWC compiler addon (`@storybook/addon-webpack5-compiler-swc`) for yak-swc plugin support.
+  Webpack requires the SWC compiler addon (`@storybook/addon-webpack5-compiler-swc`) for yak-swc
+  plugin support.
 </Callout>
 
 ```ts title=".storybook/main.ts"

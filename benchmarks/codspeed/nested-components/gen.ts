@@ -23,9 +23,7 @@ async function generateNestedComponentsFile() {
     const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${
-      lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`
-    } from '${lib}';
+import ${lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`} from '${lib}';
 
 // Base component
 const BaseCard = ${styled}.div\`
@@ -89,9 +87,7 @@ const NestedComponent${index + 1} = ${styled}(Level4Component${index + 1})\`
 \`;`;
 }).join("")}
 
-export const NestedComponents${
-      lib === "next-yak" ? "Yak" : "Styled"
-    }: FunctionComponent = () => {
+export const NestedComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', maxWidth: '1200px', margin: '0 auto' }}>
       ${Array.from(
@@ -109,16 +105,10 @@ export const NestedComponents${
 `;
 
     mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(
-      `${__dirname}/../generated/NestedComponents.${lib}.tsx`,
-      fileContent,
-      (err) => {
-        if (err) throw err;
-        console.log(
-          `NestedComponents.${lib}.tsx has been created successfully.`,
-        );
-      },
-    );
+    writeFile(`${__dirname}/../generated/NestedComponents.${lib}.tsx`, fileContent, (err) => {
+      if (err) throw err;
+      console.log(`NestedComponents.${lib}.tsx has been created successfully.`);
+    });
 
     // Precompile yak similar to how it would be compiled by our loader
     if (lib === "next-yak") {
@@ -152,9 +142,7 @@ export const NestedComponents${
         compiled,
         (err) => {
           if (err) throw err;
-          console.log(
-            `NestedComponents.${lib}.compiled.tsx has been created successfully.`,
-          );
+          console.log(`NestedComponents.${lib}.compiled.tsx has been created successfully.`);
         },
       );
     }

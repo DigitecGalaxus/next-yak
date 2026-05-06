@@ -69,26 +69,26 @@ import { css, styled } from 'next-yak';
 
 const Paragraph = styled.p<{ $primary?: boolean }>`
   background: ${props => props.$primary ? "#BF4F74" : "white"};
-  ${props => props.$primary ?
-    css`
-      color: white;
+${props => props.$primary ?
+css`       color: white;
     ` :
-    css`
-      color: #BF4F74
+css`       color: #BF4F74
     `};
-  font-size: 2rem;
-  font-weight: bold;
+font-size: 2rem;
+font-weight: bold;
 `;
 
 const Component = () => {
-  return (
-    <>
-      <Paragraph $primary>Hello there primary!</Paragraph>
-      <Paragraph>Hello there non-primary!</Paragraph>
-    </>
-  );
+return (
+
+<>
+<Paragraph $primary>Hello there primary!</Paragraph>
+<Paragraph>Hello there non-primary!</Paragraph>
+</>
+);
 }
-```
+
+````
 </Tab>
 <Tab value="javascript">
 ```jsx
@@ -115,7 +115,8 @@ const Component = () => {
     </>
   );
 }
-```
+````
+
 </Tab>
 </Tabs>
 
@@ -159,18 +160,19 @@ const Paragraph = styled.p(
 .Paragraph {
   background: var(--var1);
 
-  &:where(.propsprimary_0) {
-    color: white;
-  }
-
-  &:where(.not_propsprimary_1) {
-    color: #BF4F74;
-  }
-
-  font-size: 2rem;
-  font-weight: bold;
+&:where(.propsprimary_0) {
+color: white;
 }
-```
+
+&:where(.not_propsprimary_1) {
+color: #BF4F74;
+}
+
+font-size: 2rem;
+font-weight: bold;
+}
+
+````
 </Tab>
 </Tabs>
 </details>
@@ -191,19 +193,19 @@ const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
     : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
   }
 `
-```
+````
+
 </Tab>
 <Tab value="javascript">
 ```jsx
 import { styled, atoms } from 'next-yak';
 
-const Header = styled.nav`
-  ${({$variant}) => $variant === "primary"
+const Header = styled.nav`  ${({$variant}) => $variant === "primary"
     ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
     : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
-  }
-`
-```
+  }`
+
+````
 </Tab>
 </Tabs>
 
@@ -223,23 +225,23 @@ const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
     }
   })};
 `
-```
+````
+
 </Tab>
 <Tab value="javascript">
 ```jsx
 import { styled, atoms } from 'next-yak';
 
-const Header = styled.nav`
-  ${atoms("mx-auto", (props, classNames, style) => {
+const Header = styled.nav`  ${atoms("mx-auto", (props, classNames, style) => {
     if(props.$variant === "primary"){
       return "flex max-w-7xl items-center justify-between p-6 lg:px-8";
     }
     else{
       return "bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow";
     }
-  })};
-`
-```
+  })};`
+
+````
 </Tab>
 </Tabs>
 
@@ -255,7 +257,8 @@ const Header = styled.nav`
     : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
   }
 `
-```
+````
+
 </Tab>
 <Tab value="output javascript">
 ```jsx
@@ -305,10 +308,9 @@ const fadeIn = keyframes`
   }
 `
 
-const FadeInButton = styled.button`
-  animation: 1s ${fadeIn} ease-out;
-`
-```
+const FadeInButton = styled.button`  animation: 1s ${fadeIn} ease-out;`
+
+````
 
 ```jsx [output javascript]
 const fadeIn = keyframes('fadeIn')
@@ -316,7 +318,8 @@ const fadeIn = keyframes('fadeIn')
 const FadeInButton = styled.button('.FadeInButton', {
   style: { "--yakVar1": fadeIn }
 })
-```
+````
+
 </Tab>
 <Tab value="output CSS">
 ```css
@@ -330,9 +333,10 @@ const FadeInButton = styled.button('.FadeInButton', {
 }
 
 .FadeInButton {
-  animation: 1s var(--yakVar1) ease-out;
+animation: 1s var(--yakVar1) ease-out;
 }
-```
+
+````
 </Tab>
 </Tabs>
 </details>
@@ -353,7 +357,7 @@ const MyComp = styled.div`
   background-color: yellow;
   ${mixin}
 `;
-```
+````
 
 You can also make it dynamic, where the props are passed to the mixin.
 
@@ -382,11 +386,10 @@ const mixin = css`
   color: ${(props) => props.$green ? 'green' : 'blue'};
 `;
 
-const MyComp = styled.div`
-  background-color: yellow;
-  ${mixin}
-`;
-```
+const MyComp = styled.div`  background-color: yellow;
+  ${mixin}`;
+
+````
 </Tab>
 <Tab value="output javascript">
 ```jsx
@@ -397,7 +400,8 @@ const mixin = css('mixin_0', {
 });
 
 const MyComp = styled.div('MyComp', mixin);
-```
+````
+
 </Tab>
 <Tab value="output CSS">
 ```css
@@ -406,9 +410,10 @@ const MyComp = styled.div('MyComp', mixin);
 }
 
 .MyComp {
-  background-color: yellow;
+background-color: yellow;
 }
-```
+
+````
 </Tab>
 </Tabs>
 </details>
@@ -429,18 +434,18 @@ const Box = styled.div<{ $variant: "primary" | "secondary", $color: string }>`
   color: ${props => props.$color};
   display: flex;
 `
-```
+````
+
 </Tab>
 <Tab value="javascript">
 ```jsx
 import { styled } from 'next-yak';
 
-const Box = styled.div`
-  font-size: ${props => props.$variant === "primary" ? "2rem" : "1rem" };
+const Box = styled.div`  font-size: ${props => props.$variant === "primary" ? "2rem" : "1rem" };
   color: ${props => props.$color};
-  display: flex;
-`
-```
+  display: flex;`
+
+````
 </Tab>
 </Tabs>
 
@@ -458,7 +463,8 @@ const Box = styled.div`
   color: ${props => props.$color};
   display: flex;
 `
-```
+````
+
 </Tab>
 <Tab value="output javascript">
 ```jsx
@@ -485,9 +491,9 @@ const Box = styled.div('.Box', {
 ## Theming
 
 <Callout type="info">
-  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are
-  async. Next-yak supports async `getYakThemeContext()` functions, allowing
-  you to await these server-side APIs seamlessly.
+  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak
+  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs
+  seamlessly.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
@@ -543,9 +549,7 @@ export async function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-  export interface YakTheme extends Awaited<
-    ReturnType<typeof getYakThemeContext>
-  > {}
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
 }
 ```
 
@@ -568,7 +572,7 @@ export async function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
 }
 
 // ---cut---
@@ -578,15 +582,16 @@ const Button = styled.button`
   display: block;
   ${({theme}) => theme.brandName === 'myFancyBrand' 
     ? css`
-      color: black;
-      background-color: white;
-    ` 
+color: black;
+background-color: white;
+` 
     : css`
-      color: blue;
-      background-color: white;
-    `}
+color: blue;
+background-color: white;
+`}
 `;
-```
+
+````
 </Tab>
 <Tab value="javascript">
 ```jsx
@@ -594,17 +599,18 @@ import { styled, css } from 'next-yak';
 
 const Button = styled.button`
   display: block;
-  ${({theme}) => theme.brandName === 'myFancyBrand' 
+  ${({theme}) => theme.brandName === 'myFancyBrand'
   ? css`
     color: black;
     background-color: white;
-  ` 
+  `
   : css`
     color: blue;
     background-color: white;
   `}
 `;
-```
+````
+
 </Tab>
 </Tabs>
 
@@ -623,9 +629,7 @@ export async function getYakThemeContext() {
 }
 
 declare module "next-yak" {
-  export interface YakTheme extends Awaited<
-    ReturnType<typeof getYakThemeContext>
-  > {}
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
 }
 ```
 
@@ -663,11 +667,7 @@ If you prefer working with the utility first approach, you can use our `atoms` f
 import { css } from "next-yak";
 
 const Component = (props) => {
-  return (
-    <div css={atoms("bg-red-500", props.primary && "bg-blue-500")}>
-      Hello there!
-    </div>
-  );
+  return <div css={atoms("bg-red-500", props.primary && "bg-blue-500")}>Hello there!</div>;
 };
 ```
 
@@ -772,9 +772,7 @@ import { type GenericYakComponentOf, styled } from "next-yak";
 
 type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
 
-const MyGenericComponent: GenericComponentType = (props) => (
-  <div {...props}>hello</div>
-);
+const MyGenericComponent: GenericComponentType = (props) => <div {...props}>hello</div>;
 
 const StyledComponent = styled(MyGenericComponent)`
   color: red;
@@ -792,9 +790,7 @@ import { type GenericYakComponentOf, styled } from "next-yak";
 
 type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
 
-const MyGenericComponent: GenericComponentType = (props) => (
-  <div {...props}>hello</div>
-);
+const MyGenericComponent: GenericComponentType = (props) => <div {...props}>hello</div>;
 
 type MyAdditionalProps = {
   additionalProp: string;

@@ -229,9 +229,7 @@ export async function createEvaluator(): Promise<Evaluator> {
     // deps, and the file watcher will trigger another invalidation when the
     // source is fixed.
     if (msg.ok && invalidatedDuringEval.size > 0) {
-      const isStale = msg.dependencies.some((dep) =>
-        invalidatedDuringEval.has(dep),
-      );
+      const isStale = msg.dependencies.some((dep) => invalidatedDuringEval.has(dep));
       if (isStale) {
         if (pending.retryCount >= MAX_STALENESS_RETRIES) {
           pending.resolve({

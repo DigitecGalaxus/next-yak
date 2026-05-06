@@ -1,8 +1,8 @@
 {
   "name": "next-yak-example",
   "version": "0.1.0",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",

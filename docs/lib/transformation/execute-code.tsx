@@ -27,13 +27,10 @@ export function executeCode(
 } | null {
   const rootFileDependencies = {
     ...dependencies,
-    ...otherFilesTransformed.reduce(
-      (acc, { name, transformedCodeToExecute }) => {
-        acc[`./${name}`] = createExport(transformedCodeToExecute, dependencies);
-        return acc;
-      },
-      {} as any,
-    ),
+    ...otherFilesTransformed.reduce((acc, { name, transformedCodeToExecute }) => {
+      acc[`./${name}`] = createExport(transformedCodeToExecute, dependencies);
+      return acc;
+    }, {} as any),
   };
 
   const exports = createExport(transformedCodeToExecute, rootFileDependencies);
@@ -146,13 +143,11 @@ export async function transformAll(
       mainFileCodeString,
       transformedCode,
       mainFileName,
-      otherFilesTransformed.map(
-        ({ name, transformedCodeToExecute: transformedCode, content }) => ({
-          name,
-          originalContent: content,
-          transpiledContent: transformedCode,
-        }),
-      ),
+      otherFilesTransformed.map(({ name, transformedCodeToExecute: transformedCode, content }) => ({
+        name,
+        originalContent: content,
+        transpiledContent: transformedCode,
+      })),
     );
 
     return {
@@ -169,10 +164,7 @@ export async function transformAll(
   }
 }
 
-function createExport(
-  transformedCode: string,
-  dependencies: Record<string, unknown>,
-) {
+function createExport(transformedCode: string, dependencies: Record<string, unknown>) {
   const exports: Record<string, unknown> = {};
   const require = (path: string) => {
     if (dependencies[path]) {

@@ -23,9 +23,7 @@ async function generateDynamicPropsComponentsFile() {
     const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${
-      lib === "next-yak" ? `{ styled as ${styled}, css }` : `{ ${styled}, css }`
-    } from '${lib}';
+import ${lib === "next-yak" ? `{ styled as ${styled}, css }` : `{ ${styled}, css }`} from '${lib}';
 
 interface DynamicProps {
   $primary?: boolean;
@@ -114,16 +112,10 @@ export const DynamicPropsComponents${
 `;
 
     mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(
-      `${__dirname}/../generated/DynamicPropsComponents.${lib}.tsx`,
-      fileContent,
-      (err) => {
-        if (err) throw err;
-        console.log(
-          `DynamicPropsComponents.${lib}.tsx has been created successfully.`,
-        );
-      },
-    );
+    writeFile(`${__dirname}/../generated/DynamicPropsComponents.${lib}.tsx`, fileContent, (err) => {
+      if (err) throw err;
+      console.log(`DynamicPropsComponents.${lib}.tsx has been created successfully.`);
+    });
 
     // Precompile yak similar to how it would be compiled by our loader
     if (lib === "next-yak") {
@@ -157,9 +149,7 @@ export const DynamicPropsComponents${
         compiled,
         (err) => {
           if (err) throw err;
-          console.log(
-            `DynamicPropsComponents.${lib}.compiled.tsx has been created successfully.`,
-          );
+          console.log(`DynamicPropsComponents.${lib}.compiled.tsx has been created successfully.`);
         },
       );
     }

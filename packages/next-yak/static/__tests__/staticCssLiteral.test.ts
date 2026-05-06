@@ -19,9 +19,7 @@ it("filter out null, undefined and false", () => {
       ${false}
     }
   `;
-  expect(styles).toBe(
-    ".test {\n      color: red;\n      \n      \n      \n    }",
-  );
+  expect(styles).toBe(".test {\n      color: red;\n      \n      \n      \n    }");
 });
 
 it("convert numbers to string", () => {

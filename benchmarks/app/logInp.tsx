@@ -31,19 +31,17 @@ export function LogInp() {
       handlers++;
       requestIdleCallback(() => {
         setTimeout(() => {
-          list
-            .getEntries()
-            .forEach((entry: PerformanceEntry & { target?: HTMLElement }) => {
-              if (!("target" in entry) || !entry.target) return;
-              if (entry.name !== "click") return;
+          list.getEntries().forEach((entry: PerformanceEntry & { target?: HTMLElement }) => {
+            if (!("target" in entry) || !entry.target) return;
+            if (entry.name !== "click") return;
 
-              const entriesPerElement = elementTimings.get(entry.target);
-              const timings = entriesPerElement || {};
-              if (!entriesPerElement) {
-                elementTimings.set(entry.target, timings);
-              }
-              timings[entry.name] = entry.duration;
-            });
+            const entriesPerElement = elementTimings.get(entry.target);
+            const timings = entriesPerElement || {};
+            if (!entriesPerElement) {
+              elementTimings.set(entry.target, timings);
+            }
+            timings[entry.name] = entry.duration;
+          });
           handlers--;
           if (handlers === 0) {
             elementTimings.forEach((timings, element) => {

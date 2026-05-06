@@ -7,16 +7,14 @@
   },
   "scripts": {
     "test": "node runDevTests.ts",
-    "test:build": "node runBuildTests.ts",
-    "prettier": "npx prettier --write \"./{bundlers,cases}/**/*.{ts,tsx,js,jsx}\" \"./*.ts\""
+    "test:build": "node runBuildTests.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:dev",
     "@types/node": "catalog:dev",
-    "next-yak": "workspace:*",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "prettier": "catalog:dev",
+    "next-yak": "workspace:*",
     "typescript": "catalog:dev"
   }
 }

@@ -5,7 +5,7 @@ import path from "path";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 const resultDir = path.resolve(__dirname, "./results");
-const lighthouseArgs = "--preset=perf --only-categories=performance --chrome-flags=\"--headless\"";
+const lighthouseArgs = '--preset=perf --only-categories=performance --chrome-flags="--headless"';
 
 // run npm run build:
 execSync("npm run build", { cwd: __dirname, stdio: "inherit" });
@@ -45,8 +45,8 @@ async function runTests() {
 
   for (const pathName of urls) {
     execSync(
-      `npx lighthouse http://localhost:3000/${pathName} --output-path="${path.resolve(resultDir,pathName)}.html" ${lighthouseArgs}`,
-      { cwd: __dirname, stdio: "inherit" }
+      `npx lighthouse http://localhost:3000/${pathName} --output-path="${path.resolve(resultDir, pathName)}.html" ${lighthouseArgs}`,
+      { cwd: __dirname, stdio: "inherit" },
     );
   }
 
@@ -59,52 +59,41 @@ async function runTests() {
           scoreMin: round(Math.min(...runs.map((run) => run.score)), 0),
           scoreMax: round(Math.max(...runs.map((run) => run.score)), 0),
           fcp: round(mean(runs.map((run) => run.firstContentfulPaint)), 0),
-          fcpMin: round(Math.min(
-            ...runs.map((run) => run.firstContentfulPaint)
-          ), 0),
-          fcpMax: round(Math.max(
-            ...runs.map((run) => run.firstContentfulPaint)
-          ), 0),
+          fcpMin: round(Math.min(...runs.map((run) => run.firstContentfulPaint)), 0),
+          fcpMax: round(Math.max(...runs.map((run) => run.firstContentfulPaint)), 0),
           lcp: round(mean(runs.map((run) => run.lcp)), 0),
           lcpMin: round(Math.min(...runs.map((run) => run.lcp)), 0),
           lcpMax: round(Math.max(...runs.map((run) => run.lcp)), 0),
           blockingTime: round(mean(runs.map((run) => run.blockingTime)), 2),
-          blockingTimeMin: round(Math.min(
-            ...runs.map((run) => run.blockingTime)
-          ), 2),
-          blockingTimeMax: round(Math.max(
-            ...runs.map((run) => run.blockingTime)
-          ), 2),
+          blockingTimeMin: round(Math.min(...runs.map((run) => run.blockingTime)), 2),
+          blockingTimeMax: round(Math.max(...runs.map((run) => run.blockingTime)), 2),
           ttfb: round(mean(runs.map((run) => run.ttfb)), 2),
-          ttfbMin: round(Math.min(
-            ...runs.map((run) => run.ttfb)
-          ), 2),
-          ttbMax: round(Math.max(
-            ...runs.map((run) => run.ttfb)
-          ), 2),
-          transferSize: readableNumber(round(mean(runs.map((run) => run.transferSize)) / 1024, 2), "kb"),
+          ttfbMin: round(Math.min(...runs.map((run) => run.ttfb)), 2),
+          ttbMax: round(Math.max(...runs.map((run) => run.ttfb)), 2),
+          transferSize: readableNumber(
+            round(mean(runs.map((run) => run.transferSize)) / 1024, 2),
+            "kb",
+          ),
         },
-      ])
-    )
+      ]),
+    ),
   );
 }
 
 async function runLighthouse(pathName, run) {
-
   mkdirSync(resultDir, { recursive: true });
   const json = path.resolve(resultDir, `${pathName}_${run}.json`);
   execSync(
     `npx lighthouse http://localhost:3000/${pathName} --output=json --output-path="${json}" ${lighthouseArgs}`,
-    { cwd: __dirname, stdio: "inherit" }
+    { cwd: __dirname, stdio: "inherit" },
   );
   const results = JSON.parse(readFileSync(json, "utf-8"));
   const score = results.categories.performance.score * 100;
   const lcp = results.audits["largest-contentful-paint"].numericValue;
   const blockingTime = results.audits["total-blocking-time"].numericValue;
   const transferSize = results.audits["total-byte-weight"].numericValue;
-  const firstContentfulPaint =
-    results.audits["first-contentful-paint"].numericValue;
- const ttfb = results.audits["server-response-time"].numericValue;
+  const firstContentfulPaint = results.audits["first-contentful-paint"].numericValue;
+  const ttfb = results.audits["server-response-time"].numericValue;
 
   return { score, lcp, blockingTime, transferSize, firstContentfulPaint, ttfb };
 }
@@ -114,9 +103,9 @@ function mean(numbers) {
 }
 
 function round(number, decimals) {
-    return Math.round(number * Math.pow(10, decimals)) / Math.pow(10, decimals);
+  return Math.round(number * Math.pow(10, decimals)) / Math.pow(10, decimals);
 }
 
 function readableNumber(number, unit) {
-    return `${number.toLocaleString()} ${unit}`;
+  return `${number.toLocaleString()} ${unit}`;
 }

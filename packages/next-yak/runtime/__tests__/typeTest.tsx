@@ -127,9 +127,7 @@ const MergeTestErrors = () => {
 };
 
 // Verify that a ref is not added if the component does not accept it
-const Button5 = (props: { className: string }) => (
-  <button {...props}>Hello World</button>
-);
+const Button5 = (props: { className: string }) => <button {...props}>Hello World</button>;
 const Button6 = styled(Button5)``;
 <Button6
   // @ts-expect-error - should not allow ref on a component that does not accept it
@@ -311,9 +309,7 @@ const SelectorMixinsShouldNotAlterType = () => {
 };
 
 const InferenceShouldWorkWithComplexTypes = () => {
-  const Title = styled<React.ComponentPropsWithRef<"strong" | "h1">>(
-    {} as any,
-  )<{
+  const Title = styled<React.ComponentPropsWithRef<"strong" | "h1">>({} as any)<{
     $primary: boolean;
   }>`
     ${({ $primary }) => {
@@ -353,17 +349,13 @@ const WebComponentsShouldWork = () => {
 };
 
 const GenericYakComponentShouldWork = () => {
-  const Component: <T extends object>(props: T) => ReactElement<T> = (
-    props,
-  ) => <div {...props}>hello</div>;
+  const Component: <T extends object>(props: T) => ReactElement<T> = (props) => (
+    <div {...props}>hello</div>
+  );
   <Component<{ TEST: "ME" }> TEST="ME" />;
 
-  const StyledComponent = styled(Component)`` as GenericYakComponentOf<
-    typeof Component
-  >;
-  const StyledComponentWithAdditionalProps = styled(
-    Component,
-  )`` as GenericYakComponentOf<
+  const StyledComponent = styled(Component)`` as GenericYakComponentOf<typeof Component>;
+  const StyledComponentWithAdditionalProps = styled(Component)`` as GenericYakComponentOf<
     typeof Component,
     {
       $primary?: boolean;

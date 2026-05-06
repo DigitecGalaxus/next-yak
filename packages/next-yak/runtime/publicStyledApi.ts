@@ -14,14 +14,8 @@ export interface Styled extends MappedHtmlTags, StyledFn {}
  * Supports React components, HTML tags, and custom web components.
  */
 export interface StyledFn {
-  <
-    TProps extends object = React.DOMAttributes<Element> &
-      React.RefAttributes<Element>,
-  >(
-    Component:
-      | HtmlTags
-      | React.FunctionComponent<TProps>
-      | CustomWebComponentTag,
+  <TProps extends object = React.DOMAttributes<Element> & React.RefAttributes<Element>>(
+    Component: HtmlTags | React.FunctionComponent<TProps> | CustomWebComponentTag,
   ): LiteralWithAttrs<TProps>;
 }
 
@@ -109,11 +103,7 @@ export type Attrs<
  * Utility type to merge two object types, with properties from B taking precedence.
  * If a property exists in both A and B, the property from B is used.
  */
-export type Substitute<A extends object, B extends object> = FastOmit<
-  A,
-  keyof B
-> &
-  B;
+export type Substitute<A extends object, B extends object> = FastOmit<A, keyof B> & B;
 
 /**
  * Union type of all valid HTML element tag names.

@@ -9,25 +9,17 @@ test(
     const badge = page.getByTestId("badge");
 
     // ::before with content "["
-    const beforeContent = await badge.evaluate(
-      (el) => getComputedStyle(el, "::before").content,
-    );
+    const beforeContent = await badge.evaluate((el) => getComputedStyle(el, "::before").content);
     expect(beforeContent).toBe('"["');
 
-    const beforeColor = await badge.evaluate(
-      (el) => getComputedStyle(el, "::before").color,
-    );
+    const beforeColor = await badge.evaluate((el) => getComputedStyle(el, "::before").color);
     expect(beforeColor).toBe("rgb(255, 0, 0)");
 
     // ::after with content "]"
-    const afterContent = await badge.evaluate(
-      (el) => getComputedStyle(el, "::after").content,
-    );
+    const afterContent = await badge.evaluate((el) => getComputedStyle(el, "::after").content);
     expect(afterContent).toBe('"]"');
 
-    const afterColor = await badge.evaluate(
-      (el) => getComputedStyle(el, "::after").color,
-    );
+    const afterColor = await badge.evaluate((el) => getComputedStyle(el, "::after").color);
     expect(afterColor).toBe("rgb(0, 0, 255)");
 
     // Decorative ::after with empty content and visible styles

@@ -22,7 +22,7 @@ import type { keyframes as keyframesInternal } from "../keyframes.js";
  * `;
  * ```
  */
-export const keyframes: typeof keyframesInternal = (styles, ...dynamic) => {
+export const keyframes: typeof keyframesInternal = (_styles, ..._dynamic) => {
   // the keyframes function is a no-op in the mock
   // as it has no dynamic runtime behavior but only css
   return "";

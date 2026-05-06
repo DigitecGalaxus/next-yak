@@ -1,5 +1,5 @@
 import { ComponentStyles, css } from "./cssLiteral.js";
-import { RuntimeStyleProcessor as RuntimeStyleProcessor } from "./publicStyledApi.js";
+import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 /**
  * Allows to use atomic CSS classes in a styled or css block

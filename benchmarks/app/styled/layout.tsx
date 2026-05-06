@@ -1,10 +1,6 @@
 import StyledComponentsRegistry from "./registry";
 
-export default function StyledLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function StyledLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <style

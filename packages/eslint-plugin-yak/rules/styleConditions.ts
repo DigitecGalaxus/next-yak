@@ -31,27 +31,19 @@ export const styleConditions = createRule({
     return {
       ImportDeclaration,
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
-        if (
-          importedNames.styled === undefined &&
-          importedNames.css === undefined
-        ) {
+        if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
 
         if (!node.parent || isStyledOrCssTag(node, importedNames) !== "css") {
           return;
         }
-        const { tag, needle } = findClosestStyledOrCssTag(
-          node.parent,
-          importedNames,
-        );
+        const { tag, needle } = findClosestStyledOrCssTag(node.parent, importedNames);
         if (!tag) {
           return;
         }
 
-        const index = tag.quasi.expressions.findIndex(
-          (expr) => expr === needle,
-        );
+        const index = tag.quasi.expressions.findIndex((expr) => expr === needle);
         if (index === -1) {
           return;
         }
@@ -92,13 +84,10 @@ export const styleConditions = createRule({
           node.type === AST_NODE_TYPES.ReturnStatement
             ? node.argument
             : node.body.type !== AST_NODE_TYPES.BlockStatement
-            ? node.body
-            : undefined;
+              ? node.body
+              : undefined;
 
-        if (
-          returnValue &&
-          !isNodeAccessingParams(returnValue, params, importedNames)
-        ) {
+        if (returnValue && !isNodeAccessingParams(returnValue, params, importedNames)) {
           context.report({
             node: returnValue,
             messageId: "invalidRuntimeReturnValue",
@@ -155,10 +144,7 @@ function findClosestStyledOrCssTag(
  *
  * e.g. css`color: red`
  */
-function isCssLiteral(
-  node: TSESTree.Node,
-  importedNames: ImportedNames,
-): boolean {
+function isCssLiteral(node: TSESTree.Node, importedNames: ImportedNames): boolean {
   return (
     node.type === AST_NODE_TYPES.TaggedTemplateExpression &&
     node.tag.type === AST_NODE_TYPES.Identifier &&
@@ -173,10 +159,7 @@ function isCssLiteral(
  * In this example foo and foo.bar are valid:
  * `(foo) => foo.bar` or `(foo) => foo`
  */
-function isValidIdentifier(
-  node: TSESTree.Node,
-  params: TSESTree.Parameter[],
-): boolean {
+function isValidIdentifier(node: TSESTree.Node, params: TSESTree.Parameter[]): boolean {
   if (node.type === AST_NODE_TYPES.Identifier) {
     return params.some((param) => {
       if (param.type === AST_NODE_TYPES.Identifier) {
@@ -202,12 +185,8 @@ function isValidIdentifier(
 function isFalsyLiteral(node: TSESTree.Node): boolean {
   return (
     (node.type === AST_NODE_TYPES.Literal &&
-      (node.value === null ||
-        node.value === false ||
-        node.value === 0 ||
-        node.value === "")) ||
-    (node.type === AST_NODE_TYPES.Identifier &&
-      (node.name === "undefined" || node.name === "null"))
+      (node.value === null || node.value === false || node.value === 0 || node.value === "")) ||
+    (node.type === AST_NODE_TYPES.Identifier && (node.name === "undefined" || node.name === "null"))
   );
 }
 
@@ -227,9 +206,7 @@ function isNodeAccessingParams(
       // If at least one expression uses a runtime value, the whole template literal is valid
       return (
         node.expressions.length > 0 &&
-        node.expressions.some((expr) =>
-          isNodeAccessingParams(expr, params, importedNames),
-        )
+        node.expressions.some((expr) => isNodeAccessingParams(expr, params, importedNames))
       );
     case AST_NODE_TYPES.Identifier:
       // An identifier is valid if it's a parameter

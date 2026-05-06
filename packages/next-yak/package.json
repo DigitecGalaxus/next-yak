@@ -149,8 +149,7 @@
     "test:snapshots": "vitest run -u",
     "test:types:code": "tsc -p tsconfig.json",
     "test:types:test": "tsc -p ./runtime/__tests__/tsconfig.json",
-    "test:watch": "vitest --watch",
-    "prettier": "npx prettier --write \"./{loaders,cross-file-resolver,runtime,withYak,isolated-source-eval}/**/*.{ts,tsx,js,jsx}\" \"!**/fixtures/syntax-error.ts\""
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@babel/parser": "catalog:core",

@@ -57,13 +57,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Prettier Next Yak
-        run: pnpm prettier
+      - name: Format (oxfmt)
+        run: pnpm format
 
-      - name: Prettier Examples
-        run: npx prettier --write "examples/**/*.{ts,tsx,js,jsx}"
+      - name: Build eslint-plugin-yak (required for oxlint JS plugin)
+        run: pnpm --filter=eslint-plugin-yak build
 
-      - name: Benchmarks
-        run: npx prettier --write "benchmarks/**/*.{ts,tsx}" --ignore-path "benchmarks/.prettierignore"
+      - name: Lint (oxlint)
+        run: pnpm lint:fix
+
+      - name: Format Rust (cargo fmt)
+        run: pnpm format:rust
 
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27 # v1.3.2

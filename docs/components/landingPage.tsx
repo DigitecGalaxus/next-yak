@@ -40,10 +40,9 @@ export const LandingPage = ({ version }: { version: string }) => {
           <Link href="/docs/how-does-it-work">
             <Strong>Zero-Runtime</Strong>
           </Link>{" "}
-          CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components
-          syntax, get build-time CSS extraction and full <Strong>RSC</Strong>{" "}
-          compatibility. Works with <Strong>Next.js</Strong>,{" "}
-          <Strong>Vite</Strong> (e.g. react-router, TanStack Start), and{" "}
+          CSS-in-JS powered by <Strong>Rust</Strong>. Write styled-components syntax, get build-time
+          CSS extraction and full <Strong>RSC</Strong> compatibility. Works with{" "}
+          <Strong>Next.js</Strong>, <Strong>Vite</Strong> (e.g. react-router, TanStack Start), and{" "}
           <Strong>Storybook</Strong>
         </p>
       </Description>
@@ -95,8 +94,7 @@ export const LandingPage = ({ version }: { version: string }) => {
           marginBottom: "1rem",
         }}
       >
-        Next-Yak is way faster than most other CSS-in-JS libraries. Learn more
-        about its{" "}
+        Next-Yak is way faster than most other CSS-in-JS libraries. Learn more about its{" "}
         <Link href="/docs/how-does-it-work#the-runtime-part">
           <Strong>zero runtime</Strong>
         </Link>{" "}
@@ -136,8 +134,8 @@ export const LandingPage = ({ version }: { version: string }) => {
           marginTop: "-2rem",
         }}
       >
-        Get started and profit from these improvements without any significant
-        increase in build times
+        Get started and profit from these improvements without any significant increase in build
+        times
       </p>
 
       <Subtitle>Features</Subtitle>
@@ -146,8 +144,8 @@ export const LandingPage = ({ version }: { version: string }) => {
           <EnumTitle>
             <Strong>Multi-Framework</Strong>
           </EnumTitle>
-          First-class support for Next.js (Webpack & Turbopack), Vite 7+
-          (react-router, TanStack Start, ...), and Storybook
+          First-class support for Next.js (Webpack & Turbopack), Vite 7+ (react-router, TanStack
+          Start, ...), and Storybook
         </li>
         <li>
           <EnumTitle>
@@ -165,8 +163,7 @@ export const LandingPage = ({ version }: { version: string }) => {
           <EnumTitle>
             <Strong>Standard CSS Syntax</Strong>
           </EnumTitle>
-          Write familiar CSS with full nesting, keyframes, and media query
-          support
+          Write familiar CSS with full nesting, keyframes, and media query support
         </li>
         <li>
           <EnumTitle>
@@ -408,11 +405,7 @@ const Title = styled.h1`
   white-space: nowrap;
 
   background: #000;
-  background: radial-gradient(
-    circle farthest-corner at top left,
-    #000 0%,
-    #333 100%
-  );
+  background: radial-gradient(circle farthest-corner at top left, #000 0%, #333 100%);
   -webkit-text-fill-color: transparent;
 
   @supports (-webkit-text-stroke: red 1px) {

@@ -10,9 +10,9 @@
   "dependencies": {
     "next": "catalog:dev",
     "next-yak": "workspace:*",
-    "yak-swc": "workspace:*",
     "react": "catalog:dev",
-    "react-dom": "catalog:dev"
+    "react-dom": "catalog:dev",
+    "yak-swc": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:dev",

@@ -7,11 +7,7 @@ export type TWorkerMess = number[];
 let transformFn: typeof transform;
 
 const initializeWasm = async () => {
-  const {
-    default: init,
-    start,
-    transform,
-  } = await import("../../../playground-wasm/out");
+  const { default: init, start, transform } = await import("../../../playground-wasm/out");
   await init();
   start();
   transformFn = transform;

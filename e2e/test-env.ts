@@ -33,22 +33,11 @@ export interface FsTmp {
 
 const e2eRoot = import.meta.dirname;
 
-export function withTestEnv(
-  caseName: string,
-  fn: (fsTmp: FsTmp, page: Page) => Promise<void>,
-) {
+export function withTestEnv(caseName: string, fn: (fsTmp: FsTmp, page: Page) => Promise<void>) {
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
     const bundlerName =
-      (testInfo.project.metadata as { bundlerName?: string }).bundlerName ??
-      testInfo.project.name;
-    const tmpDir = resolve(
-      e2eRoot,
-      "bundlers",
-      bundlerName,
-      ".tmp",
-      "cases",
-      caseName,
-    );
+      (testInfo.project.metadata as { bundlerName?: string }).bundlerName ?? testInfo.project.name;
+    const tmpDir = resolve(e2eRoot, "bundlers", bundlerName, ".tmp", "cases", caseName);
     const srcDir = resolve(e2eRoot, "cases", caseName);
 
     const originals = new Map<string, string>();

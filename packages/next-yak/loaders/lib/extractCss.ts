@@ -7,9 +7,7 @@ import { YakConfigOptions } from "../../withYak/index.js";
  */
 export function extractCss(
   code: string | Buffer<ArrayBufferLike>,
-  transpilationMode: NonNullable<
-    YakConfigOptions["experiments"]
-  >["transpilationMode"],
+  transpilationMode: NonNullable<YakConfigOptions["experiments"]>["transpilationMode"],
 ): string {
   let codeString: string;
 
@@ -20,9 +18,7 @@ export function extractCss(
   } else if (code instanceof ArrayBuffer) {
     codeString = new TextDecoder("utf-8").decode(code);
   } else {
-    throw new Error(
-      "Invalid input type: code must be string, Buffer, or ArrayBuffer",
-    );
+    throw new Error("Invalid input type: code must be string, Buffer, or ArrayBuffer");
   }
 
   const codeParts = codeString.split("/*YAK Extracted CSS:\n");

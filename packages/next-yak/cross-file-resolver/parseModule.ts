@@ -46,9 +46,7 @@ export async function parseModule(
     return cached;
   } catch (error) {
     const causeMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Error parsing file "${modulePath}"\n  Caused by: ${causeMessage}`,
-    );
+    throw new Error(`Error parsing file "${modulePath}"\n  Caused by: ${causeMessage}`);
   }
 }
 
@@ -69,10 +67,7 @@ export async function uncachedParseModule(
 
   const transformed = await context.getTransformed(modulePath);
   const mixins = parseMixins(transformed.code);
-  const styledComponents = parseStyledComponents(
-    transformed.code,
-    context.transpilationMode,
-  );
+  const styledComponents = parseStyledComponents(transformed.code, context.transpilationMode);
 
   return {
     type: "regular",
@@ -90,10 +85,7 @@ function parseMixins(sourceContents: string): Record<string, Mixin> {
   // css
   // */
   const mixinParts = sourceContents.split("/*YAK EXPORTED MIXIN:");
-  let mixins: Record<
-    string,
-    { type: "mixin"; value: string; nameParts: string[] }
-  > = {};
+  let mixins: Record<string, { type: "mixin"; value: string; nameParts: string[] }> = {};
 
   for (let i = 1; i < mixinParts.length; i++) {
     const [comment] = mixinParts[i].split("*/", 1);
@@ -124,10 +116,7 @@ function parseStyledComponents(
     styledComponents[componentName] = {
       type: "styled-component",
       nameParts: componentName.split("."),
-      value:
-        transpilationMode === "Css"
-          ? `.${className}`
-          : `:global(.${className})`,
+      value: transpilationMode === "Css" ? `.${className}` : `:global(.${className})`,
     };
   }
 
@@ -140,10 +129,7 @@ function objectToModuleExport(object: object) {
       if (typeof value === "string" || typeof value === "number") {
         return [key, { type: "constant" as const, value }];
       } else if (value && (typeof value === "object" || Array.isArray(value))) {
-        return [
-          key,
-          { type: "record" as const, value: objectToModuleExport(value) },
-        ];
+        return [key, { type: "record" as const, value: objectToModuleExport(value) }];
       } else {
         return [key, { type: "unsupported" as const, hint: String(value) }];
       }
@@ -157,9 +143,7 @@ export type ParseContext = {
   evaluateYakModule?: (
     modulePath: string,
   ) => Promise<Record<string, unknown>> | Record<string, unknown>;
-  extractExports: (
-    modulePath: string,
-  ) => Promise<ModuleExports> | ModuleExports;
+  extractExports: (modulePath: string) => Promise<ModuleExports> | ModuleExports;
   getTransformed: (
     modulePath: string,
   ) => Promise<{ code: string; map?: string }> | { code: string; map?: string };

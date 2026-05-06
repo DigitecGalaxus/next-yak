@@ -20,15 +20,11 @@ export const Default: Story = {
 };
 
 export const Fancy: Story = {
-  render: (args) => (
-    <FancyButton {...args}>{args.children ?? "Fancy Button"}</FancyButton>
-  ),
+  render: (args) => <FancyButton {...args}>{args.children ?? "Fancy Button"}</FancyButton>,
 };
 
 export const Icon: Story = {
-  render: (args) => (
-    <IconButton {...args}>{args.children ?? "Icon Button"}</IconButton>
-  ),
+  render: (args) => <IconButton {...args}>{args.children ?? "Icon Button"}</IconButton>,
 };
 
 export const AllVariants: Story = {

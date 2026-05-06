@@ -24,10 +24,7 @@ test(
     const src = await fsTmp.readFile("colors.ts");
     await fsTmp.writeFile(
       "colors.ts",
-      src
-        .replace('"purple"', '"red"')
-        .replace('"orange"', '"blue"')
-        .replace('"teal"', '"green"'),
+      src.replace('"purple"', '"red"').replace('"orange"', '"blue"').replace('"teal"', '"green"'),
     );
 
     await expect(primary).toHaveCSS("color", "rgb(255, 0, 0)", {

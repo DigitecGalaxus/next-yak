@@ -2,23 +2,36 @@
   "name": "storybook-addon-yak",
   "version": "9.4.1",
   "description": "Storybook addon for next-yak CSS-in-JS",
+  "keywords": [
+    "css-in-js",
+    "next-yak",
+    "react",
+    "storybook",
+    "storybook-addon"
+  ],
   "homepage": "https://yak.js.org/",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DigitecGalaxus/next-yak"
-  },
   "bugs": {
     "url": "https://github.com/DigitecGalaxus/next-yak/issues"
   },
   "license": "MIT",
-  "keywords": [
-    "storybook",
-    "storybook-addon",
-    "next-yak",
-    "css-in-js",
-    "react"
+  "author": {
+    "name": "Jan Nicklas"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -31,16 +44,14 @@
       "import": "./dist/preset.js"
     }
   },
-  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "devDependencies": {
     "@types/node": "catalog:dev",
     "next-yak": "workspace:*",
@@ -50,16 +61,5 @@
   "peerDependencies": {
     "next-yak": "workspace:^",
     "storybook": "^10.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "maintainers": [
-    {
-      "name": "Luca Schneider"
-    }
-  ],
-  "author": {
-    "name": "Jan Nicklas"
   }
 }

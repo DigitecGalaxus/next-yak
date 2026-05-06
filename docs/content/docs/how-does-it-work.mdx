@@ -2,8 +2,9 @@
 title: How does it work
 description: This is for the curious minds who want to know how `next-yak` works under the hood and it's not necessary to understand it in order to use it.
 ---
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { SideBySide } from '../../components/sideBySide';
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { SideBySide } from "../../components/sideBySide";
 
 ## Playground
 
@@ -64,6 +65,7 @@ So that means `./page.yak.module.css` is a virtual file that is afterwards gener
 styles of the current file. `./page.yak.module.css!=!./page` says that the loader (matching `.yak.module.css` files) should
 be used with the current file as input. Lastly `?./page.yak.module.css` is the query parameter that tells Next.js that this
 is a CSS module and its loaders should be used.
+
 </Tab>
 <Tab value="Turbopack">
 ```tsx title="output"
@@ -71,6 +73,7 @@ import "data:text/css;base64,LkJ1dHRvbiB7Li4ufQ==";
 ```
 
 Turbopack uses a different approach than webpack. Instead of using inline match resources, the SWC plugin encodes the extracted CSS as base64 data URLs. This allows Turbopack to handle the CSS without needing the complex resource matching syntax that webpack uses.
+
 </Tab>
 <Tab value="Vite">
 ```tsx title="output"
@@ -78,6 +81,7 @@ import "virtual:yak-css:{{__MODULE_PATH__}}.css";
 ```
 
 For Vite, next-yak uses a virtual module system. The `{{__MODULE_PATH__}}` placeholder is replaced by the SWC plugin with the actual file path during transformation. The Vite plugin then resolves these virtual modules and serves the extracted CSS through Vite's standard CSS pipeline.
+
 </Tab>
 </Tabs>
 
@@ -90,15 +94,14 @@ In another step, the tagged template literals are transformed into `next-yak` ru
 ```tsx title="input"
 import { styled } from "next-yak";
 
-const Button = styled.button`
-  font-size: 2rem;
+const Button = styled.button`  font-size: 2rem;
   font-weight: bold;
   color: blue;
   &:hover {
     color: red;
-  }
-`;
-```
+  }`;
+
+````
 </div>
 <div>
 ```tsx title="output"
@@ -107,7 +110,8 @@ import * as __yak from "next-yak/internal";
 const Button = __yak.__yak_button(
   "input_Button_m7uBBu"
 );
-```
+````
+
 </div>
 </SideBySide>
 
@@ -120,13 +124,12 @@ The dynamic parts are preserved and apply the classes or CSS variables at runtim
 ```tsx title="input"
 import { styled } from "next-yak";
 
-const Button = styled.button`
-  color: ${(props) => props.$primary
+const Button = styled.button`  color: ${(props) => props.$primary
     ? "white"
     : "blue"
-  };
-`;
-```
+  };`;
+
+````
 </div>
 <div>
 ```tsx title="output"
@@ -142,7 +145,8 @@ const Button = __yak.__yak_button(
     },
   }
 );
-```
+````
+
 </div>
 </SideBySide>
 
@@ -157,10 +161,11 @@ const Button = styled.button`
   font-size: 2rem;
   ${(props) => props.$primary &&
     css`
-      background: black;
-    `}
+background: black;
+`}
 `;
-```
+
+````
 </div>
 <div>
 ```tsx title="output"
@@ -172,7 +177,8 @@ const Button = __yak.__yak_button(
   (props) => props.$primary &&
     css("input_Button___m7uBBu"),
 );
-```
+````
+
 </div>
 </SideBySide>
 
@@ -194,14 +200,13 @@ const Button = styled.button`
 	  ? "white" : "blue"};
 	${props => props.$primary 
 	  ? css`background: black;` 
-		: css`background: white;`
-	}
+		: css`background: white;`	}
     &:hover {
   		color: ${props => props.$primary 
   		  ? "red" : "blue"};
-  	}
-`;
-```
+  	}`;
+
+````
 </div>
 <div>
 ```tsx title="output (extracted CSS comment)"
@@ -225,7 +230,8 @@ const Button = styled.button`
   }
 }
 */
-```
+````
+
 </div>
 </SideBySide>
 
@@ -274,17 +280,12 @@ function __yak_button(className, ...dynamicParts) {
         // css variable values, e.g.:
         // { style: { "--color": (props) => props.$color } }
         for (const [key, value] of Object.entries(part.style)) {
-          style[key] = typeof value === "function"
-            ? value(props)
-            : value;
+          style[key] = typeof value === "function" ? value(props) : value;
         }
       }
     }
 
-    return <button
-      className={[...classNames].join(" ")}
-      style={style}
-    />;
+    return <button className={[...classNames].join(" ")} style={style} />;
   };
 }
 ```
@@ -367,11 +368,7 @@ import { getYakThemeContext } from "next-yak/context/baseContext";
 
 export const useTheme = cache(() => getYakThemeContext());
 export const YakThemeProvider = ({ children }: { children: ReactNode }) => {
-  return (
-    <YakThemeClientProvider theme={useTheme()}>
-      {children}
-    </YakThemeClientProvider>
-  );
+  return <YakThemeClientProvider theme={useTheme()}>{children}</YakThemeClientProvider>;
 };
 ```
 
@@ -379,17 +376,17 @@ The `getYakThemeContext` function is imported from the user's `yak.context.ts` f
 to determine your values for the theme context.
 
 ```tsx title="yak.context.ts"
-import { cookies } from 'next/headers'
+import { cookies } from "next/headers";
 
 export async function getYakThemeContext() {
-    const cookieStore = await cookies()
-    return {
-        highContrast: cookieStore.get("highContrast")?.value === "true"
-    }
+  const cookieStore = await cookies();
+  return {
+    highContrast: cookieStore.get("highContrast")?.value === "true",
+  };
 }
 
 declare module "next-yak" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
 }
 ```
 
@@ -401,6 +398,6 @@ it points to the individual `yak.context.ts` file in the root directory.
 // is able to import a context which works for server components
 const yakContext = resolveYakContext(yakOptions.contextPath, webpackConfig.context);
 if (yakContext) {
-	webpackConfig.resolve.alias['next-yak/context/baseContext'] = yakContext;
+  webpackConfig.resolve.alias["next-yak/context/baseContext"] = yakContext;
 }
 ```

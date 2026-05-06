@@ -15,10 +15,7 @@ test(
 
     // Modify the source file
     const src = await fsTmp.readFile("index.tsx");
-    await fsTmp.writeFile(
-      "index.tsx",
-      src.replace("color: red", "color: blue"),
-    );
+    await fsTmp.writeFile("index.tsx", src.replace("color: red", "color: blue"));
 
     // Wait for HMR to apply the change
     await expect(box).toHaveCSS("color", "rgb(0, 0, 255)", {

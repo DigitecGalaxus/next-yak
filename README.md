@@ -29,16 +29,16 @@ Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 wit
 
 ## Compatibility
 
-| next-yak         | Next.js         | Vite             | react            | swc_core         |
-|------------------|-----------------|------------------|------------------|------------------|
-| 9.x              | >= 16.1.0       | >= 7.0.0 (9.1+)  | 19.x             | 56.0.0           |
-| 8.x              | >= 16.0.0       | -                | 19.x             | 45.0.1           |
-| 7.x              | >= 15.4.4       | -                | 19.x             | 38.0.1           |
-| 6.x              | >= 15.4.1       | -                | 19.x             | 27.0.6           |
-| 5.x              | >= 15.2.1       | -                | 19.x             | 16.0.0           |
-| 4.x              | >= 15.0.4       | -                | 19.x             | 5.0.1            |
-| 3.x              | 15.x            | -                | 18.x / 19.x      | 3.0.2            |
-| 2.x              | 14.x            | -                | 18.x / 19.x      | 0.279.0          |
+| next-yak | Next.js   | Vite            | react       | swc_core |
+| -------- | --------- | --------------- | ----------- | -------- |
+| 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
+| 8.x      | >= 16.0.0 | -               | 19.x        | 45.0.1   |
+| 7.x      | >= 15.4.4 | -               | 19.x        | 38.0.1   |
+| 6.x      | >= 15.4.1 | -               | 19.x        | 27.0.6   |
+| 5.x      | >= 15.2.1 | -               | 19.x        | 16.0.0   |
+| 4.x      | >= 15.0.4 | -               | 19.x        | 5.0.1    |
+| 3.x      | 15.x      | -               | 18.x / 19.x | 3.0.2    |
+| 2.x      | 14.x      | -               | 18.x / 19.x | 0.279.0  |
 
 ## Installation
 
@@ -243,11 +243,9 @@ const Icon = styled.p`
 const Button = styled.button`
   ${({ $primary }) =>
     $primary
-      ? atoms(
-          "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        )
+      ? atoms("bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded")
       : atoms(
-          "bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+          "bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded",
         )}
 `;
 ```
@@ -304,7 +302,7 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ‚ù§Ô
 - https://github.com/swc-project/swc/issues/3934 (Browser SWC Plugin support)
 - https://github.com/parcel-bundler/lightningcss/issues/889 (add cssmodules-pure-no-check)
 - https://github.com/QwikDev/qwik/pull/8351 (fix virtual CSS module resolution in dev SSR)
-- https://github.com/vercel/next.js/pull/89600 (expose this._compilation to webpack loaders in Turbopack)
+- https://github.com/vercel/next.js/pull/89600 (expose this.\_compilation to webpack loaders in Turbopack)
 - https://github.com/vercel/next.js/pull/89901 (exempt data URL CSS from Pages Router global CSS restriction)
 - https://github.com/webpack/mini-css-extract-plugin/pull/1162 (fix: use matchResource for importModule)
 

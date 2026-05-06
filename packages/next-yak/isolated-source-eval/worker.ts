@@ -63,65 +63,62 @@ function requestDeps(): Promise<string[]> {
   });
 }
 
-parentPort.on(
-  "message",
-  async (msg: { type: string; id: number; absolutePath: string }) => {
-    if (msg.type !== "evaluate") return;
+parentPort.on("message", async (msg: { type: string; id: number; absolutePath: string }) => {
+  if (msg.type !== "evaluate") return;
 
-    try {
-      const fileUrl = pathToFileURL(msg.absolutePath).href;
-      const ns = await import(fileUrl);
+  try {
+    const fileUrl = pathToFileURL(msg.absolutePath).href;
+    const ns = await import(fileUrl);
 
-      const deps = await requestDeps();
+    const deps = await requestDeps();
 
-      // The entry point may not appear in the loader hook's dependency set
-      // if it was already in the ESM cache from a previous evaluation.
-      // The resolve hook only fires on cache misses.
-      if (!deps.includes(msg.absolutePath)) {
-        deps.unshift(msg.absolutePath);
-      }
-
-      // Module namespace objects are exotic objects that fail structured clone
-      // (postMessage would throw). Copying to a plain object is required.
-      const value: Record<string, unknown> = {};
-      for (const key of Object.keys(ns)) {
-        value[key] = ns[key];
-      }
-
-      parentPort!.postMessage({
-        type: "result",
-        id: msg.id,
-        ok: true,
-        value,
-        dependencies: deps,
-      });
-    } catch (err: unknown) {
-      // Catches both evaluation errors (syntax errors, runtime exceptions)
-      // and structured clone failures (e.g. when exports contain functions,
-      // Symbols, or other non-cloneable values). Both are returned as
-      // { ok: false } results — the caller does not need to distinguish.
-      const error =
-        err instanceof Error
-          ? { message: err.message, stack: err.stack ?? "" }
-          : { message: String(err), stack: "" };
-
-      // Flush partial dependencies that the loader hook tracked before the
-      // error. This allows the evaluator to register them in the reverse
-      // dep map so that fixing the broken file triggers re-evaluation.
-      const deps = await requestDeps();
-      if (!deps.includes(msg.absolutePath)) {
-        deps.unshift(msg.absolutePath);
-      }
-
-      parentPort!.postMessage({
-        type: "result",
-        id: msg.id,
-        ok: false,
-        error,
-        dependencies: deps,
-      });
+    // The entry point may not appear in the loader hook's dependency set
+    // if it was already in the ESM cache from a previous evaluation.
+    // The resolve hook only fires on cache misses.
+    if (!deps.includes(msg.absolutePath)) {
+      deps.unshift(msg.absolutePath);
     }
-  },
-);
+
+    // Module namespace objects are exotic objects that fail structured clone
+    // (postMessage would throw). Copying to a plain object is required.
+    const value: Record<string, unknown> = {};
+    for (const key of Object.keys(ns)) {
+      value[key] = ns[key];
+    }
+
+    parentPort!.postMessage({
+      type: "result",
+      id: msg.id,
+      ok: true,
+      value,
+      dependencies: deps,
+    });
+  } catch (err: unknown) {
+    // Catches both evaluation errors (syntax errors, runtime exceptions)
+    // and structured clone failures (e.g. when exports contain functions,
+    // Symbols, or other non-cloneable values). Both are returned as
+    // { ok: false } results — the caller does not need to distinguish.
+    const error =
+      err instanceof Error
+        ? { message: err.message, stack: err.stack ?? "" }
+        : { message: String(err), stack: "" };
+
+    // Flush partial dependencies that the loader hook tracked before the
+    // error. This allows the evaluator to register them in the reverse
+    // dep map so that fixing the broken file triggers re-evaluation.
+    const deps = await requestDeps();
+    if (!deps.includes(msg.absolutePath)) {
+      deps.unshift(msg.absolutePath);
+    }
+
+    parentPort!.postMessage({
+      type: "result",
+      id: msg.id,
+      ok: false,
+      error,
+      dependencies: deps,
+    });
+  }
+});
 
 parentPort.postMessage({ type: "ready" });

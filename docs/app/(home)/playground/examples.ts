@@ -7,8 +7,7 @@ type Example = {
 export const examples = {
   base: {
     title: "Next Yak Logo",
-    description:
-      "A simple example of using Next Yak to create a styled component with a logo.",
+    description: "A simple example of using Next Yak to create a styled component with a logo.",
     files: {
       index: `import { styled, css } from "next-yak";
 import { useState } from "react";

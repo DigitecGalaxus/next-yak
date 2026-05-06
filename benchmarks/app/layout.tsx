@@ -5,11 +5,7 @@ export const metadata = {
   description: "Kanji Demo which renders 2500 Kanji characters",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
