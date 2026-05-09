@@ -56,7 +56,9 @@ Create `cases/<name>/index.tsx` and `cases/<name>/index.test.ts`:
 ```tsx
 // cases/my-case/index.tsx
 import { styled } from "next-yak";
-const Box = styled.div`background: blue;`;
+const Box = styled.div`
+  background: blue;
+`;
 export default function App() {
   return <Box data-testid="box">Test</Box>;
 }
@@ -67,10 +69,13 @@ export default function App() {
 import { test, expect } from "@playwright/test";
 import { withTestEnv } from "next-yak-e2e";
 
-test("applies background", withTestEnv("my-case", async (fsTmp, page) => {
-  await page.goto(fsTmp.url);
-  await expect(page.getByTestId("box")).toHaveCSS("background-color", "rgb(0, 0, 255)");
-}));
+test(
+  "applies background",
+  withTestEnv("my-case", async (fsTmp, page) => {
+    await page.goto(fsTmp.url);
+    await expect(page.getByTestId("box")).toHaveCSS("background-color", "rgb(0, 0, 255)");
+  }),
+);
 ```
 
 New cases are discovered automatically.

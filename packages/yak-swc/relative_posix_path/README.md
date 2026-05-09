@@ -45,5 +45,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Code is extracted from https://github.com/jantimon/css-variable/
 
 This crate uses the following dependencies:
+
 - [pathdiff](https://crates.io/crates/pathdiff)
 - [regex](https://crates.io/crates/regex)

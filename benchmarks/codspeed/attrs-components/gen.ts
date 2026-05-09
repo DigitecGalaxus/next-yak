@@ -23,9 +23,7 @@ async function generateAttrsComponentsFile() {
     const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${
-      lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`
-    } from '${lib}';
+import ${lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`} from '${lib}';
 
 ${Array.from({ length: componentCount }, (_, index) => {
   const colorValue = `#${(index + 1).toString(16).padStart(6, "0")}`;
@@ -58,15 +56,12 @@ ${Array.from({ length: componentCount }, (_, index) => {
 \`;`;
 }).join("\n\n")}
 
-export const AttrsComponents${
-      lib === "next-yak" ? "Yak" : "Styled"
-    }: FunctionComponent = () => {
+export const AttrsComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div>
       ${Array.from(
         { length: componentCount },
-        (_, index) =>
-          `<AttrsComponent${index + 1}>Attrs ${index + 1}</AttrsComponent${index + 1}>`,
+        (_, index) => `<AttrsComponent${index + 1}>Attrs ${index + 1}</AttrsComponent${index + 1}>`,
       ).join("\n      ")}
     </div>
   );
@@ -74,16 +69,10 @@ export const AttrsComponents${
 `;
 
     mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(
-      `${__dirname}/../generated/AttrsComponents.${lib}.tsx`,
-      fileContent,
-      (err) => {
-        if (err) throw err;
-        console.log(
-          `AttrsComponents.${lib}.tsx has been created successfully.`,
-        );
-      },
-    );
+    writeFile(`${__dirname}/../generated/AttrsComponents.${lib}.tsx`, fileContent, (err) => {
+      if (err) throw err;
+      console.log(`AttrsComponents.${lib}.tsx has been created successfully.`);
+    });
 
     // Precompile yak similar to how it would be compiled by our loader
     if (lib === "next-yak") {
@@ -117,9 +106,7 @@ export const AttrsComponents${
         compiled,
         (err) => {
           if (err) throw err;
-          console.log(
-            `AttrsComponents.${lib}.compiled.tsx has been created successfully.`,
-          );
+          console.log(`AttrsComponents.${lib}.compiled.tsx has been created successfully.`);
         },
       );
     }

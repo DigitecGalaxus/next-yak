@@ -1,7 +1,8 @@
 ---
 title: FAQ
 ---
-import { Callout } from 'fumadocs-ui/components/callout';
+
+import { Callout } from "fumadocs-ui/components/callout";
 
 ## General questions
 
@@ -28,10 +29,10 @@ Yes, you can use next-yak with other CSS-in-JS libraries.
 You can use it with styled-components, emotion, tailwind or any other library that adds css classes to your components.
 
 ```tsx title="my-component.tsx"
-import { styled, atoms } from 'next-yak';
+import { styled, atoms } from "next-yak";
 
 const Button = styled.button`
-  background: #BF4F74;
+  background: #bf4f74;
   /* Target classes from other libraries */
   & .my-class-from-another-library {
     color: white;
@@ -42,7 +43,8 @@ const Button = styled.button`
 ```
 
 <Callout type="info">
-If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See the [Migration to native CSS](/docs/migration-to-native-css) guide for details.
+  If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See
+  the [Migration to native CSS](/docs/migration-to-native-css) guide for details.
 </Callout>
 
 ### Can I reference a component in another component?
@@ -50,17 +52,17 @@ If you're using the older `:global()` syntax, please migrate to native CSS trans
 Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
 
 ```jsx title="my-component.tsx"
-import { styled } from 'next-yak';
+import { styled } from "next-yak";
 
 const Button = styled.button`
-	background: #BF4F74;
+  background: #bf4f74;
 `;
 
 const Nav = styled.nav`
-	background: #BF4F74;
-	${Button} {
-		color: white;
-	}
+  background: #bf4f74;
+  ${Button} {
+    color: white;
+  }
 `;
 ```
 
@@ -112,11 +114,14 @@ const Container = styled.div`
 Switch to native CSS transpilation mode, which doesn't require CSS Modules scoping:
 
 ```js title="next.config.js"
-export default withYak({
-  experiments: {
-    transpilationMode: 'Css'
-  }
-}, nextConfig);
+export default withYak(
+  {
+    experiments: {
+      transpilationMode: "Css",
+    },
+  },
+  nextConfig,
+);
 ```
 
 See the [Migration to native CSS](/docs/migration-to-native-css) guide for more details.
@@ -142,9 +147,11 @@ export default withYak({
 
     // Or combine pattern + types
     debug: { pattern: "Button", types: ["css", "css-resolved"] },
-  },
+
+},
 }, nextConfig);
-```
+
+````
 </Tab>
 <Tab value="next.config.js">
 ```js
@@ -163,7 +170,8 @@ module.exports = withYak({
     debug: { pattern: "Button", types: ["css", "css-resolved"] },
   },
 }, nextConfig);
-```
+````
+
 </Tab>
 <Tab value="next.config.mjs">
 ```js
@@ -180,8 +188,10 @@ export default withYak({
 
     // Or combine pattern + types
     debug: { pattern: "Button", types: ["css", "css-resolved"] },
-  },
+
+},
 }, nextConfig);
+
 ```
 </Tab>
 </Tabs>
@@ -189,3 +199,4 @@ export default withYak({
 This will log the transformed output of your component to the console.
 
 It could be a specificity issue, a wrong selector, or a wrong usage of the library and if you don't know why your styles are not applied, feel free to [open an issue](https://github.com/DigitecGalaxus/next-yak/issues/new/choose).
+```

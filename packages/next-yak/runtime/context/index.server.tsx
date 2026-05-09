@@ -4,10 +4,7 @@
 
 // @ts-ignore - in the current @types/react "cache" is not typed
 import React, { ReactNode, cache, use } from "react";
-import {
-  YakTheme,
-  YakThemeProvider as YakThemeClientProvider,
-} from "./index.js";
+import { YakTheme, YakThemeProvider as YakThemeClientProvider } from "./index.js";
 
 // the following import might be changed by
 // the user config in withYak to point to their own
@@ -21,9 +18,5 @@ export const useTheme = (): YakTheme | undefined => {
   return theme instanceof Promise ? use(theme) : theme;
 };
 export const YakThemeProvider = ({ children }: { children: ReactNode }) => {
-  return (
-    <YakThemeClientProvider theme={getYakContext()}>
-      {children}
-    </YakThemeClientProvider>
-  );
+  return <YakThemeClientProvider theme={getYakContext()}>{children}</YakThemeClientProvider>;
 };

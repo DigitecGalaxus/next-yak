@@ -75,9 +75,7 @@ export class ErrorBoundaryWithSnapshot extends Component<Props, State> {
             `}
           >
             <p>{this.state.error}</p>
-            <div
-              dangerouslySetInnerHTML={{ __html: this.state.childSnapshot }}
-            />
+            <div dangerouslySetInnerHTML={{ __html: this.state.childSnapshot }} />
           </div>
         );
       }

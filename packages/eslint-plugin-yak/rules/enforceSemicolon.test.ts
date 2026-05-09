@@ -14,12 +14,9 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
   valid: [
     {
       // Single selector expression
-      code: [
-        'import { css, styled } from "next-yak";',
-        "styled.button`",
-        "  ${foo} {",
-        "}`",
-      ].join("\n"),
+      code: ['import { css, styled } from "next-yak";', "styled.button`", "  ${foo} {", "}`"].join(
+        "\n",
+      ),
     },
     {
       // Two selector expressions
@@ -42,12 +39,9 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
     {
       // Single mixin without other css
-      code: [
-        'import { css, styled } from "next-yak";',
-        "styled.button`",
-        "  ${foo};",
-        "`",
-      ].join("\n"),
+      code: ['import { css, styled } from "next-yak";', "styled.button`", "  ${foo};", "`"].join(
+        "\n",
+      ),
     },
     {
       // Mixin with other css before
@@ -144,34 +138,16 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
     {
       // Mixin with no other css
-      code: [
-        'import { styled } from "next-yak";',
-        "styled.button`",
-        "${foo}",
-        "`",
-      ].join("\n"),
-      output: [
-        'import { styled } from "next-yak";',
-        "styled.button`",
-        "${foo};",
-        "`",
-      ].join("\n"),
+      code: ['import { styled } from "next-yak";', "styled.button`", "${foo}", "`"].join("\n"),
+      output: ['import { styled } from "next-yak";', "styled.button`", "${foo};", "`"].join("\n"),
       errors: [{ messageId: "lonelyExpression" }],
     },
     {
       // Mixin with whitespace around but no other css
-      code: [
-        'import { styled } from "next-yak";',
-        "styled.button`",
-        "  ${foo}  ",
-        "`",
-      ].join("\n"),
-      output: [
-        'import { styled } from "next-yak";',
-        "styled.button`",
-        "  ${foo};  ",
-        "`",
-      ].join("\n"),
+      code: ['import { styled } from "next-yak";', "styled.button`", "  ${foo}  ", "`"].join("\n"),
+      output: ['import { styled } from "next-yak";', "styled.button`", "  ${foo};  ", "`"].join(
+        "\n",
+      ),
       errors: [{ messageId: "lonelyExpression" }],
     },
     {

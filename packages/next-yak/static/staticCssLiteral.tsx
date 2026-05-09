@@ -27,6 +27,6 @@ export const css = (
     strings,
     ...values.map((value) =>
       // filter out everything but strings and numbers
-      typeof value === "number" || typeof value === "string" ? value : ""
-    )
+      typeof value === "number" || typeof value === "string" ? value : "",
+    ),
   ).trim();

@@ -23,9 +23,7 @@ async function generateCssPropComponentsFile() {
 import React, { type FunctionComponent } from 'react';
 import { css } from '${lib}';
 
-export const CssPropComponents${
-      lib === "next-yak" ? "Yak" : "Styled"
-    }: FunctionComponent = () => {
+export const CssPropComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div>
       ${Array.from({ length: componentCount }, (_, index) => {
@@ -58,16 +56,10 @@ export const CssPropComponents${
 `;
 
     mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(
-      `${__dirname}/../generated/CssPropComponents.${lib}.tsx`,
-      fileContent,
-      (err) => {
-        if (err) throw err;
-        console.log(
-          `CssPropComponents.${lib}.tsx has been created successfully.`,
-        );
-      },
-    );
+    writeFile(`${__dirname}/../generated/CssPropComponents.${lib}.tsx`, fileContent, (err) => {
+      if (err) throw err;
+      console.log(`CssPropComponents.${lib}.tsx has been created successfully.`);
+    });
 
     // Precompile yak similar to how it would be compiled by our loader
     if (lib === "next-yak") {
@@ -101,9 +93,7 @@ export const CssPropComponents${
         compiled,
         (err) => {
           if (err) throw err;
-          console.log(
-            `CssPropComponents.${lib}.compiled.tsx has been created successfully.`,
-          );
+          console.log(`CssPropComponents.${lib}.compiled.tsx has been created successfully.`);
         },
       );
     }

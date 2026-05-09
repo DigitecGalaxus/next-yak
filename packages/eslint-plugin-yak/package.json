@@ -2,25 +2,38 @@
   "name": "eslint-plugin-yak",
   "version": "1.1.1",
   "description": "Eslint plugin for next-yak",
+  "keywords": [
+    "css-in-js",
+    "eslint",
+    "eslint-plugin",
+    "eslintplugin",
+    "react",
+    "styled-components",
+    "typescript"
+  ],
   "homepage": "https://yak.js.org/",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DigitecGalaxus/next-yak"
-  },
   "bugs": {
     "url": "https://github.com/DigitecGalaxus/next-yak/issues"
   },
   "license": "MIT",
-  "keywords": [
-    "eslint",
-    "eslintplugin",
-    "eslint-plugin",
-    "css-in-js",
-    "styled-components",
-    "react",
-    "typescript"
+  "author": {
+    "name": "Jan Nicklas"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak"
+  },
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -29,7 +42,9 @@
       "import": "./dist/index.js"
     }
   },
-  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest",
@@ -37,10 +52,6 @@
     "update:docs": "pnpm build && eslint-doc-generator --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build && pnpm update:docs && pnpm test -- --watch=false"
   },
-  "files": [
-    "dist",
-    "docs"
-  ],
   "dependencies": {
     "@typescript-eslint/utils": "catalog:dev"
   },
@@ -57,16 +68,5 @@
     "@typescript-eslint/parser": ">8.0.0",
     "eslint": ">=9.0.0",
     "typescript": ">=5.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "maintainers": [
-    {
-      "name": "Luca Schneider"
-    }
-  ],
-  "author": {
-    "name": "Jan Nicklas"
   }
 }

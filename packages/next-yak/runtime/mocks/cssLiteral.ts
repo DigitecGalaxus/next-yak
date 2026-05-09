@@ -1,7 +1,4 @@
-import type {
-  css as cssInternal,
-  NestedRuntimeStyleProcessor,
-} from "../cssLiteral.js";
+import type { css as cssInternal, NestedRuntimeStyleProcessor } from "../cssLiteral.js";
 
 export type { ComponentStyles, CSSInterpolation } from "../cssLiteral.js";
 
@@ -17,10 +14,7 @@ export type { ComponentStyles, CSSInterpolation } from "../cssLiteral.js";
  * `;
  * ```
  */
-export const css: typeof cssInternal = (
-  styles: TemplateStringsArray,
-  ...args: unknown[]
-) => {
+export const css: typeof cssInternal = (styles: TemplateStringsArray, ...args: unknown[]) => {
   // When called in yak files as a template tag (without SWC transformation),
   // return { __yak: rawCss } so the cross-file resolver can
   // extract the mixin value from evaluated .yak files.
@@ -29,9 +23,7 @@ export const css: typeof cssInternal = (
     for (let i = 0; i < args.length; i++) {
       const interpolation = args[i];
       rawCss +=
-        interpolation &&
-        typeof interpolation === "object" &&
-        "__yak" in interpolation
+        interpolation && typeof interpolation === "object" && "__yak" in interpolation
           ? (interpolation as { __yak: string }).__yak
           : String(interpolation);
       rawCss += styles[i + 1];

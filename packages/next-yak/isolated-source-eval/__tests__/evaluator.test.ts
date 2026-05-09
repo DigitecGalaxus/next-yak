@@ -103,16 +103,12 @@ describe("evaluate", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
 
-    expect(result.error.message).toMatch(
-      /could not be cloned|is not a function/i,
-    );
+    expect(result.error.message).toMatch(/could not be cloned|is not a function/i);
   });
 
   it("rejects relative paths", async () => {
     evaluator = await createEvaluator();
-    await expect(evaluator.evaluate("./relative.ts")).rejects.toThrow(
-      "absolute path",
-    );
+    await expect(evaluator.evaluate("./relative.ts")).rejects.toThrow("absolute path");
   });
 
   it("excludes node_modules from dependencies", async () => {
@@ -331,17 +327,13 @@ describe("invalidation", () => {
     evaluator = await createEvaluator();
 
     // Evaluate two unrelated modules
-    const themeResult = await evaluator.evaluate(
-      fixture("transitive-theme.ts"),
-    );
+    const themeResult = await evaluator.evaluate(fixture("transitive-theme.ts"));
     const simpleResult = await evaluator.evaluate(fixture("simple-theme.ts"));
 
     // Invalidate tokens.ts — only transitive-theme.ts depends on it
     evaluator.invalidate(fixture("tokens.ts"));
 
-    const themeResult2 = await evaluator.evaluate(
-      fixture("transitive-theme.ts"),
-    );
+    const themeResult2 = await evaluator.evaluate(fixture("transitive-theme.ts"));
     const simpleResult2 = await evaluator.evaluate(fixture("simple-theme.ts"));
 
     expect(themeResult2).not.toBe(themeResult); // Re-evaluated
@@ -412,9 +404,7 @@ describe("dispose", () => {
     evaluator = await createEvaluator();
     await evaluator.dispose();
 
-    await expect(
-      evaluator.evaluate(fixture("simple-theme.ts")),
-    ).rejects.toThrow("disposed");
+    await expect(evaluator.evaluate(fixture("simple-theme.ts"))).rejects.toThrow("disposed");
   });
 
   it("supports Symbol.asyncDispose", async () => {
@@ -422,9 +412,7 @@ describe("dispose", () => {
     expect(typeof ev[Symbol.asyncDispose]).toBe("function");
     await ev[Symbol.asyncDispose]();
 
-    await expect(ev.evaluate(fixture("simple-theme.ts"))).rejects.toThrow(
-      "disposed",
-    );
+    await expect(ev.evaluate(fixture("simple-theme.ts"))).rejects.toThrow("disposed");
   });
 });
 

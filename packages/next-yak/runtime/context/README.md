@@ -10,10 +10,9 @@ The context will be available in every `styled` and `css` literal:
 
 ```tsx
 const Headline = styled.h1`
-    color: ${props => props.theme.colors.primary};
+  color: ${(props) => props.theme.colors.primary};
 `;
 ```
-
 
 ## React Server Components
 
@@ -23,16 +22,16 @@ the same directory as your Next.js config.
 ```tsx
 // yak.context.tsx
 export async function getYakThemeContext() {
-    return {
-        colors: {
-            primary: "red",
-            secondary: "blue",
-        },
-    }
+  return {
+    colors: {
+      primary: "red",
+      secondary: "blue",
+    },
+  };
 }
 
 declare module "next-yak/context" {
-    export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
 }
 ```
 
@@ -48,11 +47,7 @@ context to the client:
 import { YakThemeProvider } from "next-yak";
 
 export function Layout({ children }) {
-    return (
-        <YakThemeProvider>
-            {children}
-        </YakThemeProvider>
-    );
+  return <YakThemeProvider>{children}</YakThemeProvider>;
 }
 ```
 
@@ -60,7 +55,7 @@ Internally this works because of an alias set by `withYak` inside the NextJs con
 
 ## React Components
 
-If you are using server components you can **skip this section**.  
+If you are using server components you can **skip this section**.
 
 To use the yak theme context in a normal react component, you can just use the `YakThemeProvider`:
 

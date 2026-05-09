@@ -9,8 +9,7 @@ import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
-const universalRequire =
-  typeof require === "undefined" ? createRequire(import.meta.url) : require;
+const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
 const yakSwcPluginPath = universalRequire.resolve("yak-swc");
 
 /**
@@ -51,11 +50,7 @@ export default async function cssExtractLoader(
 
   const crossFileDeps = new Set<string>();
   let evaluate:
-    | Awaited<
-        ReturnType<
-          typeof import("./turbo-evaluator.js").createCompilationEvaluator
-        >
-      >
+    | Awaited<ReturnType<typeof import("./turbo-evaluator.js").createCompilationEvaluator>>
     | undefined;
   const fsReadFile = (filePath: string) => {
     crossFileDeps.add(filePath);
@@ -69,12 +64,7 @@ export default async function cssExtractLoader(
   };
 
   try {
-    const result = await transform(
-      code,
-      this.resourcePath,
-      this.rootContext,
-      sourceMap,
-    );
+    const result = await transform(code, this.resourcePath, this.rootContext, sourceMap);
     debugLog("ts", result.code, this.resourcePath);
 
     let css = extractCss(result.code, "Css");
@@ -121,9 +111,7 @@ export default async function cssExtractLoader(
       this.addDependency(dep);
     }
 
-    const dataUrl = result.code
-      .split("\n")
-      .find((line) => line.includes("data:text/css;base64"))!;
+    const dataUrl = result.code.split("\n").find((line) => line.includes("data:text/css;base64"))!;
 
     const codeWithCrossFileResolved = result.code.replace(
       dataUrl,
@@ -143,12 +131,7 @@ export default async function cssExtractLoader(
 }
 
 function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
-  return (
-    data: string,
-    modulePath: string,
-    rootPath: string,
-    sourceMap?: any,
-  ) =>
+  return (data: string, modulePath: string, rootPath: string, sourceMap?: any) =>
     // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
     swcTransform(data, {
       filename: modulePath,

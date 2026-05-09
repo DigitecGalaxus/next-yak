@@ -21,9 +21,7 @@ export const mergeCssProp = (
   cssProp: RuntimeStyleProcessor<unknown>,
 ) => {
   const existingClassName = relevantProps.className;
-  const classNames = existingClassName
-    ? new Set(existingClassName.split(" "))
-    : new Set<string>();
+  const classNames = existingClassName ? new Set(existingClassName.split(" ")) : new Set<string>();
 
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};

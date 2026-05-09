@@ -61,8 +61,7 @@ const language: LanguageRegistration = {
     },
     {
       contentName: "source.css.scss",
-      begin:
-        "(css|keyframes|injectGlobal|createGlobalStyles?|stylesheet)(<.+>)?(`)",
+      begin: "(css|keyframes|injectGlobal|createGlobalStyles?|stylesheet)(<.+>)?(`)",
       beginCaptures: {
         "1": {
           name: "entity.name.function.tagged-template.js",
@@ -185,8 +184,7 @@ const language: LanguageRegistration = {
     },
     {
       contentName: "source.css.scss",
-      begin:
-        "([mM][eE][dD][iI][aA]\\.[[:alpha:]][[:alnum:]]*(?:\\(.*?\\))?)\\s*(`)",
+      begin: "([mM][eE][dD][iI][aA]\\.[[:alpha:]][[:alnum:]]*(?:\\(.*?\\))?)\\s*(`)",
       beginCaptures: {
         "1": {
           patterns: [

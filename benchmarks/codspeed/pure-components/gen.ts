@@ -23,9 +23,7 @@ async function generatePureComponentsFile() {
     const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${
-      lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`
-    } from '${lib}';
+import ${lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`} from '${lib}';
 
 ${Array.from({ length: componentCount }, (_, index) => {
   const colorValue = `#${(index + 1).toString(16).padStart(6, "0")}`;
@@ -40,15 +38,12 @@ ${Array.from({ length: componentCount }, (_, index) => {
 \`;`;
 }).join("\n\n")}
 
-export const PureComponents${
-      lib === "next-yak" ? "Yak" : "Styled"
-    }: FunctionComponent = () => {
+export const PureComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div>
       ${Array.from(
         { length: componentCount },
-        (_, index) =>
-          `<Component${index + 1}>Item ${index + 1}</Component${index + 1}>`,
+        (_, index) => `<Component${index + 1}>Item ${index + 1}</Component${index + 1}>`,
       ).join("\n      ")}
     </div>
   );
@@ -56,14 +51,10 @@ export const PureComponents${
 `;
 
     mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(
-      `${__dirname}/../generated/PureComponents.${lib}.tsx`,
-      fileContent,
-      (err) => {
-        if (err) throw err;
-        console.log(`PureComponents.${lib}.tsx has been created successfully.`);
-      },
-    );
+    writeFile(`${__dirname}/../generated/PureComponents.${lib}.tsx`, fileContent, (err) => {
+      if (err) throw err;
+      console.log(`PureComponents.${lib}.tsx has been created successfully.`);
+    });
 
     // Precompile yak similar to how it would be compiled by our loader
     if (lib === "next-yak") {
@@ -92,16 +83,10 @@ export const PureComponents${
           // Replace __styleYak usage to a string
           .replace(/__styleYak.(\w+)/g, `"$1"`);
       mkdirSync(`${__dirname}/../generated`, { recursive: true });
-      writeFile(
-        `${__dirname}/../generated/PureComponents.${lib}.compiled.tsx`,
-        compiled,
-        (err) => {
-          if (err) throw err;
-          console.log(
-            `PureComponents.${lib}.compiled.tsx has been created successfully.`,
-          );
-        },
-      );
+      writeFile(`${__dirname}/../generated/PureComponents.${lib}.compiled.tsx`, compiled, (err) => {
+        if (err) throw err;
+        console.log(`PureComponents.${lib}.compiled.tsx has been created successfully.`);
+      });
     }
   }
 }

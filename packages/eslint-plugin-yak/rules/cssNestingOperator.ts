@@ -8,12 +8,10 @@ export const cssNestingOperator = createRule({
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Enforces css selectors in next-yak to correctly use the nesting selector (&)",
+      description: "Enforces css selectors in next-yak to correctly use the nesting selector (&)",
     },
     messages: {
-      missingNestingOperator:
-        "Nesting selector missing.\nDid you forget the &?",
+      missingNestingOperator: "Nesting selector missing.\nDid you forget the &?",
     },
     fixable: "code",
     hasSuggestions: true,
@@ -26,10 +24,7 @@ export const cssNestingOperator = createRule({
       ImportDeclaration,
       /** All return statements in styled/css literals */
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
-        if (
-          importedNames.styled === undefined &&
-          importedNames.css === undefined
-        ) {
+        if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
 
@@ -39,8 +34,7 @@ export const cssNestingOperator = createRule({
           !templateLiteral ||
           templateLiteral.type !== AST_NODE_TYPES.TemplateLiteral ||
           // No next-yak imports
-          (importedNames.styled === undefined &&
-            importedNames.css === undefined) ||
+          (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
           !isStyledOrCssTag(node, importedNames) ||
           // As we check the full code of a template literal (including nested literals),
@@ -59,13 +53,10 @@ export const cssNestingOperator = createRule({
         // Replace all content inside parentheses with underscores to avoid matching unrelated selectors
         // e.g. :not(:disabled, :active):focused -> :not(_______):focused
         // https://regex101.com/r/ik69ze/1
-        const code = codeRaw.replace(
-          /\(([^()]+)\)/g,
-          (_match, capturedGroup) => {
-            const underscoreReplacement = "_".repeat(capturedGroup.length);
-            return `(${underscoreReplacement})`;
-          },
-        );
+        const code = codeRaw.replace(/\(([^()]+)\)/g, (_match, capturedGroup) => {
+          const underscoreReplacement = "_".repeat(capturedGroup.length);
+          return `(${underscoreReplacement})`;
+        });
 
         // Regex to find all possible elements to check
         // https://regex101.com/r/nNIxaX/1
@@ -83,11 +74,7 @@ export const cssNestingOperator = createRule({
           }
 
           // False positives -> ok
-          if (
-            match[1] === ":root" ||
-            match[1].startsWith(":global(") ||
-            match[1] === ":modal"
-          ) {
+          if (match[1] === ":root" || match[1].startsWith(":global(") || match[1] === ":modal") {
             continue;
           }
 
@@ -102,9 +89,7 @@ export const cssNestingOperator = createRule({
           let fixFn = undefined;
           if (elementIsFirstInMatch) {
             const selectorStartIndex =
-              templateLiteral.range[0] +
-              match.index +
-              match[0].indexOf(match[1]);
+              templateLiteral.range[0] + match.index + match[0].indexOf(match[1]);
 
             let fixSnippet = "&";
             if (match[1] === ">" || match[1] === "+" || match[1] === "~") {
@@ -226,8 +211,7 @@ function isNestedSelector(sourceCode: string, regexMatch: RegExpMatchArray) {
           nestingLevelState[++nestingLevel] = false;
           withinExpressionOnSameLine = true;
         } else {
-          nestingLevelState[++nestingLevel] =
-            !invalidExpressionSelectorOnSameLine;
+          nestingLevelState[++nestingLevel] = !invalidExpressionSelectorOnSameLine;
         }
       } else if (char === "}") {
         nestingLevelState.pop();
@@ -249,11 +233,7 @@ function isNestedSelector(sourceCode: string, regexMatch: RegExpMatchArray) {
 /**
  * Maps a regex match to a location in the provided source code.
  */
-function mapRegexMatchToLoc(
-  sourceCode: string,
-  regexMatch: RegExpMatchArray,
-  matchText: string,
-) {
+function mapRegexMatchToLoc(sourceCode: string, regexMatch: RegExpMatchArray, matchText: string) {
   let line = 1;
   let column = 0;
 
@@ -266,8 +246,7 @@ function mapRegexMatchToLoc(
     return loc;
   }
 
-  const groupStartIndex =
-    regexMatch.index + Math.max(regexMatch[0].indexOf(matchText), 0);
+  const groupStartIndex = regexMatch.index + Math.max(regexMatch[0].indexOf(matchText), 0);
   const groupEndIndex = groupStartIndex + matchText.length;
 
   for (let i = 0; i < sourceCode.length; i++) {

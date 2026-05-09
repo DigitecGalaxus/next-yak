@@ -65,9 +65,7 @@ export function css<TProps>(
   styles: TemplateStringsArray,
   ...values: CSSInterpolation<NoInfer<TProps> & { theme: YakTheme }>[]
 ): ComponentStyles<TProps>;
-export function css<TProps>(
-  ...args: Array<any>
-): RuntimeStyleProcessor<TProps> {
+export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> {
   // Normally this  could be an array of strings passed, but as we transpile the usage of css`` ourselves, we control the arguments
   // and ensure that only the first argument is a string (class name of the non-dynamic styles)
   let className: string | undefined;
@@ -160,20 +158,13 @@ const unwrapProps = (
   }
 };
 
-const recursivePropExecution = (
-  props: unknown,
-  fn: (props: unknown) => any,
-): string | number => {
+const recursivePropExecution = (props: unknown, fn: (props: unknown) => any): string | number => {
   const result = fn(props);
   if (typeof result === "function") {
     return recursivePropExecution(props, result);
   }
   if (process.env.NODE_ENV === "development") {
-    if (
-      typeof result !== "string" &&
-      typeof result !== "number" &&
-      !(result instanceof String)
-    ) {
+    if (typeof result !== "string" && typeof result !== "number" && !(result instanceof String)) {
       throw new Error(
         `Dynamic CSS functions must return a string or number but returned ${JSON.stringify(
           result,

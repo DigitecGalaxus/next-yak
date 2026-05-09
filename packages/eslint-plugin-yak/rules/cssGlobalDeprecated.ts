@@ -12,8 +12,7 @@ export const cssGlobalDeprecated = createRule({
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Deprecates :global() selectors in favor of native CSS transpilation",
+      description: "Deprecates :global() selectors in favor of native CSS transpilation",
     },
     messages: {
       globalSelectorDeprecated:
@@ -31,10 +30,7 @@ export const cssGlobalDeprecated = createRule({
       ImportDeclaration,
       /** All return statements in styled/css literals */
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
-        if (
-          importedNames.styled === undefined &&
-          importedNames.css === undefined
-        ) {
+        if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
 
@@ -44,8 +40,7 @@ export const cssGlobalDeprecated = createRule({
           !templateLiteral ||
           templateLiteral.type !== AST_NODE_TYPES.TemplateLiteral ||
           // No next-yak imports
-          (importedNames.styled === undefined &&
-            importedNames.css === undefined) ||
+          (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
           !isStyledOrCssTag(node, importedNames) ||
           // As we check full code of a template literal (including nested literals),
@@ -66,12 +61,7 @@ export const cssGlobalDeprecated = createRule({
         const matches = codeRaw.matchAll(GLOBAL_SELECTOR_REGEX);
 
         for (const match of matches) {
-          const loc = getMatchLocation(
-            codeRaw,
-            templateLiteral,
-            match.index!,
-            match[0].length,
-          );
+          const loc = getMatchLocation(codeRaw, templateLiteral, match.index!, match[0].length);
 
           context.report({
             node: templateLiteral,
@@ -87,10 +77,7 @@ export const cssGlobalDeprecated = createRule({
 /**
  * Checks if the parent expression is a tagged template expression
  */
-function hasParentTaggedTemplateExpression(
-  node: TSESTree.Node,
-  maxLevels = 5,
-): boolean {
+function hasParentTaggedTemplateExpression(node: TSESTree.Node, maxLevels = 5): boolean {
   let currentLevel = 1;
   let currentNode: TSESTree.Node | undefined = node.parent;
 
@@ -153,17 +140,11 @@ function getMatchLocation(
   return {
     start: {
       line: templateLiteral.loc!.start.line + startLine,
-      column:
-        startLine === 0
-          ? templateLiteral.loc!.start.column + startColumn
-          : startColumn,
+      column: startLine === 0 ? templateLiteral.loc!.start.column + startColumn : startColumn,
     },
     end: {
       line: templateLiteral.loc!.start.line + endLine,
-      column:
-        endLine === 0
-          ? templateLiteral.loc!.start.column + endColumn
-          : endColumn,
+      column: endLine === 0 ? templateLiteral.loc!.start.column + endColumn : endColumn,
     },
   };
 }

@@ -139,8 +139,7 @@ it("merge properties with css wrapping atoms", async () => {
       ),
     ),
   ).toMatchObject({
-    className:
-      "card yakClass1 bg-white rounded-lg shadow-md p-6 hover:shadow-lg",
+    className: "card yakClass1 bg-white rounded-lg shadow-md p-6 hover:shadow-lg",
     style: { "--card-transition": "all 0.2s ease" },
   });
 });
@@ -151,14 +150,10 @@ it("merge properties with css, atoms, and function combination", async () => {
       { className: "btn", style: { cursor: "pointer" } },
       css(
         "yakClass1",
-        atoms(
-          "px-4 py-2 rounded-md",
-          true && "text-white bg-blue-600",
-          (_, classNames, style) => {
-            classNames.add("hover:bg-blue-700 focus:outline-none");
-            style["--btn-focus-ring"] = "0 0 0 3px rgba(59, 130, 246, 0.1)";
-          },
-        ),
+        atoms("px-4 py-2 rounded-md", true && "text-white bg-blue-600", (_, classNames, style) => {
+          classNames.add("hover:bg-blue-700 focus:outline-none");
+          style["--btn-focus-ring"] = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+        }),
         () => ({
           className: "yakClass2 yakClass3",
           style: { "--yak-var1": "500" },
@@ -185,9 +180,7 @@ it("merge properties with nested css and atoms removing classes", async () => {
         atoms("border border-gray-300 rounded-md", (_, classNames, style) => {
           classNames.delete("input");
           classNames.delete("yakClass1");
-          classNames.add(
-            "focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
-          );
+          classNames.add("focus:border-blue-500 focus:ring-1 focus:ring-blue-500");
           style["--input-padding"] = "0.75rem";
         }),
         () => ({ style: { "--yak-var1": "1rem" } }),
@@ -273,8 +266,7 @@ it("merge properties with form styling", async () => {
       "form-control yakClass1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-900",
     style: {
       minHeight: "40px",
-      "--input-transition":
-        "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
+      "--input-transition": "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
       "--yak-var1": "1.5",
     },
   });
@@ -306,8 +298,7 @@ it("merge properties with dark mode and state variants", async () => {
     className:
       "theme-card yakClass1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 border border-gray-200 dark:border-gray-700",
     style: {
-      "--card-shadow":
-        "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+      "--card-shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
       "--card-shadow-dark":
         "0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06)",
     },

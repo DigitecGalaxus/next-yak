@@ -2,46 +2,46 @@
   "name": "yak-swc",
   "version": "9.4.1",
   "description": "next-yak rust based swc plugin to compile styled components at build time",
+  "keywords": [
+    "css-in-js",
+    "react",
+    "styled-components",
+    "swc-plugin",
+    "typescript"
+  ],
   "homepage": "https://yak.js.org/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DigitecGalaxus/next-yak.git"
-  },
   "bugs": {
     "url": "https://github.com/DigitecGalaxus/next-yak/issues"
   },
   "license": "MIT",
-  "keywords": [
-    "swc-plugin",
-    "css-in-js",
-    "styled-components",
-    "react",
-    "typescript"
-  ],
-  "main": "target/wasm32-wasip1/release/yak_swc.wasm",
-  "scripts": {
-    "build": "pnpm build:yak && pnpm build:playground",
-    "build:yak": "RUSTFLAGS=\"--cfg swc_ast_unknown\" cargo build -p yak_swc --release --target=wasm32-wasip1",
-    "build:playground": "cargo build -p playground-wasm --release --target=wasm32-unknown-unknown",
-    "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
-    "prettier": "cargo fmt --all",
-    "test": "cargo test -- --include-ignored",
-    "test:snapshots": "cd yak_swc && UPDATE=1 cargo test -- --include-ignored"
-  },
-  "files": [],
-  "preferUnplugged": true,
-  "dependencies": {
-    "@swc/counter": "catalog:core"
-  },
-  "publishConfig": {
-    "access": "public"
+  "author": {
+    "name": "Jan Nicklas"
   },
   "maintainers": [
     {
       "name": "Luca Schneider"
     }
   ],
-  "author": {
-    "name": "Jan Nicklas"
-  }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak.git"
+  },
+  "files": [],
+  "main": "target/wasm32-wasip1/release/yak_swc.wasm",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm build:yak && pnpm build:playground",
+    "build:yak": "RUSTFLAGS=\"--cfg swc_ast_unknown\" cargo build -p yak_swc --release --target=wasm32-wasip1",
+    "build:playground": "cargo build -p playground-wasm --release --target=wasm32-unknown-unknown",
+    "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
+    "format": "cargo fmt --all",
+    "test": "cargo test -- --include-ignored",
+    "test:snapshots": "cd yak_swc && UPDATE=1 cargo test -- --include-ignored"
+  },
+  "dependencies": {
+    "@swc/counter": "catalog:core"
+  },
+  "preferUnplugged": true
 }

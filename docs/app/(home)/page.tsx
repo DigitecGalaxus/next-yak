@@ -30,8 +30,7 @@ async function findFileUp(filename: string, startDir: string) {
     return startDir;
   } catch (err) {
     const parentDir = path.dirname(startDir);
-    if (parentDir === startDir)
-      throw new Error(`${filename} not found in directory tree`);
+    if (parentDir === startDir) throw new Error(`${filename} not found in directory tree`);
 
     return findFileUp(filename, parentDir);
   }

@@ -15,7 +15,7 @@ import {
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
-  /--yak-css-import\:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
+  /--yak-css-import:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
 
 /**
  * Resolves cross-file selectors in css files
@@ -89,10 +89,7 @@ export async function uncachedResolveCrossFileConstant(
 
     const resolvedValues = await Promise.all(
       yakImports.map(async ({ moduleSpecifier, specifier }) => {
-        const { resolved: resolvedModule } = await resolveModule(
-          context,
-          moduleSpecifier,
-        );
+        const { resolved: resolvedModule } = await resolveModule(context, moduleSpecifier);
 
         const resolvedValue = await resolveModuleSpecifierRecursively(
           context,
@@ -111,8 +108,7 @@ export async function uncachedResolveCrossFileConstant(
     // Replace the imports with the resolved values
     let result = css;
     for (let i = yakImports.length - 1; i >= 0; i--) {
-      const { position, size, importKind, specifier, semicolon } =
-        yakImports[i];
+      const { position, size, importKind, specifier, semicolon } = yakImports[i];
       const resolved = resolvedValues[i];
 
       let replacement: string;
@@ -126,10 +122,7 @@ export async function uncachedResolveCrossFileConstant(
         replacement = importKind === "mixin" ? "" : "undefined";
       } else {
         if (importKind === "selector") {
-          if (
-            resolved.type !== "styled-component" &&
-            resolved.type !== "constant"
-          ) {
+          if (resolved.type !== "styled-component" && resolved.type !== "constant") {
             throw new Error(
               `Found "${
                 resolved.type
@@ -151,23 +144,17 @@ export async function uncachedResolveCrossFileConstant(
               //   color: ${value};
               // For mixins the semicolon is already included in the value
               // but for constants it has to be added manually
-              (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1))
-                ? ""
-                : semicolon);
+              (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1)) ? "" : semicolon);
       }
 
-      result =
-        result.slice(0, position) +
-        String(replacement) +
-        result.slice(position + size);
+      result = result.slice(0, position) + String(replacement) + result.slice(position + size);
     }
 
     return { resolved: result, dependencies: Array.from(dependencies) };
   } catch (error) {
-    throw new CauseError(
-      `Error while resolving cross-file selectors in file "${filePath}"`,
-      { cause: error },
-    );
+    throw new CauseError(`Error while resolving cross-file selectors in file "${filePath}"`, {
+      cause: error,
+    });
   }
 }
 
@@ -279,9 +266,7 @@ async function uncachedResolveModule(
           }
           current = next.value;
         }
-        current[
-          styledComponent.nameParts[styledComponent.nameParts.length - 1]
-        ] = {
+        current[styledComponent.nameParts[styledComponent.nameParts.length - 1]] = {
           type: "styled-component",
           className: styledComponent.value,
         };
@@ -329,12 +314,9 @@ async function uncachedResolveModule(
               next = { type: "record", value: {} };
               current[mixin.nameParts[i]] = next;
             } else if (next.type !== "record") {
-              throw new CauseError(
-                `Error parsing file "${parsedModule.path}"`,
-                {
-                  cause: `"${mixin.nameParts.slice(0, i + 1).join(".")}" is not a record`,
-                },
-              );
+              throw new CauseError(`Error parsing file "${parsedModule.path}"`, {
+                cause: `"${mixin.nameParts.slice(0, i + 1).join(".")}" is not a record`,
+              });
             }
             current = next.value;
           }
@@ -366,30 +348,20 @@ async function resolveModuleSpecifierRecursively(
   if (exportValue !== undefined) {
     if (seen.has(resolvedModule.path + ":" + exportName)) {
       throw new CircularDependencyError(
-        `Unable to resolve "${specifiers.join(".")}" in module "${
-          resolvedModule.path
-        }"`,
+        `Unable to resolve "${specifiers.join(".")}" in module "${resolvedModule.path}"`,
         { cause: "Circular dependency detected" },
       );
     }
 
     seen.add(resolvedModule.path + ":" + exportName);
-    return resolveModuleExport(
-      context,
-      resolvedModule.path,
-      exportValue,
-      specifiers,
-      seen,
-    );
+    return resolveModuleExport(context, resolvedModule.path, exportValue, specifiers, seen);
   }
 
   let i = 1;
   for (const from of resolvedModule.exports.all) {
     if (context.exportAllLimit && i++ > context.exportAllLimit) {
       throw new ResolveError(
-        `Unable to resolve "${specifiers.join(".")}" in module "${
-          resolvedModule.path
-        }"`,
+        `Unable to resolve "${specifiers.join(".")}" in module "${resolvedModule.path}"`,
         {
           cause: `More than ${context.exportAllLimit} star exports are not supported for performance reasons`,
         },
@@ -411,9 +383,7 @@ async function resolveModuleSpecifierRecursively(
 
       if (seen.has(resolvedModule.path + ":*")) {
         throw new CircularDependencyError(
-          `Unable to resolve "${specifiers.join(".")}" in module "${
-            resolvedModule.path
-          }"`,
+          `Unable to resolve "${specifiers.join(".")}" in module "${resolvedModule.path}"`,
           { cause: "Circular dependency detected" },
         );
       }
@@ -536,13 +506,7 @@ async function resolveModuleExport(
           specifiers[0],
           specifiers.slice(1),
         );
-        return resolveModuleExport(
-          context,
-          filePath,
-          resolvedInRecord,
-          specifiers,
-          seen,
-        );
+        return resolveModuleExport(context, filePath, resolvedInRecord, specifiers, seen);
       }
       case "mixin": {
         return {
@@ -582,16 +546,12 @@ function explainUnsupported(
   const isYakFile = /\.yak\.(?:ts|tsx|js|jsx)$/.test(filePath);
   const docs =
     "https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files";
-  const snippet = source
-    ? renderSourceSnippet(filePath, source, hint ?? "")
-    : undefined;
+  const snippet = source ? renderSourceSnippet(filePath, source, hint ?? "") : undefined;
 
   const lines: string[] = [];
   if (isYakFile) {
     const got = hint ? ` (got \`${hint}\`)` : "";
-    lines.push(
-      `\`${specifier}\` evaluated to a value that cannot be inlined into CSS${got}.`,
-    );
+    lines.push(`\`${specifier}\` evaluated to a value that cannot be inlined into CSS${got}.`);
     if (snippet) lines.push(snippet);
     lines.push(
       `  help: replace it with a string, number, or plain object/array of those`,
@@ -687,10 +647,9 @@ function resolveSpecifierInRecord(
     return { type: "mixin", value: String(current.value.__yak.value) };
   }
 
-  throw new ResolveError(
-    `Unable to resolve "${specifiers.join(".")}" in object/array "${name}"`,
-    { cause: "only string and numbers are supported" },
-  );
+  throw new ResolveError(`Unable to resolve "${specifiers.join(".")}" in object/array "${name}"`, {
+    cause: "only string and numbers are supported",
+  });
 }
 
 /**
@@ -732,12 +691,8 @@ type ResolvedCssImport =
 export type ResolveContext = {
   parse: (modulePath: string) => Promise<ParsedModule> | ParsedModule;
   cache?: {
-    resolve?: Cache<
-      Promise<{ resolved: ResolvedModule; dependencies: string[] }>
-    >;
-    resolveCrossFileConstant?: Cache<
-      Promise<{ resolved: string; dependencies: string[] }>
-    >;
+    resolve?: Cache<Promise<{ resolved: ResolvedModule; dependencies: string[] }>>;
+    resolveCrossFileConstant?: Cache<Promise<{ resolved: string; dependencies: string[] }>>;
   };
   exportAllLimit?: number;
   resolve: (specifier: string, importer: string) => Promise<string> | string;

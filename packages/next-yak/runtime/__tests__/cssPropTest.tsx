@@ -33,20 +33,17 @@ const ComponentThatTakesCssProp = (p: {
   style?: ComponentProps<"div">["style"];
 }) => <div {...p}>anything</div>;
 
-const ComponentThatTakesCssProp2 = (p: {
-  className?: string | string[];
-  style?: {};
-}) => <div {...(p as any)}>anything</div>;
+const ComponentThatTakesCssProp2 = (p: { className?: string | string[]; style?: {} }) => (
+  <div {...(p as any)}>anything</div>
+);
 
-const ComponentThatTakesCssProp3 = (p: {
-  className: string;
-  style?: Record<string, unknown>;
-}) => <div {...p}>anything</div>;
+const ComponentThatTakesCssProp3 = (p: { className: string; style?: Record<string, unknown> }) => (
+  <div {...p}>anything</div>
+);
 
-const ComponentThatTakesCssProp4 = (p: {
-  className?: unknown;
-  style?: unknown;
-}) => <div {...(p as any)}>anything</div>;
+const ComponentThatTakesCssProp4 = (p: { className?: unknown; style?: unknown }) => (
+  <div {...(p as any)}>anything</div>
+);
 
 const ComponentWithCssPropAsProp = () => {
   return (

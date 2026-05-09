@@ -7,8 +7,7 @@ export const enforceSemicolons = createRule({
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Enforces that expression in styled/css literals from next-yak use semicolons",
+      description: "Enforces that expression in styled/css literals from next-yak use semicolons",
     },
     messages: {
       lonelyExpression:
@@ -23,10 +22,7 @@ export const enforceSemicolons = createRule({
     return {
       ImportDeclaration,
       TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
-        if (
-          importedNames.styled === undefined &&
-          importedNames.css === undefined
-        ) {
+        if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
 
@@ -62,8 +58,7 @@ export const enforceSemicolons = createRule({
             return;
           }
 
-          const previousExpressionType =
-            templateLiteral.expressions[index - 1]?.type;
+          const previousExpressionType = templateLiteral.expressions[index - 1]?.type;
           const previousExpressionIsTerminating =
             previousExpressionType === AST_NODE_TYPES.ArrowFunctionExpression ||
             previousExpressionType === AST_NODE_TYPES.ConditionalExpression ||
