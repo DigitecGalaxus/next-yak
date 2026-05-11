@@ -63,9 +63,7 @@ export const KanjiLetterComponent${
     lib === "next-yak" ? "Yak" : "Styled"
   }: FunctionComponent = () => (
   <Wrapper>
-    ${kanjiCharacters
-      .map((_, index) => `<Kanji${index + 1}Character />`)
-      .join("\n    ")}
+    ${kanjiCharacters.map((_, index) => `<Kanji${index + 1}Character />`).join("\n    ")}
   </Wrapper>
 );
 `;

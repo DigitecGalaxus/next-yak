@@ -47,13 +47,9 @@ export const conditionalDecl = (lib: Lib) => (predicate: string, decls: string) 
  *                        { when: \`p.$x === 'b'\`, decls: 'color: blue;' }])`
  * emits `${(p) => p.$x === 'a' ? css`color: red;` : p.$x === 'b' ? css`color: blue;` : false}`.
  */
-export const branch = (lib: Lib) => (
-  branches: ReadonlyArray<{ when: string; decls: string }>,
-) => {
+export const branch = (lib: Lib) => (branches: ReadonlyArray<{ when: string; decls: string }>) => {
   const formatValue = (decls: string) =>
-    lib === "next-yak"
-      ? `css\`${decls}\``
-      : `'${decls.replace(/\n\s*/g, " ")}'`;
+    lib === "next-yak" ? `css\`${decls}\`` : `'${decls.replace(/\n\s*/g, " ")}'`;
   const chain = branches.reduceRight(
     (acc, { when, decls }) => `${when} ? ${formatValue(decls)} : ${acc}`,
     "false",
