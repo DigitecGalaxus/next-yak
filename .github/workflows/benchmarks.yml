@@ -86,6 +86,11 @@ jobs:
         continue-on-error: true
         run: pnpm run build
 
+      - name: Generate benchmark sources (baseline)
+        continue-on-error: true
+        working-directory: benchmarks
+        run: pnpm run generate
+
       - name: Build benchmark suite (baseline)
         continue-on-error: true
         working-directory: benchmarks
@@ -131,6 +136,10 @@ jobs:
 
       - name: Build next-yak (PR)
         run: pnpm run build
+
+      - name: Generate benchmark sources (PR)
+        working-directory: benchmarks
+        run: pnpm run generate
 
       - name: Build benchmark suite (PR)
         working-directory: benchmarks
