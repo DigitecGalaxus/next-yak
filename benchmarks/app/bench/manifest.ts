@@ -1,4 +1,4 @@
-// Manifest of every CodSpeed benchmark and how it should render in the browser.
+// Manifest of every benchmark and how it should render in the browser.
 // Shared between the index page and the [slug] viewer.
 
 export type BenchmarkProps = {

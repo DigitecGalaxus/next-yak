@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { styled } from "next-yak";
-import { benchmarks } from "./codspeed/manifest";
+import { benchmarks } from "./bench/manifest";
 
 const Page = styled.div`
   font-family: system-ui, sans-serif;
@@ -27,14 +27,15 @@ export default function Home() {
     <Page>
       <h1>next-yak benchmarks</h1>
       <p>
-        Each benchmark below has a generator at <code>benchmarks/codspeed/&lt;slug&gt;/gen.ts</code>{" "}
-        and is registered in the CodSpeed harness. The links here render the same components in the
-        browser so you can inspect the rendered DOM, classes, and CSS that each library produces.
+        Each benchmark below has a generator at <code>benchmarks/bench/&lt;slug&gt;/gen.ts</code>{" "}
+        and is registered in the benchmark harness. The links here render the same components in
+        the browser so you can inspect the rendered DOM, classes, and CSS that each library
+        produces.
       </p>
       <List>
         {benchmarks.map((b) => (
           <li key={b.slug}>
-            <Link href={`/codspeed/${b.slug}`}>{b.name}</Link>{" "}
+            <Link href={`/bench/${b.slug}`}>{b.name}</Link>{" "}
             <Description>{b.description}</Description>
           </li>
         ))}

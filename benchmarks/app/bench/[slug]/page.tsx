@@ -6,32 +6,32 @@ import { styled, css } from "next-yak";
 
 import { benchmarks, type BenchmarkEntry } from "../manifest";
 
-import { KanjiLetterComponentYak } from "../../../codspeed/generated/KanjiLetterComponent.next-yak";
-import { KanjiLetterComponentStyled } from "../../../codspeed/generated/KanjiLetterComponent.styled-components";
-import { PureComponentsYak } from "../../../codspeed/generated/PureComponents.next-yak";
-import { PureComponentsStyled } from "../../../codspeed/generated/PureComponents.styled-components";
-import { AttrsComponentsYak } from "../../../codspeed/generated/AttrsComponents.next-yak";
-import { AttrsComponentsStyled } from "../../../codspeed/generated/AttrsComponents.styled-components";
-import { CssPropComponentsYak } from "../../../codspeed/generated/CssPropComponents.next-yak";
-import { CssPropComponentsStyled } from "../../../codspeed/generated/CssPropComponents.styled-components";
-import { DynamicPropsComponentsYak } from "../../../codspeed/generated/DynamicPropsComponents.next-yak";
-import { DynamicPropsComponentsStyled } from "../../../codspeed/generated/DynamicPropsComponents.styled-components";
-import { NestedComponentsYak } from "../../../codspeed/generated/NestedComponents.next-yak";
-import { NestedComponentsStyled } from "../../../codspeed/generated/NestedComponents.styled-components";
-import { TreeYak } from "../../../codspeed/generated/Tree.next-yak";
-import { TreeStyled } from "../../../codspeed/generated/Tree.styled-components";
-import { SierpinskiYak } from "../../../codspeed/generated/Sierpinski.next-yak";
-import { SierpinskiStyled } from "../../../codspeed/generated/Sierpinski.styled-components";
-import { CrossRequestCacheYak } from "../../../codspeed/generated/CrossRequestCache.next-yak";
-import { CrossRequestCacheStyled } from "../../../codspeed/generated/CrossRequestCache.styled-components";
-import { TreeDeepYak } from "../../../codspeed/generated/TreeDeep.next-yak";
-import { TreeDeepStyled } from "../../../codspeed/generated/TreeDeep.styled-components";
-import { TreeWideYak } from "../../../codspeed/generated/TreeWide.next-yak";
-import { TreeWideStyled } from "../../../codspeed/generated/TreeWide.styled-components";
-import { IdiomaticTreeYak } from "../../../codspeed/generated/IdiomaticTree.next-yak";
-import { IdiomaticTreeStyled } from "../../../codspeed/generated/IdiomaticTree.styled-components";
-import { IdiomaticDynamicPropsComponentsYak } from "../../../codspeed/generated/IdiomaticDynamicProps.next-yak";
-import { IdiomaticDynamicPropsComponentsStyled } from "../../../codspeed/generated/IdiomaticDynamicProps.styled-components";
+import { KanjiLetterComponentYak } from "../../../bench/generated/KanjiLetterComponent.next-yak";
+import { KanjiLetterComponentStyled } from "../../../bench/generated/KanjiLetterComponent.styled-components";
+import { PureComponentsYak } from "../../../bench/generated/PureComponents.next-yak";
+import { PureComponentsStyled } from "../../../bench/generated/PureComponents.styled-components";
+import { AttrsComponentsYak } from "../../../bench/generated/AttrsComponents.next-yak";
+import { AttrsComponentsStyled } from "../../../bench/generated/AttrsComponents.styled-components";
+import { CssPropComponentsYak } from "../../../bench/generated/CssPropComponents.next-yak";
+import { CssPropComponentsStyled } from "../../../bench/generated/CssPropComponents.styled-components";
+import { DynamicPropsComponentsYak } from "../../../bench/generated/DynamicPropsComponents.next-yak";
+import { DynamicPropsComponentsStyled } from "../../../bench/generated/DynamicPropsComponents.styled-components";
+import { NestedComponentsYak } from "../../../bench/generated/NestedComponents.next-yak";
+import { NestedComponentsStyled } from "../../../bench/generated/NestedComponents.styled-components";
+import { TreeYak } from "../../../bench/generated/Tree.next-yak";
+import { TreeStyled } from "../../../bench/generated/Tree.styled-components";
+import { SierpinskiYak } from "../../../bench/generated/Sierpinski.next-yak";
+import { SierpinskiStyled } from "../../../bench/generated/Sierpinski.styled-components";
+import { CrossRequestCacheYak } from "../../../bench/generated/CrossRequestCache.next-yak";
+import { CrossRequestCacheStyled } from "../../../bench/generated/CrossRequestCache.styled-components";
+import { TreeDeepYak } from "../../../bench/generated/TreeDeep.next-yak";
+import { TreeDeepStyled } from "../../../bench/generated/TreeDeep.styled-components";
+import { TreeWideYak } from "../../../bench/generated/TreeWide.next-yak";
+import { TreeWideStyled } from "../../../bench/generated/TreeWide.styled-components";
+import { IdiomaticTreeYak } from "../../../bench/generated/IdiomaticTree.next-yak";
+import { IdiomaticTreeStyled } from "../../../bench/generated/IdiomaticTree.styled-components";
+import { IdiomaticDynamicPropsComponentsYak } from "../../../bench/generated/IdiomaticDynamicProps.next-yak";
+import { IdiomaticDynamicPropsComponentsStyled } from "../../../bench/generated/IdiomaticDynamicProps.styled-components";
 
 // Maps slug -> { yak, styled } component pair. Source-imported (not the
 // .compiled variants) so the next-yak webpack loader extracts the CSS the

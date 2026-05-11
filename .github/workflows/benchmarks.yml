@@ -1,0 +1,189 @@
+name: benchmarks
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/next-yak/runtime/**"
+      - "benchmarks/**"
+      - ".github/workflows/benchmarks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  benchmarks:
+    name: Run benchmarks and post results
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        name: Install pnpm
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
+
+      - name: Enable Rust caching
+        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+        with:
+          workspaces: packages/yak-swc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3.4.3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # ----- Pass 1: baseline run from the PR's target branch -----
+      # Each baseline step uses `continue-on-error` so that if the baseline ref
+      # doesn't yet have a working `bench:*` script (e.g. before this lands on main),
+      # the workflow skips baseline silently and the PR pass falls back to a
+      # 4-column table.
+      - name: Switch to baseline ref
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git checkout "origin/${BASE_REF}"
+
+      - name: Install dependencies (baseline)
+        continue-on-error: true
+        run: pnpm install
+
+      - name: Build SWC plugin (baseline)
+        continue-on-error: true
+        run: pnpm run build:swc
+
+      - name: Build next-yak (baseline)
+        continue-on-error: true
+        run: pnpm run build
+
+      - name: Build benchmark suite (baseline)
+        continue-on-error: true
+        working-directory: benchmarks
+        run: pnpm run bench:build
+
+      - name: Run baseline benchmark
+        continue-on-error: true
+        working-directory: benchmarks
+        run: |
+          set -o pipefail
+          pnpm run bench:run 2>&1 | tee /tmp/baseline.log
+
+      - name: Parse baseline into JSON
+        continue-on-error: true
+        run: |
+          node <<'EOF'
+          const fs = require("node:fs");
+          if (!fs.existsSync("/tmp/baseline.log")) {
+            console.log("No baseline log present; skipping baseline.");
+            process.exit(0);
+          }
+          const text = fs.readFileSync("/tmp/baseline.log", "utf8");
+          const result = {};
+          for (const line of text.split("\n")) {
+            const m = line.match(/^(.+) x ([\d,]+(?:\.\d+)?) ops\/sec/);
+            if (m) result[m[1]] = Number(m[2].replace(/,/g, ""));
+          }
+          fs.writeFileSync("/tmp/baseline.json", JSON.stringify(result, null, 2));
+          console.log("Parsed", Object.keys(result).length, "baseline benches");
+          EOF
+
+      # ----- Pass 2: PR head -----
+      - name: Switch to PR head
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git checkout "${PR_HEAD_SHA}"
+
+      - name: Install dependencies (PR)
+        run: pnpm install
+
+      - name: Build SWC plugin (PR)
+        run: pnpm run build:swc
+
+      - name: Build next-yak (PR)
+        run: pnpm run build
+
+      - name: Build benchmark suite (PR)
+        working-directory: benchmarks
+        run: pnpm run bench:build
+
+      - name: Run PR benchmark
+        working-directory: benchmarks
+        env:
+          BENCH_OUTPUT_FILE: ${{ github.workspace }}/benchmarks/bench-table.html
+          BENCH_BASELINE_FILE: /tmp/baseline.json
+        run: pnpm run bench:run
+
+      - name: Upsert PR comment
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          MARKER='<!-- next-yak-benchmark-results -->'
+          TABLE=$(cat benchmarks/bench-table.html)
+
+          BODY=$(cat <<EOF
+          ${MARKER}
+          ## Benchmark results
+
+          Workload-for-workload \`renderToString\` ops/sec on the GitHub Actions runner. When present, the
+          \`Δ next-yak vs main\` column compares this PR's next-yak runtime against \`${BASE_REF}\`. Shared
+          CI runners are noisy — treat large swings as signal and single-digit deltas as noise.
+
+          ${TABLE}
+
+          <sub>Commit: \`${COMMIT_SHA}\` • <a href="${RUN_URL}">workflow run</a></sub>
+          EOF
+          )
+
+          EXISTING_ID=$(gh api \
+            "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" \
+            --paginate \
+            --jq "[.[] | select(.body | startswith(\"${MARKER}\"))][0].id")
+
+          if [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ]; then
+            echo "Updating comment ${EXISTING_ID}"
+            gh api --method PATCH \
+              "repos/${GH_REPO}/issues/comments/${EXISTING_ID}" \
+              -f body="$BODY" > /dev/null
+          else
+            echo "Creating new comment"
+            gh api --method POST \
+              "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" \
+              -f body="$BODY" > /dev/null
+          fi
