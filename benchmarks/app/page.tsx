@@ -28,9 +28,8 @@ export default function Home() {
       <h1>next-yak benchmarks</h1>
       <p>
         Each benchmark below has a generator at <code>benchmarks/bench/&lt;slug&gt;/gen.ts</code>{" "}
-        and is registered in the benchmark harness. The links here render the same components in
-        the browser so you can inspect the rendered DOM, classes, and CSS that each library
-        produces.
+        and is registered in the benchmark harness. The links here render the same components in the
+        browser so you can inspect the rendered DOM, classes, and CSS that each library produces.
       </p>
       <List>
         {benchmarks.map((b) => (
