@@ -1,29 +1,17 @@
-import * as swc from "@swc/core";
-import { writeFile } from "fs";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { mkdirSync } from "fs";
+import { importHeader, libs, styledIdentFor, writeBenchmarkSource } from "../_shared.ts";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
+// 200 components extended through 5 levels of `styled(Parent)`. Tests the
+// per-render cost of yak's extension chain (each layer forwards props and
+// composes class names) versus styled-components' flattened render.
+const componentCount = 200;
 
-// Function to generate nested styled components
-async function generateNestedComponentsFile() {
-  const componentCount = 200; // Reduced since we have 5 levels of nesting
+for (const lib of libs) {
+  const styled = styledIdentFor(lib);
 
-  const libs = {
-    "next-yak": "styledYak",
-    "styled-components": "styled",
-  };
-
-  for (const lib in libs) {
-    const styled = libs[lib];
-
-    const fileContent = `
+  const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`} from '${lib}';
+${importHeader(lib, /* withCss */ false)}
 
 // Base component
 const BaseCard = ${styled}.div\`
@@ -67,7 +55,7 @@ const Level4Component${index + 1} = ${styled}(Level3Component${index + 1})\`
 // Level 5 - extends Level4 (final)
 const NestedComponent${index + 1} = ${styled}(Level4Component${index + 1})\`
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -79,7 +67,7 @@ const NestedComponent${index + 1} = ${styled}(Level4Component${index + 1})\`
     pointer-events: none;
     border-radius: 8px;
   }
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -104,49 +92,5 @@ export const NestedComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionC
 };
 `;
 
-    mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(`${__dirname}/../generated/NestedComponents.${lib}.tsx`, fileContent, (err) => {
-      if (err) throw err;
-      console.log(`NestedComponents.${lib}.tsx has been created successfully.`);
-    });
-
-    // Precompile yak similar to how it would be compiled by our loader
-    if (lib === "next-yak") {
-      const compiled =
-        "// @ts-nocheck\n" +
-        swc
-          .transformSync(fileContent, {
-            filename: "/foo/index.tsx",
-            jsc: {
-              experimental: {
-                plugins: [[require.resolve("yak-swc"), { basePath: "/foo/" }]],
-              },
-              target: "es2022",
-              loose: false,
-              minify: {
-                compress: false,
-                mangle: false,
-              },
-              preserveAllComments: true,
-            },
-            minify: false,
-            isModule: true,
-          })
-          .code // Remove __styleYak import
-          .replace(/import[^;\n]+yak.module.css";/, "")
-          // Replace __styleYak usage to a string
-          .replace(/__styleYak.(\w+)/g, `"$1"`);
-      mkdirSync(`${__dirname}/../generated`, { recursive: true });
-      writeFile(
-        `${__dirname}/../generated/NestedComponents.${lib}.compiled.tsx`,
-        compiled,
-        (err) => {
-          if (err) throw err;
-          console.log(`NestedComponents.${lib}.compiled.tsx has been created successfully.`);
-        },
-      );
-    }
-  }
+  writeBenchmarkSource("NestedComponents", lib, fileContent);
 }
-
-generateNestedComponentsFile();

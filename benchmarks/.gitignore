@@ -35,5 +35,3 @@ yarn-error.log*
 
 lighthouse/results
 codspeed/dist
-
-letters/*.tsx

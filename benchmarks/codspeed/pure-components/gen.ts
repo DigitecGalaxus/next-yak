@@ -1,29 +1,17 @@
-import * as swc from "@swc/core";
-import { writeFile } from "fs";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { mkdirSync } from "fs";
+import { importHeader, libs, styledIdentFor, writeBenchmarkSource } from "../_shared.ts";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
+// 1000 plain styled.div components, each with a unique color and identical
+// shape. Cheapest "many components" baseline (no dynamic props, no extension
+// chain, just static-style class generation).
+const componentCount = 1000;
 
-// Function to generate 1000 pure styled components
-async function generatePureComponentsFile() {
-  const componentCount = 1000;
+for (const lib of libs) {
+  const styled = styledIdentFor(lib);
 
-  const libs = {
-    "next-yak": "styledYak",
-    "styled-components": "styled",
-  };
-
-  for (const lib in libs) {
-    const styled = libs[lib];
-
-    const fileContent = `
+  const source = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${lib === "next-yak" ? `{ styled as ${styled} }` : `{ ${styled} }`} from '${lib}';
+${importHeader(lib, /* withCss */ false)}
 
 ${Array.from({ length: componentCount }, (_, index) => {
   const colorValue = `#${(index + 1).toString(16).padStart(6, "0")}`;
@@ -50,45 +38,5 @@ export const PureComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionCom
 };
 `;
 
-    mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(`${__dirname}/../generated/PureComponents.${lib}.tsx`, fileContent, (err) => {
-      if (err) throw err;
-      console.log(`PureComponents.${lib}.tsx has been created successfully.`);
-    });
-
-    // Precompile yak similar to how it would be compiled by our loader
-    if (lib === "next-yak") {
-      const compiled =
-        "// @ts-nocheck\n" +
-        swc
-          .transformSync(fileContent, {
-            filename: "/foo/index.tsx",
-            jsc: {
-              experimental: {
-                plugins: [[require.resolve("yak-swc"), { basePath: "/foo/" }]],
-              },
-              target: "es2022",
-              loose: false,
-              minify: {
-                compress: false,
-                mangle: false,
-              },
-              preserveAllComments: true,
-            },
-            minify: false,
-            isModule: true,
-          })
-          .code // Remove __styleYak import
-          .replace(/import[^;\n]+yak.module.css";/, "")
-          // Replace __styleYak usage to a string
-          .replace(/__styleYak.(\w+)/g, `"$1"`);
-      mkdirSync(`${__dirname}/../generated`, { recursive: true });
-      writeFile(`${__dirname}/../generated/PureComponents.${lib}.compiled.tsx`, compiled, (err) => {
-        if (err) throw err;
-        console.log(`PureComponents.${lib}.compiled.tsx has been created successfully.`);
-      });
-    }
-  }
+  writeBenchmarkSource("PureComponents", lib, source);
 }
-
-generatePureComponentsFile();

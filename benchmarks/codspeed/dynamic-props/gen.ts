@@ -1,29 +1,19 @@
-import * as swc from "@swc/core";
-import { writeFile } from "fs";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { mkdirSync } from "fs";
+import { importHeader, libs, styledIdentFor, writeBenchmarkSource } from "../_shared.ts";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
+// 1000 components with $primary / $size / $variant / $disabled props, each
+// driving a different CSS property via inline ternaries inside the template
+// literal. Yak compiles these to CSS variables; styled-components hashes
+// the resulting prop tuple to a class. Pair with IdiomaticDynamicProps for
+// the class-toggle counterpart.
+const componentCount = 1000;
 
-// Function to generate 1000 dynamic prop components
-async function generateDynamicPropsComponentsFile() {
-  const componentCount = 1000;
+for (const lib of libs) {
+  const styled = styledIdentFor(lib);
 
-  const libs = {
-    "next-yak": "styledYak",
-    "styled-components": "styled",
-  };
-
-  for (const lib in libs) {
-    const styled = libs[lib];
-
-    const fileContent = `
+  const fileContent = `
 "use client";
 import React, { type FunctionComponent } from 'react';
-import ${lib === "next-yak" ? `{ styled as ${styled}, css }` : `{ ${styled}, css }`} from '${lib}';
+${importHeader(lib)}
 
 interface DynamicProps {
   $primary?: boolean;
@@ -67,12 +57,12 @@ ${Array.from({ length: componentCount }, (_, index) => {
   cursor: \${props => props.$disabled ? 'not-allowed' : 'pointer'};
   opacity: \${props => props.$disabled ? 0.5 : 1};
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: \${props => props.$disabled ? 'none' : 'translateY(-1px)'};
     box-shadow: \${props => props.$disabled ? 'none' : \`0 2px 4px ${baseColor}44\`};
   }
-  
+
   &:active {
     transform: \${props => props.$disabled ? 'none' : 'translateY(0)'};
   }
@@ -80,10 +70,10 @@ ${Array.from({ length: componentCount }, (_, index) => {
 }).join("\n\n")}
 
 export const DynamicPropsComponents${
-      lib === "next-yak" ? "Yak" : "Styled"
-    }: FunctionComponent = () => {
+    lib === "next-yak" ? "Yak" : "Styled"
+  }: FunctionComponent = () => {
   const [state, setState] = React.useState(0);
-  
+
   return (
     <div>
       <button onClick={() => setState(s => s + 1)}>
@@ -111,49 +101,5 @@ export const DynamicPropsComponents${
 };
 `;
 
-    mkdirSync(`${__dirname}/../generated`, { recursive: true });
-    writeFile(`${__dirname}/../generated/DynamicPropsComponents.${lib}.tsx`, fileContent, (err) => {
-      if (err) throw err;
-      console.log(`DynamicPropsComponents.${lib}.tsx has been created successfully.`);
-    });
-
-    // Precompile yak similar to how it would be compiled by our loader
-    if (lib === "next-yak") {
-      const compiled =
-        "// @ts-nocheck\n" +
-        swc
-          .transformSync(fileContent, {
-            filename: "/foo/index.tsx",
-            jsc: {
-              experimental: {
-                plugins: [[require.resolve("yak-swc"), { basePath: "/foo/" }]],
-              },
-              target: "es2022",
-              loose: false,
-              minify: {
-                compress: false,
-                mangle: false,
-              },
-              preserveAllComments: true,
-            },
-            minify: false,
-            isModule: true,
-          })
-          .code // Remove __styleYak import
-          .replace(/import[^;\n]+yak.module.css";/, "")
-          // Replace __styleYak usage to a string
-          .replace(/__styleYak.(\w+)/g, `"$1"`);
-      mkdirSync(`${__dirname}/../generated`, { recursive: true });
-      writeFile(
-        `${__dirname}/../generated/DynamicPropsComponents.${lib}.compiled.tsx`,
-        compiled,
-        (err) => {
-          if (err) throw err;
-          console.log(`DynamicPropsComponents.${lib}.compiled.tsx has been created successfully.`);
-        },
-      );
-    }
-  }
+  writeBenchmarkSource("DynamicPropsComponents", lib, fileContent);
 }
-
-generateDynamicPropsComponentsFile();

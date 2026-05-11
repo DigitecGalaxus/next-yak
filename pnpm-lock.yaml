@@ -217,9 +217,6 @@ catalogs:
     tailwindcss:
       specifier: 4.2.4
       version: 4.2.4
-    tree-kill:
-      specifier: 1.2.2
-      version: 1.2.2
     tsdown:
       specifier: 0.21.10
       version: 0.21.10
@@ -298,9 +295,6 @@ importers:
       benchmark:
         specifier: catalog:dev
         version: 2.1.4
-      tree-kill:
-        specifier: catalog:dev
-        version: 1.2.2
       tsdown:
         specifier: catalog:dev
         version: 0.21.10(synckit@0.11.11)(typescript@6.0.3)

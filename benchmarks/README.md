@@ -1,40 +1,45 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# benchmarks
 
-## Getting Started
+Two suites live here:
 
-First, run the development server:
+1. **CodSpeed runtime benchmarks** under `codspeed/`. Run on every PR via the [`codspeed-benchmarks`](../.github/workflows/codspeed.yml) workflow to catch render-time regressions in the `next-yak` runtime, and to compare against `styled-components` head-to-head on identical workloads.
+2. **Interactive Next.js demo viewer** under `app/`. The same generated benchmark components, rendered in a real Next.js dev server so you can inspect the DOM, classes, and CSS that each library actually produces.
+
+## Running
 
 ```bash
-# With webpack
-npm run dev
-# or
-yarn dev
+# Browse benchmarks in dev mode (also runs all generators first):
+pnpm dev          # http://localhost:3000
+pnpm dev:turbo    # same, but Turbopack instead of Webpack
 
-# With turbopack
-npm run dev:turbo
-# or
-yarn dev:turbo
+# Regenerate just the source files (parallelized):
+pnpm generate
+
+# Build + run the CodSpeed harness locally (no CodSpeed cloud uploads):
+pnpm codspeed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm dev` automatically runs `pnpm generate` first, so the benchmark sources are always fresh.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## How a benchmark is wired
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+Every benchmark has the same three layers:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+1. **`codspeed/<case>/gen.ts`** builds a TSX source string for both libraries and hands it to `writeBenchmarkSource()`. The helper writes the source verbatim and, for `next-yak`, also runs the source through the SWC plugin to produce a `.compiled.tsx` (mimicking what the `withYak` loader does at app build time, since the bench harness has no loader).
 
-## Learn More
+2. **`codspeed/index.bench.tsx`** imports the `.compiled.tsx` (yak) and `.tsx` (sc) outputs, registers each as a `Benchmark.Suite` case, and feeds the suite to `withCodSpeed`. CodSpeed's GitHub Action measures CPU instructions per iteration; locally, falling back to benchmark.js gives wall-clock ops/sec.
 
-To learn more about Next.js, take a look at the following resources:
+3. **`app/codspeed/[slug]/page.tsx`** imports the _non-compiled_ `.tsx` outputs and renders them in the browser, so the real `withYak` webpack loader path is exercised. This is useful for checking that what the bench is measuring matches what would ship to a real Next.js app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Adding a new benchmark
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. Create `codspeed/<case>/gen.ts` (copy any existing one as a template; most boilerplate lives in `_shared.ts`).
+2. Add a `generate:codspeed:<case>` script to `package.json` — `pnpm generate` picks it up automatically via the `^generate:codspeed:` regex.
+3. Add the import + `.add("render <Name>Yak/Styled", () => …)` calls in `codspeed/index.bench.tsx`.
+4. Add an entry to `app/codspeed/manifest.ts` and the `components` map in `app/codspeed/[slug]/page.tsx` so the demo viewer can render it.
 
-## Deploy on Vercel
+## Variance & fairness notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `minSamples: 50` on the suite to keep iteration counts stable across runs (CodSpeed reads them).
+- For each library we use _its_ idiomatic build-time-extracted form. Mixing them produces meaningless numbers. See `codspeed/css-prop/gen.ts` for the spelled-out reasoning.
+- The `Idiomatic*` benchmarks (e.g. `IdiomaticTree`) pair with their CSS-variable counterparts (`Tree`) to isolate the cost of CSS-variable emission vs class-toggle composition.
