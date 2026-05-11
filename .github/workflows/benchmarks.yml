@@ -170,10 +170,6 @@ jobs:
           ${MARKER}
           ## Benchmark results
 
-          Workload-for-workload \`renderToString\` ops/sec on the GitHub Actions runner. When present, the
-          \`Δ next-yak vs main\` column compares this PR's next-yak runtime against \`${BASE_REF}\`. Shared
-          CI runners are noisy — treat large swings as signal and single-digit deltas as noise.
-
           ${TABLE}
 
           <sub>Commit: \`${COMMIT_SHA}\` • <a href="${RUN_URL}">workflow run</a></sub>
