@@ -1,17 +1,15 @@
-import { LogInp } from "./logInp";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "CSS Benchmark for Yak",
-  description: "Kanji Demo which renders 2500 Kanji characters",
+export const metadata: Metadata = {
+  title: "next-yak benchmarks",
+  description:
+    "Side-by-side runtime comparison of next-yak and styled-components on the benchmark suite.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-        <LogInp />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

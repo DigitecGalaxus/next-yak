@@ -1,40 +1,52 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# benchmarks
 
-## Getting Started
+Two suites live here:
 
-First, run the development server:
+1. **Runtime benchmarks** under `bench/`. Run on every PR via the [`benchmarks`](../.github/workflows/benchmarks.yml) workflow to catch render-time regressions in the `next-yak` runtime, and to compare against `styled-components` head-to-head on identical workloads. The workflow upserts a single PR comment with the latest results.
+2. **Interactive Next.js demo viewer** under `app/`. The same generated benchmark components, rendered in a real Next.js dev server so you can inspect the DOM, classes, and CSS that each library actually produces.
+
+## Running
 
 ```bash
-# With webpack
-npm run dev
-# or
-yarn dev
+# Browse benchmarks in dev mode (also runs all generators first):
+pnpm dev          # http://localhost:3000
+pnpm dev:turbo    # same, but Turbopack instead of Webpack
 
-# With turbopack
-npm run dev:turbo
-# or
-yarn dev:turbo
+# Regenerate just the source files (parallelized):
+pnpm generate
+
+# Build + run the benchmark harness locally and print an HTML results table:
+pnpm bench
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm dev` automatically runs `pnpm generate` first, so the benchmark sources are always fresh.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+To capture the HTML table to a file (the CI workflow does this so it can post it as a PR comment):
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```bash
+BENCH_OUTPUT_FILE=./bench-table.html pnpm bench
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## How a benchmark is wired
 
-## Learn More
+Every benchmark has the same three layers:
 
-To learn more about Next.js, take a look at the following resources:
+1. **`bench/<case>/gen.ts`** builds a TSX source string for both libraries and hands it to `writeBenchmarkSource()`. The helper writes the source verbatim and, for `next-yak`, also runs the source through the SWC plugin to produce a `.compiled.tsx` (mimicking what the `withYak` loader does at app build time, since the bench harness has no loader).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **`bench/index.bench.tsx`** imports the `.compiled.tsx` (yak) and `.tsx` (sc) outputs, registers each as a `Benchmark.Suite` case, and at the end pairs the styled-components and next-yak variants of each workload into the HTML results table.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. **`app/bench/[slug]/page.tsx`** imports the _non-compiled_ `.tsx` outputs and renders them in the browser, so the real `withYak` webpack loader path is exercised. This is useful for checking that what the bench is measuring matches what would ship to a real Next.js app.
 
-## Deploy on Vercel
+## Adding a new benchmark
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Create `bench/<case>/gen.ts` (copy any existing one as a template; most boilerplate lives in `_shared.ts`).
+2. Add a `generate:bench:<case>` script to `package.json` — `pnpm generate` picks it up automatically via the `^generate:bench:` regex.
+3. Add the import + `.add("render <Name>Yak/Styled", () => …)` calls in `bench/index.bench.tsx`, and add a row to the `ROWS` table at the top of the same file so it shows up in the results.
+4. Add an entry to `app/bench/manifest.ts` and the `components` map in `app/bench/[slug]/page.tsx` so the demo viewer can render it.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Variance & fairness notes
+
+- `minSamples: 50` on the suite to keep iteration counts stable across runs.
+- For each library we use _its_ idiomatic build-time-extracted form. Mixing them produces meaningless numbers. See `bench/css-prop/gen.ts` for the spelled-out reasoning.
+- The `Idiomatic*` benchmarks (e.g. `IdiomaticTree`) pair with their CSS-variable counterparts (`Tree`) to isolate the cost of CSS-variable emission vs class-toggle composition.
+- The workflow runs on shared GitHub Actions runners, which are noisy. Treat large swings as signal and single-digit deltas as noise.

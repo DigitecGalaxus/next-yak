@@ -14,7 +14,6 @@ catalogs:
   dev:
     "@babel/preset-typescript": 7.28.5
     "@changesets/cli": 2.31.0
-    "@codspeed/benchmark.js-plugin": 5.4.0
     "@eslint/eslintrc": 3.3.5
     "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 16.2.4
@@ -81,7 +80,6 @@ catalogs:
     styled-components: 6.4.1
     swc-loader: 0.2.7
     tailwindcss: 4.2.4
-    tree-kill: 1.2.2
     tsdown: 0.21.10
     tsx: 4.21.0
     typescript: 6.0.3
