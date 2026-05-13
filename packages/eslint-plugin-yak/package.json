@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-yak",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Eslint plugin for next-yak",
   "keywords": [
     "css-in-js",

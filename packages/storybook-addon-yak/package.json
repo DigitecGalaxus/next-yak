@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-yak",
-  "version": "9.4.1",
+  "version": "9.4.2",
   "description": "Storybook addon for next-yak CSS-in-JS",
   "keywords": [
     "css-in-js",

@@ -1,5 +1,15 @@
 # yak-swc
 
+## 9.4.2
+
+### Patch Changes
+
+- df860c9: Fix dynamic interpolations wrapped in CSS string quotes (e.g. `content: "${(p) => p.$x}"`)
+- 07d80d0: Fix typecasts (`as unknown as ...`) breaking cross-file selectors, mixin inlining and keyframes references.
+- f18484e: TypeScript casts (`as`, `as const`, `!`, `satisfies`, parens) inside CSS interpolations no longer prevent values from being statically inlined.
+- 75beb6b: Emit an error when a dynamic interpolation is used inside an at-rule query.
+- 842c24c: Fix HMR full page reloads for styled-only files by injecting `$RefreshReg$` for exported styled components
+
 ## 9.4.1
 
 ## 9.4.0

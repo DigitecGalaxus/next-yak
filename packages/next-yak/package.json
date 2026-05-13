@@ -1,6 +1,6 @@
 {
   "name": "next-yak",
-  "version": "9.4.1",
+  "version": "9.4.2",
   "description": "next-yak is a CSS-in-JS solution tailored for Next.js that seamlessly combines the expressive power of styled-components syntax with efficient build-time extraction of CSS using Next.js's built-in CSS configuration",
   "keywords": [
     "css-in-js",
@@ -154,7 +154,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "9.4.1"
+    "yak-swc": "9.4.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:dev",
