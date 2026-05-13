@@ -22,21 +22,12 @@ if (isCI) {
   // Run sequentially in CI to avoid resource contention
   results = [];
   for (const bundler of bundlers) {
-    results.push(
-      ...(await runBundlerCases(
-        bundler,
-        cases,
-        { script: "dev" },
-        discoveredBundlers,
-      )),
-    );
+    results.push(...(await runBundlerCases(bundler, cases, { script: "dev" }, discoveredBundlers)));
   }
 } else {
   results = (
     await Promise.all(
-      bundlers.map((b) =>
-        runBundlerCases(b, cases, { script: "dev" }, discoveredBundlers),
-      ),
+      bundlers.map((b) => runBundlerCases(b, cases, { script: "dev" }, discoveredBundlers)),
     )
   ).flat();
 }

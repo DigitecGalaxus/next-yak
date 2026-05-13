@@ -4,12 +4,7 @@ import MonacoEditor from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import { useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import {
-  Group,
-  Panel,
-  Separator,
-  PanelImperativeHandle,
-} from "react-resizable-panels";
+import { Group, Panel, Separator, PanelImperativeHandle } from "react-resizable-panels";
 import { addTypesToMonaco } from "@/lib/editor/addTypes";
 import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
@@ -29,19 +24,12 @@ import {
 
 export default dynamic(
   async function load() {
-    return function Editor({
-      initialState,
-    }: {
-      initialState: Record<string, string>;
-    }) {
+    return function Editor({ initialState }: { initialState: Record<string, string> }) {
       const themeConfig = useTheme();
       const [tab, setTab] = useState("index");
       const [compiledOutput, setCompiledOutput] = useState<"CSS" | "TS">("CSS");
       const monacoEditorRef = useRef<
-        | Parameters<
-            NonNullable<ComponentProps<typeof MonacoEditor>["onMount"]>
-          >[0]
-        | null
+        Parameters<NonNullable<ComponentProps<typeof MonacoEditor>["onMount"]>>[0] | null
       >(null);
       // list of refs to keep track of the models
       const modelRefs = useRef<Array<any>>([]);
@@ -68,44 +56,37 @@ export default dynamic(
       );
 
       const fileNames = useMemo(
-        () => [
-          "index.tsx",
-          ...initialInput.additionalFiles.map((file) => file.name + ".tsx"),
-        ],
+        () => ["index.tsx", ...initialInput.additionalFiles.map((file) => file.name + ".tsx")],
         [initialInput],
       );
 
       const [transpileResult, transpile] = useTranspile(initialInput);
 
-      const updateCode = useCallback(
-        (minify?: boolean, showComments?: boolean) => {
-          const code = modelRefs.current.reduce((acc, model) => {
-            acc[model.uri] = model.getValue();
-            return acc;
-          }, {});
-          transpile({
-            mainFile: {
-              name: "index",
-              content: code["file:///index.tsx"],
-            },
-            additionalFiles: Object.entries(code)
-              .filter(([key]) => key !== "file:///index.tsx")
-              .map(([key, value]) => ({
-                name: key.replace("file:///", "").replace(".tsx", ""),
-                content: String(value),
-              })),
-            options: {
-              minify,
-              showComments,
-            },
-          });
-        },
-        [],
-      );
+      const updateCode = useCallback((minify?: boolean, showComments?: boolean) => {
+        const code = modelRefs.current.reduce((acc, model) => {
+          acc[model.uri] = model.getValue();
+          return acc;
+        }, {});
+        transpile({
+          mainFile: {
+            name: "index",
+            content: code["file:///index.tsx"],
+          },
+          additionalFiles: Object.entries(code)
+            .filter(([key]) => key !== "file:///index.tsx")
+            .map(([key, value]) => ({
+              name: key.replace("file:///", "").replace(".tsx", ""),
+              content: String(value),
+            })),
+          options: {
+            minify,
+            showComments,
+          },
+        });
+      }, []);
 
       const readableTranspiledResult = {
-        [transpileResult.transpiledMainFile.name]:
-          transpileResult.transpiledMainFile,
+        [transpileResult.transpiledMainFile.name]: transpileResult.transpiledMainFile,
         ...transpileResult.transpiledAdditionalFiles.reduce(
           (acc, file) => ({
             ...acc,
@@ -161,10 +142,7 @@ export default dynamic(
                 style={{
                   borderRadius: "0px",
                   border: "none",
-                  backgroundColor:
-                    themeConfig.resolvedTheme === "dark"
-                      ? "#121212"
-                      : "#ffffff",
+                  backgroundColor: themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                   position: "relative",
                   marginBlock: "0",
                 }}
@@ -191,10 +169,7 @@ export default dynamic(
                       `}
                     >
                       {fileNames.map((fileName) => (
-                        <CodeBlockTabsTrigger
-                          key={fileName}
-                          value={fileName.replace(".tsx", "")}
-                        >
+                        <CodeBlockTabsTrigger key={fileName} value={fileName.replace(".tsx", "")}>
                           {fileName}
                         </CodeBlockTabsTrigger>
                       ))}
@@ -207,9 +182,7 @@ export default dynamic(
                     >
                       <button
                         onClick={() => {
-                          monacoEditorRef.current
-                            ?.getAction("editor.action.formatDocument")
-                            ?.run();
+                          monacoEditorRef.current?.getAction("editor.action.formatDocument")?.run();
                         }}
                         title="format document"
                         css={css`
@@ -238,14 +211,8 @@ export default dynamic(
                       </button>
                       <button
                         onClick={() => {
-                          monacoEditorRef.current
-                            ?.getAction("editor.action.formatDocument")
-                            ?.run();
-                          monacoEditorRef.current?.trigger(
-                            "editor",
-                            "share",
-                            undefined,
-                          );
+                          monacoEditorRef.current?.getAction("editor.action.formatDocument")?.run();
+                          monacoEditorRef.current?.trigger("editor", "share", undefined);
                         }}
                         title="share and format document"
                         css={css`
@@ -278,11 +245,7 @@ export default dynamic(
                   key={initialInput.mainFile.content}
                   height="90vh"
                   language="typescript"
-                  theme={
-                    themeConfig.resolvedTheme === "dark"
-                      ? "vitesse-dark"
-                      : "vitesse-light"
-                  }
+                  theme={themeConfig.resolvedTheme === "dark" ? "vitesse-dark" : "vitesse-light"}
                   path={`${tab}.tsx`}
                   options={{
                     fontSize: 14,
@@ -302,9 +265,7 @@ export default dynamic(
                     shikiToMonaco(highlighter, monaco);
 
                     monaco.editor.setTheme("vitesse-dark");
-                    monaco.editor
-                      .getModels()
-                      .forEach((model) => model.dispose());
+                    monaco.editor.getModels().forEach((model) => model.dispose());
 
                     // add files from the files object to the editor
                     // models are the files in the editor and they are in reverse order
@@ -326,26 +287,23 @@ export default dynamic(
                   onMount={async (editor, monaco) => {
                     monacoEditorRef.current = editor;
 
-                    monaco.languages.registerDocumentFormattingEditProvider(
-                      "typescript",
-                      {
-                        async provideDocumentFormattingEdits(model) {
-                          const text = await prettier.format(model.getValue(), {
-                            embeddedLanguageFormatting: "auto",
-                            parser: "typescript",
-                            plugins: [tsParser, estreePlugin as any],
-                            tabWidth: 2,
-                          });
+                    monaco.languages.registerDocumentFormattingEditProvider("typescript", {
+                      async provideDocumentFormattingEdits(model) {
+                        const text = await prettier.format(model.getValue(), {
+                          embeddedLanguageFormatting: "auto",
+                          parser: "typescript",
+                          plugins: [tsParser, estreePlugin as any],
+                          tabWidth: 2,
+                        });
 
-                          return [
-                            {
-                              range: model.getFullModelRange(),
-                              text,
-                            },
-                          ];
-                        },
+                        return [
+                          {
+                            range: model.getFullModelRange(),
+                            text,
+                          },
+                        ];
                       },
-                    );
+                    });
 
                     editor.addAction({
                       id: "share",
@@ -363,10 +321,8 @@ export default dynamic(
                             const text = model.getValue();
                             return {
                               ...acc,
-                              [model.uri
-                                .toString()
-                                .replace("file:///", "")
-                                .replace(".tsx", "")]: text,
+                              [model.uri.toString().replace("file:///", "").replace(".tsx", "")]:
+                                text,
                             };
                           },
                           {} as Record<string, string>,
@@ -376,40 +332,27 @@ export default dynamic(
                           "q",
                           compressWithDictionary(filterOutNodeModules(mapped)),
                         );
-                        window.history.replaceState(
-                          null,
-                          "",
-                          `?${urlSearchParams.toString()}`,
-                        );
+                        window.history.replaceState(null, "", `?${urlSearchParams.toString()}`);
 
                         navigator.clipboard.writeText(location.href);
                       },
                     });
 
-                    editor.addCommand(
-                      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-                      () => {
-                        editor.trigger(
-                          "editor",
-                          "editor.action.formatDocument",
-                          undefined,
-                        );
+                    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+                      editor.trigger("editor", "editor.action.formatDocument", undefined);
 
-                        editor.trigger("editor", "share", undefined);
-                      },
-                    );
+                      editor.trigger("editor", "share", undefined);
+                    });
 
                     addTypesToMonaco(monaco);
-                    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
-                      {
-                        jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-                        jsxImportSource: "next-yak",
-                        esModuleInterop: true,
-                        paths: {
-                          react: ["/node_modules/@types/react"],
-                        },
+                    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+                      jsxImportSource: "next-yak",
+                      esModuleInterop: true,
+                      paths: {
+                        react: ["/node_modules/@types/react"],
                       },
-                    );
+                    });
                   }}
                   onChange={(_, editor) => {
                     updateCode();
@@ -493,10 +436,7 @@ export default dynamic(
                       display: "flex",
                       flexDirection: "row",
                       justifyContent: "space-between",
-                      backgroundColor:
-                        themeConfig.resolvedTheme === "dark"
-                          ? "#121212"
-                          : "#ffffff",
+                      backgroundColor: themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                     }}
                   >
                     <div
@@ -525,27 +465,19 @@ export default dynamic(
                       Compiled output
                     </div>
                     <CodeBlockTabs
-                      onValueChange={(v) =>
-                        setCompiledOutput(v as "CSS" | "TS")
-                      }
+                      onValueChange={(v) => setCompiledOutput(v as "CSS" | "TS")}
                       value={compiledOutput}
                       style={{
                         borderRadius: "0px",
                         borderWidth: "0",
                         backgroundColor:
-                          themeConfig.resolvedTheme === "dark"
-                            ? "#121212"
-                            : "#ffffff",
+                          themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                         marginBlock: 0,
                       }}
                     >
                       <CodeBlockTabsList>
-                        <CodeBlockTabsTrigger value="CSS">
-                          CSS
-                        </CodeBlockTabsTrigger>
-                        <CodeBlockTabsTrigger value="TS">
-                          TS
-                        </CodeBlockTabsTrigger>
+                        <CodeBlockTabsTrigger value="CSS">CSS</CodeBlockTabsTrigger>
+                        <CodeBlockTabsTrigger value="TS">TS</CodeBlockTabsTrigger>
                       </CodeBlockTabsList>
                     </CodeBlockTabs>
                   </div>
@@ -559,10 +491,7 @@ export default dynamic(
                     borderColor: "var(--color-fd-border)",
                     borderWidth: "0 1px 1px 1px",
                     overflowY: "auto",
-                    background:
-                      themeConfig.resolvedTheme === "dark"
-                        ? "#121212"
-                        : "#ffffff",
+                    background: themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                   }}
                 >
                   <CodeBlockTabs
@@ -571,20 +500,14 @@ export default dynamic(
                     style={{
                       borderRadius: "0px",
                       borderWidth: "1px 0 0 0",
-                      backgroundColor:
-                        themeConfig.resolvedTheme === "dark"
-                          ? "#121212"
-                          : "#ffffff",
+                      backgroundColor: themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
 
                       marginBlock: 0,
                     }}
                   >
                     <CodeBlockTabsList>
                       {fileNames.map((fileName) => (
-                        <CodeBlockTabsTrigger
-                          key={fileName}
-                          value={fileName.replace(".tsx", "")}
-                        >
+                        <CodeBlockTabsTrigger key={fileName} value={fileName.replace(".tsx", "")}>
                           {fileName}
                         </CodeBlockTabsTrigger>
                       ))}
@@ -595,9 +518,7 @@ export default dynamic(
                           borderRadius: "0px",
                           borderWidth: "1px 0 0 0",
                           backgroundColor:
-                            themeConfig.resolvedTheme === "dark"
-                              ? "#121212"
-                              : "#ffffff",
+                            themeConfig.resolvedTheme === "dark" ? "#121212" : "#ffffff",
                         }}
                       >
                         <div
@@ -625,8 +546,7 @@ export default dynamic(
                         }}
                         dangerouslySetInnerHTML={{
                           __html: highlighter.codeToHtml(
-                            readableTranspiledResult?.[tab]
-                              ?.transpiledReadableContent ?? "",
+                            readableTranspiledResult?.[tab]?.transpiledReadableContent ?? "",
                             {
                               lang: "typescript",
                               theme:
@@ -666,12 +586,8 @@ export default dynamic(
  * Prevents node_modules and .d.ts files from being included in the code object.
  * E.g. lib.dom.d.ts is several mb in size
  */
-function filterOutNodeModules(
-  code: Record<string, string>,
-): Record<string, string> {
+function filterOutNodeModules(code: Record<string, string>): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(code).filter(
-      ([key]) => !key.includes("node_modules") && !key.endsWith(".d.ts"),
-    ),
+    Object.entries(code).filter(([key]) => !key.includes("node_modules") && !key.endsWith(".d.ts")),
   );
 }

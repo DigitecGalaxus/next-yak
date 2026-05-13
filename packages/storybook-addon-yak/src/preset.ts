@@ -35,9 +35,7 @@ interface StorybookOptions {
  */
 function getYakOptions(options: StorybookOptions): YakAddonOptions {
   const yakAddon = options.presetsList?.find(
-    (p) =>
-      p.name === "storybook-addon-yak" ||
-      p.preset?.name === "storybook-addon-yak",
+    (p) => p.name === "storybook-addon-yak" || p.preset?.name === "storybook-addon-yak",
   );
   return yakAddon?.options ?? yakAddon?.preset?.options ?? {};
 }
@@ -114,8 +112,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   };
 
   // Add webpack loader for yak CSS extraction
-  const testPattern =
-    transpilation === "Css" ? /\.yak\.css$/ : /\.yak\.module\.css$/;
+  const testPattern = transpilation === "Css" ? /\.yak\.css$/ : /\.yak\.module\.css$/;
 
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
@@ -144,8 +141,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
       use.options.jsc.transform.react.runtime || "automatic";
     // Add yak-swc plugin
     use.options.jsc.experimental = use.options.jsc.experimental || {};
-    use.options.jsc.experimental.plugins =
-      use.options.jsc.experimental.plugins || [];
+    use.options.jsc.experimental.plugins = use.options.jsc.experimental.plugins || [];
     // Check if plugin is already added
     const hasYakPlugin = use.options.jsc.experimental.plugins.some(
       (p: any) => Array.isArray(p) && p[0]?.includes?.("yak-swc"),
@@ -173,16 +169,12 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
       rule.options.jsc.transform.react.runtime =
         rule.options.jsc.transform.react.runtime || "automatic";
       rule.options.jsc.experimental = rule.options.jsc.experimental || {};
-      rule.options.jsc.experimental.plugins =
-        rule.options.jsc.experimental.plugins || [];
+      rule.options.jsc.experimental.plugins = rule.options.jsc.experimental.plugins || [];
       const hasYakPlugin = rule.options.jsc.experimental.plugins.some(
         (p: any) => Array.isArray(p) && p[0]?.includes?.("yak-swc"),
       );
       if (!hasYakPlugin) {
-        rule.options.jsc.experimental.plugins.push([
-          yakSwcPath,
-          yakPluginOptions,
-        ]);
+        rule.options.jsc.experimental.plugins.push([yakSwcPath, yakPluginOptions]);
       }
     }
     // Handle oneOf rules
@@ -204,10 +196,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   }
 
   // Set up context alias for theming
-  const yakContext = resolveYakContext(
-    yakOptions.contextPath,
-    config.context || process.cwd(),
-  );
+  const yakContext = resolveYakContext(yakOptions.contextPath, config.context || process.cwd());
   if (yakContext) {
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};

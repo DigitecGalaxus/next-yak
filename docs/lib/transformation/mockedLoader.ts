@@ -17,18 +17,14 @@ export async function runLoaderForSingleFile(
   mockLoader.fs.setFile(entry, originalContent, transpiledContent);
 
   for (const { name, originalContent, transpiledContent } of additionalFiles) {
-    mockLoader.fs.setFile(
-      `/src/./${name}.tsx`,
-      originalContent,
-      transpiledContent,
-    );
+    mockLoader.fs.setFile(`/src/./${name}.tsx`, originalContent, transpiledContent);
   }
 
   mockLoader.resourcePath = entry;
 
   const p = createAsyncPromise(mockLoader);
-  // @ts-expect-error Types don't add up
-  webpackLoader.default.call(mockLoader, "", undefined);
+  // @ts-expect-error MockLoaderContext only implements the subset of LoaderContext we need
+  webpackLoader.call(mockLoader, "", undefined);
   return (await p) as string;
 }
 
@@ -45,8 +41,7 @@ function createAsyncPromise(mockLoader: MockLoaderContext) {
 }
 
 class MockFileSystem {
-  files: Map<string, { content: string; transpiledContent: string }> =
-    new Map();
+  files: Map<string, { content: string; transpiledContent: string }> = new Map();
 
   setFile(path: string, content: string, transpiledContent: string) {
     this.files.set(path, { content, transpiledContent });
@@ -101,21 +96,14 @@ class MockLoaderContext {
       throw Error(`Module not found: ${path}.`);
     };
 
-    const result = new Function(
-      "exports",
-      "require",
-      file?.transpiledContent ?? "",
-    );
+    const result = new Function("exports", "require", file?.transpiledContent ?? "");
 
     const exports: Record<string, unknown> = {};
     result(exports, require);
     return exports;
   }
 
-  loadModule(
-    request: string,
-    callback: (err: Error | null, source: string | null) => void,
-  ) {
+  loadModule(request: string, callback: (err: Error | null, source: string | null) => void) {
     callback(null, this.fs.files.get(request)?.transpiledContent || null);
   }
 

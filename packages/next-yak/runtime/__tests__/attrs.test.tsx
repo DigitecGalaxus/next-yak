@@ -22,8 +22,7 @@ beforeEach(() => {
 
 type DataAttributes = { [key: `data-${string}`]: any };
 
-const getSnapshot = (element: React.ReactElement) =>
-  render(element).container.firstChild;
+const getSnapshot = (element: React.ReactElement) => render(element).container.firstChild;
 
 it("works fine with an empty object", () => {
   const Comp = styled.div.attrs({})``;
@@ -130,8 +129,7 @@ it("should replace props with attrs", () => {
       type="button"
     />
   `);
-  expect(getSnapshot(<Comp type="reset" tabIndex={-1} />))
-    .toMatchInlineSnapshot(`
+  expect(getSnapshot(<Comp type="reset" tabIndex={-1} />)).toMatchInlineSnapshot(`
     <button
       tabindex="0"
       type="button"
@@ -187,9 +185,8 @@ it("should merge style", () => {
     style: { color: "red", background: "blue" },
   }))``;
 
-  expect(
-    getSnapshot(<Comp style={{ color: "green", borderStyle: "dotted" }} />),
-  ).toMatchInlineSnapshot(`
+  expect(getSnapshot(<Comp style={{ color: "green", borderStyle: "dotted" }} />))
+    .toMatchInlineSnapshot(`
     <div
       style="color: red; border-style: dotted; background: blue;"
     />
@@ -306,9 +303,7 @@ it('should shallow merge "style" prop + attr instead of overwriting', () => {
     },
   }))<{ $fontScale: number }>``;
 
-  const Text: FunctionComponent<
-    Partial<React.ComponentProps<typeof Paragraph>>
-  > = (props) => {
+  const Text: FunctionComponent<Partial<React.ComponentProps<typeof Paragraph>>> = (props) => {
     const fontScale = 4;
 
     return (
@@ -356,12 +351,10 @@ it.skip('should apply given "as" prop to the progressive type', () => {
 
 // our own tests
 it("should remap props", () => {
-  const Comp = styled.button.attrs<{ primary?: boolean; $submit?: boolean }>(
-    (p) => ({
-      type: p.$submit ? "submit" : "button",
-      $disabled: p.disabled,
-    }),
-  )<{ $disabled?: boolean }>``;
+  const Comp = styled.button.attrs<{ primary?: boolean; $submit?: boolean }>((p) => ({
+    type: p.$submit ? "submit" : "button",
+    $disabled: p.disabled,
+  }))<{ $disabled?: boolean }>``;
 
   expect(getSnapshot(<Comp />)).toMatchInlineSnapshot(`
     <button

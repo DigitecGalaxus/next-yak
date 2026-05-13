@@ -29,8 +29,7 @@ export declare namespace YakJSX {
     : never;
 
   export type IntrinsicAttributes = React.JSX.IntrinsicAttributes;
-  export type IntrinsicClassAttributes<T> =
-    React.JSX.IntrinsicClassAttributes<T>;
+  export type IntrinsicClassAttributes<T> = React.JSX.IntrinsicClassAttributes<T>;
 
   export type IntrinsicElements = {
     [K in keyof React.JSX.IntrinsicElements]: React.JSX.IntrinsicElements[K] & {

@@ -17,7 +17,7 @@ import type {
 // links to one file for react server components and
 // to another file for classic react components
 import { useTheme } from "next-yak/context";
-import type { YakTheme } from "./context/index.d.ts";
+import type { YakTheme } from "./context/index.tsx";
 
 /**
  * This Symbol is a fake theme which was used instead of the real one from the context
@@ -53,20 +53,18 @@ const styledFactory: StyledFn = (Component) =>
 export const styled = styledFactory as Styled;
 
 const yakStyled: StyledInternal = (Component, attrs) => {
-  const isYakComponent =
-    typeof Component !== "string" && yakComponentSymbol in Component;
+  const isYakComponent = typeof Component !== "string" && yakComponentSymbol in Component;
 
   // if the component that is wrapped is a yak component, we can extract it to render the underlying component directly
   // and we can also extract the attrs function and the dynamic style function to merge it with the current attrs function (or dynamic style function)
   // so that the sequence of the attrs functions is preserved
-  const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] =
-    isYakComponent
-      ? (Component[yakComponentSymbol] as [
-          YakComponent<unknown>,
-          ExtractAttrsFunction<typeof attrs>,
-          RuntimeStyleProcessor<unknown>,
-        ])
-      : [];
+  const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] = isYakComponent
+    ? (Component[yakComponentSymbol] as [
+        YakComponent<unknown>,
+        ExtractAttrsFunction<typeof attrs>,
+        RuntimeStyleProcessor<unknown>,
+      ])
+    : [];
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
@@ -95,8 +93,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       //
       // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
       //       ^ must be have access to theme, so we call useTheme()
-      const theme =
-        mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
+      const theme = mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
@@ -145,8 +142,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
       // prevents passing the theme prop to the DOM element of a styled component
-      const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } =
-        combinedProps;
+      const { theme: themeAfterAttr, ...combinedPropsWithoutTheme } = combinedProps;
       const propsBeforeFiltering =
         themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
 
@@ -163,9 +159,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       ) : (
         // if the final component is a string component e.g. styled("div") or a custom non yak fn e.g. styled(MyComponent)
         <Component
-          {...(filteredProps as React.ComponentProps<
-            Exclude<typeof Component, string>
-          >)}
+          {...(filteredProps as React.ComponentProps<Exclude<typeof Component, string>>)}
         />
       );
     };
@@ -187,9 +181,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
  * This allows to have props that are used for internal styling purposes
  * but are not be passed to the DOM element
  */
-const removeNonDomProperties = <T extends Record<string, unknown>>(
-  obj: T,
-): T => {
+const removeNonDomProperties = <T extends Record<string, unknown>>(obj: T): T => {
   const result = {} as T;
   for (const key in obj) {
     if (!key.startsWith("$") && obj[key] !== undefined) {
@@ -242,7 +234,7 @@ const combineProps = <
           ...props,
           ...newProps,
           className: mergeClassNames(props.className, newProps.className),
-          style: { ...(props.style || {}), ...(newProps.style || {}) },
+          style: { ...props.style, ...newProps.style },
         }
     : // if no new props are provided, no merging is necessary
       props;
@@ -264,8 +256,7 @@ const buildRuntimeAttrsProcessor = <
   attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
   parentAttrsFn?: AttrsFunction<T, TAttrsIn, TAttrsOut>,
 ): AttrsFunction<T, TAttrsIn, TAttrsOut> | undefined => {
-  const ownAttrsFn =
-    attrs && (typeof attrs === "function" ? attrs : () => attrs);
+  const ownAttrsFn = attrs && (typeof attrs === "function" ? attrs : () => attrs);
 
   if (ownAttrsFn && parentAttrsFn) {
     return (props) => {
@@ -276,10 +267,7 @@ const buildRuntimeAttrsProcessor = <
       //
       // This makes sure the linearity of the attrs functions is preserved and all attrs function receive
       // the whole props object calculated from the previous attrs functions
-      return combineProps(
-        parentProps,
-        ownAttrsFn(combineProps(props, parentProps)),
-      );
+      return combineProps(parentProps, ownAttrsFn(combineProps(props, parentProps)));
     };
   }
 

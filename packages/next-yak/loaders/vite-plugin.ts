@@ -5,10 +5,7 @@ import { dirname, relative, resolve } from "node:path";
 import { normalizePath, type Plugin } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
-import {
-  createEvaluator,
-  type Evaluator,
-} from "../isolated-source-eval/index.js";
+import { createEvaluator, type Evaluator } from "../isolated-source-eval/index.js";
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
@@ -26,11 +23,7 @@ type ViteYakPluginOptions = YakConfigOptions & {
   basePath?: string;
   swcOptions?: Omit<
     Options,
-    | "filename"
-    | "sourceFileName"
-    | "inputSourceMap"
-    | "sourceMaps"
-    | "sourceRoot"
+    "filename" | "sourceFileName" | "inputSourceMap" | "sourceMaps" | "sourceRoot"
   >;
 };
 
@@ -59,9 +52,7 @@ const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
   isModule: true,
 };
 
-export async function viteYak(
-  userOptions: ViteYakPluginOptions = {},
-): Promise<Plugin> {
+export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<Plugin> {
   const yakOptions: ViteYakPluginOptions = {
     experiments: {
       transpilationMode: "Css",
@@ -88,10 +79,7 @@ export async function viteYak(
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
     config: (config) => {
-      const context = resolveYakContext(
-        yakOptions.contextPath,
-        config.root ?? process.cwd(),
-      );
+      const context = resolveYakContext(yakOptions.contextPath, config.root ?? process.cwd());
 
       if (!context) {
         return;
@@ -141,13 +129,7 @@ export async function viteYak(
         const sourceContent = await this.fs.readFile(originalId, {
           encoding: "utf8",
         });
-        const code = await transform(
-          sourceContent,
-          originalId,
-          basePath,
-          yakSwcPath,
-          yakOptions,
-        );
+        const code = await transform(sourceContent, originalId, basePath, yakSwcPath, yakOptions);
         const extractedCss = extractCss(code.code, "Css");
         debugLog("css", extractedCss, originalId);
 
@@ -170,13 +152,7 @@ export async function viteYak(
                     const sourceContent = await this.fs.readFile(modulePath, {
                       encoding: "utf8",
                     });
-                    return transform(
-                      sourceContent,
-                      modulePath,
-                      basePath,
-                      yakSwcPath,
-                      yakOptions,
-                    );
+                    return transform(sourceContent, modulePath, basePath, yakSwcPath, yakOptions);
                   },
                   evaluateYakModule: async (modulePath: string) => {
                     this.addWatchFile(modulePath);
@@ -198,9 +174,7 @@ export async function viteYak(
               const resolved = await this.resolve(moduleSpecifier, importer);
 
               if (!resolved) {
-                throw new Error(
-                  `Could not resolve ${moduleSpecifier} from ${context}`,
-                );
+                throw new Error(`Could not resolve ${moduleSpecifier} from ${context}`);
               }
               return resolved.id;
             },
@@ -243,14 +217,7 @@ export async function viteYak(
               );
             }
           }
-          const result = await transform(
-            code,
-            filePath,
-            basePath,
-            yakSwcPath,
-            yakOptions,
-            isServe,
-          );
+          const result = await transform(code, filePath, basePath, yakSwcPath, yakOptions, isServe);
           debugLog("ts", result.code, id);
 
           return {
@@ -258,9 +225,7 @@ export async function viteYak(
             map: result.map,
           };
         } catch (error) {
-          this.error(
-            `[YAK Plugin] Error transforming ${id}: ${(error as Error).message}`,
-          );
+          this.error(`[YAK Plugin] Error transforming ${id}: ${(error as Error).message}`);
         }
       },
     },
@@ -334,8 +299,7 @@ function transform(
               basePath: rootPath,
               prefix: yakOptions.prefix,
               displayNames: yakOptions.displayNames,
-              suppressDeprecationWarnings:
-                yakOptions.experiments?.suppressDeprecationWarnings,
+              suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               importMode: {
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
@@ -353,10 +317,7 @@ function transform(
 /**
  * Deep merge two objects, with source values overriding target values.
  */
-function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  source: Partial<T>,
-): T {
+function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
   const result = { ...target };
   for (const key of Object.keys(source) as Array<keyof T>) {
     const sourceValue = source[key];

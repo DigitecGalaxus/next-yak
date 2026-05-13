@@ -98,8 +98,8 @@ const ClockNumber = styled.div<{ $index: number; children: ReactNode }>`
   font-size: 14px;
   text-align: center;
   width: 20px;
-  transform: translate(-50%, -50%) rotate(${({ $index }) => $index * 30}deg)
-    translate(0, -88px) rotate(${({ $index }) => -$index * 30}deg);
+  transform: translate(-50%, -50%) rotate(${({ $index }) => $index * 30}deg) translate(0, -88px)
+    rotate(${({ $index }) => -$index * 30}deg);
 `;
 
 const ClockHand = styled.div<{ $angle: number }>`

@@ -1,5 +1,5 @@
 /** @jsxImportSource next-yak */
-import { YakThemeProvider, atoms, css, styled } from "next-yak";
+import { atoms, css, styled } from "next-yak";
 import styles from "./page.module.css";
 import { queries, colors } from "./theme/constants.yak";
 import { Clock } from "./Clock";
@@ -236,11 +236,7 @@ function App() {
           and this is large
         </span>
       </p>
-      <Wrap
-        className={`${styles.small} ${styles.blue}`}
-        $primary={true}
-        $secondary={true}
-      >
+      <Wrap className={`${styles.small} ${styles.blue}`} $primary={true} $secondary={true}>
         Atoms in styled components work if this is small, green and italic
       </Wrap>
       <SpacingDemo>.yak.ts tokens</SpacingDemo>

@@ -48,8 +48,7 @@ export function isStyledOrCssTag(
   }
   // Check for styled.button`` or styled(Component)``
   if (tag.type === AST_NODE_TYPES.MemberExpression) {
-    return tag.object.type === AST_NODE_TYPES.Identifier &&
-      tag.object.name === importedNames.styled
+    return tag.object.type === AST_NODE_TYPES.Identifier && tag.object.name === importedNames.styled
       ? ("styled" as const)
       : false;
   }
@@ -58,17 +57,12 @@ export function isStyledOrCssTag(
     // Check for attrs() method
     if (tag.callee.type === AST_NODE_TYPES.MemberExpression) {
       const callee = tag.callee as TSESTree.MemberExpression;
-      if (
-        callee.property.type === AST_NODE_TYPES.Identifier &&
-        callee.property.name === "attrs"
-      ) {
-        const memberExpression = callee.property
-          .parent as TSESTree.MemberExpression;
+      if (callee.property.type === AST_NODE_TYPES.Identifier && callee.property.name === "attrs") {
+        const memberExpression = callee.property.parent as TSESTree.MemberExpression;
 
         // styled(button).attrs()
         if (memberExpression.object.type === AST_NODE_TYPES.CallExpression) {
-          const callExpression =
-            memberExpression.object as TSESTree.CallExpression;
+          const callExpression = memberExpression.object as TSESTree.CallExpression;
 
           return callExpression.callee.type === AST_NODE_TYPES.Identifier &&
             callExpression.callee.name === importedNames.styled
@@ -76,13 +70,9 @@ export function isStyledOrCssTag(
             : false;
         }
         // styled.button.attrs()
-        else if (
-          memberExpression.object.type === AST_NODE_TYPES.MemberExpression
-        ) {
-          const memberExpressionObject =
-            memberExpression.object as TSESTree.MemberExpression;
-          return memberExpressionObject.object.type ===
-            AST_NODE_TYPES.Identifier &&
+        else if (memberExpression.object.type === AST_NODE_TYPES.MemberExpression) {
+          const memberExpressionObject = memberExpression.object as TSESTree.MemberExpression;
+          return memberExpressionObject.object.type === AST_NODE_TYPES.Identifier &&
             memberExpressionObject.object.name === importedNames.styled
             ? "styled"
             : false;
@@ -91,8 +81,7 @@ export function isStyledOrCssTag(
     }
 
     // Check for styled()
-    return tag.callee.type === AST_NODE_TYPES.Identifier &&
-      tag.callee.name === importedNames.styled
+    return tag.callee.type === AST_NODE_TYPES.Identifier && tag.callee.name === importedNames.styled
       ? "styled"
       : false;
   }

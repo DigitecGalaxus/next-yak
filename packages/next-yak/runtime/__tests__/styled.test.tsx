@@ -202,8 +202,7 @@ it("should execute runtime styles recursively", () => {
       $testProp &&
       css(
         ({ $testProp }) =>
-          $testProp &&
-          css(({ $testProp }) => $testProp && css("recursive-test-class")),
+          $testProp && css(({ $testProp }) => $testProp && css("recursive-test-class")),
       ),
   );
 
@@ -437,10 +436,7 @@ describe("dynamic runtime function processing", () => {
 
     render(<ExtendedComponent />);
 
-    expect(consoleSpy.log).toEqual([
-      "Base runtime executed",
-      "Extended runtime executed",
-    ]);
+    expect(consoleSpy.log).toEqual(["Base runtime executed", "Extended runtime executed"]);
     expect(consoleSpy.log).toHaveLength(2);
   });
 
@@ -518,10 +514,7 @@ describe("dynamic runtime function processing", () => {
     );
 
     const { container } = render(
-      <Component
-        className="external-class"
-        style={{ color: "green", fontSize: "14px" }}
-      />,
+      <Component className="external-class" style={{ color: "green", fontSize: "14px" }} />,
     );
 
     expect(container).toMatchInlineSnapshot(`
@@ -580,9 +573,7 @@ describe("dynamic runtime function processing", () => {
       }),
     );
 
-    const { container } = render(
-      <Component $variant="primary" $spacing="16px" />,
-    );
+    const { container } = render(<Component $variant="primary" $spacing="16px" />);
 
     const element = container.querySelector("div");
     // Should not have $ props as DOM attributes

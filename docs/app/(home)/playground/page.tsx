@@ -8,11 +8,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams;
 
   let initialState: Record<string, string> = examples.base.files;
-  if (
-    searchParams["q"] &&
-    typeof searchParams["q"] === "string" &&
-    searchParams["q"].length > 0
-  ) {
+  if (searchParams["q"] && typeof searchParams["q"] === "string" && searchParams["q"].length > 0) {
     initialState = decompressWithDictionary(searchParams["q"]);
   }
   return <DynamicEditor initialState={initialState} />;

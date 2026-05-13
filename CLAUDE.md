@@ -88,6 +88,7 @@ cd packages/yak-swc && pnpm prettier
 ## Key Files
 
 ### TypeScript/JavaScript (packages/next-yak/)
+
 - `loaders/vite-plugin.ts` - Vite plugin implementation
 - `loaders/webpack-loader.ts` - Webpack loader
 - `loaders/turbo-loader.ts` - Turbopack loader
@@ -95,6 +96,7 @@ cd packages/yak-swc && pnpm prettier
 - `cross-file-resolver/` - Cross-file constant resolution
 
 ### Rust (packages/yak-swc/yak_swc/src/)
+
 - `lib.rs` - Main SWC plugin entry point and visitor
 - `plugin.rs` - WASM plugin wrapper
 - `naming_convention.rs` - CSS class/variable naming
@@ -103,6 +105,7 @@ cd packages/yak-swc && pnpm prettier
 - `variable_visitor.rs` - Variable/constant tracking
 
 ### Configuration
+
 - `pnpm-workspace.yaml` - Workspace configuration with version catalogs
 - `packages/yak-swc/Cargo.toml` - Rust dependencies
 
@@ -167,6 +170,7 @@ UPDATE=1 cargo test
 ### Test Configurations
 
 Each fixture generates 4 tests:
+
 - `fixture_dev` - Development mode with CSS modules
 - `fixture_prod` - Production mode with CSS modules
 - `fixture_dev_turbo` - Development mode with Turbopack (DataUrl)
@@ -175,6 +179,7 @@ Each fixture generates 4 tests:
 ## Architecture Notes
 
 ### SWC Plugin Flow
+
 1. SWC passes AST to `TransformVisitor` in `lib.rs`
 2. Visitor identifies styled-components/CSS template literals
 3. CSS is extracted and transformed based on `CssDependencyMode`:
@@ -184,6 +189,7 @@ Each fixture generates 4 tests:
 4. JavaScript is transformed to reference generated CSS classes
 
 ### Vite Plugin
+
 - Uses virtual modules (`virtual:yak-css:*`) for CSS
 - The `{{__MODULE_PATH__}}` placeholder in import specifiers is replaced by the Rust plugin with the actual file path
 - CSS is resolved and bundled by Vite's CSS pipeline
@@ -191,10 +197,11 @@ Each fixture generates 4 tests:
 ## Debugging
 
 Enable debug logging in Next.js config:
+
 ```js
 export default withYak({
   experiments: {
-    debug: true,  // or regex like 'component.tsx.css$'
+    debug: true, // or regex like 'component.tsx.css$'
   },
 });
 ```

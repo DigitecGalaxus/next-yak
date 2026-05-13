@@ -49,9 +49,7 @@ function getCompilationCache(loader: LoaderContext<YakConfigOptions>) {
   return cache;
 }
 
-function getParseContext(
-  loader: LoaderContext<YakConfigOptions>,
-): ParseContext {
+function getParseContext(loader: LoaderContext<YakConfigOptions>): ParseContext {
   return {
     cache: { parse: getCompilationCache(loader).parsedFiles },
     async extractExports(modulePath) {
@@ -100,9 +98,7 @@ function getParseContext(
           } else if (source instanceof ArrayBuffer) {
             sourceString = new TextDecoder("utf-8").decode(source);
           } else {
-            throw new Error(
-              "Invalid input type: code must be string, Buffer, or ArrayBuffer",
-            );
+            throw new Error("Invalid input type: code must be string, Buffer, or ArrayBuffer");
           }
           resolve(sourceString || "");
         });
@@ -116,9 +112,7 @@ function getParseContext(
   };
 }
 
-function getResolveContext(
-  loader: LoaderContext<YakConfigOptions>,
-): ResolveContext {
+function getResolveContext(loader: LoaderContext<YakConfigOptions>): ResolveContext {
   const parseContext = getParseContext(loader);
   return {
     parse: (modulePath) => parseModule(parseContext, modulePath),
@@ -139,16 +133,13 @@ export async function resolveModule(
   return new Promise<string>((resolve, reject) => {
     loader.resolve(context, moduleSpecifier, (err, result) => {
       if (err) return reject(err);
-      if (!result)
-        return reject(new Error(`Could not resolve ${moduleSpecifier}`));
+      if (!result) return reject(new Error(`Could not resolve ${moduleSpecifier}`));
       resolve(result);
     });
   });
 }
 
-export async function parseExports(
-  sourceContents: string,
-): Promise<ModuleExports> {
+export async function parseExports(sourceContents: string): Promise<ModuleExports> {
   try {
     const ast = parse(sourceContents, {
       sourceType: "module",
@@ -157,8 +148,7 @@ export async function parseExports(
 
     // Derive importYak from top-level imports (no traverse needed)
     const importYak = ast.program.body.some(
-      (node) =>
-        node.type === "ImportDeclaration" && node.source.value === "next-yak",
+      (node) => node.type === "ImportDeclaration" && node.source.value === "next-yak",
     );
 
     const moduleExports: ModuleExports = {
@@ -212,10 +202,7 @@ export async function parseExports(
           for (const declaration of node.declaration.declarations) {
             if (declaration.id.type === "Identifier" && declaration.init) {
               variableDeclarations[declaration.id.name] = declaration.init;
-              const parsed = parseExportValueExpression(
-                declaration.init,
-                sourceContents,
-              );
+              const parsed = parseExportValueExpression(declaration.init, sourceContents);
               if (parsed) {
                 moduleExports.named[declaration.id.name] = parsed;
               }
@@ -237,10 +224,7 @@ export async function parseExports(
           moduleExports.named["default"] = {
             type: "unsupported",
             hint: node.declaration.type,
-            source: extractUnsupportedSource(
-              node.declaration.loc,
-              sourceContents,
-            ),
+            source: extractUnsupportedSource(node.declaration.loc, sourceContents),
           };
         } else {
           // e.g. export default { ... } or export default "value"
@@ -278,28 +262,17 @@ function unpackTSAsExpression(
   node: babel.types.TSAsExpression | babel.types.Expression,
 ): babel.types.Expression {
   if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
-    return unpackTSAsExpression(
-      (node as babel.types.TSAsExpression).expression,
-    );
+    return unpackTSAsExpression((node as babel.types.TSAsExpression).expression);
   }
   return node;
 }
 
-function parseExportValueExpression(
-  node: babel.types.Expression,
-  code?: string,
-): ModuleExport {
+function parseExportValueExpression(node: babel.types.Expression, code?: string): ModuleExport {
   // ignores `as` casts so it doesn't interfere with the ast node type detection
   const expression = unpackTSAsExpression(node);
-  if (
-    expression.type === "CallExpression" ||
-    expression.type === "TaggedTemplateExpression"
-  ) {
+  if (expression.type === "CallExpression" || expression.type === "TaggedTemplateExpression") {
     return { type: "tag-template" };
-  } else if (
-    expression.type === "StringLiteral" ||
-    expression.type === "NumericLiteral"
-  ) {
+  } else if (expression.type === "StringLiteral" || expression.type === "NumericLiteral") {
     return { type: "constant", value: expression.value };
   } else if (
     expression.type === "UnaryExpression" &&
@@ -307,10 +280,7 @@ function parseExportValueExpression(
     expression.argument.type === "NumericLiteral"
   ) {
     return { type: "constant", value: -expression.argument.value };
-  } else if (
-    expression.type === "TemplateLiteral" &&
-    expression.quasis.length === 1
-  ) {
+  } else if (expression.type === "TemplateLiteral" && expression.quasis.length === 1) {
     return { type: "constant", value: expression.quasis[0].value.raw };
   } else if (expression.type === "ObjectExpression") {
     return {
@@ -331,15 +301,9 @@ function parseObjectExpression(
 ): Record<string, ModuleExport> {
   let result: Record<string, ModuleExport> = {};
   for (const property of node.properties) {
-    if (
-      property.type === "ObjectProperty" &&
-      property.key.type === "Identifier"
-    ) {
+    if (property.type === "ObjectProperty" && property.key.type === "Identifier") {
       const key = property.key.name;
-      const parsed = parseExportValueExpression(
-        property.value as babel.types.Expression,
-        code,
-      );
+      const parsed = parseExportValueExpression(property.value as babel.types.Expression, code);
       if (parsed) {
         result[key] = parsed;
       }
@@ -374,7 +338,7 @@ function extractUnsupportedSource(
 }
 
 const DIRNAME_POSIX_REGEX =
-  /^((?:\.(?![^\/]))|(?:(?:\/?|)(?:[\s\S]*?)))(?:\/+?|)(?:(?:\.{1,2}|[^\/]+?|)(?:\.[^.\/]*|))(?:[\/]*)$/;
+  /^((?:\.(?![^/]))|(?:(?:\/?|)(?:[\s\S]*?)))(?:\/+?|)(?:(?:\.{1,2}|[^/]+?|)(?:\.[^./]*|))(?:[/]*)$/;
 const DIRNAME_WIN32_REGEX =
   /^((?:\.(?![^\\]))|(?:(?:\\?|)(?:[\s\S]*?)))(?:\\+?|)(?:(?:\.{1,2}|[^\\]+?|)(?:\.[^.\\]*|))(?:[\\]*)$/;
 

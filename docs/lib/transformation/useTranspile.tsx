@@ -79,8 +79,7 @@ export const useTranspile = (
           ...allFilenames.reduce(
             (acc, filename) => ({
               ...acc,
-              [`./${filename}.yak.css!=!./${filename}?./${filename}.yak.css`]:
-                {},
+              [`./${filename}.yak.css!=!./${filename}?./${filename}.yak.css`]: {},
             }),
             {} as any,
           ),
@@ -127,9 +126,7 @@ export const useTranspile = (
     if (workerRef.current) {
       workerRef.current.postMessage(props);
     } else {
-      console.error(
-        "Attempted to post message to worker before it was created.",
-      );
+      console.error("Attempted to post message to worker before it was created.");
       setResult({
         renderedMainComponent: {
           component: null,
@@ -162,9 +159,7 @@ export const useTranspile = (
   );
 
   useEffect(() => {
-    const worker = new Worker(
-      new URL("./workers/transpileWorker", import.meta.url),
-    );
+    const worker = new Worker(new URL("./workers/transpileWorker", import.meta.url));
     workerRef.current = worker;
     worker.onmessage = workerOnMessage;
     setIsWorkerReady(false);

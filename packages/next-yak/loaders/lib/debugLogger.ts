@@ -2,9 +2,9 @@ import { relative } from "path";
 import type { YakConfigOptions } from "../../withYak/index.js";
 
 type DebugOptions = Required<YakConfigOptions>["experiments"]["debug"];
-type DebugType = NonNullable<
-  Exclude<DebugOptions, true | undefined>
->["types"] extends Array<infer T> | undefined
+type DebugType = NonNullable<Exclude<DebugOptions, true | undefined>>["types"] extends
+  | Array<infer T>
+  | undefined
   ? T
   : never;
 
@@ -12,10 +12,7 @@ type DebugType = NonNullable<
  * Creates a debug logger function that conditionally logs messages
  * based on debug options and file paths.
  */
-export function createDebugLogger(
-  debugOptions: DebugOptions | undefined,
-  rootPath: string,
-) {
+export function createDebugLogger(debugOptions: DebugOptions | undefined, rootPath: string) {
   if (!debugOptions) {
     return () => {};
   }
@@ -69,8 +66,7 @@ function throwOnDeprecatedDebugOptions(debugOptions: DebugOptions): void {
   // Old API: debug: "regex-string"
   if (typeof debugOptions === "string") {
     const suggestion =
-      suggestTypesForExtensionPattern(debugOptions) ??
-      `debug: { pattern: "${debugOptions}" }`;
+      suggestTypesForExtensionPattern(debugOptions) ?? `debug: { pattern: "${debugOptions}" }`;
     throw new Error(
       `The debug option no longer accepts a string. Please update your config:\n` +
         `  Before: debug: "${debugOptions}"\n` +
@@ -112,9 +108,7 @@ function suggestTypesForExtensionPattern(pattern: string): string | null {
   if (!extensionMatch) {
     return null;
   }
-  const type = extensionMatch[0].includes("css-resolved")
-    ? "css-resolved"
-    : "css";
+  const type = extensionMatch[0].includes("css-resolved") ? "css-resolved" : "css";
   const remaining = pattern.slice(0, extensionMatch.index);
   return remaining
     ? `debug: { pattern: "${remaining}", types: ["${type}"] }`

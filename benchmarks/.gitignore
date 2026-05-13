@@ -34,6 +34,6 @@ yarn-error.log*
 .vercel
 
 lighthouse/results
-codspeed/dist
-
-letters/*.tsx
+bench/dist
+bench-table.html
+*.tsbuildinfo

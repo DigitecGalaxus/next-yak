@@ -1,6 +1,5 @@
 @layer global, base;
 @layer global {
-
   * {
     box-sizing: border-box;
     padding: 0;
@@ -27,5 +26,4 @@
       color-scheme: dark;
     }
   }
-
 }

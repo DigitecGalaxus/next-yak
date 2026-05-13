@@ -29,14 +29,10 @@ test("resolve css with no cross-file constant", async () => {
   const { resolved, dependencies } = await resolveCrossFileConstant(
     {
       parse() {
-        assert.fail(
-          "no file should be parsed for css with no cross-file constant",
-        );
+        assert.fail("no file should be parsed for css with no cross-file constant");
       },
       resolve() {
-        assert.fail(
-          "no file should be resolved for css with no cross-file constant",
-        );
+        assert.fail("no file should be resolved for css with no cross-file constant");
       },
     },
     "foo/bar.js",
@@ -91,10 +87,7 @@ test("resolve css with cross-file constant from namespace re-export", async () =
 test("resolve css with cross-file constant from star export", async () => {
   const { resolved, dependencies } = await resolveCrossFileConstant(
     createParseContext({
-      "/foo/proxy.ts": [
-        `export * from "./zindex.ts";`,
-        `export * from "./colors.ts";`,
-      ].join("\n"),
+      "/foo/proxy.ts": [`export * from "./zindex.ts";`, `export * from "./colors.ts";`].join("\n"),
       "/foo/colors.ts": `export const RED_500 = "red";`,
       "/foo/zindex.ts": [
         `export const OVER = "1";`,
@@ -299,8 +292,7 @@ test("Error: resolving path not existing in record", async () => {
       "/foo/bar.js",
       `color: --yak-css-import: url("./colors.js:colors:red:800",mixin);`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "colors.red.800" in module "/foo/colors.js"
   Caused by: Unable to resolve "red.800" in object/array "colors"
   Caused by: path not found`);
@@ -392,8 +384,7 @@ test("Error: resolving non styled-component as a selector", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:Main",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Found "mixin" but expected a selector - did you forget a semicolon after "Main"?`);
 });
 
@@ -428,8 +419,7 @@ test("Error: mismatching types between mixin and record export", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Error parsing file "/foo/components.js"
   Caused by: "foo" is not a record`);
 });
@@ -472,8 +462,7 @@ test("Error: mismatching types between mixin and nested record export", async ()
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Error parsing file "/foo/components.js"
   Caused by: "foo.bar" is not a record`);
 });
@@ -513,8 +502,7 @@ test("Error: mismatching types between styled-component and record export", asyn
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Error parsing file "/foo/components.js"
   Caused by: "foo" is not a record`);
 });
@@ -557,8 +545,7 @@ test("Error: mismatching types between styled-component and nested record export
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Error parsing file "/foo/components.js"
   Caused by: "foo.bar" is not a record`);
 });
@@ -591,8 +578,7 @@ test("Error: resolving non existing export", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "foo.bar"
   Caused by: no matching export found in module "/foo/components.js"`);
 });
@@ -628,8 +614,7 @@ test("Error: specifier path in record ends with a record", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "foo" in module "/foo/components.js"
   Caused by: did not expect an object`);
 });
@@ -670,8 +655,7 @@ test("Error: specifier path in record does not resolve in constant, mixin or sty
       "/foo/bar.js",
       `--yak-css-import: url("./components.js:foo:bar",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "foo.bar" in module "/foo/components.js"
   Caused by: Unable to resolve "bar" in object/array "foo"
   Caused by: only string and numbers are supported`);
@@ -730,8 +714,7 @@ test("Error: Resolve with circular dependency", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./a.js:a",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "a" in module "/foo/a.js"
   Caused by: Unable to resolve "b" in module "/foo/b.js"
   Caused by: Unable to resolve "c" in module "/foo/c.js"
@@ -789,8 +772,7 @@ test("Error: Resolve with circular dependency with star exports", async () => {
       "/foo/bar.js",
       `--yak-css-import: url("./a.js:a",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.js"
   Caused by: Unable to resolve "a" in module "/foo/a.js"
   Caused by: Unable to resolve "b" in module "/foo/b.js"
   Caused by: Unable to resolve "d" in module "/foo/c.js"
@@ -856,12 +838,7 @@ test("Do not mistake loopback with circular dependency", async () => {
   );
 
   assert.strictEqual(resolved, "color: red;");
-  expect(dependencies).to.have.members([
-    "/foo/a.js",
-    "/foo/b.js",
-    "/foo/c.js",
-    "/foo/d.js",
-  ]);
+  expect(dependencies).to.have.members(["/foo/a.js", "/foo/b.js", "/foo/c.js", "/foo/d.js"]);
 });
 
 test("Error: unsupported export from a regular .ts file shows a Rust-style snippet", async () => {
@@ -873,8 +850,7 @@ test("Error: unsupported export from a regular .ts file shows a Rust-style snipp
       "/foo/bar.ts",
       `--yak-css-import: url("./colors.ts:bg",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
   Caused by: Unable to resolve "bg" in module "/foo/colors.ts"
   Caused by: \`bg\` is not a string or number literal (got a TemplateLiteral).
    --> /foo/colors.ts:2:19
@@ -910,8 +886,7 @@ test("Error: unsupported value from an evaluated .yak.ts file explains supported
       "/foo/bar.ts",
       `--yak-css-import: url("./tokens.yak.ts:flag",selector) {}`,
     ),
-  ).rejects
-    .toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
+  ).rejects.toThrow(`Error while resolving cross-file selectors in file "/foo/bar.ts"
   Caused by: Unable to resolve "flag" in module "/foo/tokens.yak.ts"
   Caused by: \`flag\` evaluated to a value that cannot be inlined into CSS (got \`true\`).
   help: replace it with a string, number, or plain object/array of those

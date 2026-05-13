@@ -18,20 +18,8 @@ test("logs all types when debug is true", () => {
   log("css-resolved", ".b{}", "/root/file.tsx");
 
   expect(spy).toHaveBeenCalledTimes(3);
-  expect(spy).toHaveBeenCalledWith(
-    "🐮 Yak",
-    "[ts]",
-    "file.tsx",
-    "\n\n",
-    "code",
-  );
-  expect(spy).toHaveBeenCalledWith(
-    "🐮 Yak",
-    "[css-resolved]",
-    "file.tsx",
-    "\n\n",
-    ".b{}",
-  );
+  expect(spy).toHaveBeenCalledWith("🐮 Yak", "[ts]", "file.tsx", "\n\n", "code");
+  expect(spy).toHaveBeenCalledWith("🐮 Yak", "[css-resolved]", "file.tsx", "\n\n", ".b{}");
   spy.mockRestore();
 });
 
@@ -43,13 +31,7 @@ test("filters by pattern", () => {
   log("ts", "code", "/root/src/Header.tsx");
 
   expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(
-    "🐮 Yak",
-    "[ts]",
-    "src/Button.tsx",
-    "\n\n",
-    "code",
-  );
+  expect(spy).toHaveBeenCalledWith("🐮 Yak", "[ts]", "src/Button.tsx", "\n\n", "code");
   spy.mockRestore();
 });
 
@@ -62,21 +44,12 @@ test("filters by types", () => {
   log("css-resolved", ".b{}", "/root/file.tsx");
 
   expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalledWith(
-    "🐮 Yak",
-    "[css-resolved]",
-    "file.tsx",
-    "\n\n",
-    ".b{}",
-  );
+  expect(spy).toHaveBeenCalledWith("🐮 Yak", "[css-resolved]", "file.tsx", "\n\n", ".b{}");
   spy.mockRestore();
 });
 
 test("filters by both pattern and types", () => {
-  const log = createDebugLogger(
-    { pattern: "Button", types: ["css", "css-resolved"] },
-    "/root",
-  );
+  const log = createDebugLogger({ pattern: "Button", types: ["css", "css-resolved"] }, "/root");
   const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
   log("ts", "code", "/root/Button.tsx");
@@ -107,31 +80,26 @@ test("throws on old string API with .css$ and suggests types", () => {
 });
 
 test("throws on old string API with path + .css-resolved$ and suggests both", () => {
-  expect(() =>
-    createDebugLogger("Button.css-resolved$" as any, "/root"),
-  ).toThrow(
+  expect(() => createDebugLogger("Button.css-resolved$" as any, "/root")).toThrow(
     'Before: debug: "Button.css-resolved$"\n' +
       '  After:  debug: { pattern: "Button", types: ["css-resolved"] }',
   );
 });
 
 test("throws on old { filter, type } API", () => {
-  expect(() =>
-    createDebugLogger({ filter: () => true, type: "all" } as any, "/root"),
-  ).toThrow("The debug option no longer accepts { filter, type }");
+  expect(() => createDebugLogger({ filter: () => true, type: "all" } as any, "/root")).toThrow(
+    "The debug option no longer accepts { filter, type }",
+  );
 });
 
 test("throws when pattern uses old .css$ file extension convention", () => {
   expect(() => createDebugLogger({ pattern: ".css$" }, "/root")).toThrow(
-    'Before: debug: { pattern: ".css$" }\n' +
-      '  After:  debug: { types: ["css"] }',
+    'Before: debug: { pattern: ".css$" }\n' + '  After:  debug: { types: ["css"] }',
   );
 });
 
 test("throws when pattern uses old .css-resolved$ file extension convention", () => {
-  expect(() =>
-    createDebugLogger({ pattern: ".css-resolved$" }, "/root"),
-  ).toThrow(
+  expect(() => createDebugLogger({ pattern: ".css-resolved$" }, "/root")).toThrow(
     'Before: debug: { pattern: ".css-resolved$" }\n' +
       '  After:  debug: { types: ["css-resolved"] }',
   );

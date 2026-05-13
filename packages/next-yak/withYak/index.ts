@@ -5,9 +5,7 @@ import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const currentDir =
-  typeof __dirname !== "undefined"
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url));
+  typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 export type YakConfigOptions = {
   /**
@@ -56,15 +54,12 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     basePath: currentDir,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
-    suppressDeprecationWarnings:
-      yakOptions.experiments?.suppressDeprecationWarnings ?? false,
+    suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
   };
 
-  const transpilation =
-    yakOptions.experiments?.transpilationMode ?? "CssModule";
-  const cssExtension =
-    transpilation === "CssModule" ? ".yak.module.css" : ".yak.css";
+  const transpilation = yakOptions.experiments?.transpilationMode ?? "CssModule";
+  const cssExtension = transpilation === "CssModule" ? ".yak.module.css" : ".yak.css";
 
   if (process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto") {
     addYakTurbopack(nextConfig, yakOptions, {
@@ -178,9 +173,7 @@ function addYakWebpack(
 
     webpackConfig.module.rules.push({
       test:
-        yakOptions.experiments?.transpilationMode === "Css"
-          ? /\.yak\.css$/
-          : /\.yak\.module\.css$/,
+        yakOptions.experiments?.transpilationMode === "Css" ? /\.yak\.css$/ : /\.yak\.module\.css$/,
       loader: path.join(currentDir, "../loaders/webpack-loader.cjs"),
       options: yakOptions,
     });
@@ -244,10 +237,7 @@ function removeUndefinedRecursive<T>(obj: T): {} {
 /**
  * Try to resolve yak
  */
-export function resolveYakContext(
-  contextPath: string | undefined,
-  cwd: string,
-) {
+export function resolveYakContext(contextPath: string | undefined, cwd: string) {
   const yakContext = contextPath
     ? path.resolve(cwd, contextPath)
     : path.resolve(cwd, "yak.context");

@@ -2,15 +2,17 @@
 title: Migration to native CSS
 description: Guide for migrating from :global() selectors to native CSS transpilation mode in next-yak.
 ---
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 
 ## Overview
 
 The `:global()` selector in next-yak is deprecated and will be removed in the next major version. This guide explains how to migrate to native CSS transpilation mode, which provides a simpler and more performant approach to handling global selectors.
 
 <Callout type="warn">
-**Deprecation Notice**: The `:global()` selector syntax is deprecated. Please migrate to native CSS transpilation mode to ensure compatibility with future versions.
+  **Deprecation Notice**: The `:global()` selector syntax is deprecated. Please migrate to native
+  CSS transpilation mode to ensure compatibility with future versions.
 </Callout>
 
 ## Why are :global() selectors deprecated?
@@ -35,11 +37,14 @@ const nextConfig = {
   // your next.js config
 };
 
-export default withYak({
-  experiments: {
-    transpilationMode: 'Css' // [!code ++]
-  }
-}, nextConfig);
+export default withYak(
+  {
+    experiments: {
+      transpilationMode: "Css", // [!code ++]
+    },
+  },
+  nextConfig,
+);
 ```
 
 </Step>
@@ -50,7 +55,7 @@ export default withYak({
 With native CSS transpilation enabled, you can remove all `:global()` wrappers from your styled components:
 
 ```tsx title="component.tsx"
-import { styled } from 'next-yak';
+import { styled } from "next-yak";
 
 const Container = styled.div`
   padding: 1rem;
@@ -105,15 +110,19 @@ If you need more time to migrate, you can temporarily suppress the deprecation w
 ```js title="next.config.js"
 import { withYak } from "next-yak/withYak";
 
-export default withYak({
-  experiments: {
-    suppressDeprecationWarnings: true // [!code highlight]
-  }
-}, nextConfig);
+export default withYak(
+  {
+    experiments: {
+      suppressDeprecationWarnings: true, // [!code highlight]
+    },
+  },
+  nextConfig,
+);
 ```
 
 <Callout type="warn">
-This is only a temporary solution. Please plan to complete your migration before the next major version.
+  This is only a temporary solution. Please plan to complete your migration before the next major
+  version.
 </Callout>
 
 ## Before and After Examples

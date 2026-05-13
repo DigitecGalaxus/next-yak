@@ -9,27 +9,26 @@ packages:
 catalogs:
   core:
     "@babel/parser": ^7.29.2
-    "@swc/core": 1.15.21
+    "@swc/core": 1.15.32
     "@swc/counter": 0.1.3
   dev:
     "@babel/preset-typescript": 7.28.5
-    "@changesets/cli": 2.30.0
-    "@codspeed/benchmark.js-plugin": 5.2.0
+    "@changesets/cli": 2.31.0
     "@eslint/eslintrc": 3.3.5
     "@monaco-editor/react": 4.7.0
-    "@next/eslint-plugin-next": 16.2.1
-    "@next/mdx": 16.2.1
-    "@playwright/test": 1.58.2
+    "@next/eslint-plugin-next": 16.2.4
+    "@next/mdx": 16.2.4
+    "@playwright/test": 1.59.1
     "@radix-ui/react-switch": 1.2.6
     "@shikijs/monaco": 4.0.2
     "@shikijs/transformers": 4.0.2
-    "@storybook/addon-docs": 10.3.3
-    "@storybook/addon-webpack5-compiler-swc": 4.0.2
-    "@storybook/react": 10.3.3
-    "@storybook/react-vite": 10.3.3
-    "@storybook/react-webpack5": 10.3.3
-    "@swc/helpers": 0.5.19
-    "@tailwindcss/postcss": 4.2.2
+    "@storybook/addon-docs": 10.3.5
+    "@storybook/addon-webpack5-compiler-swc": 4.0.3
+    "@storybook/react": 10.3.5
+    "@storybook/react-vite": 10.3.5
+    "@storybook/react-webpack5": 10.3.5
+    "@swc/helpers": 0.5.21
+    "@tailwindcss/postcss": 4.2.4
     "@testing-library/dom": 10.4.1
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
@@ -37,53 +36,55 @@ catalogs:
     "@types/benchmark": 2.1.5
     "@types/jest": 30.0.0
     "@types/mdx": 2.0.13
-    "@types/node": 25.5.0
+    "@types/node": 25.6.0
     "@types/react": 19.2.14
     "@types/react-dom": 19.2.3
     "@types/webpack": 5.28.5
-    "@typescript-eslint/rule-tester": 8.57.2
-    "@typescript-eslint/utils": 8.57.2
+    "@typescript-eslint/parser": 8.59.1
+    "@typescript-eslint/rule-tester": 8.59.1
+    "@typescript-eslint/utils": 8.59.1
     "@vercel/analytics": 2.0.1
     "@vitejs/plugin-react": 6.0.1
     "@vitejs/plugin-react-swc": 4.3.0
-    autoprefixer: 10.4.27
+    autoprefixer: 10.5.0
     benchmark: 2.1.4
-    eslint: 10.1.0
-    eslint-config-next: 16.2.1
-    eslint-doc-generator: 3.3.1
+    eslint: 10.2.1
+    eslint-config-next: 16.2.4
+    eslint-doc-generator: 3.3.2
     fast-glob: 3.3.3
     fflate: 0.8.2
-    fumadocs-core: 16.7.5
-    fumadocs-mdx: 14.2.11
-    fumadocs-twoslash: 3.1.14
-    fumadocs-ui: 16.7.5
+    fumadocs-core: 16.8.5
+    fumadocs-mdx: 14.3.2
+    fumadocs-twoslash: 3.2.0
+    fumadocs-ui: 16.8.5
     jest: 30.3.0
     jest-environment-jsdom: 30.3.0
     js-base64: 3.7.8
-    jsdom: 29.0.1
+    jsdom: 29.1.0
     lz-string: 1.5.0
     memfs: 4.57.1
-    next: 16.2.1
+    next: 16.2.4
     next-themes: 0.4.6
-    postcss: 8.5.8
+    oxfmt: 0.48.0
+    oxlint: 1.63.0
+    postcss: 8.5.12
     postcss-nested: 7.0.2
-    prettier: 3.8.1
+    prettier: 3.8.3
     raw-loader: 4.0.2
-    react: 19.2.4
-    react-dom: 19.2.4
-    react-resizable-panels: 4.7.6
+    react: 19.2.5
+    react-dom: 19.2.5
+    react-resizable-panels: 4.10.0
     shiki: 4.0.2
     shiki-magic-move: 1.3.0
-    storybook: 10.3.3
-    styled-components: 6.3.12
+    storybook: 10.3.5
+    styled-components: 6.4.1
     swc-loader: 0.2.7
-    tailwindcss: 4.2.2
-    tree-kill: 1.2.2
-    tsup: 8.5.1
+    tailwindcss: 4.2.4
+    tsdown: 0.21.10
     tsx: 4.21.0
-    typescript: 5.9.3
+    typescript: 6.0.3
     unionfs: 4.6.0
-    vite: 8.0.2
-    vitest: 4.1.1
+    vite: 8.0.10
+    vitest: 4.1.5
     wasm-pack: 0.14.0
     webpack: 5.105.4

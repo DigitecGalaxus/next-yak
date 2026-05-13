@@ -24,9 +24,7 @@ export default async function cssExtractLoader(
       return callback(err);
     }
     if (!source) {
-      return callback(
-        new Error(`Source code for ${this.resourcePath} is empty`),
-      );
+      return callback(new Error(`Source code for ${this.resourcePath} is empty`));
     }
     const { experiments } = this.getOptions();
     const debugLog = createDebugLogger(

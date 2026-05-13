@@ -1,0 +1,23 @@
+{
+  "ignorePatterns": [
+    "**/dist/",
+    "**/.next/",
+    "**/.swc/",
+    "**/.tanstack/",
+    "**/.vercel/",
+    "**/out/",
+    "**/target/",
+    "benchmarks/bench/dist/",
+    "benchmarks/bench/generated/",
+    "cross-file-tests/__tests__/.tmp/",
+    "packages/yak-swc/yak_swc/tests/fixture/",
+    "packages/next-yak/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
+    "examples/next-js/next-env.d.ts",
+    "docs/.source/",
+    "docs/playground-wasm/out/",
+    "docs/public/types/",
+    "docs/content/docs/eslint-plugin.mdx",
+    "packages/eslint-plugin-yak/README.md",
+    "packages/eslint-plugin-yak/docs/"
+  ]
+}

@@ -442,26 +442,11 @@ test("parse .yak module extensions", async () => {
     },
   };
 
-  const parsedModule1 = await parseModule(
-    parseContext,
-    "/path/to/module.yak.js",
-  );
-  const parsedModule2 = await parseModule(
-    parseContext,
-    "/path/to/module.yak.ts",
-  );
-  const parsedModule3 = await parseModule(
-    parseContext,
-    "/path/to/module.yak.jsx",
-  );
-  const parsedModule4 = await parseModule(
-    parseContext,
-    "/path/to/module.yak.tsx",
-  );
-  const parsedModule5 = await parseModule(
-    parseContext,
-    "/path/to/module.yak.foo.tsx",
-  );
+  const parsedModule1 = await parseModule(parseContext, "/path/to/module.yak.js");
+  const parsedModule2 = await parseModule(parseContext, "/path/to/module.yak.ts");
+  const parsedModule3 = await parseModule(parseContext, "/path/to/module.yak.jsx");
+  const parsedModule4 = await parseModule(parseContext, "/path/to/module.yak.tsx");
+  const parsedModule5 = await parseModule(parseContext, "/path/to/module.yak.foo.tsx");
 
   assert.strictEqual(parsedModule1.type, "yak");
   assert.strictEqual(parsedModule2.type, "yak");
@@ -485,9 +470,7 @@ test("wraps errors from extractExports with file path", async () => {
       },
       path,
     ),
-  ).rejects.toThrow(
-    `Error parsing file "${path}"\n  Caused by: The loaded module contains errors`,
-  );
+  ).rejects.toThrow(`Error parsing file "${path}"\n  Caused by: The loaded module contains errors`);
 });
 
 test("wraps errors from getTransformed with file path", async () => {
@@ -500,9 +483,7 @@ test("wraps errors from getTransformed with file path", async () => {
           return { importYak: true, named: {}, all: [] };
         },
         getTransformed() {
-          throw new Error(
-            'The shorthand access to the variable "$foo" is not allowed',
-          );
+          throw new Error('The shorthand access to the variable "$foo" is not allowed');
         },
       },
       path,

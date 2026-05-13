@@ -323,15 +323,10 @@ const libraries = {
   Record<string, Record<Features, boolean>>
 >;
 
-const categories = [
-  "Static",
-  "Compile Time",
-  "Browser Runtime",
-] as const satisfies Array<keyof typeof libraries>;
-const features = libraries["Compile Time"]["Next-Yak"] satisfies Record<
-  Features,
-  boolean
+const categories = ["Static", "Compile Time", "Browser Runtime"] as const satisfies Array<
+  keyof typeof libraries
 >;
+const features = libraries["Compile Time"]["Next-Yak"] satisfies Record<Features, boolean>;
 const sups = [
   "INP optimized",
   "Zero Runtime",
@@ -385,7 +380,7 @@ export const ComparisonTable = () => {
                 >
                   {lib}
                 </ColumnHead>
-              ))
+              )),
             )}
           </tr>
         </thead>
@@ -395,9 +390,7 @@ export const ComparisonTable = () => {
               <ColumnFeatureName {...columnHoverEvents("")}>
                 {feature}
                 {sups.includes(feature as any) && (
-                  <sup style={{ marginLeft: "4px" }}>
-                    {sups.indexOf(feature as any) + 1})
-                  </sup>
+                  <sup style={{ marginLeft: "4px" }}>{sups.indexOf(feature as any) + 1})</sup>
                 )}
               </ColumnFeatureName>
               {categories.map((category) =>
@@ -406,29 +399,19 @@ export const ComparisonTable = () => {
                     key={Object.keys(libraries[category])[i]}
                     $newCategory={i === 0}
                     {...columnHoverEvents(Object.keys(libraries[category])[i])}
-                    $active={
-                      activeLibrary === Object.keys(libraries[category])[i]
-                    }
+                    $active={activeLibrary === Object.keys(libraries[category])[i]}
                   >
                     {lib[feature] ? (
                       <IconYes
-                        title={titleText(
-                          feature,
-                          Object.keys(libraries[category])[i],
-                          true
-                        )}
+                        title={titleText(feature, Object.keys(libraries[category])[i], true)}
                       />
                     ) : (
                       <IconNo
-                        title={titleText(
-                          feature,
-                          Object.keys(libraries[category])[i],
-                          false
-                        )}
+                        title={titleText(feature, Object.keys(libraries[category])[i], false)}
                       />
                     )}
                   </Column>
-                ))
+                )),
               )}
             </tr>
           ))}
@@ -440,11 +423,7 @@ export const ComparisonTable = () => {
 
 const verbs = ["agnostic", "optimized"] as const;
 
-const titleText = (
-  featureName: string,
-  libName: string,
-  supported: boolean
-) => {
+const titleText = (featureName: string, libName: string, supported: boolean) => {
   const endsWithVerb = verbs.find((verb) => featureName.endsWith(verb));
   const term = endsWithVerb
     ? featureName.substring(0, featureName.length - endsWithVerb.length).trim()
@@ -483,7 +462,7 @@ const Table = styled.table`
   border-color: var(--border-color-light);
 
   ${theme.dark} {
-    --table-highlight:hsl(0deg 5.08% 16.34%);
+    --table-highlight: hsl(0deg 5.08% 16.34%);
     --table-highlight-fg: hsl(0, 0%, 100%);
     --table-background: hsl(0, 0%, 9.8%);
     --border-color-light: hsla(0, 0%, 9.8%, 0.5);

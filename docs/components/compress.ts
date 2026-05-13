@@ -106,9 +106,7 @@ const DELIMITER = convertDictionaryIndexToToken(0);
 // so that the index 0 matches the value
 dictionary.unshift(DELIMITER);
 
-export const compressWithDictionary = (
-  code: Record<string, string>,
-): string => {
+export const compressWithDictionary = (code: Record<string, string>): string => {
   let compressed =
     DICTIONARY_VERSION +
     DELIMITER +
@@ -116,20 +114,14 @@ export const compressWithDictionary = (
       .flatMap(([path, content]) => [path, content])
       .join(DELIMITER);
   dictionary.forEach((token, index) => {
-    compressed = compressed.replaceAll(
-      token,
-      convertDictionaryIndexToToken(index),
-    );
+    compressed = compressed.replaceAll(token, convertDictionaryIndexToToken(index));
   });
   const compressedBytes = strToU8(compressed);
   const compressedFlate = compressSync(compressedBytes, { level: 9, mem: 12 });
   // Log into console for the curious users
   console.log(
     "Compressed from ",
-    Object.entries(code).reduce(
-      (acc, [path, content]) => acc + path.length + content.length,
-      0,
-    ),
+    Object.entries(code).reduce((acc, [path, content]) => acc + path.length + content.length, 0),
     "b to ",
     fromUint8Array(compressedFlate).length,
     "b",
@@ -137,9 +129,7 @@ export const compressWithDictionary = (
   return fromUint8Array(compressedFlate);
 };
 
-export const decompressWithDictionary = (
-  compressed: string,
-): Record<string, string> => {
+export const decompressWithDictionary = (compressed: string): Record<string, string> => {
   let decompressed = "";
   try {
     decompressed = strFromU8(decompressSync(toUint8Array(compressed)));
@@ -154,10 +144,7 @@ export const decompressWithDictionary = (
     throw new Error("Decompression failed");
   }
   dictionary.forEach((token, index) => {
-    decompressed = decompressed.replaceAll(
-      convertDictionaryIndexToToken(index),
-      token,
-    );
+    decompressed = decompressed.replaceAll(convertDictionaryIndexToToken(index), token);
   });
   const [version, ...code] = decompressed.split(DELIMITER);
   if (version !== DICTIONARY_VERSION) {

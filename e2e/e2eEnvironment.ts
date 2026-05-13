@@ -6,15 +6,7 @@
  */
 
 import { execSync, spawn, type ChildProcess } from "node:child_process";
-import {
-  readdir,
-  rm,
-  mkdir,
-  access,
-  cp,
-  readFile,
-  writeFile,
-} from "node:fs/promises";
+import { readdir, rm, mkdir, access, cp, readFile, writeFile } from "node:fs/promises";
 import { createConnection } from "node:net";
 import { join, resolve, relative } from "node:path";
 import { styleText } from "node:util";
@@ -93,16 +85,7 @@ const EXCLUDED = new Set([
 ]);
 
 /** File extensions where [case-name] is replaced in content */
-const TEXT_EXTENSIONS = new Set([
-  ".ts",
-  ".tsx",
-  ".mjs",
-  ".js",
-  ".jsx",
-  ".html",
-  ".json",
-  ".css",
-]);
+const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".mjs", ".js", ".jsx", ".html", ".json", ".css"]);
 
 const CASE_NAME_PLACEHOLDER = "[case-name]";
 
@@ -119,9 +102,7 @@ export async function discoverBundlers(): Promise<string[]> {
   for (const entry of bundlerEntries) {
     if (!entry.isDirectory()) continue;
     try {
-      await access(
-        join(e2eRoot, "bundlers", entry.name, "playwright.config.ts"),
-      );
+      await access(join(e2eRoot, "bundlers", entry.name, "playwright.config.ts"));
       discovered.push(entry.name);
     } catch {
       // No playwright config — not a bundler
@@ -135,9 +116,7 @@ export async function discoverCases(): Promise<string[]> {
   const caseEntries = await readdir(join(e2eRoot, "cases"), {
     withFileTypes: true,
   });
-  return caseEntries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
+  return caseEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 }
 
 /** Parse CLI args for [bundler] [case] filtering. */
@@ -162,10 +141,7 @@ export function parseCLIArgs(
  *    are duplicated per case with the placeholder replaced in both path and
  *    content; other files are copied once as shared files.
  */
-export async function assembleBundler(
-  bundler: string,
-  caseNames: string[],
-): Promise<void> {
+export async function assembleBundler(bundler: string, caseNames: string[]): Promise<void> {
   const tmpDir = resolve(e2eRoot, "bundlers", bundler, ".tmp");
   await rm(tmpDir, { recursive: true, force: true });
   await mkdir(tmpDir, { recursive: true });
@@ -228,10 +204,7 @@ async function walkAndExpand(
     if (entry.isDirectory() && relPath.includes(CASE_NAME_PLACEHOLDER)) {
       // Template directory — recurse; children inherit [case-name] in their path
       await walkAndExpand(rootDir, srcPath, tmpDir, caseNames);
-    } else if (
-      !entry.isDirectory() &&
-      relPath.includes(CASE_NAME_PLACEHOLDER)
-    ) {
+    } else if (!entry.isDirectory() && relPath.includes(CASE_NAME_PLACEHOLDER)) {
       // Template file — create one copy per case
       for (const caseName of caseNames) {
         const expandedRel = relPath.replaceAll(CASE_NAME_PLACEHOLDER, caseName);
@@ -263,9 +236,7 @@ async function walkAndExpand(
 function parseNamedExports(source: string): string[] {
   const names = new Set<string>();
   // export const/let/var/function/class <name>
-  for (const m of source.matchAll(
-    /\bexport\s+(?:const|let|var|function|class)\s+(\w+)/g,
-  )) {
+  for (const m of source.matchAll(/\bexport\s+(?:const|let|var|function|class)\s+(\w+)/g)) {
     names.add(m[1]);
   }
   // export { foo, bar as baz }  (from '...' or local)
@@ -291,12 +262,8 @@ function parseNamedExports(source: string): string[] {
  * actual named exports from the case's index.tsx file. This avoids Next.js
  * errors about `export *` in page files while preserving the same exports.
  */
-async function expandStarExports(
-  content: string,
-  caseName: string,
-): Promise<string> {
-  const starRe =
-    /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
+async function expandStarExports(content: string, caseName: string): Promise<string> {
+  const starRe = /^export \* from\s+["']([^"']*\[case-name\][^"']*)["'];?\s*$/gm;
   let result = content;
   for (const match of content.matchAll(starRe)) {
     const specifier = match[1].replaceAll(CASE_NAME_PLACEHOLDER, caseName);
@@ -473,9 +440,7 @@ export function runScript(
       if (code === 0) {
         res();
       } else {
-        reject(
-          new Error(`${script} failed for ${bundler} (exit code ${code})`),
-        );
+        reject(new Error(`${script} failed for ${bundler} (exit code ${code})`));
       }
     });
   });
@@ -610,20 +575,10 @@ export async function runBundlerCases(
   const packageName = await readPackageName(bundler);
 
   if (options.buildScript) {
-    await runScript(
-      bundler,
-      packageName,
-      options.buildScript,
-      discoveredBundlers,
-    );
+    await runScript(bundler, packageName, options.buildScript, discoveredBundlers);
   }
 
-  const server = startServer(
-    bundler,
-    packageName,
-    options.script,
-    discoveredBundlers,
-  );
+  const server = startServer(bundler, packageName, options.script, discoveredBundlers);
 
   try {
     await waitForPort(port);
@@ -635,11 +590,7 @@ export async function runBundlerCases(
     // Batch all non-HMR cases in one Playwright process (parallel workers)
     if (nonHmrCases.length > 0) {
       const start = Date.now();
-      const passed = await runPlaywrightBatch(
-        bundler,
-        nonHmrCases,
-        discoveredBundlers,
-      );
+      const passed = await runPlaywrightBatch(bundler, nonHmrCases, discoveredBundlers);
       const durationMs = Date.now() - start;
       for (const caseName of nonHmrCases) {
         results.push({ bundler, caseName, passed, durationMs });
@@ -698,12 +649,7 @@ function table(title: string, headers: string[], rows: string[][]): string {
 
   const row = (cells: string[]) =>
     "│" +
-    cells
-      .map(
-        (cell, colIndex) =>
-          " " + padEndVisible(cell, colWidths[colIndex]) + " ",
-      )
-      .join("│") +
+    cells.map((cell, colIndex) => " " + padEndVisible(cell, colWidths[colIndex]) + " ").join("│") +
     "│";
 
   const lines: string[] = [
@@ -726,9 +672,7 @@ export function printSummary(results: Result[]): void {
   // Per-case tables
   const caseNames = [...new Set(results.map((result) => result.caseName))];
   for (const caseName of caseNames) {
-    const caseResults = results.filter(
-      (result) => result.caseName === caseName,
-    );
+    const caseResults = results.filter((result) => result.caseName === caseName);
     const rows = caseResults.map((result) => [
       result.bundler,
       result.passed ? styleText("green", "✔") : styleText("red", "✘"),
@@ -741,12 +685,9 @@ export function printSummary(results: Result[]): void {
   // Aggregate: average duration per bundler
   const bundlerNames = [...new Set(results.map((result) => result.bundler))];
   const avgRows = bundlerNames.map((bundlerName) => {
-    const bundlerResults = results.filter(
-      (result) => result.bundler === bundlerName,
-    );
+    const bundlerResults = results.filter((result) => result.bundler === bundlerName);
     const avg =
-      bundlerResults.reduce((sum, result) => sum + result.durationMs, 0) /
-      bundlerResults.length;
+      bundlerResults.reduce((sum, result) => sum + result.durationMs, 0) / bundlerResults.length;
     return [bundlerName, formatDuration(avg)];
   });
   console.log(table("Average", ["Bundler", "Duration"], avgRows));
@@ -754,19 +695,10 @@ export function printSummary(results: Result[]): void {
 
   // Aggregate: total duration + pass rate per bundler
   const totalRows = bundlerNames.map((bundlerName) => {
-    const bundlerResults = results.filter(
-      (result) => result.bundler === bundlerName,
-    );
-    const total = bundlerResults.reduce(
-      (sum, result) => sum + result.durationMs,
-      0,
-    );
+    const bundlerResults = results.filter((result) => result.bundler === bundlerName);
+    const total = bundlerResults.reduce((sum, result) => sum + result.durationMs, 0);
     const passed = bundlerResults.filter((result) => result.passed).length;
-    return [
-      bundlerName,
-      formatDuration(total),
-      `${passed}/${bundlerResults.length}`,
-    ];
+    return [bundlerName, formatDuration(total), `${passed}/${bundlerResults.length}`];
   });
   console.log(table("Total", ["Bundler", "Duration", "Passed"], totalRows));
 }

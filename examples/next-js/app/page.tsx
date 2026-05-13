@@ -229,11 +229,7 @@ export default function Home() {
             and this is large
           </span>
         </p>
-        <Wrap
-          className={`${styles.small} ${styles.blue}`}
-          $primary={true}
-          $secondary={true}
-        >
+        <Wrap className={`${styles.small} ${styles.blue}`} $primary={true} $secondary={true}>
           Atoms in styled components work if this is small, green and italic
         </Wrap>
         <Inputs />

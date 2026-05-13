@@ -22,7 +22,7 @@
  */
 export const keyframes = <T extends (string | number | bigint)[] = never>(
   styles: TemplateStringsArray,
-  ...dynamic: T
+  ..._dynamic: T
 ): string => {
   // during compilation all args of keyframe are compiled
   // to a string which references the animation name

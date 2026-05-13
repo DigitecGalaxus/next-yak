@@ -103,8 +103,7 @@ describe("cssLiteral css function", () => {
 
       const styleObj = {
         style: {
-          "--width": (props) =>
-            props.$responsiveWidth ? "100%" : `${props.$width}px`,
+          "--width": (props) => (props.$responsiveWidth ? "100%" : `${props.$width}px`),
           "--static-var": "static-value",
         },
       };
@@ -131,26 +130,16 @@ describe("cssLiteral css function", () => {
         style: {
           "--page_StyledImageWithRatioInternal__width_zWYXKE": (props) =>
             props.$responsiveWidth ? "100%" : `${props.$width}px`,
-          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) =>
-            props.$aspectRatio,
+          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) => props.$aspectRatio,
         },
       };
 
-      const processor = css(
-        "page_StyledImageWithRatioInternal_zWYXKE",
-        styleObj,
-      );
+      const processor = css("page_StyledImageWithRatioInternal_zWYXKE", styleObj);
       processor(props, classNames, style);
 
-      expect(classNames.has("page_StyledImageWithRatioInternal_zWYXKE")).toBe(
-        true,
-      );
-      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe(
-        "100%",
-      );
-      expect(
-        style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"],
-      ).toBe("16/9");
+      expect(classNames.has("page_StyledImageWithRatioInternal_zWYXKE")).toBe(true);
+      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe("100%");
+      expect(style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"]).toBe("16/9");
     });
 
     it("should handle multiple style objects", () => {
@@ -206,8 +195,7 @@ describe("cssLiteral css function", () => {
 
       const styleObj = {
         style: {
-          "--width": (props) =>
-            props.$responsiveWidth ? "100%" : `${props.$width}px`,
+          "--width": (props) => (props.$responsiveWidth ? "100%" : `${props.$width}px`),
           "--static-height": "200px",
         },
       };
@@ -338,15 +326,15 @@ describe("cssLiteral css function", () => {
 
       // Simulate the exact compiled output from the bug report
       const dynamicWidthFn = (props, classNames, style) => {
-        style["--page_StyledImageWithRatioInternal__width_zWYXKE"] =
-          props.$responsiveWidth ? "100%" : `${props.$width}px`;
+        style["--page_StyledImageWithRatioInternal__width_zWYXKE"] = props.$responsiveWidth
+          ? "100%"
+          : `${props.$width}px`;
         classNames.add("page_StyledImageWithRatioInternal___zWYXKE");
       };
 
       const aspectRatioStyle = {
         style: {
-          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) =>
-            props.$aspectRatio,
+          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) => props.$aspectRatio,
         },
       };
 
@@ -358,18 +346,10 @@ describe("cssLiteral css function", () => {
 
       processor(props, classNames, style);
 
-      expect(classNames.has("page_StyledImageWithRatioInternal_zWYXKE")).toBe(
-        true,
-      );
-      expect(classNames.has("page_StyledImageWithRatioInternal___zWYXKE")).toBe(
-        true,
-      );
-      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe(
-        "250px",
-      );
-      expect(
-        style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"],
-      ).toBe("16/9");
+      expect(classNames.has("page_StyledImageWithRatioInternal_zWYXKE")).toBe(true);
+      expect(classNames.has("page_StyledImageWithRatioInternal___zWYXKE")).toBe(true);
+      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe("250px");
+      expect(style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"]).toBe("16/9");
     });
 
     it("should handle responsive width scenario", () => {
@@ -383,15 +363,15 @@ describe("cssLiteral css function", () => {
       };
 
       const dynamicWidthFn = (props, classNames, style) => {
-        style["--page_StyledImageWithRatioInternal__width_zWYXKE"] =
-          props.$responsiveWidth ? "100%" : `${props.$width}px`;
+        style["--page_StyledImageWithRatioInternal__width_zWYXKE"] = props.$responsiveWidth
+          ? "100%"
+          : `${props.$width}px`;
         classNames.add("page_StyledImageWithRatioInternal___zWYXKE");
       };
 
       const aspectRatioStyle = {
         style: {
-          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) =>
-            props.$aspectRatio,
+          "--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE": (props) => props.$aspectRatio,
         },
       };
 
@@ -403,12 +383,8 @@ describe("cssLiteral css function", () => {
 
       processor(props, classNames, style);
 
-      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe(
-        "100%",
-      );
-      expect(
-        style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"],
-      ).toBe("4/3");
+      expect(style["--page_StyledImageWithRatioInternal__width_zWYXKE"]).toBe("100%");
+      expect(style["--page_StyledImageWithRatioInternal__aspect-ratio_zWYXKE"]).toBe("4/3");
     });
   });
 

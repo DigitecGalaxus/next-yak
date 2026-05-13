@@ -13,10 +13,10 @@
     "react-dom": "catalog:dev"
   },
   "devDependencies": {
-    "vite": "catalog:dev",
-    "@vitejs/plugin-react-swc": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "typescript": "catalog:dev"
+    "@vitejs/plugin-react-swc": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev"
   }
 }
