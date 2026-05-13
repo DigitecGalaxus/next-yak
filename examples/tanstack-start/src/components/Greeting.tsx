@@ -5,8 +5,8 @@ export const Greeting = () => {
     <Wrapper>
       <Headline>Hello from a Server Component</Headline>
       <Subtitle>
-        This component is rendered on the server. It uses next-yak styled
-        components with no client-side JavaScript.
+        This component is rendered on the server. It uses next-yak styled components with no
+        client-side JavaScript.
       </Subtitle>
     </Wrapper>
   );

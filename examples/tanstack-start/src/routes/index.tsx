@@ -10,8 +10,8 @@ function Home() {
     <Main>
       <Title>next-yak + TanStack Start</Title>
       <Description>
-        A simple page styled with next-yak. This is a client-rendered route with
-        yak styled components.
+        A simple page styled with next-yak. This is a client-rendered route with yak styled
+        components.
       </Description>
       <Counter />
     </Main>
