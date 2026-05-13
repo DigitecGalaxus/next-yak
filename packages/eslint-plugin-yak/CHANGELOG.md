@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.1.2
+
+### Patch Changes
+
+- 2d9b301: Updated all dependencies
+
 ## 1.1.1
 
 ### Patch Changes

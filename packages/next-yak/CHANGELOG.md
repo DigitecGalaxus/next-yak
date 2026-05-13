@@ -1,5 +1,23 @@
 # next-yak
 
+## 9.4.2
+
+### Patch Changes
+
+- 14cbb13: Fix type issues for cjs consumers
+- 2d9b301: Updated all dependencies
+- 02de881: fix css resolution for vite rsc
+- c54871a: Improve error messages for unsupported cross-file exports
+- 75beb6b: Emit an error when a dynamic interpolation is used inside an at-rule query.
+- 6582ebd: Fixed types in bun workspaces
+- 842c24c: Fix HMR full page reloads for styled-only files by injecting `$RefreshReg$` for exported styled components
+- Updated dependencies [df860c9]
+- Updated dependencies [07d80d0]
+- Updated dependencies [f18484e]
+- Updated dependencies [75beb6b]
+- Updated dependencies [842c24c]
+  - yak-swc@9.4.2
+
 ## 9.4.1
 
 ### Patch Changes
