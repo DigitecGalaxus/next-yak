@@ -64,8 +64,11 @@ jobs:
 
       - name: Install npm with trusted-publishing support
         run: |
-          corepack enable
+          corepack enable npm
           corepack prepare npm@11.11.0 --activate
+
+      - name: Verify npm version
+        run: npm --version
 
       # changesets/action runs `git push` directly, so it needs an authenticated remote.
       # Done explicitly here (rather than via checkout's persist-credentials) so the
