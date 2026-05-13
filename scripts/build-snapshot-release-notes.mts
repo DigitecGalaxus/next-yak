@@ -92,7 +92,10 @@ async function main() {
         groups = { major: [], minor: [], patch: [] };
         byPkg.set(release.name, groups);
       }
-      groups[release.type as ReleaseType].push({ changeset: cs, type: release.type as ReleaseType });
+      groups[release.type as ReleaseType].push({
+        changeset: cs,
+        type: release.type as ReleaseType,
+      });
     }
   }
 
