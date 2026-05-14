@@ -144,20 +144,17 @@ jobs:
           corepack enable npm
           corepack prepare npm@11.11.0 --activate
 
-      - name: Check for pending changesets
-        id: changesets
-        shell: bash
-        run: |
-          shopt -s nullglob
-          count=0
-          for f in .changeset/*.md; do
-            [ "$(basename "$f")" = "README.md" ] && continue
-            count=$((count + 1))
-          done
-          echo "has_pending=$([ $count -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      # Decide whether to publish a canary. Skips when:
+      #   - no changesets,
+      #   - only empty changesets (no package bumps),
+      #   - all pending bumps are already shipped in a previous canary tag
+      #     (the introducing commit is reachable from `<pkg>@<version>`).
+      - name: Check whether a new canary is needed
+        id: canary
+        run: node scripts/build-snapshot-release-notes.mts --check
 
       - name: Configure git identity
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -166,13 +163,13 @@ jobs:
       # so the release-notes step below would find nothing. Stash a copy first and
       # restore it after the version bump.
       - name: Stash pending changesets
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         run: |
           mkdir -p /tmp/changeset-stash
           cp .changeset/*.md /tmp/changeset-stash/
 
       - name: Snapshot version bump (in-place, not committed)
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         run: |
           pnpm changeset version --snapshot canary
           cp /tmp/changeset-stash/*.md .changeset/
@@ -186,18 +183,18 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build per-package release notes
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         env:
           OUTPUT_DIR: /tmp/release-notes
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node scripts/build-snapshot-release-notes.mts
 
       - name: Publish to npm canary tag
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         run: pnpm release --tag canary --no-git-tag
 
       - name: Create git tag + GitHub prerelease per published package
-        if: steps.changesets.outputs.has_pending == 'true'
+        if: steps.canary.outputs.has_new_content == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

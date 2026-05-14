@@ -6,11 +6,19 @@
  * changeset as "already shipped" when its introducing commit is reachable
  * from the package's most recent semver tag.
  *
+ * Two modes:
+ *   default — write per-package note files into OUTPUT_DIR.
+ *   --check — compute the dedup result and write `has_new_content=<bool>`
+ *             to $GITHUB_OUTPUT. No files written, OUTPUT_DIR not required.
+ *             Used as the prerelease workflow's gate so empty / already-canaried
+ *             changesets don't trigger a redundant publish.
+ *
  * Caller is responsible for stashing/restoring `.changeset/*.md` around
  * `changeset version --snapshot`, since that step deletes them.
  *
  * Env:
- *   OUTPUT_DIR        — directory to write `<safe-pkg-name>.md` files into
+ *   OUTPUT_DIR        — directory to write `<safe-pkg-name>.md` files into (default mode)
+ *   GITHUB_OUTPUT     — written with `has_new_content` (--check mode)
  *   GITHUB_REPOSITORY — for the `Full Changelog` compare link
  */
 import * as fs from "node:fs";
@@ -25,6 +33,7 @@ const { getReleaseLine } = changelog;
 type ReleaseType = "major" | "minor" | "patch";
 type Groups = Record<ReleaseType, { changeset: any; type: ReleaseType }[]>;
 
+const checkMode = process.argv.includes("--check");
 const cwd = process.cwd();
 const repo = process.env.GITHUB_REPOSITORY;
 function requireEnv(name: string): string {
@@ -35,8 +44,6 @@ function requireEnv(name: string): string {
   }
   return v;
 }
-const outDir = requireEnv("OUTPUT_DIR");
-fs.mkdirSync(outDir, { recursive: true });
 
 async function main() {
   const packagesDir = path.join(cwd, "packages");
@@ -98,6 +105,17 @@ async function main() {
       });
     }
   }
+
+  if (checkMode) {
+    const hasNewContent = byPkg.size > 0;
+    const ghOutput = process.env.GITHUB_OUTPUT;
+    if (ghOutput) fs.appendFileSync(ghOutput, `has_new_content=${hasNewContent}\n`);
+    console.log(`has_new_content=${hasNewContent}`);
+    return;
+  }
+
+  const outDir = requireEnv("OUTPUT_DIR");
+  fs.mkdirSync(outDir, { recursive: true });
 
   const labels: Record<ReleaseType, string> = {
     major: "Major Changes",
