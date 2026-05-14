@@ -90,3 +90,129 @@ jobs:
           title: Release new version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  prerelease:
+    name: Prerelease (canary)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push per-package git tags + create GitHub prereleases
+      id-token: write # npm publish with provenance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        name: Install pnpm
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
+
+      - name: Enable caching
+        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+        with:
+          workspaces: packages/yak-swc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3.4.3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install npm with trusted-publishing support
+        run: |
+          corepack enable npm
+          corepack prepare npm@11.11.0 --activate
+
+      # Decide whether to publish a canary. Skips when:
+      #   - no changesets,
+      #   - only empty changesets (no package bumps),
+      #   - all pending bumps are already shipped in a previous canary tag
+      #     (the introducing commit is reachable from `<pkg>@<version>`).
+      - name: Check whether a new canary is needed
+        id: canary
+        run: node scripts/build-snapshot-release-notes.mts --check
+
+      - name: Configure git identity
+        if: steps.canary.outputs.has_new_content == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # `changeset version --snapshot` deletes each consumed `.md` from `.changeset/`,
+      # so the release-notes step below would find nothing. Stash a copy first and
+      # restore it after the version bump.
+      - name: Stash pending changesets
+        if: steps.canary.outputs.has_new_content == 'true'
+        run: |
+          mkdir -p /tmp/changeset-stash
+          cp .changeset/*.md /tmp/changeset-stash/
+
+      - name: Snapshot version bump (in-place, not committed)
+        if: steps.canary.outputs.has_new_content == 'true'
+        run: |
+          pnpm changeset version --snapshot canary
+          cp /tmp/changeset-stash/*.md .changeset/
+          echo "## Snapshot versions" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          for pkg_json in packages/*/package.json; do
+            is_private=$(jq -r '.private // false' "$pkg_json")
+            [ "$is_private" = "true" ] && continue
+            echo "$(jq -r '.name' "$pkg_json")@$(jq -r '.version' "$pkg_json")" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build per-package release notes
+        if: steps.canary.outputs.has_new_content == 'true'
+        env:
+          OUTPUT_DIR: /tmp/release-notes
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/build-snapshot-release-notes.mts
+
+      - name: Publish to npm canary tag
+        if: steps.canary.outputs.has_new_content == 'true'
+        run: pnpm release --tag canary --no-git-tag
+
+      - name: Create git tag + GitHub prerelease per published package
+        if: steps.canary.outputs.has_new_content == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git config --local "http.https://github.com/.extraheader" "AUTHORIZATION: basic $auth"
+          for pkg_json in packages/*/package.json; do
+            is_private=$(jq -r '.private // false' "$pkg_json")
+            [ "$is_private" = "true" ] && continue
+            name=$(jq -r '.name' "$pkg_json")
+            version=$(jq -r '.version' "$pkg_json")
+            ref="${name}@${version}"
+            safe=$(printf '%s' "$name" | tr '@/' '_')
+            notes_file="/tmp/release-notes/${safe}.md"
+            git tag -a "$ref" -m "$ref"
+            git push origin "refs/tags/$ref"
+            if [ -s "$notes_file" ]; then
+              gh release create "$ref" --prerelease --title "$ref" --notes-file "$notes_file"
+            else
+              gh release create "$ref" --prerelease --title "$ref" --notes "Internal changes only."
+            fi
+          done

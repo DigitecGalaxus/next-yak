@@ -31,6 +31,9 @@
   },
   "devDependencies": {
     "@changesets/cli": "catalog:dev",
+    "@changesets/git": "catalog:dev",
+    "@changesets/read": "catalog:dev",
+    "@types/node": "catalog:dev",
     "eslint-plugin-yak": "workspace:*",
     "oxfmt": "catalog:dev",
     "oxlint": "catalog:dev"

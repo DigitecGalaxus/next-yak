@@ -14,6 +14,8 @@ catalogs:
   dev:
     "@babel/preset-typescript": 7.28.5
     "@changesets/cli": 2.31.0
+    "@changesets/git": 3.0.4
+    "@changesets/read": 0.6.7
     "@eslint/eslintrc": 3.3.5
     "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 16.2.4
