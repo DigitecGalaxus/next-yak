@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 import { existsSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { allowYakGlobalCss } from "./allow-global-css.ts";
 
 const currentDir =
   typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
@@ -169,6 +170,11 @@ function addYakWebpack(
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
+    }
+
+    // allow global css if used with yak
+    if (yakOptions.experiments?.transpilationMode === "Css") {
+      allowYakGlobalCss(webpackConfig);
     }
 
     webpackConfig.module.rules.push({
