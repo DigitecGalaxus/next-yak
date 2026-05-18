@@ -2,6 +2,7 @@
 import type { NextConfig } from "next";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { allowYakGlobalCss } from "./allow-global-css.ts";
 import {
   buildYakPluginOptions,
   resolveYakContext,
@@ -132,6 +133,11 @@ function addYakWebpack(
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
+    }
+
+    // allow global css if used with yak
+    if (yakOptions.experiments?.transpilationMode === "Css") {
+      allowYakGlobalCss(webpackConfig);
     }
 
     webpackConfig.module.rules.push({
