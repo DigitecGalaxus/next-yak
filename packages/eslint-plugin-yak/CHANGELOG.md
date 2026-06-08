@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.1.3
+
+### Patch Changes
+
+- 419a3fe: Build eslint-plugin-yak before publishing packages so its dist entrypoint is included in the npm artifact.
+
 ## 1.1.2
 
 ### Patch Changes
