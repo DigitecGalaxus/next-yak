@@ -27,7 +27,7 @@
     "test:e2e": "pnpm --filter=next-yak-e2e test",
     "test:e2e:build": "pnpm --filter=next-yak-e2e test:build",
     "watch": "pnpm run --filter=next-yak watch",
-    "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && npm_config_ignore_scripts=true changeset publish"
+    "release": "pnpm run --filter=yak-swc build && pnpm run --filter=next-yak build && pnpm run --filter=storybook-addon-yak build && pnpm run --filter=eslint-plugin-yak build && npm_config_ignore_scripts=true changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:dev",
