@@ -640,3 +640,28 @@ Entry template:
 - For the **dynamic cell**, P1–P4 barely help: the tax is the per-prop pipeline (megamorphic user arrows ~2.6× dearer than inlined logic, `String()` conversions, dict-mode style stores). Needs compile-side fix (per-component style builders / pass values not thunks / enum→class hoisting per EXP-03).
 - Verdict: H2 ✅ CONFIRMED (allocation-bearing constructs = 70–75% of corrected yak tax in tree family); H9 ⚪ NOT EXERCISED by these fixtures (no unitPostFix in compiled output); H11 🟡 PARTIAL (unconditional spread+assign real but ≤0.8% here since styles are never empty in these fixtures — matters for Pure/Nested instead).
 - Next action: P1 confirmed top priority for tree family (13.5–14.5% of total CPU); P3/P5 for chain re-entry; dynamic cell → backlog #8/#11 compile-side work.
+
+### EXP-20260609-05 — P1+P2+theme-gate+env-guard runtime hacks (refs: H2, H11, H12-partial, backlog #2/#15; commit 4f7ccf3)
+- Env: as EXP-01; full benchmark.js suite (minified bundle, ≥50 samples), machine quiet
+- Setup: string-backed `ClassNames` collector replacing `new Set(split)`→`Array.from().join` (Set-like add/has/delete kept for atoms/css-prop contracts — 3 tests enforce them); inner chain levels skip className/style processing entirely; style cloned only for dynamic processors and omitted when absent (H11); `useTheme()` gate fixed from function-ARITY (always truthy — every component read theme context!) to a `$dynamic` processor flag; `process.env.NODE_ENV` access moved behind the typeof guards in `recursivePropExecution`. 182 runtime tests green.
+- Numbers (sc / yak / vanilla ops/s, Δ = yak-vs-sc change from Gate 0):
+
+| Benchmark | sc | yak | vanilla | yak vs sc | was (Gate 0) | % of optimum |
+|---|---:|---:|---:|---|---|---|
+| Kanji letter | 318 | 605 | — | **+90%** | +20% | — |
+| Pure components | 779 | 1,967 | 2,348 | **+153%** | +87% | **84%** (was 63%) |
+| Attrs | 431 | 899 | — | **+109%** | +93% | — |
+| CSS prop | 790 | 3,372 | — | **+327%** | +273% | — |
+| Dynamic props | 267 | 313 | 508 | **+17%** | −25% ⚠→✓ | 62% (was 44%) |
+| Dynamic (idiomatic) | 350 | 673 | — | +92% | +98% | — |
+| Nested components | 2,163 | 2,170 | 4,579 | **+0.3%** | −127% ⚠→tie | 47% (was 20%) |
+| Tree | 179 | 205 | 470 | **+14%** | −29% ⚠→✓ | 44% (was 30%) |
+| Tree (idiomatic) | 186 | 252 | — | +36% | +13% | — |
+| Tree deep | 309 | 328 | 752 | **+6%** | −31% ⚠→✓ | 44% (was 32%) |
+| Tree wide | 320 | 385 | 918 | **+20%** | −37% ⚠→✓ | 42% (was 28%) |
+| Sierpinski | 1,090 | 1,757 | — | **+61%** | +12% | — |
+| Cross request cache | 494 | 500 | 1,387 | **+1.3%** | −41% ⚠→tie | 36% (was 26%) |
+| SSR extraction | 205 | 1,628 | — | **+694%** | +568% | — |
+
+- Verdict: CONFIRMED — **next-yak now wins or ties all 14 cells**; H2's mechanism (Set/spread marshaling) was the dominant cost exactly as profiled. Nested/cross-request are statistical ties → P5 targets them.
+- Next action: P5 (chain flattening, commit 10cce38) measured next; remaining gap to vanilla (36–84%) = wrapper spreads + filter loop → P3/P4 and compiler work (backlog #1).
