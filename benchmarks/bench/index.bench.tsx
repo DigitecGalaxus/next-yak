@@ -50,9 +50,20 @@ import { IdiomaticTreeStyled } from "./generated/IdiomaticTree.styled-components
 import { IdiomaticDynamicPropsComponentsYak } from "./generated/IdiomaticDynamicProps.next-yak.compiled";
 import { IdiomaticDynamicPropsComponentsStyled } from "./generated/IdiomaticDynamicProps.styled-components";
 
-// Each row pairs the styled-components and next-yak variants of one workload.
+// Vanilla "speed of light" baselines (hand-written plain JSX, doc §3):
+// the gap between yak and vanilla is yak's runtime overhead.
+import { PureComponentsVanilla } from "./generated/PureComponents.vanilla";
+import { NestedComponentsVanilla } from "./generated/NestedComponents.vanilla";
+import { DynamicPropsComponentsVanilla } from "./generated/DynamicPropsComponents.vanilla";
+import { TreeVanilla } from "./generated/Tree.vanilla";
+import { TreeDeepVanilla } from "./generated/TreeDeep.vanilla";
+import { TreeWideVanilla } from "./generated/TreeWide.vanilla";
+import { CrossRequestCacheVanilla } from "./generated/CrossRequestCache.vanilla";
+
+// Each row pairs the styled-components and next-yak variants of one workload,
+// plus (where generated) the hand-written vanilla baseline.
 // Order here is the order rendered in the output table.
-const ROWS: Array<{ label: string; styled: string; yak: string }> = [
+const ROWS: Array<{ label: string; styled: string; yak: string; vanilla?: string }> = [
   {
     label: "Kanji letter",
     styled: "render KanjiLetterComponentStyled",
@@ -62,6 +73,7 @@ const ROWS: Array<{ label: string; styled: string; yak: string }> = [
     label: "Pure component",
     styled: "render PureComponentsStyled",
     yak: "render PureComponentsYak",
+    vanilla: "render PureComponentsVanilla",
   },
   {
     label: "Attrs",
@@ -77,6 +89,7 @@ const ROWS: Array<{ label: string; styled: string; yak: string }> = [
     label: "Dynamic props",
     styled: "render DynamicPropsComponentsStyled",
     yak: "render DynamicPropsComponentsYak",
+    vanilla: "render DynamicPropsComponentsVanilla",
   },
   {
     label: "Dynamic props (idiomatic)",
@@ -87,8 +100,14 @@ const ROWS: Array<{ label: string; styled: string; yak: string }> = [
     label: "Nested components",
     styled: "render NestedComponentsStyled",
     yak: "render NestedComponentsYak",
+    vanilla: "render NestedComponentsVanilla",
   },
-  { label: "Tree", styled: "render TreeStyled", yak: "render TreeYak" },
+  {
+    label: "Tree",
+    styled: "render TreeStyled",
+    yak: "render TreeYak",
+    vanilla: "render TreeVanilla",
+  },
   {
     label: "Tree (idiomatic)",
     styled: "render IdiomaticTreeStyled",
@@ -98,11 +117,13 @@ const ROWS: Array<{ label: string; styled: string; yak: string }> = [
     label: "Tree deep",
     styled: "render TreeDeepStyled",
     yak: "render TreeDeepYak",
+    vanilla: "render TreeDeepVanilla",
   },
   {
     label: "Tree wide",
     styled: "render TreeWideStyled",
     yak: "render TreeWideYak",
+    vanilla: "render TreeWideVanilla",
   },
   {
     label: "Sierpinski",
@@ -113,6 +134,7 @@ const ROWS: Array<{ label: string; styled: string; yak: string }> = [
     label: "Cross request cache",
     styled: "render CrossRequestCacheStyled",
     yak: "render CrossRequestCacheYak",
+    vanilla: "render CrossRequestCacheVanilla",
   },
   {
     label: "SSR extraction",
@@ -146,17 +168,21 @@ function renderTable(baseline: Map<string, number> | undefined): string {
     " <td>Benchmark",
     " <td>styled-components (ops/sec)",
     " <td>next-yak (ops/sec)",
+    " <td>vanilla (ops/sec)",
     " <td>next yak is",
+    " <td>yak vs vanilla",
   ];
   if (baseline) lines.push(" <td>Δ next-yak vs main");
 
   for (const row of ROWS) {
     const styled = results.get(row.styled);
     const yak = results.get(row.yak);
+    const vanilla = row.vanilla ? results.get(row.vanilla) : undefined;
     lines.push("<tr>");
     lines.push(` <td>${row.label}`);
     lines.push(` <td> ${styled === undefined ? "n/a" : Math.round(styled)}`);
     lines.push(` <td> ${yak === undefined ? "n/a" : Math.round(yak)}`);
+    lines.push(` <td> ${vanilla === undefined ? "—" : Math.round(vanilla)}`);
 
     let comparison = "n/a";
     if (styled !== undefined && yak !== undefined && styled > 0 && yak > 0) {
@@ -169,6 +195,13 @@ function renderTable(baseline: Map<string, number> | undefined): string {
       }
     }
     lines.push(` <td> ${comparison}`);
+
+    // yak's distance from the hand-written optimum: yak ops as % of vanilla ops.
+    let gap = "—";
+    if (yak !== undefined && vanilla !== undefined && vanilla > 0 && yak > 0) {
+      gap = `${parseFloat(((yak / vanilla) * 100).toFixed(1))}% of optimum`;
+    }
+    lines.push(` <td> ${gap}`);
 
     if (baseline) {
       let delta = "—";
@@ -317,6 +350,33 @@ function renderTable(baseline: Map<string, number> | undefined): string {
     })
     .add("render SsrExtractionYak", () => {
       renderToString(<PureComponentsYak />).length;
+    })
+
+    // Vanilla "speed of light" baselines (hand-written plain JSX, zero
+    // library runtime). The yak-vs-vanilla gap is the runtime overhead a
+    // perfect compiler could remove.
+    .add("render PureComponentsVanilla", () => {
+      renderToString(<PureComponentsVanilla />).length;
+    })
+    .add("render DynamicPropsComponentsVanilla", () => {
+      renderToString(<DynamicPropsComponentsVanilla />).length;
+    })
+    .add("render NestedComponentsVanilla", () => {
+      renderToString(<NestedComponentsVanilla />).length;
+    })
+    .add("render TreeVanilla", () => {
+      renderToString(<TreeVanilla />).length;
+    })
+    .add("render TreeDeepVanilla", () => {
+      renderToString(<TreeDeepVanilla />).length;
+    })
+    .add("render TreeWideVanilla", () => {
+      renderToString(<TreeWideVanilla />).length;
+    })
+    .add("render CrossRequestCacheVanilla", () => {
+      for (let i = 0; i < CROSS_REQUEST_CACHE_COUNT; i++) {
+        renderToString(<CrossRequestCacheVanilla count={i} />).length;
+      }
     })
 
     .on("cycle", function (event: Benchmark.Event) {

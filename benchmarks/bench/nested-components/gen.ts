@@ -94,3 +94,37 @@ export const NestedComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionC
 
   writeBenchmarkSource("NestedComponents", lib, fileContent);
 }
+
+// Vanilla lane: a perfect compiler collapses the 5-level extension chain into
+// a single component carrying all six class names — no per-level re-entry,
+// no prop merging, zero runtime.
+const vanillaSource = `
+"use client";
+import React, { type FunctionComponent } from 'react';
+
+${Array.from(
+  { length: componentCount },
+  (_, index) =>
+    `const NestedComponent${index + 1}: FunctionComponent<{ children?: React.ReactNode }> = ({ children }) => (
+  <div className="baseCard lvl1_${index + 1} lvl2_${index + 1} lvl3_${index + 1} lvl4_${index + 1} lvl5_${index + 1}">{children}</div>
+);`,
+).join("\n")}
+
+export const NestedComponentsVanilla: FunctionComponent = () => {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', maxWidth: '1200px', margin: '0 auto' }}>
+      ${Array.from(
+        { length: componentCount },
+        (_, index) =>
+          `<NestedComponent${index + 1}>
+        <h3>Nested ${index + 1}</h3>
+        <p>This component extends through 5 levels of inheritance</p>
+        <small>Level 1 → Level 2 → Level 3 → Level 4 → Level 5</small>
+      </NestedComponent${index + 1}>`,
+      ).join("\n      ")}
+    </div>
+  );
+};
+`;
+
+writeBenchmarkSource("NestedComponents", "vanilla", vanillaSource);

@@ -27,7 +27,11 @@
     "generate:bench:idiomatic-dynamic-props": "tsx ./bench/idiomatic-dynamic-props/gen.ts",
     "bench": "pnpm generate && pnpm bench:build && pnpm bench:run",
     "bench:build": "tsdown ./bench/index.bench.tsx --no-config --sourcemap --minify --env.NODE_ENV=production --format esm --target node20 --out-dir ./bench/dist --deps.neverBundle benchmark --deps.neverBundle styled-components --deps.neverBundle react --deps.neverBundle react-dom",
-    "bench:run": "NODE_ENV=production node --enable-source-maps ./bench/dist/index.bench.mjs"
+    "bench:run": "NODE_ENV=production node --enable-source-maps ./bench/dist/index.bench.mjs",
+    "bench:profile:build": "tsdown ./bench/profile.tsx --no-config --sourcemap --env.NODE_ENV=production --format esm --target node20 --out-dir ./bench/dist-profile --deps.neverBundle styled-components --deps.neverBundle react --deps.neverBundle react-dom",
+    "bench:profile": "NODE_ENV=production node --cpu-prof --cpu-prof-dir=./bench/profiles --enable-source-maps ./bench/dist-profile/profile.mjs",
+    "bench:profile:heap": "NODE_ENV=production node --heap-prof --heap-prof-dir=./bench/profiles --enable-source-maps ./bench/dist-profile/profile.mjs",
+    "bench:profile:analyze": "node ./bench/analyze-cpuprofile.mjs"
   },
   "dependencies": {
     "@swc/core": "catalog:core",

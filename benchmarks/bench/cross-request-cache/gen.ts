@@ -114,3 +114,83 @@ export const CrossRequestCache${
 
   writeBenchmarkSource("CrossRequestCache", lib, fileContent);
 }
+
+// Vanilla lane: collapsed Box with literal classes + CSS-variable style
+// object, zero runtime. The "cache" aspect favors styled-components (its
+// prop-tuple class hash survives across renders); vanilla shows the cost
+// floor of simply recomputing three ternaries per child.
+const vanillaSource = `
+"use client";
+import React, { type FunctionComponent } from 'react';
+
+const getColor = (color: number) => {
+  switch (color) {
+    case 0: return '#14171A';
+    case 1: return '#AAB8C2';
+    case 2: return '#E6ECF0';
+    case 3: return '#FFAD1F';
+    case 4: return '#F45D22';
+    case 5: return '#E0245E';
+    default: return 'transparent';
+  }
+};
+
+interface BoxProps {
+  $color?: number;
+  $layout?: 'column' | 'row';
+  $outer?: boolean;
+  $fixed?: boolean;
+}
+
+const Box: FunctionComponent<BoxProps> = ({ $color, $layout, $outer, $fixed }) => (
+  <div
+    className={$fixed ? "view box boxFixed" : "view box"}
+    style={{
+      '--fd': $layout === 'column' ? 'column' : 'row',
+      '--p': $outer ? '4px' : '0',
+      '--bg': getColor($color ?? -1),
+    } as React.CSSProperties}
+  />
+);
+
+const wrapperStyle: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignContent: 'flex-start',
+  width: '100%',
+  height: '100%',
+};
+
+const CHILD_COUNT = ${childCount};
+
+interface ParentProps {
+  count: number;
+}
+
+const Parent: FunctionComponent<ParentProps> = ({ count }) => {
+  const children = [] as React.ReactElement[];
+  for (let i = 0; i < CHILD_COUNT; i++) {
+    children.push(
+      <Box
+        key={i}
+        $color={i % 6}
+        $layout={i % 2 === 0 ? 'column' : 'row'}
+        $outer={i % 3 === 0}
+        $fixed={i % 5 === 0}
+      />,
+    );
+  }
+  return (
+    <div data-count={count} style={wrapperStyle}>
+      {children}
+    </div>
+  );
+};
+
+export const RENDER_COUNT = ${renderCount};
+export const CrossRequestCacheVanilla: FunctionComponent<{ count: number }> = ({ count }) => (
+  <Parent count={count} />
+);
+`;
+
+writeBenchmarkSource("CrossRequestCache", "vanilla", vanillaSource);

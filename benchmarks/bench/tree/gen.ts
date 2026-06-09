@@ -3,6 +3,7 @@ import {
   importHeader,
   libs,
   styledIdentFor,
+  vanillaTreeSource,
   writeBenchmarkSource,
 } from "../_shared.ts";
 
@@ -114,3 +115,5 @@ export const Tree${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = (
 
   writeBenchmarkSource("Tree", lib, fileContent);
 }
+
+writeBenchmarkSource("Tree", "vanilla", vanillaTreeSource("TreeVanilla", breadth, depth, wrap));

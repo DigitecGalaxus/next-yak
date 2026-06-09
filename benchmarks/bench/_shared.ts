@@ -16,9 +16,22 @@ const require = createRequire(import.meta.url);
 const generatedDir = join(dirname(fileURLToPath(import.meta.url)), "generated");
 mkdirSync(generatedDir, { recursive: true });
 
-export type Lib = "next-yak" | "styled-components";
+export type Lib = "next-yak" | "styled-components" | "vanilla";
 
 export const libs = ["next-yak", "styled-components"] as const;
+
+/**
+ * Lane set including the hand-written "speed of light" baseline: plain JSX
+ * with literal class names and inline-style CSS variables — the output a
+ * perfect compiler would produce, with zero library runtime. Benchmarks
+ * that have a vanilla variant generate it as a separate source block (the
+ * styled template helpers below don't apply to it).
+ */
+export const libs3 = ["next-yak", "styled-components", "vanilla"] as const;
+
+/** Component export suffix per lane (PureComponentsYak / ...Styled / ...Vanilla). */
+export const suffixFor = (lib: Lib) =>
+  lib === "next-yak" ? "Yak" : lib === "styled-components" ? "Styled" : "Vanilla";
 
 /** Identifier used as the `styled` import alias inside generated source. */
 export const styledIdentFor = (lib: Lib) => (lib === "next-yak" ? "styledYak" : "styled");
@@ -69,6 +82,90 @@ export const importHeader = (lib: Lib, withCss = true) => {
   }
   return `import ${withCss ? `{ ${styled}, css }` : `{ ${styled} }`} from 'styled-components';`;
 };
+
+/**
+ * Vanilla "speed of light" Box+View tree source shared by the Tree-family
+ * benchmarks (tree, tree-deep, tree-wide). A perfect compiler collapses
+ * `styled(View)` into one component: literal classes ("view box", plus a
+ * "boxFixed" toggle) and dynamic values as a plain CSS-variable style
+ * object — zero library runtime, same React component count as the
+ * yak/styled lanes.
+ */
+export const vanillaTreeSource = (
+  exportName: string,
+  breadth: number,
+  depth: number,
+  wrap: number,
+) => `
+"use client";
+import React, { type FunctionComponent } from 'react';
+
+const getColor = (color: number) => {
+  switch (color) {
+    case 0: return '#14171A';
+    case 1: return '#AAB8C2';
+    case 2: return '#E6ECF0';
+    case 3: return '#FFAD1F';
+    case 4: return '#F45D22';
+    case 5: return '#E0245E';
+    default: return 'transparent';
+  }
+};
+
+interface BoxProps {
+  $color?: number;
+  $layout?: 'column' | 'row';
+  $outer?: boolean;
+  $fixed?: boolean;
+  children?: React.ReactNode;
+}
+
+const Box: FunctionComponent<BoxProps> = ({ $color, $layout, $outer, $fixed, children }) => (
+  <div
+    className={$fixed ? "view box boxFixed" : "view box"}
+    style={{
+      '--fd': $layout === 'column' ? 'column' : 'row',
+      '--p': $outer ? '4px' : '0',
+      '--bg': getColor($color ?? -1),
+    } as React.CSSProperties}
+  >
+    {children}
+  </div>
+);
+
+interface TreeProps {
+  breadth: number;
+  depth: number;
+  id: number;
+  wrap: number;
+}
+
+const Tree: FunctionComponent<TreeProps> = ({ breadth, depth, id, wrap }) => {
+  let result = (
+    <Box $color={id % 3} $layout={depth % 2 === 0 ? 'column' : 'row'} $outer>
+      {depth === 0 && <Box $color={(id % 3) + 3} $fixed />}
+      {depth !== 0 &&
+        Array.from({ length: breadth }).map((_, i) => (
+          <Tree
+            breadth={breadth}
+            depth={depth - 1}
+            id={i}
+            key={i}
+            wrap={wrap}
+          />
+        ))}
+    </Box>
+  );
+  for (let i = 0; i < wrap; i++) {
+    result = <Box>{result}</Box>;
+  }
+  return result;
+};
+
+export const ${exportName}: FunctionComponent = () => (
+  <Tree breadth={${breadth}} depth={${depth}} id={0} wrap={${wrap}} />
+);
+`;
 
 /**
  * Run a TSX source through the next-yak SWC plugin, mirroring what the

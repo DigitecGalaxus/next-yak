@@ -3,6 +3,7 @@ import {
   importHeader,
   libs,
   styledIdentFor,
+  vanillaTreeSource,
   writeBenchmarkSource,
 } from "../_shared.ts";
 
@@ -105,3 +106,9 @@ export const TreeWide${isYak ? "Yak" : "Styled"}: FunctionComponent = () => (
 
   writeBenchmarkSource("TreeWide", lib, fileContent);
 }
+
+writeBenchmarkSource(
+  "TreeWide",
+  "vanilla",
+  vanillaTreeSource("TreeWideVanilla", breadth, depth, wrap),
+);
