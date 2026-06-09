@@ -19,12 +19,6 @@ import type {
 import { useTheme } from "next-yak/context";
 import type { YakTheme } from "./context/index.tsx";
 
-/**
- * This Symbol is a fake theme which was used instead of the real one from the context
- * to speed up rendering
- */
-const noTheme: YakTheme = {};
-
 //
 // The `styled()` API without `styled.` syntax
 //
@@ -90,24 +84,34 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       parentRuntimeStylesFn,
     );
     const Yak: React.FunctionComponent = (props) => {
-      // skip the theme context lookup when no attrs function and no dynamic
-      // style function can consume it
+      // fast path for fully static components (no attrs, no dynamic styles —
+      // the most common case): contribute the chain's class names and strip
+      // $-props; skips theme lookup, prop spreading and style cloning
+      // entirely (this is NOT against the rule of hooks — the condition is
+      // constant for the lifetime of the component)
+      if (!mergedAttrsFn && !runtimeStyleProcessor.$dynamic) {
+        const filteredProps = removeNonDomProperties(props) as {
+          className?: string;
+        };
+        // props that already went through a yak wrapper (passed through a
+        // custom component boundary) keep their processed className
+        if (!("$__runtimeStylesProcessed" in props)) {
+          const classNames = new ClassNames((props as { className?: string }).className);
+          runtimeStyleProcessor(props, classNames, undefined as unknown as React.CSSProperties);
+          filteredProps.className = classNames.value || undefined;
+        }
+        const Target = targetComponent as React.FunctionComponent;
+        return <Target {...filteredProps} />;
+      }
+
+      // attrs functions and dynamic style functions receive the theme —
+      // fully static components take the fast path above and never read the
+      // theme context
       //
-      // `mergedAttrsFn || runtimeStyleProcessor.$dynamic` is NOT against the rule of
-      // hooks as both are constants defined outside of the component
-      //
-      // for example
-      //
-      // const Button = styled.button`color: red;`
-      //       ^ does not need to have access to theme, so we skip calling useTheme()
-      //
-      // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
-      //       ^ must be have access to theme, so we call useTheme()
-      //
-      // (this previously checked `runtimeStylesFn.length` — the function ARITY,
-      // which is always ≥2 — so useTheme() ran for every component including
-      // fully static ones; see EXP-20260609-02)
-      const theme = mergedAttrsFn || runtimeStyleProcessor.$dynamic ? useTheme() : noTheme;
+      // (this previously gated on `runtimeStylesFn.length` — the function
+      // ARITY, which is always ≥2 — so useTheme() ran for every component
+      // including fully static ones; see EXP-20260609-02)
+      const theme = useTheme();
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
