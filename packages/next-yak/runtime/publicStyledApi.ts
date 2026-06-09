@@ -26,7 +26,7 @@ export interface StyledFn {
  */
 export interface YakComponent<T> extends React.FunctionComponent<T> {
   // This is intentionally typed to hide the internal implementation details.
-  [yakComponentSymbol]: [unknown, unknown, unknown];
+  [yakComponentSymbol]: [unknown, unknown, unknown, unknown];
 }
 
 /**

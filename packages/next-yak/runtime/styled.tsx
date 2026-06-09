@@ -58,13 +58,23 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   // if the component that is wrapped is a yak component, we can extract it to render the underlying component directly
   // and we can also extract the attrs function and the dynamic style function to merge it with the current attrs function (or dynamic style function)
   // so that the sequence of the attrs functions is preserved
-  const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] = isYakComponent
+  const [, parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? (Component[yakComponentSymbol] as [
         YakComponent<unknown>,
         ExtractAttrsFunction<typeof attrs>,
         RuntimeStyleProcessor<unknown>,
+        React.FunctionComponent | string,
       ])
     : [];
+
+  // the ultimate render target of the whole styled(styled(...)) chain:
+  // attrs and style processors are already merged at construction time, so
+  // a chain of N levels renders the target directly in ONE wrapper instead
+  // of re-entering every parent wrapper per element per render
+  // (the re-entry was the structural ×N multiplier in EXP-20260609-02)
+  const targetComponent = (isYakComponent ? parentTarget : Component) as
+    | React.FunctionComponent
+    | string;
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
 
@@ -154,27 +164,23 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       const propsBeforeFiltering =
         themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
 
-      // remove all props that start with a $ sign for string components e.g. "button" or "div"
-      // so that they are not passed to the DOM element
-      const filteredProps = !isYakComponent
-        ? removeNonDomProperties(propsBeforeFiltering)
-        : propsBeforeFiltering;
+      // remove all props that start with a $ sign so they reach neither DOM
+      // elements nor custom components — this also strips the internal
+      // $__attrs/$__runtimeStylesProcessed markers, which must not cross a
+      // custom component boundary (a custom component may render another yak
+      // component that has to process its own attrs/styles)
+      const filteredProps = removeNonDomProperties(propsBeforeFiltering);
 
-      return parentYakComponent ? (
-        // if the styled(Component) syntax is used and the component is a yak component
-        // we can call the yak function directly without running through react createElement
-        parentYakComponent(filteredProps)
-      ) : (
-        // if the final component is a string component e.g. styled("div") or a custom non yak fn e.g. styled(MyComponent)
-        <Component
-          {...(filteredProps as React.ComponentProps<Exclude<typeof Component, string>>)}
-        />
-      );
+      // render the chain's target directly — parent wrappers contribute only
+      // their (already merged) attrs and style processors
+      const Target = targetComponent as React.FunctionComponent;
+      return <Target {...filteredProps} />;
     };
 
     // Assign the yakComponentSymbol directly without forwardRef
     return Object.assign(Yak, {
-      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor] as [
+      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent] as [
+        unknown,
         unknown,
         unknown,
         unknown,
