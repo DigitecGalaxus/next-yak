@@ -1,7 +1,41 @@
 import type { YakTheme } from "./index.ts";
-import { RuntimeStyleProcessor } from "./publicStyledApi.js";
+import { ClassNameCollector, RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 export const yakComponentSymbol = Symbol("yak");
+
+/**
+ * String-backed ClassNameCollector used by the render path.
+ *
+ * Replaces the previous `new Set(className.split(" "))` →
+ * `Array.from(set).join(" ")` round-trip, which dominated render cost.
+ * The hot path (`add`) is a plain string append with a containment check;
+ * `has`/`delete` keep the Set-like contract for advanced runtime functions
+ * (e.g. atoms removing classes) on the rare path.
+ */
+export class ClassNames implements ClassNameCollector {
+  value: string;
+  constructor(initial?: string) {
+    this.value = initial || "";
+  }
+  add(className: string) {
+    if (!this.value) {
+      this.value = className;
+    } else if (!this.has(className)) {
+      this.value += " " + className;
+    }
+  }
+  has(className: string) {
+    return (" " + this.value + " ").includes(" " + className + " ");
+  }
+  delete(className: string) {
+    if (this.has(className)) {
+      this.value = this.value
+        .split(" ")
+        .filter((existing) => existing !== className)
+        .join(" ");
+    }
+  }
+}
 
 export type ComponentStyles<TProps> = (props: TProps) => {
   className: string;
@@ -35,7 +69,7 @@ type CSSFunction = <TProps = {}>(
 
 export type NestedRuntimeStyleProcessor = (
   props: unknown,
-  classNames: Set<string>,
+  classNames: ClassNameCollector,
   style: React.CSSProperties,
 ) =>
   | {
@@ -110,30 +144,37 @@ export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> 
 
   // Non Dynamic CSS
   // This is just an optimization for the common case where there are no dynamic css functions
+  // `$dynamic: false` lets the styled runtime skip theme lookup and
+  // style-object allocation entirely for static components
   if (dynamicCssFunctions.length === 0) {
-    return (_, classNames) => {
+    return Object.assign(
+      (_: unknown, classNames: ClassNameCollector) => {
+        if (className) {
+          classNames.add(className);
+        }
+      },
+      { $dynamic: false },
+    );
+  }
+
+  return Object.assign(
+    (props: TProps, classNames: ClassNameCollector, allStyles: React.CSSProperties) => {
       if (className) {
         classNames.add(className);
       }
-      return () => {};
-    };
-  }
-
-  return (props, classNames, allStyles) => {
-    if (className) {
-      classNames.add(className);
-    }
-    for (let i = 0; i < dynamicCssFunctions.length; i++) {
-      unwrapProps(props, dynamicCssFunctions[i], classNames, allStyles);
-    }
-  };
+      for (let i = 0; i < dynamicCssFunctions.length; i++) {
+        unwrapProps(props, dynamicCssFunctions[i], classNames, allStyles);
+      }
+    },
+    { $dynamic: true },
+  );
 }
 
 // Dynamic CSS with runtime logic
 const unwrapProps = (
   props: unknown,
   fn: NestedRuntimeStyleProcessor,
-  classNames: Set<string>,
+  classNames: ClassNameCollector,
   style: React.CSSProperties,
 ) => {
   let result = fn(props, classNames, style);
@@ -163,8 +204,10 @@ const recursivePropExecution = (props: unknown, fn: (props: unknown) => any): st
   if (typeof result === "function") {
     return recursivePropExecution(props, result);
   }
-  if (process.env.NODE_ENV === "development") {
-    if (typeof result !== "string" && typeof result !== "number" && !(result instanceof String)) {
+  // typeof guards first — the `process.env` lookup is a real per-call cost
+  // for unbundled Node consumers, so it must only run on the invalid path
+  if (typeof result !== "string" && typeof result !== "number" && !(result instanceof String)) {
+    if (process.env.NODE_ENV === "development") {
       throw new Error(
         `Dynamic CSS functions must return a string or number but returned ${JSON.stringify(
           result,

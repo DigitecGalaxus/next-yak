@@ -233,7 +233,10 @@ describe("cssLiteral css function", () => {
       const result = processor(props, classNames, style);
 
       expect(classNames.has("static-only-class")).toBe(true);
-      expect(typeof result).toBe("function"); // Should return the cleanup function
+      // static processors are marked so the styled runtime can skip theme
+      // lookup and style-object allocation; they return nothing
+      expect(processor.$dynamic).toBe(false);
+      expect(result).toBeUndefined();
     });
   });
 

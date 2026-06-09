@@ -1,4 +1,4 @@
-import { css, CSSInterpolation, yakComponentSymbol } from "./cssLiteral.js";
+import { css, CSSInterpolation, ClassNames, yakComponentSymbol } from "./cssLiteral.js";
 import React from "react";
 import type {
   Attrs,
@@ -80,11 +80,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       parentRuntimeStylesFn,
     );
     const Yak: React.FunctionComponent = (props) => {
-      // if the css component does not require arguments
-      // it can be called without arguments and we skip calling useTheme()
+      // skip the theme context lookup when no attrs function and no dynamic
+      // style function can consume it
       //
-      // `attrsFn || getRuntimeStyles.length` is NOT against the rule of hooks as
-      // getRuntimeStyles and attrsFn are constants defined outside of the component
+      // `mergedAttrsFn || runtimeStyleProcessor.$dynamic` is NOT against the rule of
+      // hooks as both are constants defined outside of the component
       //
       // for example
       //
@@ -93,7 +93,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       //
       // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
       //       ^ must be have access to theme, so we call useTheme()
-      const theme = mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
+      //
+      // (this previously checked `runtimeStylesFn.length` — the function ARITY,
+      // which is always ≥2 — so useTheme() ran for every component including
+      // fully static ones; see EXP-20260609-02)
+      const theme = mergedAttrsFn || runtimeStyleProcessor.$dynamic ? useTheme() : noTheme;
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
@@ -121,23 +125,27 @@ const yakStyled: StyledInternal = (Component, attrs) => {
               mergedAttrsFn?.({ theme, ...(props as any) }),
             );
 
-      const classNames = new Set<string>(
-        "className" in combinedProps ? combinedProps.className?.split(" ") : [],
-      );
-      const styles = {
-        ...("style" in combinedProps ? combinedProps.style : {}),
-      };
-
       // execute all functions inside the style literal if not already executed
       // e.g. styled.button`color: ${props => props.color};`
+      //
+      // inner levels of a styled(Component) chain receive already-processed
+      // props and skip this entirely — no collector, no style clone
       if (!("$__runtimeStylesProcessed" in combinedProps)) {
-        runtimeStyleProcessor(combinedProps, classNames, styles);
+        const classNames = new ClassNames(combinedProps.className);
+        // static processors never write style values, so the incoming style
+        // object can be passed through without a defensive copy
+        const styles = runtimeStyleProcessor.$dynamic
+          ? { ...combinedProps.style }
+          : combinedProps.style;
+        runtimeStyleProcessor(combinedProps, classNames, styles as React.CSSProperties);
         // @ts-expect-error this is not typed correctly
         combinedProps.$__runtimeStylesProcessed = true;
-      }
 
-      combinedProps.className = Array.from(classNames).join(" ") || undefined;
-      combinedProps.style = styles;
+        combinedProps.className = classNames.value || undefined;
+        if (styles !== combinedProps.style) {
+          combinedProps.style = styles;
+        }
+      }
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
@@ -286,10 +294,14 @@ const buildRuntimeStylesProcessor = <T,>(
   parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
 ) => {
   if (runtimeStylesFn && parentRuntimeStylesFn) {
-    const combined: RuntimeStyleProcessor<T> = (props, classNames, style) => {
-      parentRuntimeStylesFn(props, classNames, style);
-      runtimeStylesFn(props, classNames, style);
-    };
+    const combined: RuntimeStyleProcessor<T> = Object.assign(
+      (props: T, classNames: Parameters<RuntimeStyleProcessor<T>>[1], style: React.CSSProperties) => {
+        parentRuntimeStylesFn(props, classNames, style);
+        runtimeStylesFn(props, classNames, style);
+      },
+      // the chain is dynamic if any level is dynamic
+      { $dynamic: runtimeStylesFn.$dynamic || parentRuntimeStylesFn.$dynamic },
+    );
     return combined;
   }
   return runtimeStylesFn || parentRuntimeStylesFn;
