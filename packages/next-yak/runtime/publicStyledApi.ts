@@ -126,13 +126,30 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 };
 
 /**
- * Type of all functions that can be passed to manipulate styles
+ * Set-like collector for class names.
+ *
+ * Implemented as a string builder in the runtime (the previous
+ * Set<string> split → Set → Array.from → join round-trip dominated render
+ * cost); a real Set<string> also satisfies this interface.
  */
-export type RuntimeStyleProcessor<T> = (
+export type ClassNameCollector = {
+  add(className: string): void;
+  has(className: string): boolean;
+  delete(className: string): void;
+};
+
+/**
+ * Type of all functions that can be passed to manipulate styles
+ *
+ * `$dynamic` marks processors that execute user functions or write style
+ * values at render time; purely static processors (class names only) can
+ * skip theme lookup and style-object allocation.
+ */
+export type RuntimeStyleProcessor<T> = ((
   props: T,
-  classNames: Set<string>,
+  classNames: ClassNameCollector,
   style: React.CSSProperties,
-) => void;
+) => void) & { $dynamic?: boolean };
 
 /**
  * Utility type to keep the generic API of a component while still being able to use it in a selector
