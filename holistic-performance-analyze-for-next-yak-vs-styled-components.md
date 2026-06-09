@@ -665,3 +665,10 @@ Entry template:
 
 - Verdict: CONFIRMED — **next-yak now wins or ties all 14 cells**; H2's mechanism (Set/spread marshaling) was the dominant cost exactly as profiled. Nested/cross-request are statistical ties → P5 targets them.
 - Next action: P5 (chain flattening, commit 10cce38) measured next; remaining gap to vanilla (36–84%) = wrapper spreads + filter loop → P3/P4 and compiler work (backlog #1).
+
+### EXP-20260609-06 — P5: flatten styled(Component) chains (refs: H7/H12 multiplier, backlog #1-partial; commit 10cce38)
+- Env: as EXP-01; full minified suite, quiet machine
+- Setup: the `yakComponentSymbol` tuple now carries the chain's ultimate render target; N-level chains render in ONE wrapper (attrs/style processors were already merged at construction). $-props (incl. internal markers) now always filtered before the target — two tests proved markers must not cross custom-component boundaries (an unflattened intermediate custom component re-processing its own attrs). 182 tests green.
+- Numbers (vs EXP-05): Nested 2,170→**3,228** (+0.3%→**+44%** vs sc, 64% of optimum), Cross-request 500→**694** (+1.3%→**+34%**), Tree 205→257 (+40%), Tree deep 328→414 (+29%), Tree wide 385→468 (+26%), Kanji 605→750 (+123%), Sierpinski 1,757→2,122 (+88%), SSR extraction +743%. No regressions.
+- Verdict: CONFIRMED — the ×N re-entry was the structural multiplier (EXP-02); **all 14 cells now ≥+17% ahead of styled-components**.
+- Next action: P3 static fast path (skip theme/spreads for static components) to close the remaining vanilla gap (50–82%).
