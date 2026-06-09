@@ -517,7 +517,7 @@ Each item gets: expected win (from the benchmark that motivated it), implementat
 
 - next-yak client runtime (`dist/internal.js`, esbuild `--minify`, react external): **6,774 B min / 2,749 B gzip** — including all ~170 tree-shakeable tag helpers; the core without unused tags is smaller in a real app build.
 - styled-components 6.4.1 (`styled-components.browser.esm.js` bundled with stylis & friends, react external): **33,652 B min / 13,279 B gzip**.
-- SSR throughput (`pnpm bench` in `benchmarks/`, NODE_ENV=production, ≥77 samples each, **[measured 2026-06-09, Gate 0 run with vanilla lanes — supersedes the same-day pre-vanilla run]**):
+- SSR throughput (`pnpm bench` in `benchmarks/`, NODE_ENV=production, ≥77 samples each, **[measured 2026-06-09, Gate 0 run with vanilla lanes — supersedes the same-day pre-vanilla run; SUPERSEDED in turn by the Gate 1 table in §17 after the runtime optimizations]**):
 
 | Benchmark | styled-components ops/s | next-yak ops/s | vanilla ops/s | yak vs sc | yak % of optimum |
 |---|---:|---:|---:|---|---|

@@ -100,8 +100,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
           runtimeStyleProcessor(props, classNames, undefined as unknown as React.CSSProperties);
           filteredProps.className = classNames.value || undefined;
         }
-        const Target = targetComponent as React.FunctionComponent;
-        return <Target {...filteredProps} />;
+        const Target = targetComponent as React.ElementType;
+        return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
       }
 
       // attrs functions and dynamic style functions receive the theme —
@@ -177,8 +177,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
       // render the chain's target directly — parent wrappers contribute only
       // their (already merged) attrs and style processors
-      const Target = targetComponent as React.FunctionComponent;
-      return <Target {...filteredProps} />;
+      const Target = targetComponent as React.ElementType;
+      return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
     };
 
     // Assign the yakComponentSymbol directly without forwardRef
