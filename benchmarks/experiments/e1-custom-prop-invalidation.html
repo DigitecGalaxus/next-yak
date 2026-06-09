@@ -84,30 +84,39 @@
 
 <script>
 const params = new URLSearchParams(location.search);
-const MODE = params.get("mode") || "var-root";
-const CARDS = Number(params.get("cards") || 40);
-const USAGE = Number(params.get("usage") || 10); // % of card elements consuming var(--x)
+let MODE = params.get("mode") || "var-root";
+let CARDS = Number(params.get("cards") || 40);
+let USAGE = Number(params.get("usage") || 10); // % of card elements consuming var(--x)
 
 const VALUES = ["#e0245e", "#0a57d0"]; // alternating accent values
 
 // --- dynamic stylesheet pieces -------------------------------------------
 const dyn = document.createElement("style");
-let css = "";
-// consumers: elements with .uses-x read the inherited var (yak-style consumption)
-css += `.uses-x { color: var(--x, #1a1a1a); border-color: var(--x, transparent); }\n`;
-// class-root: the toggled class swaps the var value on the grid
-css += `.grid-alt-var { --x: ${VALUES[0]}; }\n`;
-// class-direct: sc-style cached class — direct descendant rules, no custom property
-css += `.grid-alt-direct .price-value { color: ${VALUES[0]}; }\n`;
-css += `.grid-alt-direct .badge { background: ${VALUES[0]}; }\n`;
-dyn.textContent = css;
-document.head.appendChild(dyn);
-
-if (MODE === "var-registered") {
-  // Non-inherited registered property: invalidation should stop at the
-  // element the property is set on.
-  CSS.registerProperty({ name: "--x", syntax: "*", inherits: false, initialValue: "" });
+{
+  let css = "";
+  // consumers: elements with .uses-x read the inherited var (yak-style consumption)
+  css += `.uses-x { color: var(--x, #1a1a1a); border-color: var(--x, transparent); }\n`;
+  // class-root: the toggled class swaps the var value on the grid
+  css += `.grid-alt-var { --x: ${VALUES[0]}; }\n`;
+  // class-direct: sc-style cached class — direct descendant rules, no custom property
+  css += `.grid-alt-direct .price-value { color: ${VALUES[0]}; }\n`;
+  css += `.grid-alt-direct .badge { background: ${VALUES[0]}; }\n`;
+  dyn.textContent = css;
+  document.head.appendChild(dyn);
 }
+
+let registered = false;
+const registerNonInherited = () => {
+  // Non-inherited registered property: invalidation should stop at the
+  // element the property is set on. registerProperty is irreversible per
+  // page, so var-registered cells must run AFTER all inherited-var cells
+  // or the registration would change their behavior too.
+  if (!registered) {
+    CSS.registerProperty({ name: "--x", syntax: "*", inherits: false, initialValue: "" });
+    registered = true;
+  }
+};
+if (MODE === "var-registered") registerNonInherited();
 
 // --- build realistic DOM --------------------------------------------------
 const navEl = document.querySelector("header nav");
@@ -138,38 +147,49 @@ const markConsumer = (el) => {
   }
 };
 
-for (let c = 0; c < CARDS; c++) {
-  const card = document.createElement("article");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="img-frame">
-      <div class="badges">
-        <span class="badge">Neu</span>
-        <span class="badge sale">−${(c % 40) + 5}%</span>
-        <span class="badge eco">Eco</span>
+let consumers = [];
+let probe = grid;
+
+const buildGrid = () => {
+  grid.innerHTML = "";
+  consumerCount = 0;
+  elementSeq = 0;
+  for (let c = 0; c < CARDS; c++) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="img-frame">
+        <div class="badges">
+          <span class="badge">Neu</span>
+          <span class="badge sale">−${(c % 40) + 5}%</span>
+          <span class="badge eco">Eco</span>
+        </div>
       </div>
-    </div>
-    <div class="title">Produkt ${c + 1} — Modell X${(c * 7) % 90}</div>
-    <div class="subtitle">Variante ${(c % 5) + 1}, 256 GB, Spacegrau</div>
-    <div class="rating">
-      <span class="star"></span><span class="star"></span><span class="star"></span>
-      <span class="star"></span><span class="star off"></span>
-    </div>
-    <div class="price-row">
-      <span class="price-value">${(199 + c * 13) % 2000}.–</span>
-      <span class="price-strike">${(299 + c * 13) % 2400}.–</span>
-    </div>
-    <div class="energy">Energieeffizienz A</div>
-    <div class="availability">Morgen geliefert</div>
-    <button class="cta">In den Warenkorb</button>`;
-  for (const el of card.querySelectorAll("*")) markConsumer(el);
-  grid.appendChild(card);
-}
+      <div class="title">Produkt ${c + 1} — Modell X${(c * 7) % 90}</div>
+      <div class="subtitle">Variante ${(c % 5) + 1}, 256 GB, Spacegrau</div>
+      <div class="rating">
+        <span class="star"></span><span class="star"></span><span class="star"></span>
+        <span class="star"></span><span class="star off"></span>
+      </div>
+      <div class="price-row">
+        <span class="price-value">${(199 + c * 13) % 2000}.–</span>
+        <span class="price-strike">${(299 + c * 13) % 2400}.–</span>
+      </div>
+      <div class="energy">Energieeffizienz A</div>
+      <div class="availability">Morgen geliefert</div>
+      <button class="cta">In den Warenkorb</button>`;
+    for (const el of card.querySelectorAll("*")) markConsumer(el);
+    grid.appendChild(card);
+  }
+  consumers = [...grid.querySelectorAll(".uses-x")];
+  // Deep probe forces a full style flush when read.
+  probe = grid.querySelector(".card:last-child .price-value") || grid;
+};
+buildGrid();
 
 // --- update mechanisms ----------------------------------------------------
 let flip = 0;
-const consumers = [...grid.querySelectorAll(".uses-x")];
-const applyUpdate = {
+const UPDATERS = {
   "var-root": () => grid.style.setProperty("--x", VALUES[flip]),
   "var-registered": () => grid.style.setProperty("--x", VALUES[flip]),
   "class-root": () => grid.classList.toggle("grid-alt-var", flip === 0),
@@ -178,10 +198,26 @@ const applyUpdate = {
     for (const el of consumers) el.style.setProperty("--x", VALUES[flip]);
     grid.style.setProperty("--x", VALUES[flip]); // the grid border consumes too
   },
-}[MODE];
+};
+let applyUpdate = UPDATERS[MODE];
 
-// Deep probe forces a full style flush when read.
-const probe = grid.querySelector(".card:last-child .price-value") || grid;
+// Reconfigure the page in place (avoids file:// cross-origin restrictions
+// when driving the full matrix from a single evaluate_script call).
+// NOTE: var-registered cells must run last — CSS.registerProperty cannot
+// be undone and changes inheritance behavior for every later cell.
+window.__setup = ({ mode, cards, usage }) => {
+  MODE = mode;
+  CARDS = cards;
+  USAGE = usage;
+  // reset previous mode state
+  grid.classList.remove("grid-alt-var", "grid-alt-direct");
+  grid.style.removeProperty("--x");
+  flip = 0;
+  if (MODE === "var-registered") registerNonInherited();
+  buildGrid();
+  applyUpdate = UPDATERS[MODE];
+  return window.__domStats();
+};
 
 // --- measurement ----------------------------------------------------------
 window.__domStats = () => ({
