@@ -373,22 +373,22 @@ From the minified path, per element render today: `{theme,...k}` (+1), maybe `m(
 
 Each: hypothesis → experiment that confirms/refutes → fix direction.
 
-- **H1. Inherited custom-property invalidation makes dynamic props O(subtree).** → D3/E1 → `@property inherits:false` emission; leaf-scoping; doc guidance.
-- **H2. Per-render allocations (Set/spreads/filter) dominate the gap to CSS Modules.** → G1 + 7.4 microbenches → compiler-specialized render paths; string concat classNames; static prop filtering.
-- **H3. Fully static components still pay the whole runtime wrapper.** → D4 with 100% static components vs baseline → compile `styled.div` with no dynamics/attrs to a plain element with className (zero-wrapper output, biggest possible win; needs `as`/ref semantics analysis).
+- **H1. ✅ CONFIRMED (Blink, EXP-07). Inherited custom-property invalidation makes dynamic props O(subtree)** — even at zero consumers (3.9 ms/toggle at 8k descendants); `@property inherits:false` measured **O(1), 39–48× better**; var-on-leaves is worse, not better. → backlog #5 graduated; WebKit/Gecko cells open.
+- **H2. ✅ CONFIRMED (EXP-02/04), FIXED (EXP-05/06). Per-render allocations/marshaling dominated the gap** — Set/split/join alone was 53% of total CPU in nested; 14–16 allocations/2 KB per element. String collector + chain flattening flipped all six losing cells.
+- **H3. 🟡 PARTIAL (EXP-01/05). Fully static components still pay a (now much smaller) wrapper** — pure-components went 63%→84% of optimum with P1/P2; P3 fast path in measurement; the final step remains compiler zero-wrapper output (backlog #1).
 - **H4. Soft-nav paint gated on route CSS chunk fetch.** → C1 cold-CSS variant → ensure prefetch covers CSS; consider inlining small route CSS into RSC payload.
 - **H5. Dead conditional branches bloat CSS and CSSOM.** → A3/E4 → build-time usage analysis or route-level CSS shaking.
 - **H6. Megamorphic shared render function leaves 10–30% on the table.** → 7.2 IC analysis + specialized-codegen prototype → per-component generated functions (bytes vs speed tradeoff — measure both).
-- **H7. `combineProps`/attrs chains allocate per render even when attrs are static.** → D7 → precompute static attrs at compile time; only chain for function attrs.
+- **H7. 🟡 PARTIAL (EXP-02). Per-level prop cloning was real (~21% of Yak time) but attrs closures weren't the mechanism and GC wasn't the bottleneck** — the ×N chain re-entry was; fixed by P5 flattening (EXP-06, nested +44%). Static-attrs folding at compile time still open (backlog #10).
 - **H8. `useTheme()` context read on every dynamic component causes context-churn re-renders.** → D6 → document CSS-var theming; consider theme-snapshot via RSC.
 - **H9. `unitPostFix` wrapper adds a closure + recursion per dynamic value.** → microbench → compile the unit into the var consumer (`width: calc(var(--x) * 1px)`) — zero runtime.
 - **H10. CSS Modules class merging produces long className strings** (multiple classes per element after composition) → check serialized HTML size on the PLP (SSR bytes! every card repeats class strings) → shorter prod hashes; dedupe at compile time. Measure HTML document size yak vs sc vs baseline — sc's generated class names are short; yak's `yak_Button_a1b2c3` style names are long and repeated thousands of times in SSR HTML. Gzip mitigates; measure post-gzip anyway.
-- **H11. `style` object always assigned (`y.style=g`) even when empty** → React diffs an empty object per element? Check: does the runtime set `style: {}` on static components (extra prop, extra diff work)? Read output: `y.style=g` unconditionally — confirm and fix (omit when empty).
-- **H12. Mutating the props object (`y.$__runtimeStylesProcessed=!0`)** transitions hidden classes and may leak the marker into DOM-prop filtering paths → check IC effects + React warnings → use a WeakSet or compile-time guarantee instead.
+- **H11. 🟡 PARTIAL (EXP-04), FIXED (EXP-05). The unconditional spread+assign was real but small in dynamic fixtures (≤0.8%)** — matters for static components; style is now only cloned for dynamic processors and omitted when absent.
+- **H12. 🟡 PARTIAL (EXP-02). The markers themselves cost 1–2% (the processed-guard actually saves work); the ×N re-entry they enabled was the real cost** — re-entry removed by P5; markers retained for custom-component passthrough semantics (tests enforce they never cross a custom boundary).
 - **H13. Cross-file constant resolution increases build-time but also may duplicate CSS** (same mixin inlined into many files) → measure aggregate CSS dedup ratio (I2).
 - **H14. Turbopack DataUrl CSS defeats caching/dedup** (CSS embedded as data URLs?) → I3 → verify production pipeline emits real CSS files.
 - **H15. The `css` prop merge helper (`__yak_mergeCssProp`) allocates Sets/objects per element per render** → same fix family as H2.
-- **H16. SSR `renderToString` of huge classNames + style objects is slower than sc's string pipeline in some shapes** → the existing bench already shows shapes where sc is competitive; investigate any bench where yak doesn't win and attribute precisely (CPU profile the bench).
+- **H16. 🟡 PARTIAL (EXP-03), MITIGATED (EXP-06). sc's cache only skips stylis parse (~75% of its would-be cost) but still re-executes interpolations + hashes per render; yak's deficit was half assembly constants (fixed: cross-request now +34%) and half dynamic-fn re-execution** — closing the remaining gap to vanilla needs compile-side enum→class hoisting (backlog #8) or a value-tuple memo.
 
 ---
 
@@ -672,3 +672,57 @@ Entry template:
 - Numbers (vs EXP-05): Nested 2,170→**3,228** (+0.3%→**+44%** vs sc, 64% of optimum), Cross-request 500→**694** (+1.3%→**+34%**), Tree 205→257 (+40%), Tree deep 328→414 (+29%), Tree wide 385→468 (+26%), Kanji 605→750 (+123%), Sierpinski 1,757→2,122 (+88%), SSR extraction +743%. No regressions.
 - Verdict: CONFIRMED — the ×N re-entry was the structural multiplier (EXP-02); **all 14 cells now ≥+17% ahead of styled-components**.
 - Next action: P3 static fast path (skip theme/spreads for static components) to close the remaining vanilla gap (50–82%).
+
+### EXP-20260609-07 — E1: custom-property invalidation scope, Blink (refs: H1, E1, D3, backlog #5/#8)
+- Env: Chrome (chrome-devtools MCP), 1× CPU, M-series; constant single-thread Node bench running on other cores (relative comparisons unaffected; absolute ms may read slightly high). Page: `benchmarks/experiments/e1-custom-prop-invalidation.html` — realistic shop DOM (header, 30-control sidebar, N cards × ~20 elements). 30 toggles/cell, forced style flush per toggle, median ms.
+- Numbers (median ms per toggle):
+
+| mode | 80 desc. | 800 desc. | 8,000 desc. |
+|---|---:|---:|---:|
+| var-root (yak today), usage=10% | 0.10 | 0.60 | **4.80** |
+| var-root, usage=0% (zero consumers!) | 0.10 | 0.50 | **3.90** |
+| class-root (class swapping the var) | 0.10 | 0.60 | 4.50 |
+| class-direct (sc cached class, no var) | 0.00 | 0.20 | **1.50** |
+| var-leaf (write var on all 760 consumers) | 0.10 | 0.80 | **6.50** |
+| **var-registered (`@property inherits:false`)** | 0.10 | **0.10** | **0.10** |
+
+  Usage sweep at 800 descendants (var-root): 0%→0.50, 10%→0.60, 100%→0.90 ms — consumer count adds a small linear term; the dominant cost is the descendant invalidation walk, independent of who consumes.
+- Findings: (1) **H1 ✅ CONFIRMED for Blink** — an inherited custom-property change invalidates the entire subtree even when nothing consumes it (3.9 ms for 8k descendants at usage=0; on a 4–6× phone that's a dropped frame per toggle). (2) sc-style cached class swap is 2.6–3.2× cheaper at scale (invalidation sets target the matching elements). (3) Swapping the var via a class costs the same as inline var — the inherited property change itself is the cost. (4) var-on-leaves is WORSE when many leaves consume (760 inline-style writes > one subtree walk). (5) **`@property inherits:false` flattens the curve to O(1): 0.1 ms at every size — 39–48× better at 8k descendants.** Note: registered cells ran with usage=0 (non-inherited vars are invisible to descendants by design); yak's normal pattern (`prop: var(--yakVar)` on the SAME element that sets it) is exactly the case where `inherits:false` is both correct and fast.
+- Verdict: H1 ✅ CONFIRMED (Blink; WebKit/Gecko cells still open).
+- Next action: **backlog #5 graduates** — the compiler should emit `@property … inherits: false` for every yak variable not consumed by descendants (compiler can prove same-element consumption); fallback guidance: prefer class toggles (#8) for container-level state. Re-run this matrix on real iPhone WebKit before finalizing.
+
+### EXP-20260609-08 — P3: static fast path (refs: H3, backlog #1-partial; commit 09be417)
+- Env: as EXP-01; full minified suite, quiet machine
+- Setup: components with no attrs and no dynamic styles skip theme lookup, prop spreading, marker mutation and style handling entirely — one filtered prop copy + string append. 182 tests green.
+- Numbers (vs EXP-06): Pure 2,043→**3,151** (+153%→**+285%** vs sc — and **146% of the vanilla lane**, see finding below), Kanji 750→1,041 (+222%), Nested 3,228→3,544 (+58%, 71% of optimum), SSR extraction 1,714→**2,783** (+1,246%), dynamic cells unchanged (expected). No regressions (tree-family within noise of EXP-06).
+- **JIT finding:** yak now BEATS the hand-written vanilla lane in pure-components. The vanilla lane uses 1,000 distinct tiny function components — each called too rarely to tier up — while yak funnels all 1,000 components through ONE hot, TurboFan-optimized `Yak` closure. Per-component generated code is NOT automatically optimal (relevant to backlog #1 and #11: true zero-wrapper output should inline the element into the call site, not emit per-component wrapper functions).
+- Verdict: CONFIRMED — H3 ✅ resolved at the runtime level; remaining vanilla gaps are now confined to dynamic cells (64%) and deep trees (~53%).
+- Next action: Gate 1.
+
+### GATE 1 — Decision record (2026-06-09)
+**Result: all 14 SSR cells won, margins +17% to +1,246%** (was: 6 losses up to −127% at Gate 0). Cumulative runtime commits: `4f7ccf3` (P1+P2+theme-gate+env-guard), `10cce38` (P5 flatten), `09be417` (P3 fast path) — all 182 runtime tests green throughout; API unchanged.
+
+| Benchmark | sc | yak | vanilla | yak vs sc (Gate 0 → now) |
+|---|---:|---:|---:|---|
+| Kanji letter | 323 | 1,041 | — | +20% → **+222%** |
+| Pure components | 819 | 3,151 | 2,160 | +87% → **+285%** |
+| Attrs | 450 | 958 | — | +93% → **+113%** |
+| CSS prop | 807 | 3,450 | — | +273% → **+328%** |
+| Dynamic props | 285 | 332 | 521 | −25% → **+17%** |
+| Dynamic (idiomatic) | 360 | 673 | — | +98% → **+87%** |
+| Nested components | 2,250 | 3,544 | 5,011 | −127% → **+58%** |
+| Tree | 181 | 255 | 479 | −29% → **+41%** |
+| Tree (idiomatic) | 183 | 302 | — | +13% → **+65%** |
+| Tree deep | 315 | 404 | 758 | −31% → **+28%** |
+| Tree wide | 368 | 462 | 948 | −37% → **+26%** |
+| Sierpinski | 1,126 | 2,072 | — | +12% → **+84%** |
+| Cross request cache | 512 | 662 | 1,431 | −41% → **+29%** |
+| SSR extraction | 207 | 2,783 | — | +568% → **+1,246%** |
+
+**Decisions:**
+1. **Graduate to PRs:** P1/P2/P3/P5 + theme-gate fix + env-guard reorder (one squashed or stacked PR from this branch; all behavior-compatible, 2 tests updated for implementation-detail/clarified marker semantics).
+2. **Backlog #5 (`@property inherits:false` emission) graduates to compiler work** — EXP-07 measured O(subtree)→O(1), 39–48× at 8k descendants. Validate on WebKit (real iPhone) before shipping default-on.
+3. **Backlog #8 (enum-prop → class-toggle hoisting in the compiler)** is the main remaining SSR lever (dynamic cell at 64% of optimum; EXP-03 ceiling ~3×) and ALSO the browser-interaction lever (EXP-07: class toggles 2.6–3.2× cheaper than inherited var writes at scale).
+4. **Backlog #1 (zero-wrapper)** re-scoped per the EXP-08 JIT finding: inline elements at call sites; do NOT emit per-component wrapper functions.
+5. **P4/P6 dropped** (≤2% each, EXP-02). H9 unresolved (fixtures don't exercise unitPostFix — needs a dedicated fixture if pursued).
+6. **Open cells:** WebKit/Gecko E1 matrix (real devices); client-side Part 2 (hydration, D1/D2/D6 on the PLP fixture); P6 marker-removal only as part of future compiler work.
