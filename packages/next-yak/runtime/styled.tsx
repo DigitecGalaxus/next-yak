@@ -305,7 +305,11 @@ const buildRuntimeStylesProcessor = <T,>(
 ) => {
   if (runtimeStylesFn && parentRuntimeStylesFn) {
     const combined: RuntimeStyleProcessor<T> = Object.assign(
-      (props: T, classNames: Parameters<RuntimeStyleProcessor<T>>[1], style: React.CSSProperties) => {
+      (
+        props: T,
+        classNames: Parameters<RuntimeStyleProcessor<T>>[1],
+        style: React.CSSProperties,
+      ) => {
         parentRuntimeStylesFn(props, classNames, style);
         runtimeStylesFn(props, classNames, style);
       },

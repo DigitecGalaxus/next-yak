@@ -1,6 +1,5 @@
 import { importHeader, libs, styledIdentFor, writeBenchmarkSource } from "../_shared.ts";
 
-
 // 1000 plain styled.div components, each with a unique color and identical
 // shape. Cheapest "many components" baseline (no dynamic props, no extension
 // chain, just static-style class generation).

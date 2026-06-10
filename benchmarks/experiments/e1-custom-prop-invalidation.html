@@ -31,133 +31,304 @@
     window.__domStats()      -> {descendants, consumers}
 -->
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<title>E1 custom property invalidation</title>
-<style>
-  /* Static shop chrome — realistic rule count, not hello-world. */
-  * { box-sizing: border-box; margin: 0; }
-  body { font: 14px/1.4 -apple-system, system-ui, sans-serif; color: #1a1a1a; background: #f4f5f7; }
-  header.shop { display: flex; gap: 16px; align-items: center; padding: 12px 24px; background: #fff; border-bottom: 1px solid #e2e4e8; position: sticky; top: 0; }
-  header.shop .logo { font-weight: 800; font-size: 18px; color: #0a57d0; }
-  header.shop nav { display: flex; gap: 12px; }
-  header.shop nav a { color: #444; text-decoration: none; padding: 6px 10px; border-radius: 6px; }
-  header.shop nav a:hover { background: #eef1f6; }
-  .layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; padding: 24px; }
-  aside.filters { background: #fff; border: 1px solid #e2e4e8; border-radius: 8px; padding: 16px; align-self: start; }
-  aside.filters h2 { font-size: 14px; margin-bottom: 12px; }
-  .filter-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-  .filter-row label { color: #333; }
-  .filter-row .count { margin-left: auto; color: #999; font-size: 12px; }
-  main.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; border-left: 3px solid var(--x, #0a57d0); padding-left: 13px; }
-  .card { background: #fff; border: 1px solid #e2e4e8; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-  .img-frame { background: linear-gradient(135deg, #eef1f6, #dfe4ec); border-radius: 6px; height: 120px; position: relative; }
-  .badges { position: absolute; top: 6px; left: 6px; display: flex; gap: 4px; }
-  .badge { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #0a57d0; color: #fff; }
-  .badge.sale { background: #e0245e; }
-  .badge.eco { background: #1b8a4c; }
-  .title { font-weight: 600; font-size: 13px; }
-  .subtitle { color: #777; font-size: 12px; }
-  .rating { display: flex; gap: 1px; }
-  .star { width: 12px; height: 12px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: #f5a623; }
-  .star.off { background: #d7dbe2; }
-  .price-row { display: flex; align-items: baseline; gap: 8px; margin-top: auto; }
-  .price-value { font-size: 16px; font-weight: 800; }
-  .price-strike { color: #999; text-decoration: line-through; font-size: 12px; }
-  .energy { font-size: 11px; color: #1b8a4c; font-weight: 700; }
-  .availability { font-size: 12px; color: #1b8a4c; }
-  .cta { margin-top: 4px; padding: 8px 10px; border: 0; border-radius: 6px; background: #0a57d0; color: #fff; font-weight: 700; cursor: pointer; }
-  .cta:hover { filter: brightness(1.1); }
-  #hud { position: fixed; bottom: 12px; right: 12px; background: #111; color: #0f0; font: 12px/1.5 monospace; padding: 10px 14px; border-radius: 8px; white-space: pre; z-index: 10; }
-</style>
-</head>
-<body>
-<header class="shop">
-  <span class="logo">YakShop</span>
-  <nav></nav>
-</header>
-<div class="layout">
-  <aside class="filters"><h2>Filter</h2></aside>
-  <main class="grid" id="grid"></main>
-</div>
-<div id="hud">loading…</div>
+  <head>
+    <meta charset="utf-8" />
+    <title>E1 custom property invalidation</title>
+    <style>
+      /* Static shop chrome — realistic rule count, not hello-world. */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        font:
+          14px/1.4 -apple-system,
+          system-ui,
+          sans-serif;
+        color: #1a1a1a;
+        background: #f4f5f7;
+      }
+      header.shop {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 12px 24px;
+        background: #fff;
+        border-bottom: 1px solid #e2e4e8;
+        position: sticky;
+        top: 0;
+      }
+      header.shop .logo {
+        font-weight: 800;
+        font-size: 18px;
+        color: #0a57d0;
+      }
+      header.shop nav {
+        display: flex;
+        gap: 12px;
+      }
+      header.shop nav a {
+        color: #444;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+      header.shop nav a:hover {
+        background: #eef1f6;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+        padding: 24px;
+      }
+      aside.filters {
+        background: #fff;
+        border: 1px solid #e2e4e8;
+        border-radius: 8px;
+        padding: 16px;
+        align-self: start;
+      }
+      aside.filters h2 {
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+      }
+      .filter-row label {
+        color: #333;
+      }
+      .filter-row .count {
+        margin-left: auto;
+        color: #999;
+        font-size: 12px;
+      }
+      main.grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 16px;
+        border-left: 3px solid var(--x, #0a57d0);
+        padding-left: 13px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e2e4e8;
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .img-frame {
+        background: linear-gradient(135deg, #eef1f6, #dfe4ec);
+        border-radius: 6px;
+        height: 120px;
+        position: relative;
+      }
+      .badges {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        display: flex;
+        gap: 4px;
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: #0a57d0;
+        color: #fff;
+      }
+      .badge.sale {
+        background: #e0245e;
+      }
+      .badge.eco {
+        background: #1b8a4c;
+      }
+      .title {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .subtitle {
+        color: #777;
+        font-size: 12px;
+      }
+      .rating {
+        display: flex;
+        gap: 1px;
+      }
+      .star {
+        width: 12px;
+        height: 12px;
+        clip-path: polygon(
+          50% 0%,
+          61% 35%,
+          98% 35%,
+          68% 57%,
+          79% 91%,
+          50% 70%,
+          21% 91%,
+          32% 57%,
+          2% 35%,
+          39% 35%
+        );
+        background: #f5a623;
+      }
+      .star.off {
+        background: #d7dbe2;
+      }
+      .price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: auto;
+      }
+      .price-value {
+        font-size: 16px;
+        font-weight: 800;
+      }
+      .price-strike {
+        color: #999;
+        text-decoration: line-through;
+        font-size: 12px;
+      }
+      .energy {
+        font-size: 11px;
+        color: #1b8a4c;
+        font-weight: 700;
+      }
+      .availability {
+        font-size: 12px;
+        color: #1b8a4c;
+      }
+      .cta {
+        margin-top: 4px;
+        padding: 8px 10px;
+        border: 0;
+        border-radius: 6px;
+        background: #0a57d0;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .cta:hover {
+        filter: brightness(1.1);
+      }
+      #hud {
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        background: #111;
+        color: #0f0;
+        font: 12px/1.5 monospace;
+        padding: 10px 14px;
+        border-radius: 8px;
+        white-space: pre;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="shop">
+      <span class="logo">YakShop</span>
+      <nav></nav>
+    </header>
+    <div class="layout">
+      <aside class="filters"><h2>Filter</h2></aside>
+      <main class="grid" id="grid"></main>
+    </div>
+    <div id="hud">loading…</div>
 
-<script>
-const params = new URLSearchParams(location.search);
-let MODE = params.get("mode") || "var-root";
-let CARDS = Number(params.get("cards") || 40);
-let USAGE = Number(params.get("usage") || 10); // % of card elements consuming var(--x)
+    <script>
+      const params = new URLSearchParams(location.search);
+      let MODE = params.get("mode") || "var-root";
+      let CARDS = Number(params.get("cards") || 40);
+      let USAGE = Number(params.get("usage") || 10); // % of card elements consuming var(--x)
 
-const VALUES = ["#e0245e", "#0a57d0"]; // alternating accent values
+      const VALUES = ["#e0245e", "#0a57d0"]; // alternating accent values
 
-// --- dynamic stylesheet pieces -------------------------------------------
-const dyn = document.createElement("style");
-{
-  let css = "";
-  // consumers: elements with .uses-x read the inherited var (yak-style consumption)
-  css += `.uses-x { color: var(--x, #1a1a1a); border-color: var(--x, transparent); }\n`;
-  // class-root: the toggled class swaps the var value on the grid
-  css += `.grid-alt-var { --x: ${VALUES[0]}; }\n`;
-  // class-direct: sc-style cached class — direct descendant rules, no custom property
-  css += `.grid-alt-direct .price-value { color: ${VALUES[0]}; }\n`;
-  css += `.grid-alt-direct .badge { background: ${VALUES[0]}; }\n`;
-  dyn.textContent = css;
-  document.head.appendChild(dyn);
-}
+      // --- dynamic stylesheet pieces -------------------------------------------
+      const dyn = document.createElement("style");
+      {
+        let css = "";
+        // consumers: elements with .uses-x read the inherited var (yak-style consumption)
+        css += `.uses-x { color: var(--x, #1a1a1a); border-color: var(--x, transparent); }\n`;
+        // class-root: the toggled class swaps the var value on the grid
+        css += `.grid-alt-var { --x: ${VALUES[0]}; }\n`;
+        // class-direct: sc-style cached class — direct descendant rules, no custom property
+        css += `.grid-alt-direct .price-value { color: ${VALUES[0]}; }\n`;
+        css += `.grid-alt-direct .badge { background: ${VALUES[0]}; }\n`;
+        dyn.textContent = css;
+        document.head.appendChild(dyn);
+      }
 
-let registered = false;
-const registerNonInherited = () => {
-  // Non-inherited registered property: invalidation should stop at the
-  // element the property is set on. registerProperty is irreversible per
-  // page, so var-registered cells must run AFTER all inherited-var cells
-  // or the registration would change their behavior too.
-  if (!registered) {
-    CSS.registerProperty({ name: "--x", syntax: "*", inherits: false, initialValue: "" });
-    registered = true;
-  }
-};
-if (MODE === "var-registered") registerNonInherited();
+      let registered = false;
+      const registerNonInherited = () => {
+        // Non-inherited registered property: invalidation should stop at the
+        // element the property is set on. registerProperty is irreversible per
+        // page, so var-registered cells must run AFTER all inherited-var cells
+        // or the registration would change their behavior too.
+        if (!registered) {
+          CSS.registerProperty({ name: "--x", syntax: "*", inherits: false, initialValue: "" });
+          registered = true;
+        }
+      };
+      if (MODE === "var-registered") registerNonInherited();
 
-// --- build realistic DOM --------------------------------------------------
-const navEl = document.querySelector("header nav");
-for (const label of ["Computer", "Audio", "Foto", "TV", "Gaming", "Haushalt", "Sport", "Beauty"]) {
-  const a = document.createElement("a");
-  a.href = "#";
-  a.textContent = label;
-  navEl.appendChild(a);
-}
-const filters = document.querySelector("aside.filters");
-for (let i = 0; i < 30; i++) {
-  const row = document.createElement("div");
-  row.className = "filter-row";
-  row.innerHTML = `<input type="checkbox" id="f${i}"><label for="f${i}">Filter option ${i + 1}</label><span class="count">${(i * 37) % 400}</span>`;
-  filters.appendChild(row);
-}
+      // --- build realistic DOM --------------------------------------------------
+      const navEl = document.querySelector("header nav");
+      for (const label of [
+        "Computer",
+        "Audio",
+        "Foto",
+        "TV",
+        "Gaming",
+        "Haushalt",
+        "Sport",
+        "Beauty",
+      ]) {
+        const a = document.createElement("a");
+        a.href = "#";
+        a.textContent = label;
+        navEl.appendChild(a);
+      }
+      const filters = document.querySelector("aside.filters");
+      for (let i = 0; i < 30; i++) {
+        const row = document.createElement("div");
+        row.className = "filter-row";
+        row.innerHTML = `<input type="checkbox" id="f${i}"><label for="f${i}">Filter option ${i + 1}</label><span class="count">${(i * 37) % 400}</span>`;
+        filters.appendChild(row);
+      }
 
-const grid = document.getElementById("grid");
-let consumerCount = 0;
-let elementSeq = 0;
-// Deterministic "every Nth element consumes the var" instead of Math.random,
-// so usage=10 means exactly every 10th card element.
-const markConsumer = (el) => {
-  elementSeq++;
-  if (USAGE > 0 && elementSeq % Math.round(100 / USAGE) === 0) {
-    el.classList.add("uses-x");
-    consumerCount++;
-  }
-};
+      const grid = document.getElementById("grid");
+      let consumerCount = 0;
+      let elementSeq = 0;
+      // Deterministic "every Nth element consumes the var" instead of Math.random,
+      // so usage=10 means exactly every 10th card element.
+      const markConsumer = (el) => {
+        elementSeq++;
+        if (USAGE > 0 && elementSeq % Math.round(100 / USAGE) === 0) {
+          el.classList.add("uses-x");
+          consumerCount++;
+        }
+      };
 
-let consumers = [];
-let probe = grid;
+      let consumers = [];
+      let probe = grid;
 
-const buildGrid = () => {
-  grid.innerHTML = "";
-  consumerCount = 0;
-  elementSeq = 0;
-  for (let c = 0; c < CARDS; c++) {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.innerHTML = `
+      const buildGrid = () => {
+        grid.innerHTML = "";
+        consumerCount = 0;
+        elementSeq = 0;
+        for (let c = 0; c < CARDS; c++) {
+          const card = document.createElement("article");
+          card.className = "card";
+          card.innerHTML = `
       <div class="img-frame">
         <div class="badges">
           <span class="badge">Neu</span>
@@ -178,104 +349,104 @@ const buildGrid = () => {
       <div class="energy">Energieeffizienz A</div>
       <div class="availability">Morgen geliefert</div>
       <button class="cta">In den Warenkorb</button>`;
-    for (const el of card.querySelectorAll("*")) markConsumer(el);
-    grid.appendChild(card);
-  }
-  consumers = [...grid.querySelectorAll(".uses-x")];
-  // Deep probe forces a full style flush when read.
-  probe = grid.querySelector(".card:last-child .price-value") || grid;
-};
-buildGrid();
+          for (const el of card.querySelectorAll("*")) markConsumer(el);
+          grid.appendChild(card);
+        }
+        consumers = [...grid.querySelectorAll(".uses-x")];
+        // Deep probe forces a full style flush when read.
+        probe = grid.querySelector(".card:last-child .price-value") || grid;
+      };
+      buildGrid();
 
-// --- update mechanisms ----------------------------------------------------
-let flip = 0;
-const UPDATERS = {
-  "var-root": () => grid.style.setProperty("--x", VALUES[flip]),
-  "var-registered": () => grid.style.setProperty("--x", VALUES[flip]),
-  "class-root": () => grid.classList.toggle("grid-alt-var", flip === 0),
-  "class-direct": () => grid.classList.toggle("grid-alt-direct", flip === 0),
-  "var-leaf": () => {
-    for (const el of consumers) el.style.setProperty("--x", VALUES[flip]);
-    grid.style.setProperty("--x", VALUES[flip]); // the grid border consumes too
-  },
-};
-let applyUpdate = UPDATERS[MODE];
+      // --- update mechanisms ----------------------------------------------------
+      let flip = 0;
+      const UPDATERS = {
+        "var-root": () => grid.style.setProperty("--x", VALUES[flip]),
+        "var-registered": () => grid.style.setProperty("--x", VALUES[flip]),
+        "class-root": () => grid.classList.toggle("grid-alt-var", flip === 0),
+        "class-direct": () => grid.classList.toggle("grid-alt-direct", flip === 0),
+        "var-leaf": () => {
+          for (const el of consumers) el.style.setProperty("--x", VALUES[flip]);
+          grid.style.setProperty("--x", VALUES[flip]); // the grid border consumes too
+        },
+      };
+      let applyUpdate = UPDATERS[MODE];
 
-// Reconfigure the page in place (avoids file:// cross-origin restrictions
-// when driving the full matrix from a single evaluate_script call).
-// NOTE: var-registered cells must run last — CSS.registerProperty cannot
-// be undone and changes inheritance behavior for every later cell.
-window.__setup = ({ mode, cards, usage }) => {
-  MODE = mode;
-  CARDS = cards;
-  USAGE = usage;
-  // reset previous mode state
-  grid.classList.remove("grid-alt-var", "grid-alt-direct");
-  grid.style.removeProperty("--x");
-  flip = 0;
-  if (MODE === "var-registered") registerNonInherited();
-  buildGrid();
-  applyUpdate = UPDATERS[MODE];
-  return window.__domStats();
-};
+      // Reconfigure the page in place (avoids file:// cross-origin restrictions
+      // when driving the full matrix from a single evaluate_script call).
+      // NOTE: var-registered cells must run last — CSS.registerProperty cannot
+      // be undone and changes inheritance behavior for every later cell.
+      window.__setup = ({ mode, cards, usage }) => {
+        MODE = mode;
+        CARDS = cards;
+        USAGE = usage;
+        // reset previous mode state
+        grid.classList.remove("grid-alt-var", "grid-alt-direct");
+        grid.style.removeProperty("--x");
+        flip = 0;
+        if (MODE === "var-registered") registerNonInherited();
+        buildGrid();
+        applyUpdate = UPDATERS[MODE];
+        return window.__domStats();
+      };
 
-// --- measurement ----------------------------------------------------------
-window.__domStats = () => ({
-  mode: MODE,
-  cards: CARDS,
-  usagePct: USAGE,
-  descendants: grid.querySelectorAll("*").length,
-  consumers: consumerCount,
-});
+      // --- measurement ----------------------------------------------------------
+      window.__domStats = () => ({
+        mode: MODE,
+        cards: CARDS,
+        usagePct: USAGE,
+        descendants: grid.querySelectorAll("*").length,
+        consumers: consumerCount,
+      });
 
-window.__run = (iterations = 30) =>
-  new Promise((resolve) => {
-    const times = [];
-    let i = 0;
-    const step = () => {
-      flip = 1 - flip;
-      const t0 = performance.now();
-      applyUpdate();
-      // Force synchronous style recalc; reading computed style of a deep
-      // descendant flushes pending invalidations.
-      getComputedStyle(probe).color;
-      getComputedStyle(grid).borderLeftColor;
-      times.push(performance.now() - t0);
-      i++;
-      // Yield a frame between iterations so each toggle is a fresh
-      // invalidation, not batched.
-      if (i < iterations) requestAnimationFrame(step);
-      else {
-        const sorted = [...times].sort((a, b) => a - b);
-        const result = {
-          ...window.__domStats(),
-          iterations,
-          median: sorted[Math.floor(sorted.length / 2)],
-          mean: times.reduce((a, b) => a + b, 0) / times.length,
-          p95: sorted[Math.floor(sorted.length * 0.95)],
-          min: sorted[0],
-          max: sorted[sorted.length - 1],
-          perIteration: times.map((t) => Number(t.toFixed(3))),
-        };
-        window.__results = result;
-        hud(result);
-        resolve(result);
-      }
-    };
-    requestAnimationFrame(step);
-  });
+      window.__run = (iterations = 30) =>
+        new Promise((resolve) => {
+          const times = [];
+          let i = 0;
+          const step = () => {
+            flip = 1 - flip;
+            const t0 = performance.now();
+            applyUpdate();
+            // Force synchronous style recalc; reading computed style of a deep
+            // descendant flushes pending invalidations.
+            getComputedStyle(probe).color;
+            getComputedStyle(grid).borderLeftColor;
+            times.push(performance.now() - t0);
+            i++;
+            // Yield a frame between iterations so each toggle is a fresh
+            // invalidation, not batched.
+            if (i < iterations) requestAnimationFrame(step);
+            else {
+              const sorted = [...times].sort((a, b) => a - b);
+              const result = {
+                ...window.__domStats(),
+                iterations,
+                median: sorted[Math.floor(sorted.length / 2)],
+                mean: times.reduce((a, b) => a + b, 0) / times.length,
+                p95: sorted[Math.floor(sorted.length * 0.95)],
+                min: sorted[0],
+                max: sorted[sorted.length - 1],
+                perIteration: times.map((t) => Number(t.toFixed(3))),
+              };
+              window.__results = result;
+              hud(result);
+              resolve(result);
+            }
+          };
+          requestAnimationFrame(step);
+        });
 
-const hudEl = document.getElementById("hud");
-const hud = (r) => {
-  hudEl.textContent =
-    `mode=${r.mode} cards=${r.cards} usage=${r.usagePct}%\n` +
-    `descendants=${r.descendants} consumers=${r.consumers}\n` +
-    (r.median !== undefined
-      ? `median=${r.median.toFixed(3)}ms p95=${r.p95.toFixed(3)}ms\n` +
-        `mean=${r.mean.toFixed(3)}ms min=${r.min.toFixed(3)} max=${r.max.toFixed(3)}`
-      : "ready — run window.__run(30)");
-};
-hud(window.__domStats());
-</script>
-</body>
+      const hudEl = document.getElementById("hud");
+      const hud = (r) => {
+        hudEl.textContent =
+          `mode=${r.mode} cards=${r.cards} usage=${r.usagePct}%\n` +
+          `descendants=${r.descendants} consumers=${r.consumers}\n` +
+          (r.median !== undefined
+            ? `median=${r.median.toFixed(3)}ms p95=${r.p95.toFixed(3)}ms\n` +
+              `mean=${r.mean.toFixed(3)}ms min=${r.min.toFixed(3)} max=${r.max.toFixed(3)}`
+            : "ready — run window.__run(30)");
+      };
+      hud(window.__domStats());
+    </script>
+  </body>
 </html>
