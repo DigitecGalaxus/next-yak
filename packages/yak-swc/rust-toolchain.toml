@@ -1,0 +1,13 @@
+# Pin the toolchain for the SWC plugin build.
+#
+# The GitHub runner image follows latest stable: the image update from
+# rustc 1.94.1 to 1.96.0 broke linking the wasm32-wasip1 plugin against the
+# pinned swc_core (=56.0.0) with "rust-lld: undefined symbol:
+# __set_transform_result" (the SWC host imports no longer resolve).
+# 1.94.1 is the last runner version that built the plugin in CI.
+#
+# Remove or bump this together with a swc_core upgrade.
+[toolchain]
+channel = "1.94.1"
+targets = ["wasm32-wasip1", "wasm32-unknown-unknown"]
+components = ["clippy", "rustfmt"]
