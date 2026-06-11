@@ -18,7 +18,7 @@ catalogs:
     "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 16.2.4
     "@next/mdx": 16.2.4
-    "@playwright/test": 1.59.1
+    "@playwright/test": 1.60.0
     "@radix-ui/react-switch": 1.2.6
     "@shikijs/monaco": 4.0.2
     "@shikijs/transformers": 4.0.2
