@@ -86,5 +86,5 @@ catalogs:
     unionfs: 4.6.0
     vite: 8.0.10
     vitest: 4.1.5
-    wasm-pack: 0.14.0
+    wasm-pack: 0.15.0
     webpack: 5.105.4
