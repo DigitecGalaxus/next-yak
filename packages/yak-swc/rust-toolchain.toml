@@ -1,0 +1,9 @@
+# Pin the toolchain for the SWC plugin build so runner-image updates can't
+# silently change how the wasm plugin links (rustc 1.96 removed the implicit
+# --allow-undefined for wasm targets, see build:yak's explicit link-arg and
+# https://blog.rust-lang.org/2026/04/04/changes-to-webassembly-targets-and-handling-undefined-symbols/).
+# Bump deliberately together with swc_core.
+[toolchain]
+channel = "1.96.0"
+targets = ["wasm32-wasip1", "wasm32-unknown-unknown"]
+components = ["clippy", "rustfmt"]
