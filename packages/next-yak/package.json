@@ -175,9 +175,9 @@
     "vitest": "catalog:dev"
   },
   "peerDependencies": {
-    "@types/react": ">=18",
+    "@types/react": ">=19",
     "next": ">=16.1.0",
-    "react": ">=18.0.0",
+    "react": ">=19.0.0",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {
