@@ -239,7 +239,9 @@ it("overrides attrs of the wrapped component and appends its style class", () =>
   // styled(SubmitButton) renders as a single flattened wrapper — this pins
   // that flattening keeps styled-components semantics: the outer attrs win
   // and the outer class comes after the inner one
+  // @ts-expect-error calling with a class name string mimics the compiled css form
   const SubmitButton = styled.button.attrs({ type: "submit" })("submit_btn");
+  // @ts-expect-error calling with a class name string mimics the compiled css form
   const ResetButton = styled(SubmitButton).attrs({ type: "reset" })("reset_btn");
 
   expect(getSnapshot(<SubmitButton />)).toMatchInlineSnapshot(`
