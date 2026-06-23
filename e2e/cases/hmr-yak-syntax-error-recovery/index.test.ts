@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR recovers after a syntax error in a .yak.ts dependency",
-  withTestEnv("hmr-yak-syntax-error-recovery", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-yak-syntax-error-recovery", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const box = page.getByTestId("box");
     await expect(box).toHaveCSS("padding", "40px");
@@ -16,7 +16,7 @@ test(
     });
 
     // Introduce a syntax error in the .yak.ts file
-    await fsTmp.writeFile(
+    await testEnv.writeFile(
       "tokens.yak.ts",
       "export const spacing = 5 * 8;\nexport const brand = <<<BROKEN>>>;\n",
     );
@@ -25,7 +25,7 @@ test(
     await page.waitForTimeout(3_000);
 
     // Fix the syntax error with new values
-    await fsTmp.writeFile(
+    await testEnv.writeFile(
       "tokens.yak.ts",
       'export const spacing = 2 * 8;\nexport const brand = "red";\n',
     );
@@ -34,7 +34,10 @@ test(
     await expect(box).toHaveCSS("padding", "16px", { timeout: 30_000 });
     await expect(box).toHaveCSS("color", "rgb(255, 0, 0)");
 
-    // Verify no full page reload occurred
-    expect(await page.evaluate(() => window.__hmr)).toBe(true);
+    /** rsbuild recovers from the error via a full page reload instead of a hot update */
+    const bundlerSupportsHmrErrorRecovery = testEnv.bundlerDirName !== "rsbuild";
+    expect(Boolean(await page.evaluate(() => window.__hmr))).toBe(
+      bundlerSupportsHmrErrorRecovery,
+    );
   }),
 );

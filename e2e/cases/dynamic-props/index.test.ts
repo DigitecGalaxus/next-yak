@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders dynamic props with CSS variables and conditional styles",
-  withTestEnv("dynamic-props", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("dynamic-props", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const active = page.getByTestId("bar-active");
     await expect(active).toHaveCSS("width", "200px");

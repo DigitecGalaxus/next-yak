@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders styled components with dynamically generated yak file mixins",
-  withTestEnv("yak-file-mixin", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("yak-file-mixin", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // h1: font-size 16px (16 - 0*2)
     const headline = page.getByTestId("headline");

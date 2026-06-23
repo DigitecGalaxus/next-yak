@@ -34,7 +34,7 @@ export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
     metadata: {
       url: config.urlPattern.replaceAll("[case-name]", caseName),
       urlPattern: config.urlPattern,
-      bundlerName: config.name,
+      bundlerDirName: config.name,
     },
     use: { baseURL: `http://localhost:${config.port}` },
   }));

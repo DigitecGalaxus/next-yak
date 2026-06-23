@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders .attrs() with default attributes and prop overrides",
-  withTestEnv("attrs", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("attrs", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // Static attrs: type="button"
     const button = page.getByTestId("button");

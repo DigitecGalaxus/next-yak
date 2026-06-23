@@ -13,6 +13,8 @@ catalogs:
     "@swc/counter": 0.1.3
   dev:
     "@babel/preset-typescript": 7.28.5
+    "@rsbuild/core": 2.0.15
+    "@rsbuild/plugin-react": 2.1.0
     "@changesets/cli": 2.31.0
     "@eslint/eslintrc": 3.3.5
     "@monaco-editor/react": 4.7.0

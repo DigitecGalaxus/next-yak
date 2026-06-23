@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders styled component with namespace-imported constants",
-  withTestEnv("namespace-import", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("namespace-import", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const button = page.getByTestId("button");
     await expect(button).toHaveCSS("color", "rgb(255, 0, 0)");

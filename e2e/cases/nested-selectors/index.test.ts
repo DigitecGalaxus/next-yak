@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders nested selectors including child and hover",
-  withTestEnv("nested-selectors", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("nested-selectors", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const container = page.getByTestId("container");
     const inner = page.getByTestId("inner");

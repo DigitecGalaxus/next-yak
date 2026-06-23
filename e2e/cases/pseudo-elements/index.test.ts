@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders ::before and ::after pseudo-elements with content",
-  withTestEnv("pseudo-elements", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("pseudo-elements", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const badge = page.getByTestId("badge");
 

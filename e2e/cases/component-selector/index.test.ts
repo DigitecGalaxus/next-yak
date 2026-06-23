@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders component selector targeting imported styled component",
-  withTestEnv("component-selector", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("component-selector", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // Icon has its own styles
     const icon = page.getByTestId("icon");
