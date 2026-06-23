@@ -36,8 +36,6 @@ test(
 
     /** rsbuild recovers from the error via a full page reload instead of a hot update */
     const bundlerSupportsHmrErrorRecovery = testEnv.bundlerDirName !== "rsbuild";
-    expect(Boolean(await page.evaluate(() => window.__hmr))).toBe(
-      bundlerSupportsHmrErrorRecovery,
-    );
+    expect(Boolean(await page.evaluate(() => window.__hmr))).toBe(bundlerSupportsHmrErrorRecovery);
   }),
 );
