@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when cross-file dependency changes",
-  withTestEnv("hmr-cross-file-import", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-cross-file-import", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const primary = page.getByTestId("primary");
     await expect(primary).toHaveCSS("color", "rgb(128, 0, 128)");
@@ -21,8 +21,8 @@ test(
     });
 
     // Change the dependency file — purple → red, orange → blue, teal → green
-    const src = await fsTmp.readFile("colors.ts");
-    await fsTmp.writeFile(
+    const src = await testEnv.readFile("colors.ts");
+    await testEnv.writeFile(
       "colors.ts",
       src.replace('"purple"', '"red"').replace('"orange"', '"blue"').replace('"teal"', '"green"'),
     );

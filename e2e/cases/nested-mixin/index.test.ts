@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders nested cross-file mixins with component selectors",
-  withTestEnv("nested-mixin", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("nested-mixin", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // Button gets buttonMixin: color black
     const button = page.getByTestId("button");

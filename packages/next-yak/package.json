@@ -31,6 +31,7 @@
     "loaders",
     "runtime",
     "withYak",
+    "rsbuild",
     "LICENSE"
   ],
   "type": "module",
@@ -136,6 +137,12 @@
         "types": "./dist/loaders/vite-plugin.d.ts",
         "default": "./dist/loaders/vite-plugin.js"
       }
+    },
+    "./rsbuild": {
+      "import": {
+        "types": "./dist/rsbuild/index.d.ts",
+        "default": "./dist/rsbuild/index.js"
+      }
     }
   },
   "publishConfig": {
@@ -157,6 +164,7 @@
     "yak-swc": "9.4.2"
   },
   "devDependencies": {
+    "@rsbuild/core": "catalog:dev",
     "@testing-library/jest-dom": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/babel__core": "catalog:dev",
@@ -175,12 +183,16 @@
     "vitest": "catalog:dev"
   },
   "peerDependencies": {
+    "@rsbuild/core": ">=2.0.0",
     "@types/react": ">=18",
     "next": ">=16.1.0",
     "react": ">=18.0.0",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {
+    "@rsbuild/core": {
+      "optional": true
+    },
     "@types/react": {
       "optional": true
     },

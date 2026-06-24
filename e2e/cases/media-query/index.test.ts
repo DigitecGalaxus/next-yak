@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders media queries — inline and from cross-file constant",
-  withTestEnv("media-query", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("media-query", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const title = page.getByTestId("title");
     const mobileHidden = page.getByTestId("mobile-hidden");

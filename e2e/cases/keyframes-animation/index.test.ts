@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders keyframes animation",
-  withTestEnv("keyframes-animation", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("keyframes-animation", async (testEnv, page) => {
+    await page.goto(testEnv.url);
     const box = page.getByTestId("box");
 
     // With reverse direction on a 100s animation, the box should start near 1000px

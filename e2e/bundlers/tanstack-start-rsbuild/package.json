@@ -1,0 +1,24 @@
+{
+  "name": "e2e-tanstack-start-rsbuild",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && rsbuild dev --port 3005",
+    "build": "cd .tmp && rsbuild build",
+    "start": "cd .tmp && rsbuild preview --port 3005"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.170.16",
+    "@tanstack/react-start": "^1.168.26",
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "catalog:dev",
+    "@rsbuild/plugin-react": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

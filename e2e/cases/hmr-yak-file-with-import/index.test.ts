@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when shared base dependency changes across multiple component files",
-  withTestEnv("hmr-yak-file-with-import", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-yak-file-with-import", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const accordion = page.getByTestId("accordion");
     const button = page.getByTestId("button");
@@ -22,8 +22,8 @@ test(
     });
 
     // Change the shared dependency — all components should update
-    const src = await fsTmp.readFile("base-tokens.ts");
-    await fsTmp.writeFile(
+    const src = await testEnv.readFile("base-tokens.ts");
+    await testEnv.writeFile(
       "base-tokens.ts",
       src.replace("GRID = 8", "GRID = 10").replace('"coral"', '"blue"'),
     );

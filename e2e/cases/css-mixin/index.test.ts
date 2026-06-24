@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders css mixin in styled component and css prop",
-  withTestEnv("css-mixin", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("css-mixin", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // Mixin used inside styled component
     const styledMixin = page.getByTestId("styled-mixin");

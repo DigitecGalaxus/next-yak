@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR: editing styled-only file does not cause full reload when imported through non-boundary chain",
-  withTestEnv("hmr-styled-refresh-boundary", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-styled-refresh-boundary", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const divider = page.getByTestId("divider");
     const counter = page.getByTestId("counter");
@@ -32,8 +32,8 @@ test(
     //   - pageUtils.ts: mixed exports (component + constant)
     //   - index.tsx: mixed exports (component + function)
     // …and the update would propagate to the entry point → full reload.
-    const src = await fsTmp.readFile("Divider.tsx");
-    await fsTmp.writeFile(
+    const src = await testEnv.readFile("Divider.tsx");
+    await testEnv.writeFile(
       "Divider.tsx",
       src.replace("background-color: red", "background-color: blue"),
     );
