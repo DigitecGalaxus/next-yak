@@ -7,6 +7,7 @@ import { colors, container, fonts, shadow } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/editor-surface";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
+import { asset } from "@/lib/site";
 
 const blink = keyframes`
   0%, 49% {
@@ -77,7 +78,7 @@ export default function HeroEditorView({
       {/* mascot: in flow, peeking over the card's top edge. It grows with the editor
           (cqi) and the negative margin lets the card ride up over its base. */}
       <Image
-        src={`/yak-hero.png`}
+        src={asset("/yak-hero.png")}
         alt="Yak hero"
         width="1248"
         height="832"
