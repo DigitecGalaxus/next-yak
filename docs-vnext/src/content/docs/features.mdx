@@ -1,0 +1,805 @@
+---
+title: Features
+description: Next-yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
+---
+
+import { Callout } from "../../components/mdx/callout";
+import { Tab, Tabs } from "../../components/mdx/tabs";
+
+## Static CSS
+
+At the heart of next-yak lies the extraction of static CSS.
+You can write your styles as you normally would with styled-components.
+During build time, these styles are extracted, and your component is assigned a class that encapsulates these styles.
+
+```jsx title="my-component.tsx"
+import { styled } from "next-yak";
+
+const Headline = styled.h1`
+  font-size: 2rem;
+  font-weight: bold;
+  color: rgba(253, 29, 29, 1);
+`;
+
+const Component = () => {
+  return <Headline>Hello there!</Headline>;
+};
+```
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Static CSS" items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+const Headline = styled.h1`
+  font-size: 2rem;
+  font-weight: bold;
+  color: rgba(253, 29, 29, 1);
+`;
+```
+</Tab>
+<Tab value="output javascript">
+```jsx
+const Headline = styled.h1('.Headline');
+```
+</Tab>
+<Tab value="output CSS">
+```css
+.Headline {
+  font-size: 2rem;
+  font-weight: bold;
+  color: rgba(253, 29, 29, 1);
+}
+```
+</Tab>
+</Tabs>
+</details>
+
+## Dynamic styles
+
+The static functionality itself is already very useful, but the bread and butter is an easy way to
+create dynamic styles. Styled-components popularized the approach of using props to drive dynamic CSS parts.
+With next-yak, you can use the exact same familiar API.
+
+<Tabs title="Dynamic styles" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { css, styled } from 'next-yak';
+
+const Paragraph = styled.p<{ $primary?: boolean }>`
+  background: ${props => props.$primary ? "#BF4F74" : "white"};
+${props => props.$primary ?
+css`       color: white;
+    ` :
+css`       color: #BF4F74
+    `};
+font-size: 2rem;
+font-weight: bold;
+`;
+
+const Component = () => {
+return (
+
+<>
+<Paragraph $primary>Hello there primary!</Paragraph>
+<Paragraph>Hello there non-primary!</Paragraph>
+</>
+);
+}
+
+````
+</Tab>
+<Tab value="javascript">
+```jsx
+import { css, styled } from 'next-yak';
+
+const Paragraph = styled.p`
+  background: ${props => props.$primary ? "#BF4F74" : "white"};
+  ${props => props.$primary ?
+    css`
+      color: white;
+    ` :
+    css`
+      color: #BF4F74
+    `};
+  font-size: 2rem;
+  font-weight: bold;
+`;
+
+const Component = () => {
+  return (
+    <>
+      <Paragraph $primary>Hello there primary!</Paragraph>
+      <Paragraph>Hello there non-primary!</Paragraph>
+    </>
+  );
+}
+````
+
+</Tab>
+</Tabs>
+
+The CSS templates create their own class which is referenced during runtime when the function returns them.
+The other function which returns strings directly without setting new CSS properties, will be changed to
+a CSS variable, which is set on the element itself directly based on the functions return value.
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Compiled output" items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+const Paragraph = styled.p`
+  background: ${props => props.$primary ? "#BF4F74" : "white"};
+  ${props => props.$primary ?
+    css`
+      color: white;
+    ` :
+    css`
+      color: #BF4F74;
+    `}
+  font-size: 2rem;
+  font-weight: bold;
+`;
+```
+</Tab>
+<Tab value="output javascript">
+```jsx
+const Paragraph = styled.p(
+  '.Paragraph',
+  props => props.$primary ? css('.propsprimary_0') : css('.not_propsprimary_1'),
+  {
+    style: { '--var1': props => props.$primary ? "#BF4F74" : "white" }
+  }
+);
+```
+</Tab>
+<Tab value="output CSS">
+```css
+.Paragraph {
+  background: var(--var1);
+
+&:where(.propsprimary_0) {
+color: white;
+}
+
+&:where(.not_propsprimary_1) {
+color: #BF4F74;
+}
+
+font-size: 2rem;
+font-weight: bold;
+}
+
+````
+</Tab>
+</Tabs>
+</details>
+
+## Compatible with utility-first CSS frameworks (e.g. Tailwind)
+
+Next-yak is fully compatible with utility-first CSS frameworks like Tailwind. Just use the `atoms` function to
+reference classes from these frameworks.
+
+<Tabs title="Tailwind with atoms" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
+  ${({$variant}) => $variant === "primary"
+    ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+    : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
+  }
+`
+````
+
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav`  ${({$variant}) => $variant === "primary"
+    ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+    : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
+  }`
+
+````
+</Tab>
+</Tabs>
+
+You can even define your own functions that manipulate the styles of your components based on props:
+
+<Tabs title="Conditional atoms" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
+  ${atoms("mx-auto", (props, classNames, style) => {
+    if(props.$variant === "primary"){
+      classNames.add("flex");
+    } else {
+      classNames.add("bg-white");
+    }
+  })};
+`
+````
+
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, atoms } from 'next-yak';
+
+const Header = styled.nav`  ${atoms("mx-auto", (props, classNames, style) => {
+    if(props.$variant === "primary"){
+      return "flex max-w-7xl items-center justify-between p-6 lg:px-8";
+    }
+    else{
+      return "bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow";
+    }
+  })};`
+
+````
+</Tab>
+</Tabs>
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Compiled output" items={["input", "output javascript"]}>
+<Tab value="input">
+```jsx
+const Header = styled.nav`
+  ${({$variant}) => $variant === "primary"
+    ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+    : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
+  }
+`
+````
+
+</Tab>
+<Tab value="output javascript">
+```jsx
+const Header = styled.nav('.Header',
+  ({$variant}) => $variant === "primary"
+    ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+    : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"))
+```
+</Tab>
+</Tabs>
+</details>
+
+## Animations
+
+In order to create CSS animations, you can use the `keyframes` API and specify the keyframes for the animation
+you want to create. This can be used in your animation declarations within the same file.
+
+```jsx title="my-component.tsx"
+import { keyframes, styled } from "next-yak";
+
+const fadeIn = keyframes`
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+`;
+
+const FadeInButton = styled.button`
+  animation: 1s ${fadeIn} ease-out;
+`;
+```
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Animations" items={["input", "output CSS"]}>
+<Tab value="input">
+```jsx
+const fadeIn = keyframes`
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+`
+
+const FadeInButton = styled.button`  animation: 1s ${fadeIn} ease-out;`
+
+````
+
+```jsx [output javascript]
+const fadeIn = keyframes('fadeIn')
+
+const FadeInButton = styled.button('.FadeInButton', {
+  style: { "--yakVar1": fadeIn }
+})
+````
+
+</Tab>
+<Tab value="output CSS">
+```css
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.FadeInButton {
+animation: 1s var(--yakVar1) ease-out;
+}
+
+````
+</Tab>
+</Tabs>
+</details>
+
+## Mixins
+
+Mixins are declarations of the `css` utility function. You can declare a variable which holds the css declaration and
+use it inside your `styled` declarations.
+
+```jsx title="my-component.tsx"
+import { css, styled } from 'next-yak';
+
+const mixin = css`
+  color: green;
+`;
+
+const MyComp = styled.div`
+  background-color: yellow;
+  ${mixin}
+`;
+````
+
+You can also make it dynamic, where the props are passed to the mixin.
+
+```jsx title="my-component.tsx"
+import { css, styled } from "next-yak";
+
+const mixin = css`
+  color: ${(props) => (props.$green ? "green" : "blue")};
+`;
+
+const MyComp = styled.div`
+  background-color: yellow;
+  ${mixin}
+`;
+```
+
+During build time the CSS literal is converted to a class name (or multiple class names) and can be referenced by other CSS styles.
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Mixins" items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+const mixin = css`
+  color: ${(props) => props.$green ? 'green' : 'blue'};
+`;
+
+const MyComp = styled.div`  background-color: yellow;
+  ${mixin}`;
+
+````
+</Tab>
+<Tab value="output javascript">
+```jsx
+const mixin = css('mixin_0', {
+  style: {
+    "--yakVar1": props => props.$green ? 'green' : 'blue'
+  },
+});
+
+const MyComp = styled.div('MyComp', mixin);
+````
+
+</Tab>
+<Tab value="output CSS">
+```css
+.mixin_0 {
+  color: var(--yakVar1);
+}
+
+.MyComp {
+background-color: yellow;
+}
+
+````
+</Tab>
+</Tabs>
+</details>
+
+
+## Automatic CSS variables
+
+You may noticed that we sometimes used css`` and sometimes just a literal string. If the property name is already
+present and you want to have dynamic values of that property, you can just use literal strings. These get transformed into CSS variables during build time.
+
+<Tabs title="Automatic CSS variables" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { styled } from 'next-yak';
+
+const Box = styled.div<{ $variant: "primary" | "secondary", $color: string }>`
+  font-size: ${props => props.$variant === "primary" ? "2rem" : "1rem" };
+  color: ${props => props.$color};
+  display: flex;
+`
+````
+
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled } from 'next-yak';
+
+const Box = styled.div`  font-size: ${props => props.$variant === "primary" ? "2rem" : "1rem" };
+  color: ${props => props.$color};
+  display: flex;`
+
+````
+</Tab>
+</Tabs>
+
+
+The value of the CSS variable is set via the style property of the component, ensuring no interference with potential CSS variable names that share the same name.
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Compiled output" items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+const Box = styled.div`
+  font-size: ${props => props.$variant === "primary" ? "2rem" : "1rem" };
+  color: ${props => props.$color};
+  display: flex;
+`
+````
+
+</Tab>
+<Tab value="output javascript">
+```jsx
+const Box = styled.div('.Box', {
+  style: {
+    '--var1': props => props.$variant === "primary" ? "2rem" : "1rem",
+    '--var2': props => props.$color
+  }
+})
+```
+</Tab>
+<Tab value="output CSS">
+```css
+.Box {
+  font-size: var(--var1);
+  color: var(--var2);
+  display: flex;
+}
+```
+</Tab>
+</Tabs>
+</details>
+
+## Theming
+
+<Callout type="info">
+  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak
+  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs
+  seamlessly.
+</Callout>
+
+As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
+
+### Static Design Tokens vs Dynamic Context
+
+For static design tokens like colors, spacing, typography, and other unchanging design values, you often don't need a context at all. You can simply declare and import them anywhere in your application:
+
+```tsx
+// theme.ts
+export const colors = {
+  primary: "#009688",
+  secondary: "#ff5722",
+  background: "#ffffff",
+};
+
+export const spacing = {
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "32px",
+};
+
+// Button.tsx
+import { styled } from "next-yak";
+import { colors, spacing } from "./theme";
+
+const Button = styled.button`
+  background: ${colors.primary};
+  padding: ${spacing.md};
+`;
+```
+
+This approach has better performance because these values can be extracted and optimized during build time, whereas context values are resolved at runtime.
+
+### Dynamic Theming with Context
+
+Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it in a hassle free manner that works for both Server Components and Client Components without a difference in usage for you. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
+
+```tsx twoslash title="yak.context.ts"
+// @noErrors
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
+
+// ---cut---
+export async function getYakThemeContext() {
+  return {
+    brandName: getMyBrandName() ?? "myDefaultBrand",
+    featureFlags: {
+      newDesign: isNewDesign() ?? false,
+    },
+  };
+}
+
+declare module "next-yak" {
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
+}
+```
+
+Once this context file is in place, you can access the theme props on every component.
+
+<Tabs title="Dynamic theming" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+//@noErrors
+const getMyBrandName: () => string | undefined = () => "test";
+const isNewDesign: () => boolean | undefined = () => true;
+
+export async function getYakThemeContext() {
+  return {
+    brandName: getMyBrandName() ?? "myDefaultBrand",
+    featureFlags: {
+      newDesign: isNewDesign() ?? false,
+    },
+  };
+}
+
+declare module "next-yak" {
+export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> { }
+}
+
+// ---cut---
+import { styled, css } from 'next-yak';
+
+const Button = styled.button`
+  display: block;
+  ${({theme}) => theme.brandName === 'myFancyBrand' 
+    ? css`
+color: black;
+background-color: white;
+` 
+    : css`
+color: blue;
+background-color: white;
+`}
+`;
+
+````
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, css } from 'next-yak';
+
+const Button = styled.button`
+  display: block;
+  ${({theme}) => theme.brandName === 'myFancyBrand'
+  ? css`
+    color: black;
+    background-color: white;
+  `
+  : css`
+    color: blue;
+    background-color: white;
+  `}
+`;
+````
+
+</Tab>
+</Tabs>
+
+### Using Async Server Functions in Next.js 15.0.0+
+
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs seamlessly:
+
+```tsx
+import { cookies } from "next/headers";
+
+export async function getYakThemeContext() {
+  const cookieStore = await cookies();
+  return {
+    highContrast: cookieStore.get("highContrast")?.value === "true",
+  };
+}
+
+declare module "next-yak" {
+  export interface YakTheme extends Awaited<ReturnType<typeof getYakThemeContext>> {}
+}
+```
+
+Under the hood, next-yak uses React's `use()` hook to resolve the promise from your async context function at the component level, then passes the fully resolved theme object to your styled components. This means your styled component template literals continue to work exactly as before, receiving a synchronous theme object, while you get the flexibility to await any server-side APIs you need in your context function.
+
+## CSS Prop
+
+We support out of the box the `css` prop which is a shorthand for adding styles to an element. Similiar to inline-styles
+it allows you to write local styles for certain elements on your page. Differently than inline-styles, it allows you to use
+selectors that target wrapped elements.
+
+```jsx title="my-component.tsx"
+import { css } from "next-yak";
+
+const Component = () => {
+  return (
+    <div
+      css={css`
+        color: red;
+      `}
+    >
+      Hello there!
+    </div>
+  );
+};
+```
+
+It's meant for simple styling requirements, where you don't have to think about a name for a specialized component.
+
+The `css` prop is allowed on any element that can accept `className` and `style`.
+
+If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
+
+```jsx title="my-component.tsx"
+import { css } from "next-yak";
+
+const Component = (props) => {
+  return <div css={atoms("bg-red-500", props.primary && "bg-blue-500")}>Hello there!</div>;
+};
+```
+
+### TypeScript
+
+To use it with the correct types just add the following line to the top of the file
+
+```tsx title="my-component.tsx"
+/** @jsxImportSource next-yak */ // [!code hl]
+
+import { css } from "next-yak";
+
+const Component = () => {
+  return <div css={{ color: "red" }}>Hello there!</div>;
+};
+```
+
+Or just add this to your `tsconfig.json` and all your css props will have the correct types.
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsxImportSource": "next-yak" // [!code hl]
+  }
+}
+```
+
+## Cross-File Imports
+
+next-yak supports importing constants, mixins, and selectors from normal modules or `.yak` files. This works consistently across all bundlers (webpack, Turbopack, and Vite).
+
+### Build-Time Constants with `.yak` Files
+
+`.yak.ts` / `.yak.tsx` files are evaluated at build time, which means you can use real JavaScript logic to compute values that then become part of your static CSS. This is the key difference from ordinary `.ts` files. You can map, iterate, and calculate at build time.
+
+```tsx title="theme/spacing.yak.ts"
+export const spacing = {
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "32px",
+};
+
+export const spacingTokens = Object.entries(spacing).reduce(
+  (acc, [key, value]) => ({
+    ...acc,
+    [key]: `padding: ${value}; margin: ${value};`,
+  }),
+  {} as Record<string, string>,
+);
+```
+
+```tsx title="components/Box.tsx"
+import { styled, css } from "next-yak";
+import { spacingTokens } from "../theme/spacing.yak";
+
+const Box = styled.div`
+  ${css`
+    ${spacingTokens["sm"]}
+  `}
+  ${css`
+    ${spacingTokens["md"]}
+  `}
+`;
+```
+
+Here `spacingTokens` is computed at build time: an ordinary `.ts` file would keep `Object.entries()` and `.reduce()` as runtime code, but a `.yak` file evaluates these expressions and inlines the final object. The resulting CSS contains fully static class names. Which means no JavaScript runs for these styles at runtime, even though their values were computed with array operations. You can reference any key like `spacingTokens["sm"]` as a build-time constant.
+
+This also works for generating media query ranges, animation durations from a config, or any other calculated value.
+
+### Importing Mixins Across Files
+
+You can also import CSS mixins defined with `css` from other regular modules:
+
+```tsx title="mixins.tsx"
+import { css } from "next-yak";
+
+export const truncate = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+```
+
+```tsx title="components/Label.tsx"
+import { styled } from "next-yak";
+import { truncate } from "../mixins";
+
+const Label = styled.span`
+  ${truncate}
+  max-width: 200px;
+`;
+```
+
+## Generic Yak Component
+
+If you use `next-yak` to wrap a generic component, you can use the `GenericYakComponentOf` component to preserve the type of your component while still being able to use it as a regular yak component.
+
+```tsx title="my-generic-component.tsx" twoslash
+import { type ReactElement } from "react";
+import { type GenericYakComponentOf, styled } from "next-yak";
+
+type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
+
+const MyGenericComponent: GenericComponentType = (props) => <div {...props}>hello</div>;
+
+const StyledComponent = styled(MyGenericComponent)`
+  color: red;
+` as GenericYakComponentOf<GenericComponentType>;
+
+// usage
+<StyledComponent<{ myProp: string }> myProp="test" />;
+```
+
+This also works for cases where you want to add properties that are not part of the generic component's props.
+
+```tsx title="my-generic-component.tsx" twoslash
+import { type ReactElement } from "react";
+import { type GenericYakComponentOf, styled } from "next-yak";
+
+type GenericComponentType = <T extends object>(props: T) => ReactElement<T>;
+
+const MyGenericComponent: GenericComponentType = (props) => <div {...props}>hello</div>;
+
+type MyAdditionalProps = {
+  additionalProp: string;
+};
+
+const StyledComponent = styled(MyGenericComponent)`
+  color: red;
+` as GenericYakComponentOf<GenericComponentType, MyAdditionalProps>;
+
+// usage
+<StyledComponent<{ myProp: string }> myProp="test" additionalProp="me" />;
+```

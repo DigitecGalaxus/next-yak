@@ -2,6 +2,7 @@ packages:
   - packages/*
   - examples/*
   - benchmarks
+  - docs-vnext
   - e2e
   - e2e/bundlers/*
 
@@ -33,6 +34,7 @@ catalogs:
     "@swc/counter": ^0.1.3
     solid-js: ^2.0.0-rc.10
   dev:
+    "@base-ui/react": 1.8.0
     "@babel/types": 8.0.4
     "@rsbuild/core": 2.2.2
     "@rsbuild/plugin-react": 2.1.0
