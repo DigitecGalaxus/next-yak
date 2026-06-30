@@ -1,0 +1,66 @@
+name: Build docs-vnext PR preview
+
+on:
+  pull_request:
+    paths:
+      - "docs-vnext/**"
+      - "packages/yak-swc/**"
+      - "packages/next-yak/**"
+      - ".github/workflows/docs-vnext-pr-preview.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build docs-vnext preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install node_modules
+        run: pnpm install
+
+      - name: Add Rust wasm targets
+        run: rustup target add wasm32-wasip1 wasm32-unknown-unknown
+
+      - name: Enable caching
+        uses: swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+        with:
+          workspaces: packages/yak-swc
+
+      - name: Build SWC plugin
+        run: pnpm run build:swc
+
+      - name: Build next-yak
+        run: pnpm run build
+
+      - name: Build docs-vnext
+        run: pnpm --filter docs-vnext build
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docs-vnext-preview-pr-${{ github.event.pull_request.number }}
+          path: docs-vnext/out
+          if-no-files-found: error
+          retention-days: 14

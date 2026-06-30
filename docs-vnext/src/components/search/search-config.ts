@@ -12,5 +12,5 @@ import type { ClientPreset } from "fumadocs-core/search/client";
  */
 export const searchClient = {
   type: "static",
-  from: "/api/search",
+  from: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/search`,
 } as const satisfies ClientPreset;
