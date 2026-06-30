@@ -1,0 +1,255 @@
+---
+title: Eslint plugin
+description: The eslint-plugin-yak provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
+---
+import { Step, Steps } from '../../components/mdx/steps';
+import { Tab, Tabs } from '../../components/mdx/tabs';
+
+## Installation
+
+Install eslint-plugin-yak in your project:
+
+<Tabs title="Install eslint-plugin-yak" items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm install -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm i -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn i -D eslint-plugin-yak
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun i -D eslint-plugin-yak
+```
+</Tab>
+</Tabs>
+
+Add it to your eslint config:
+
+```js title="eslint.config.mjs"
+import yakPlugin from "eslint-plugin-yak";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([
+  yakPlugin.configs.recommended,
+]);
+```
+
+Now, you can run eslint to check your code.
+
+```ts
+const myDiv = styled.div`
+    > div {}
+`;
+// ^ eslint: Nesting selector missing. Did you forget the &?
+```
+
+## Rules
+
+### css-nesting-operator
+
+Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
+
+Example:
+
+```tsx title="example.tsx"
+const myDiv = styled.div`
+ //[!code --]
+ > div {}
+ //[!code ++]
+ & > div {}
+`;
+```
+
+#### Reason why
+
+Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+
+We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
+
+### css-global-deprecated
+
+Warns about usage of `:global()` selectors, which are deprecated and will be removed in the next major version in favor of native CSS transpilation.
+
+Example:
+
+```tsx title="example.tsx"
+const Button = styled.button`
+//[!code --]
+  :global(html) {
+//[!code --]
+    background: white;
+//[!code --]
+  }
+//[!code ++]
+  html {
+//[!code ++]
+    background: white;
+//[!code ++]
+  }
+`;
+```
+
+#### Reason why
+
+The `:global()` selector was originally needed to opt out of CSS Modules scoping. With the new native CSS transpilation mode, styles are no longer scoped through CSS Modules, making `:global()` unnecessary.
+
+To migrate, enable native CSS transpilation in your `next.config.js`:
+
+```js
+experiments: { transpilationMode: 'Css' }
+```
+
+See the [migration guide](/documentation/migration-to-native-css) for more details.
+
+### enforce-semicolon
+
+Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier.
+
+Example:
+
+```tsx title="example.tsx"
+styled.div`
+//[!code --]
+  ${skeletonStyle}
+//[!code ++]
+  ${skeletonStyle};
+`;
+```
+
+#### Reason why
+
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, `next-yak` has to understand the code statically. A variable might have different meanings:
+
+- **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
+- **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules
+- **Constants** (like `margin-top: ${marginTop}`)
+- **Runtime Variables** (like `x: ${({$x}) => $x}`)
+
+Constants and runtime values are easy to detect as they are always after a colon (:).
+However to distinguish between selectors and mixins we need the semicolon (;):
+
+```tsx
+// This works correctly - mixin properly terminated with semicolon
+styled.div`
+  ${skeleton};
+  div {
+    color: blue;
+  }
+`
+
+// This causes ambiguity - is it a mixin or part of the selector?
+styled.div`
+  ${skeleton}
+  div {
+    color: blue;
+  }
+`
+```
+
+### style-conditions
+
+Warns if runtime performance could be improved by using css literals.
+
+Example:
+
+```tsx title="example.tsx"
+styled.button`
+//[!code --]
+  color: ${() => color};
+//[!code ++]
+  color: ${({$color}) => $color};
+// or if the value is defined outside the component: // [!code ++]
+//[!code ++]
+  color: ${color};
+`;
+```
+
+```tsx title="example.tsx"
+styled.button`
+  color: ${() => {
+    if (variant === 'primary') {
+      return primary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$primary}) => $primary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${primary}; // [!code ++]
+      `; // [!code ++]
+    } else {
+      return secondary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$secondary}) => $secondary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${secondary}; // [!code ++]
+      `; // [!code ++]
+    }
+  }};
+`;
+```
+
+#### Reason why
+
+next-yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
+
+<Steps>
+<Step>
+Class-based Dynamic Styles:
+
+The first approach compiles dynamic styles into separate CSS classes that are toggled at runtime:
+
+```tsx
+styled.button<{$primary?: boolean}>`
+  color: blue;
+  ${({$primary}) => $primary && css`
+    color: red;
+  `}
+`;
+```
+
+In this example:
+- The base style color: blue is extracted into a CSS class that's always applied
+- The conditional style color: red is extracted into a separate CSS class that's only toggled based on the $primary prop
+- This approach is highly efficient since all styles are pre-compiled and only class names are manipulated at runtime
+</Step>
+
+<Step>
+CSS Variables for Truly Dynamic Values
+
+The second approach uses CSS custom properties (variables) for values that cannot be determined at build time:
+
+```tsx
+styled.div<{$x: number}>`
+  left: ${({$x}) => `${$x}px`}
+`;
+```
+
+In this example:
+
+- The value for $x is extracted into a CSS variable (e.g., --x)
+- At runtime, this variable is set via inline styles: `<div style="--x: 43px">...</div>`
+- This allows for fully dynamic values but adds a small runtime overhead
+</Step>
+</Steps>
+
+#### Best Practices
+
+- Use the class-based approach (first example) for binary conditions and fixed value variations
+- Use CSS variables (second example) only when values are truly dynamic, such as:
+  - User inputs
+  - Calculated positions
+  - Animation states
+  - Values from external APIs
+
+The yak/style-conditions rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.
