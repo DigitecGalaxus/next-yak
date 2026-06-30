@@ -7,6 +7,7 @@ import Link from "next/link";
 import NavLink from "./nav-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
+import { asset } from "@/lib/site";
 import { screen, colors, fonts, headerHeight, maxContentWidth, typography } from "@/tokens";
 import Image from "next/image";
 
@@ -64,7 +65,7 @@ export default function Header({
             `}
           >
             <Image
-              src="/yak-head-flat.png"
+              src={asset("/yak-head-flat.png")}
               alt="Yak head logo"
               width="1254"
               height="1254"
