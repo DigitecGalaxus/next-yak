@@ -10,6 +10,7 @@ import { source } from "@/lib/source";
 import { asset } from "@/lib/site";
 import { screen, colors, fonts, headerHeight, maxContentWidth, typography } from "@/tokens";
 import Image from "next/image";
+import Yak from "./yak";
 
 export default function Header({
   className,
@@ -61,17 +62,12 @@ export default function Header({
             css={css`
               display: flex;
               align-items: center;
-              gap: 2px;
+              gap: 8px;
             `}
           >
-            <Image
-              src={asset("/yak-head-flat.png")}
-              alt="Yak head logo"
-              width="1254"
-              height="1254"
+            <Yak
               css={css`
-                width: 60px;
-                height: auto;
+                width: 32px;
               `}
             />
             <span

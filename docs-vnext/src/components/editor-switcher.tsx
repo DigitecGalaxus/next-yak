@@ -112,7 +112,7 @@ const SwitcherTab = styled(BaseTabs.Tab)`
     transition: color 0.2s ease;
   }
 
-  &[data-selected] {
+  &[data-active] {
     color: ${colors.cyan};
   }
 
