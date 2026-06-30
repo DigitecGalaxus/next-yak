@@ -9,6 +9,7 @@ import { createEvaluator, type Evaluator } from "../isolated-source-eval/index.j
 import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
+import { nextYakImportRegex } from "./lib/moduleImportsNextYak.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
 
@@ -199,7 +200,7 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
           include: sourceFileRegex,
           exclude: [/packages\/next-yak/],
         },
-        code: "next-yak",
+        code: nextYakImportRegex,
       },
       async handler(code, id) {
         try {

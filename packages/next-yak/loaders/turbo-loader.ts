@@ -7,6 +7,7 @@ import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFil
 import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
+import { moduleImportsNextYak } from "./lib/moduleImportsNextYak.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
@@ -25,8 +26,8 @@ export default async function cssExtractLoader(
 ): Promise<string | void> {
   const callback = this.async();
 
-  // process only files which include next-yak for maximal compile performance
-  if (!code.includes("next-yak")) {
+  // Skip modules that don't genuinely import next-yak, for compile performance.
+  if (!moduleImportsNextYak(code)) {
     return callback(null, code, sourceMap);
   }
 
