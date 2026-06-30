@@ -8,7 +8,6 @@
     "build": "vite build",
     "build:yak": "pnpm run --filter next-yak build",
     "build:swc": "pnpm run --filter yak-swc build",
-    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,5 +23,5 @@
     "typescript": "catalog:dev",
     "vite": "catalog:dev"
   },
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+  "packageManager": "pnpm@11.9.0"
 }

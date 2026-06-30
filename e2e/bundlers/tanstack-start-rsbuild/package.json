@@ -8,8 +8,8 @@
     "start": "cd .tmp && rsbuild preview --port 3005"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.170.16",
-    "@tanstack/react-start": "^1.168.26",
+    "@tanstack/react-router": "catalog:dev",
+    "@tanstack/react-start": "catalog:dev",
     "next-yak": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"

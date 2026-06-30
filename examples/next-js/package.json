@@ -32,10 +32,8 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "catalog:dev",
     "@next/eslint-plugin-next": "catalog:dev",
     "@testing-library/dom": "catalog:dev",
-    "@testing-library/jest-dom": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/jest": "catalog:dev",
     "@vitejs/plugin-react": "catalog:dev",

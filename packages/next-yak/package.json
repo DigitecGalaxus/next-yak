@@ -165,7 +165,6 @@
   },
   "devDependencies": {
     "@rsbuild/core": "catalog:dev",
-    "@testing-library/jest-dom": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/babel__core": "catalog:dev",
     "@types/jest": "catalog:dev",
@@ -173,7 +172,6 @@
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "@types/webpack": "catalog:dev",
-    "fast-glob": "catalog:dev",
     "jsdom": "catalog:dev",
     "next": "catalog:dev",
     "react": "catalog:dev",
