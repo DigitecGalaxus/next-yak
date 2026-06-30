@@ -259,9 +259,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
 /**
  * Unpacks TS type assertions (as, satisfies) to the underlying expression
  */
-function unpackTSAsExpression(
-  node: TSAsExpression | Expression,
-): Expression {
+function unpackTSAsExpression(node: TSAsExpression | Expression): Expression {
   if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
     return unpackTSAsExpression((node as TSAsExpression).expression);
   }
