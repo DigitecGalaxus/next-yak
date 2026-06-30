@@ -1,4 +1,5 @@
 import { parse } from "@babel/parser";
+import type { Expression, ObjectExpression, TSAsExpression } from "@babel/types";
 import type { Compilation, LoaderContext } from "webpack";
 import {
   ModuleExport,
@@ -158,7 +159,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
     };
 
     // Track variable declarations for default export lookup
-    const variableDeclarations: Record<string, babel.types.Expression> = {};
+    const variableDeclarations: Record<string, Expression> = {};
     let defaultIdentifier: string | null = null;
 
     for (const node of ast.program.body) {
@@ -229,7 +230,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
         } else {
           // e.g. export default { ... } or export default "value"
           moduleExports.named["default"] = parseExportValueExpression(
-            node.declaration as babel.types.Expression,
+            node.declaration as Expression,
             sourceContents,
           );
         }
@@ -259,15 +260,15 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
  * Unpacks TS type assertions (as, satisfies) to the underlying expression
  */
 function unpackTSAsExpression(
-  node: babel.types.TSAsExpression | babel.types.Expression,
-): babel.types.Expression {
+  node: TSAsExpression | Expression,
+): Expression {
   if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
-    return unpackTSAsExpression((node as babel.types.TSAsExpression).expression);
+    return unpackTSAsExpression((node as TSAsExpression).expression);
   }
   return node;
 }
 
-function parseExportValueExpression(node: babel.types.Expression, code?: string): ModuleExport {
+function parseExportValueExpression(node: Expression, code?: string): ModuleExport {
   // ignores `as` casts so it doesn't interfere with the ast node type detection
   const expression = unpackTSAsExpression(node);
   if (expression.type === "CallExpression" || expression.type === "TaggedTemplateExpression") {
@@ -296,14 +297,14 @@ function parseExportValueExpression(node: babel.types.Expression, code?: string)
 }
 
 function parseObjectExpression(
-  node: babel.types.ObjectExpression,
+  node: ObjectExpression,
   code?: string,
 ): Record<string, ModuleExport> {
   let result: Record<string, ModuleExport> = {};
   for (const property of node.properties) {
     if (property.type === "ObjectProperty" && property.key.type === "Identifier") {
       const key = property.key.name;
-      const parsed = parseExportValueExpression(property.value as babel.types.Expression, code);
+      const parsed = parseExportValueExpression(property.value as Expression, code);
       if (parsed) {
         result[key] = parsed;
       }
