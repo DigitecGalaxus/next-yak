@@ -38,10 +38,5 @@
   "engines": {
     "node": ">=22.18.0"
   },
-  "packageManager": "pnpm@10.15.0",
-  "pnpm": {
-    "overrides": {
-      "yak-swc": "workspace:*"
-    }
-  }
+  "packageManager": "pnpm@11.9.0"
 }
