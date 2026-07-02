@@ -1,11 +1,7 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-:global(.input_Elem_m7uBBu) {
-  color: red;
-}
-*/ /*#__PURE__*/ css("input_Elem_m7uBBu"))}/>;
+const Elem = ()=><div className={"input_Elem_m7uBBu"}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
@@ -13,15 +9,9 @@ const Elem2 = ()=><div {...__yak_mergeCssProp({
   color: blue;
 }
 */ /*#__PURE__*/ css("input_Elem2_m7uBBu"))}/>;
-const Elem3 = ()=><div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
-:global(.input_Elem3_m7uBBu) {
-  padding: 10px;
-}
-*/ /*#__PURE__*/ css("input_Elem3_m7uBBu"))}/>;
+const Elem3 = ()=><div style={{
+        padding: "5px"
+    }} className={"input_Elem3_m7uBBu"}/>;
 const Elem4 = (props: any)=><div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
@@ -58,10 +48,6 @@ const Text = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Text_m7uBBu"), {
     "displayName": "Text"
 });
-const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-:global(.input_StyledComponentWithCSSProp_m7uBBu) {
-  color: red;
-}
-*/ /*#__PURE__*/ css("input_StyledComponentWithCSSProp_m7uBBu"))}>
+const StyledComponentWithCSSProp = ()=><Text className={"input_StyledComponentWithCSSProp_m7uBBu"}>
     test
   </Text>;

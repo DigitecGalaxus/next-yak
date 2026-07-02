@@ -1,10 +1,13 @@
+use crate::yak_imports::YakImports;
 use swc_core::{
+  atoms::Wtf8Atom,
   common::errors::HANDLER,
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
-    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement,
+    ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, ExprOrSpread,
+    Ident, IdentName, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXExpr,
+    JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop, PropName,
+    PropOrSpread, SpreadElement, Str,
   },
 };
 
@@ -40,7 +43,16 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
-  pub fn transform(&self, opening_element: &mut JSXOpeningElement, merge_ident: &Ident) {
+  pub fn transform(&self, opening_element: &mut JSXOpeningElement, yak_imports: &mut YakImports) {
+    // Constant folding: when the css prop compiled to a statically known set of
+    // class names (and the element has no className/spread that would need
+    // runtime merging), replace the whole mergeCssProp call with a plain
+    // className attribute — the merge machinery is a per-element, per-render
+    // cost for a result that is known at build time.
+    if self.try_fold(opening_element, yak_imports) {
+      return;
+    }
+    let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
     let result: Result<_, TransformError> = (|| {
       let value = opening_element.attrs.remove(self.index);
 
@@ -55,7 +67,7 @@ impl CSSProp {
         .collect();
       let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
       let merge_call =
-        Self::create_merge_call(&Self::map_props(&removed_attrs)?, css_expr, merge_ident);
+        Self::create_merge_call(&Self::map_props(&removed_attrs)?, css_expr, &merge_ident);
       let insert_index = opening_element.attrs.len();
 
       let spread_attr = JSXAttrOrSpread::SpreadElement(SpreadElement {
@@ -71,6 +83,193 @@ impl CSSProp {
         handler.span_err(err.span(), err.message());
       });
     }
+  }
+
+  /// Tries to replace the css prop with a compile-time className attribute.
+  ///
+  /// Folds only when every part is statically known — the conservative bail-out
+  /// keeps the runtime `mergeCssProp` path for everything else:
+  /// - the element has no `className` attribute and no spread attribute
+  ///   (`style` attributes are fine: a class-only css prop never touches style,
+  ///   so they simply stay in place untouched),
+  /// - the css attribute holds an already-compiled `css(...)` call (or a
+  ///   ternary of them) whose arguments are one static class string and/or
+  ///   param-less `() => cond && css("x")` condition arrows.
+  ///
+  /// ```jsx
+  /// <div css={css("a")} />                                // -> <div className="a" />
+  /// <div css={css(() => on && css("b"), "a")} />          // -> <div className={"a" + (on ? " b" : "")} />
+  /// <div css={on ? css("a") : css("b")} />                // -> <div className={on ? "a" : "b"} />
+  /// ```
+  ///
+  /// Class order matches the runtime processor exactly: the base class first,
+  /// then each conditional class in argument order. Conditions are still
+  /// evaluated once per render in the same order as before.
+  fn try_fold(&self, opening_element: &mut JSXOpeningElement, yak_imports: &YakImports) -> bool {
+    // className or spread attributes require the runtime merge (a spread may
+    // carry a className we cannot see at build time)
+    for &index in &self.relevant_props_indices {
+      match &opening_element.attrs[index] {
+        JSXAttrOrSpread::JSXAttr(attr) => match &attr.name {
+          JSXAttrName::Ident(ident) if ident.sym == *"style" => {}
+          _ => return false,
+        },
+        _ => return false,
+      }
+    }
+    let Ok(css_expr) = Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span) else {
+      // invalid css attribute: let the regular transform path report the error
+      return false;
+    };
+    let Some(folded) = Self::fold_css_expr(&css_expr, yak_imports) else {
+      return false;
+    };
+    match folded {
+      // an empty css`` contributes nothing — drop the attribute entirely
+      None => {
+        opening_element.attrs.remove(self.index);
+      }
+      Some(class_name_expr) => {
+        opening_element.attrs[self.index] = JSXAttrOrSpread::JSXAttr(JSXAttr {
+          span: DUMMY_SP,
+          name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
+          value: Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+            span: DUMMY_SP,
+            expr: JSXExpr::Expr(class_name_expr),
+          })),
+        });
+      }
+    }
+    true
+  }
+
+  /// Folds a compiled css expression into a className expression.
+  /// Outer `None` = not statically foldable (keep the runtime path),
+  /// inner `None` = folds to nothing (empty css``).
+  fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
+    match expr.unwrap_parens() {
+      Expr::Call(call) => Self::fold_css_call(call, yak_imports),
+      // css={cond ? css`…` : css`…`} — fold both arms
+      Expr::Cond(cond) => {
+        let cons = Self::fold_css_expr(&cond.cons, yak_imports)??;
+        let alt = Self::fold_css_expr(&cond.alt, yak_imports)??;
+        Some(Some(Box::new(Expr::Cond(CondExpr {
+          span: DUMMY_SP,
+          test: cond.test.clone(),
+          cons,
+          alt,
+        }))))
+      }
+      _ => None,
+    }
+  }
+
+  /// Folds one compiled `css(...)` call: one optional static class string plus
+  /// zero or more `() => cond && css("x")` condition arrows.
+  fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
+    if !Self::is_yak_css_callee(&call.callee, yak_imports) {
+      return None;
+    }
+    let mut base: Option<Wtf8Atom> = None;
+    let mut segments: Vec<(Box<Expr>, Wtf8Atom)> = Vec::new();
+    for arg in &call.args {
+      if arg.spread.is_some() {
+        return None;
+      }
+      match arg.expr.unwrap_parens() {
+        Expr::Lit(Lit::Str(class_name)) => {
+          if base.is_some() {
+            return None;
+          }
+          base = Some(class_name.value.clone());
+        }
+        Expr::Arrow(arrow) => segments.push(Self::fold_condition_arrow(arrow, yak_imports)?),
+        // dynamic values (`{ style: … }`), mixin references, nested runtime
+        // logic — not foldable
+        _ => return None,
+      }
+    }
+    let Some(base) = base else {
+      // no static base class: an empty css`` folds to nothing; conditions
+      // without a base would change the leading-space layout of the class
+      // string — keep the runtime path for that (rare) shape
+      return if segments.is_empty() { Some(None) } else { None };
+    };
+    // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : "") …
+    let mut class_name_expr = Self::str_expr(base);
+    for (condition, class_name) in segments {
+      let mut with_space = String::from(" ");
+      with_space.push_str(&class_name.as_str().unwrap_or_default());
+      class_name_expr = Box::new(Expr::Bin(BinExpr {
+        span: DUMMY_SP,
+        op: BinaryOp::Add,
+        left: class_name_expr,
+        right: Box::new(Expr::Cond(CondExpr {
+          span: DUMMY_SP,
+          test: condition,
+          cons: Self::str_expr(with_space.into()),
+          alt: Self::str_expr("".into()),
+        })),
+      }));
+    }
+    Some(Some(class_name_expr))
+  }
+
+  /// Matches the compiled condition shape `() => cond && css("x")` and returns
+  /// the condition expression plus the static class name.
+  fn fold_condition_arrow(
+    arrow: &ArrowExpr,
+    yak_imports: &YakImports,
+  ) -> Option<(Box<Expr>, Wtf8Atom)> {
+    if !arrow.params.is_empty() || arrow.is_async || arrow.is_generator {
+      return None;
+    }
+    let BlockStmtOrExpr::Expr(body) = &*arrow.body else {
+      return None;
+    };
+    match body.unwrap_parens() {
+      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => {
+        let class_name = Self::pure_static_css_class(&bin.right, yak_imports)?;
+        Some((bin.left.clone(), class_name))
+      }
+      _ => None,
+    }
+  }
+
+  /// Matches `css("x")` — a css call carrying exactly one static class string.
+  fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
+    let Expr::Call(call) = expr.unwrap_parens() else {
+      return None;
+    };
+    if !Self::is_yak_css_callee(&call.callee, yak_imports) || call.args.len() != 1 {
+      return None;
+    }
+    let arg = &call.args[0];
+    if arg.spread.is_some() {
+      return None;
+    }
+    match arg.expr.unwrap_parens() {
+      Expr::Lit(Lit::Str(class_name)) => Some(class_name.value.clone()),
+      _ => None,
+    }
+  }
+
+  fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
+    match callee {
+      Callee::Expr(expr) => match expr.unwrap_parens() {
+        Expr::Ident(ident) => yak_imports.yak_css_idents().contains(&ident.to_id()),
+        _ => false,
+      },
+      _ => false,
+    }
+  }
+
+  fn str_expr(value: Wtf8Atom) -> Box<Expr> {
+    Box::new(Expr::Lit(Lit::Str(Str {
+      span: DUMMY_SP,
+      value,
+      raw: None,
+    })))
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.

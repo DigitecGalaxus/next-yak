@@ -2,11 +2,7 @@ import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "data:text/css;base64,LnltN3VCQnUxIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnUzIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnU1IHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnU3IHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTkgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdUIgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1RSB7CiAgY29sb3I6IHZhcigtLXltN3VCQnVGKTsKfS55bTd1QkJ1RyB7CiAgY29sb3I6IHZhcigtLXltN3VCQnVIKTsKfS55bTd1QkJ1SSB7CiAgcGFkZGluZzogdmFyKC0teW03dUJCdUopOwp9LnltN3VCQnVLIHsKICBjb2xvcjogdmFyKC0teW03dUJCdUwpOwp9LnltN3VCQnVNIHsKICBjb2xvcjogdmFyKC0teW03dUJCdU4pOwp9LnltN3VCQnVPIHsKICBmb250LXNpemU6IHZhcigtLXltN3VCQnVQKTsKfS55bTd1QkJ1USB7CiAgZGlzcGxheTogdmFyKC0teW03dUJCdVIpOwp9LnltN3VCQnVVIHsKICBjb2xvcjogdmFyKC0teW03dUJCdVYpOwp9";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-.ym7uBBu1 {
-  color: red;
-}
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu1"), "ym7uBBu"))}/>;
+    return <div className={"ym7uBBu" + (show ? " ym7uBBu1" : "")}/>;
 };
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
@@ -20,15 +16,9 @@ const Elem2 = ()=>{
 };
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
-.ym7uBBu5 {
-  padding: 10px;
-}
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu5"), "ym7uBBu4"))}/>;
+    return <div style={{
+        padding: "5px"
+    }} className={"ym7uBBu4" + (show ? " ym7uBBu5" : "")}/>;
 };
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;

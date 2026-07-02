@@ -1,11 +1,7 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1NyB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnU4IHsKICBjb2xvcjogcmVkOwp9";
-const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-.ym7uBBu {
-  color: red;
-}
-*/ /*#__PURE__*/ css("ym7uBBu"))}/>;
+const Elem = ()=><div className={"ym7uBBu"}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
@@ -13,15 +9,9 @@ const Elem2 = ()=><div {...__yak_mergeCssProp({
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu1"))}/>;
-const Elem3 = ()=><div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
-.ym7uBBu2 {
-  padding: 10px;
-}
-*/ /*#__PURE__*/ css("ym7uBBu2"))}/>;
+const Elem3 = ()=><div style={{
+        padding: "5px"
+    }} className={"ym7uBBu2"}/>;
 const Elem4 = (props: any)=><div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
@@ -56,10 +46,6 @@ const Text = /*YAK Extracted CSS:
   font-size: 20px;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBu7");
-const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-.ym7uBBu8 {
-  color: red;
-}
-*/ /*#__PURE__*/ css("ym7uBBu8"))}>
+const StyledComponentWithCSSProp = ()=><Text className={"ym7uBBu8"}>
     test
   </Text>;

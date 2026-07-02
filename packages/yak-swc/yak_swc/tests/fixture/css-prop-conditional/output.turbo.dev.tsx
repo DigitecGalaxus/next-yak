@@ -2,11 +2,7 @@ import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "data:text/css;base64,LmlucHV0X0VsZW1fX3Nob3dfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW0yX19zaG93X203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9FbGVtM19fc2hvd19tN3VCQnUgewogIHBhZGRpbmc6IDEwcHg7Cn0uaW5wdXRfRWxlbTRfX3Nob3dfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRWxlbTVfX3Byb3BzX3Nob3dfbTd1QkJ1IHsKICBjb2xvcjogcHVycGxlOwp9LmlucHV0X0VsZW02X19wcm9wc19zaG93X203dUJCdSB7CiAgZm9udC1zaXplOiAxNnB4Owp9LmlucHV0X0VsZW04X203dUJCdSB7CiAgY29sb3I6IHZhcigtLWlucHV0X0VsZW04X19jb2xvcl9tN3VCQnUpOwp9LmlucHV0X0VsZW05X203dUJCdSB7CiAgY29sb3I6IHZhcigtLWlucHV0X0VsZW05X19jb2xvcl9tN3VCQnUpOwp9LmlucHV0X0VsZW0xMF9tN3VCQnUgewogIHBhZGRpbmc6IHZhcigtLWlucHV0X0VsZW0xMF9fcGFkZGluZ19tN3VCQnUpOwp9LmlucHV0X0VsZW0xMV9tN3VCQnUgewogIGNvbG9yOiB2YXIoLS1pbnB1dF9FbGVtMTFfX2NvbG9yX203dUJCdSk7Cn0uaW5wdXRfRWxlbTEyX203dUJCdSB7CiAgY29sb3I6IHZhcigtLWlucHV0X0VsZW0xMl9fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9FbGVtMTNfbTd1QkJ1IHsKICBmb250LXNpemU6IHZhcigtLWlucHV0X0VsZW0xM19fZm9udC1zaXplX203dUJCdSk7Cn0uaW5wdXRfRWxlbTE0X203dUJCdSB7CiAgZGlzcGxheTogdmFyKC0taW5wdXRfRWxlbTE0X19kaXNwbGF5X203dUJCdSk7Cn0uaW5wdXRfRWxlbTE1X19wcm9wc19hLWFuZC1wcm9wc19iX203dUJCdSB7CiAgY29sb3I6IHZhcigtLWlucHV0X0VsZW0xNV9fY29sb3JfbTd1QkJ1KTsKfQ==";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-.input_Elem__show_m7uBBu {
-  color: red;
-}
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem__show_m7uBBu"), "input_Elem_m7uBBu"))}/>;
+    return <div className={"input_Elem_m7uBBu" + (show ? " input_Elem__show_m7uBBu" : "")}/>;
 };
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
@@ -20,15 +16,9 @@ const Elem2 = ()=>{
 };
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
-.input_Elem3__show_m7uBBu {
-  padding: 10px;
-}
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem3__show_m7uBBu"), "input_Elem3_m7uBBu"))}/>;
+    return <div style={{
+        padding: "5px"
+    }} className={"input_Elem3_m7uBBu" + (show ? " input_Elem3__show_m7uBBu" : "")}/>;
 };
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;
