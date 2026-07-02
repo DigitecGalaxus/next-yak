@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates when .yak.ts dependency changes",
-  withTestEnv("hmr-yak-file", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-yak-file", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const box = page.getByTestId("box");
     await expect(box).toHaveCSS("padding", "40px");
@@ -16,8 +16,8 @@ test(
     });
 
     // Change the .yak.ts file — spacing 40→16, teal→red
-    const src = await fsTmp.readFile("tokens.yak.ts");
-    await fsTmp.writeFile(
+    const src = await testEnv.readFile("tokens.yak.ts");
+    await testEnv.writeFile(
       "tokens.yak.ts",
       src.replace("5 * 8", "2 * 8").replace('"teal"', '"red"'),
     );

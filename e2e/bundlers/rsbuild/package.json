@@ -1,0 +1,21 @@
+{
+  "name": "e2e-rsbuild",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && rsbuild dev",
+    "build": "cd .tmp && rsbuild build",
+    "start": "cd .tmp && rsbuild preview"
+  },
+  "dependencies": {
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "catalog:dev",
+    "@rsbuild/plugin-react": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev"
+  }
+}

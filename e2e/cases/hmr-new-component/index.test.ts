@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR adds a new styled component without full reload",
-  withTestEnv("hmr-new-component", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-new-component", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const first = page.getByTestId("first");
     await expect(first).toHaveCSS("color", "rgb(255, 0, 0)");
@@ -15,7 +15,7 @@ test(
     });
 
     // Add a second styled component via HMR
-    await fsTmp.writeFile(
+    await testEnv.writeFile(
       "index.tsx",
       `import { styled } from "next-yak";
 

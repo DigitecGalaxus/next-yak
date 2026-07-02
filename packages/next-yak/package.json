@@ -1,6 +1,6 @@
 {
   "name": "next-yak",
-  "version": "9.4.2",
+  "version": "9.5.0",
   "description": "next-yak is a CSS-in-JS solution tailored for Next.js that seamlessly combines the expressive power of styled-components syntax with efficient build-time extraction of CSS using Next.js's built-in CSS configuration",
   "keywords": [
     "css-in-js",
@@ -31,6 +31,7 @@
     "loaders",
     "runtime",
     "withYak",
+    "rsbuild",
     "LICENSE"
   ],
   "type": "module",
@@ -136,6 +137,12 @@
         "types": "./dist/loaders/vite-plugin.d.ts",
         "default": "./dist/loaders/vite-plugin.js"
       }
+    },
+    "./rsbuild": {
+      "import": {
+        "types": "./dist/rsbuild/index.d.ts",
+        "default": "./dist/rsbuild/index.js"
+      }
     }
   },
   "publishConfig": {
@@ -154,18 +161,17 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "9.4.2"
+    "yak-swc": "9.5.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "catalog:dev",
+    "@babel/types": "catalog:dev",
+    "@rsbuild/core": "catalog:dev",
     "@testing-library/react": "catalog:dev",
-    "@types/babel__core": "catalog:dev",
     "@types/jest": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "@types/webpack": "catalog:dev",
-    "fast-glob": "catalog:dev",
     "jsdom": "catalog:dev",
     "next": "catalog:dev",
     "react": "catalog:dev",
@@ -175,12 +181,16 @@
     "vitest": "catalog:dev"
   },
   "peerDependencies": {
-    "@types/react": ">=18",
+    "@rsbuild/core": ">=2.0.0",
+    "@types/react": ">=19",
     "next": ">=16.1.0",
-    "react": ">=18.0.0",
+    "react": ">=19.0.0",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {
+    "@rsbuild/core": {
+      "optional": true
+    },
     "@types/react": {
       "optional": true
     },

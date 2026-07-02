@@ -7,7 +7,7 @@
     },
     "target": "ES2019",
     "lib": ["DOM", "ESNext.Disposable"],
-    "types": ["node", "babel__core", "webpack"],
+    "types": ["node", "webpack"],
     "jsx": "react",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",

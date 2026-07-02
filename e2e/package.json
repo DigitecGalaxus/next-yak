@@ -13,7 +13,6 @@
     "@playwright/test": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev",
     "next-yak": "workspace:*",
     "typescript": "catalog:dev"
   }

@@ -11,8 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-router": "latest",
-    "@tanstack/react-start": "latest",
+    "@tanstack/react-router": "catalog:dev",
+    "@tanstack/react-start": "catalog:dev",
     "next-yak": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"
@@ -21,8 +21,8 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "@vitejs/plugin-react": "latest",
-    "@vitejs/plugin-rsc": "latest",
+    "@vitejs/plugin-react": "catalog:dev",
+    "@vitejs/plugin-rsc": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev"
   }

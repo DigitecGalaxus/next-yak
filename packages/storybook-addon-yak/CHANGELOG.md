@@ -1,5 +1,7 @@
 # storybook-addon-yak
 
+## 9.5.0
+
 ## 9.4.2
 
 ### Patch Changes

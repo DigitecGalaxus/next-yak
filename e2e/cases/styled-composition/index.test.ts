@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders styled composition with inherited and overridden styles",
-  withTestEnv("styled-composition", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("styled-composition", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const base = page.getByTestId("base");
     await expect(base).toHaveCSS("color", "rgb(255, 0, 0)");

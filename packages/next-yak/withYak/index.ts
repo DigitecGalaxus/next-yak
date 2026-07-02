@@ -47,16 +47,28 @@ export type YakConfigOptions = {
   };
 };
 
-const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
+/**
+ * Build the base yak-swc plugin options shared by every bundler integration
+ * (webpack, turbopack, vite, rsbuild). The caller adds the bundler-specific
+ * `importMode` on top.
+ *
+ * @param yakOptions - Yak configuration options
+ * @param basePath - Base path used by yak-swc to derive stable identifiers
+ */
+export function buildYakPluginOptions(yakOptions: YakConfigOptions, basePath: string) {
   const minify = yakOptions.minify ?? process.env.NODE_ENV === "production";
-  const yakPluginOptions = {
+  return {
     minify,
-    basePath: currentDir,
+    basePath,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
     suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
   };
+}
+
+const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
+  const yakPluginOptions = buildYakPluginOptions(yakOptions, currentDir);
 
   const transpilation = yakOptions.experiments?.transpilationMode ?? "CssModule";
   const cssExtension = transpilation === "CssModule" ? ".yak.module.css" : ".yak.css";
