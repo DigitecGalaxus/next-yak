@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { styled, css } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 
 export default function NavLink({
   href,
@@ -44,19 +44,19 @@ const StyledNavLink = styled(Link)<{ $active: boolean }>`
   }
 
   &:hover {
-    color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
   }
 
   &:focus-visible {
     outline: none;
-    color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
     text-decoration-line: underline;
   }
 
   ${({ $active }) =>
     $active &&
     css`
-      color: ${colors.violet};
+      color: light-dark(${light.violet}, ${dark.white});
       text-decoration-line: underline;
     `}
 `;

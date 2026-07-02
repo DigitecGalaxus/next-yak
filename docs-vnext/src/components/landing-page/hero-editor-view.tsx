@@ -2,12 +2,13 @@
 
 import { css, keyframes } from "next-yak";
 import Image from "next/image";
-import { useState, type CSSProperties } from "react";
-import { colors, container, fonts, shadow } from "@/tokens";
+import { ReactNode, useState, type CSSProperties } from "react";
+import { container, fonts, shadow, light, dark, ink } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/editor-surface";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
 import { asset } from "@/lib/site";
+import { frameworks } from "./frameworks";
 
 const blink = keyframes`
   0%, 49% {
@@ -45,14 +46,12 @@ export default function HeroEditorView({
   className,
   style,
 }: {
-  tabs: readonly string[];
+  tabs: readonly { value: string; node: ReactNode }[];
   codeByTab: Record<string, string>;
   className?: string;
   style?: CSSProperties;
 }) {
-  const [active, setActive] = useState(tabs[0]);
-
-  const installCommand = `npm i ${active}`;
+  const [active, setActive] = useState(tabs[0].value);
 
   return (
     <div
@@ -75,8 +74,6 @@ export default function HeroEditorView({
         }
       `}
     >
-      {/* mascot: in flow, peeking over the card's top edge. It grows with the editor
-          (cqi) and the negative margin lets the card ride up over its base. */}
       <Image
         src={asset("/yak-hero.png")}
         alt="Yak hero"
@@ -85,13 +82,8 @@ export default function HeroEditorView({
         css={css`
           position: relative;
           z-index: 1;
-          /* tuck into the empty title-bar space, left of the switcher (offset from the
-             left so it clears the filename; scales a little so it sits center-left on a
-             narrow editor and further into the gap on a wide one) */
           align-self: flex-start;
           margin-left: clamp(124px, 24cqi, 168px);
-          /* drop it down so the yak's hooves rest on / overlap the editor's top edge;
-             scales with the mascot so the overlap stays consistent across sizes */
           margin-bottom: clamp(-28px, -4.5cqi, -18px);
           width: clamp(104px, 26cqi, 160px);
           height: auto;
@@ -102,6 +94,7 @@ export default function HeroEditorView({
       {/* the visible editor card — the canonical code-surface chrome (hairline + soft
           shadow + ink fill), shared with docs code blocks via lib/editor-surface */}
       <div
+        data-ink
         css={css`
           ${editorSurface};
           display: flex;
@@ -116,7 +109,7 @@ export default function HeroEditorView({
             justify-content: space-between;
             align-items: center;
             align-self: stretch;
-            border-bottom: 2px solid ${colors.onInkDivider};
+            border-bottom: 2px solid ${ink.divider};
           `}
         >
           <div
@@ -134,13 +127,13 @@ export default function HeroEditorView({
                 gap: 7px;
               `}
             >
-              <Dot color="#F2462E" />
-              <Dot color="#FFCE4A" />
-              <Dot color="#00C2A8" />
+              <Dot color={ink.dotRed} />
+              <Dot color={ink.dotYellow} />
+              <Dot color={ink.dotGreen} />
             </div>
             <div
               css={css`
-                color: ${colors.onInkMuted};
+                color: ${ink.fgMuted};
                 font-family: ${fonts.mono};
                 font-size: 13px;
               `}
@@ -173,26 +166,52 @@ export default function HeroEditorView({
         />
       </div>
 
-      {/* npm install terminal: in flow, riding up over the card's bottom-right corner
-          (negative top-margin) and peeking past the right edge a touch. Because it's in
-          flow, the wrapper's height already accounts for the part that hangs below. */}
+      <Terminal packageName={frameworks.find((f) => f.id === active)?.pkg} />
+    </div>
+  );
+}
+
+function Terminal({ packageName }: { packageName?: string }) {
+  return (
+    <div
+      data-ink
+      css={css`
+        align-self: flex-end;
+        margin-top: -44px;
+        margin-right: -12px;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transform: rotate(2deg);
+        min-width: 280px;
+        padding: 12px 14px 14px;
+        border: 1px solid ${ink.border};
+        border-radius: 12px;
+        background: ${ink.terminal};
+        box-shadow: ${shadow.popover};
+      `}
+    >
       <div
         css={css`
-          align-self: flex-end;
-          margin-top: -44px;
-          margin-right: -12px;
-          z-index: 1;
           display: flex;
-          flex-direction: column;
-          gap: 12px;
-          transform: rotate(2deg);
-          min-width: 260px;
-          max-width: 100%;
-          padding: 12px 14px 14px;
-          border: 1px solid light-dark(rgba(14, 235, 241, 0.35), rgba(14, 235, 241, 0.16));
-          border-radius: 12px;
-          background: ${colors.editorPopup};
-          box-shadow: ${shadow.popover};
+          align-items: center;
+          gap: 8px;
+        `}
+      >
+        <Dot color={ink.dotRed} />
+        <Dot color={ink.dotYellow} />
+        <Dot color={ink.dotGreen} />
+      </div>
+
+      <div
+        css={css`
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: ${fonts.mono};
+          font-size: 14px;
+          font-weight: 500;
         `}
       >
         <div
@@ -200,28 +219,12 @@ export default function HeroEditorView({
             display: flex;
             align-items: center;
             gap: 8px;
-          `}
-        >
-          <Dot color="#F2462E" />
-          <Dot color="#FFCE4A" />
-          <Dot color="#00C2A8" />
-        </div>
-
-        <div
-          css={css`
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: ${fonts.mono};
-            font-size: 14px;
-            font-weight: 500;
-            align-self: stretch;
+            color: ${ink.prompt};
           `}
         >
           <span
             aria-hidden
             css={css`
-              color: ${colors.cyan};
               font-weight: 700;
               user-select: none;
               -webkit-user-select: none;
@@ -229,43 +232,37 @@ export default function HeroEditorView({
           >
             $
           </span>
-          <div
+          <span
             css={css`
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              color: #8b7bbd;
+              color: white;
             `}
           >
-            <span>npm i</span>
-            <span
-              css={css`
-                color: white;
-                font-weight: 700;
-              `}
-            >
-              {active}
-            </span>
-            <span
-              css={css`
-                display: inline-block;
-                width: 8px;
-                height: 16px;
-                background: ${colors.cyan};
-                animation: ${blink} 1s step-end infinite;
-              `}
-            />
-          </div>
+            npm i
+          </span>
+          <span
+            css={css`
+              color: light-dark(${light.red}, ${dark.red});
+              font-weight: 700;
+            `}
+          >
+            {packageName}
+          </span>
+          <span
+            css={css`
+              display: inline-block;
+              width: 8px;
+              height: 16px;
+              background: ${ink.prompt};
+              animation: ${blink} 1s step-end infinite;
+            `}
+          />
         </div>
-
-        <div
+        <CopyButton
+          text={`npm i ${packageName}`}
           css={css`
-            display: flex;
-            justify-content: flex-end;
+            align-self: end;
           `}
-        >
-          <CopyButton text={installCommand} />
-        </div>
+        />
       </div>
     </div>
   );

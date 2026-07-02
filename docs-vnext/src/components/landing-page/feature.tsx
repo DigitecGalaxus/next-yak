@@ -1,6 +1,6 @@
 import { css } from "next-yak";
 import type { CSSProperties, ReactNode } from "react";
-import { colors, fontSize } from "@/tokens";
+import { fontSize, light, dark } from "@/tokens";
 import { subsectionHeading } from "@/lib/mixins";
 
 export default function Feature({
@@ -22,7 +22,7 @@ export default function Feature({
       style={style}
       css={css`
         padding: 28px;
-        background: ${colors.beigeLight};
+        background: light-dark(${light.beige1}, ${dark.navy1});
       `}
     >
       {icon}

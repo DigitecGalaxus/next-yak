@@ -1,6 +1,6 @@
 import { css } from "next-yak";
 import type { CSSProperties, ReactNode } from "react";
-import { colors, container, fontSize, fontWeight, radii } from "@/tokens";
+import { container, fontSize, fontWeight, radii, light, dark } from "@/tokens";
 import { subsectionHeading } from "@/lib/mixins";
 
 export default function Step({
@@ -36,8 +36,8 @@ export default function Step({
           width: 26px;
           height: 26px;
           border-radius: ${radii.pill};
-          background: ${colors.red};
-          color: ${colors.onInk};
+          background: light-dark(${light.red}, ${dark.redDeep});
+          color: #fff;
           font-size: ${fontSize.eyebrow};
           font-weight: ${fontWeight.bold};
 
