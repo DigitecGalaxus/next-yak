@@ -3,7 +3,7 @@
 import { AnchorProvider, TOCItem } from "fumadocs-core/toc";
 import type { TableOfContents } from "fumadocs-core/toc";
 import { styled } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
 
 /**
@@ -37,7 +37,7 @@ const Heading = styled.span`
 const List = styled.div`
   display: flex;
   flex-direction: column;
-  border-left: 2px solid ${colors.beigeDark};
+  border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
 `;
 
 const Item = styled(TOCItem)<{ $depth: number }>`
@@ -48,7 +48,7 @@ const Item = styled(TOCItem)<{ $depth: number }>`
   border-left: 2px solid transparent;
   font-size: 13px;
   line-height: 1.4;
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
   text-decoration: none;
 
   @media (prefers-reduced-motion: no-preference) {
@@ -56,11 +56,11 @@ const Item = styled(TOCItem)<{ $depth: number }>`
   }
 
   &:hover {
-    color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
   }
 
   &[data-active="true"] {
-    color: ${colors.violet};
-    border-left-color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
+    border-left-color: light-dark(${light.violet}, ${dark.white});
   }
 `;

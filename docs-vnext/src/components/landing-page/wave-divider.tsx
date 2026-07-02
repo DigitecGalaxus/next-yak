@@ -1,5 +1,5 @@
 import { css } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 
 // A light-beige fill wave plus an independent, slightly darker line that just crosses over
 // it. Each path keeps its own vertical scale via transform (fill ≈ 28px/22 units, line ≈
@@ -25,18 +25,18 @@ export default function WaveDivider({ flip = false }: { flip?: boolean }) {
         height: 38px;
 
         & > path:first-of-type {
-          fill: ${colors.beige};
+          fill: light-dark(${light.beige2}, ${dark.navy2});
         }
         & > path:last-of-type {
-          stroke: ${colors.raised};
+          stroke: light-dark(${light.beige4}, ${dark.navy4});
         }
       `}
     >
-      <path transform="scale(1, 1.2727)" d={FILL_PATH} fill="#f8f5f2" />
+      {/* fill + stroke come from the css block above (beige2 fill / beige4 stroke) */}
+      <path transform="scale(1, 1.2727)" d={FILL_PATH} />
       <path
         transform="scale(1, 1.7)"
         d={LINE_PATH}
-        stroke="#E1DBCF"
         strokeWidth="2"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"

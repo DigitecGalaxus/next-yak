@@ -6,36 +6,30 @@ import { fontWeight } from "@/tokens";
 import { iconButton } from "./button";
 
 type Theme = "light" | "dark" | "system";
-const ORDER: Theme[] = ["light", "dark", "system"];
-const LABELS: Record<Theme, string> = { light: "Light", dark: "Dark", system: "System" };
+type SettableTheme = Exclude<Theme, "system">;
+const ORDER: SettableTheme[] = ["light", "dark"];
+const LABELS: Record<SettableTheme, string> = { light: "Light", dark: "Dark" };
 
-// Default is "system" (follows the OS); "light"/"dark" force a theme. Forcing sets data-theme on
-// <html> (which flips every light-dark() value — see initVars); "system" clears it. The script in
-// layout.tsx re-applies a stored forced choice before paint.
-function applyTheme(theme: Theme) {
+// Default is "system" (follows the OS); "light"/"dark" force a theme. Forcing sets data-theme on <html>
+function applyTheme(theme: SettableTheme) {
   const el = document.documentElement;
-  if (theme === "system") el.removeAttribute("data-theme");
-  else el.dataset.theme = theme;
+  el.dataset.theme = theme;
 }
 
-/**
- * Cycles light → dark → system. Icon-only by default (header bar); pass `showLabel`
- * for the full-width labeled button used in the mobile drawer.
- */
 export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
   const [theme, setTheme] = useState<Theme>("system");
+  const nextTheme = theme === "light" ? "dark" : "light";
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark" || stored === "system") setTheme(stored);
+    if (stored === "light" || stored === "dark") setTheme(stored);
   }, []);
 
   function cycle() {
-    const next = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
-    setTheme(next);
-    applyTheme(next);
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
     try {
-      localStorage.setItem("theme", next);
+      localStorage.setItem("theme", nextTheme);
     } catch {}
   }
 
@@ -46,8 +40,8 @@ export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
       aria-label={`Theme: ${theme}. Click to switch.`}
       $withLabel={showLabel}
     >
-      {theme === "light" ? <SunIcon /> : theme === "dark" ? <MoonIcon /> : <SystemIcon />}
-      {showLabel ? <span>{LABELS[theme]}</span> : null}
+      {nextTheme === "light" ? <SunIcon /> : <MoonIcon />}
+      {showLabel ? <span>{LABELS[nextTheme]}</span> : null}
     </Toggle>
   );
 }
@@ -85,25 +79,6 @@ function MoonIcon() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  );
-}
-
-function SystemIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect x="3" y="4" width="18" height="13" rx="2" />
-      <path d="M9 21h6M12 17v4" />
     </svg>
   );
 }

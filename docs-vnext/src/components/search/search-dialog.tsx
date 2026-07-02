@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { css, styled } from "next-yak";
-import { colors, fonts } from "@/tokens";
+import { fonts, light, dark } from "@/tokens";
 import { keycapStyles, backdropStyles } from "@/lib/mixins";
 import { Highlight } from "./highlight";
 import { SearchIcon } from "./search-icon";
@@ -132,11 +132,11 @@ const Popup = styled(Dialog.Popup)`
   width: min(640px, calc(100vw - 32px));
   max-height: 70vh;
   overflow: hidden;
-  background: ${colors.beigeLight};
-  border: 2.5px solid ${colors.violet};
+  background: light-dark(${light.beige1}, ${dark.navy1});
+  border: 2.5px solid light-dark(${light.violet}, ${dark.white});
   border-radius: 16px;
-  box-shadow: 6px 6px 0 0 ${colors.violet};
-  color: ${colors.violetLight};
+  box-shadow: 6px 6px 0 0 light-dark(${light.violet}, ${dark.white});
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 
   &:focus-visible {
     outline: none;
@@ -161,8 +161,8 @@ const Header = styled.div`
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  color: ${colors.violet};
-  border-bottom: 2px solid ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
+  border-bottom: 2px solid light-dark(${light.violet}, ${dark.white});
 `;
 
 const Input = styled.input`
@@ -172,10 +172,10 @@ const Input = styled.input`
   background: transparent;
   font-family: ${fonts.body};
   font-size: 16px;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 
   &::placeholder {
-    color: ${colors.violetLight};
+    color: light-dark(${light.violetSoft}, ${dark.fog});
   }
 
   &:focus {
@@ -201,7 +201,7 @@ const Status = styled.div`
   padding: 36px 12px;
   text-align: center;
   font-size: 14px;
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 const ResultLink = styled(Link)<{ $active: boolean; $nested: boolean }>`
@@ -212,7 +212,7 @@ const ResultLink = styled(Link)<{ $active: boolean; $nested: boolean }>`
   border-radius: 10px;
   scroll-margin: 8px;
   text-decoration: none;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 
   ${({ $nested }) =>
     $nested &&
@@ -223,17 +223,17 @@ const ResultLink = styled(Link)<{ $active: boolean; $nested: boolean }>`
   ${({ $active }) =>
     $active &&
     css`
-      background: ${colors.beigeDark};
+      background: light-dark(${light.beige3}, ${dark.navy3});
     `}
 `;
 
 const Crumbs = styled.span`
-  color: ${colors.violetLight};
   font-size: 13px;
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 const Content = styled.span<{ $page: boolean }>`
   font-size: 14px;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
   font-weight: ${({ $page }) => ($page ? 600 : 400)};
 `;

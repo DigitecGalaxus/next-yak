@@ -1,5 +1,5 @@
 import { css } from "next-yak";
-import { colors, fonts, shadow } from "@/tokens";
+import { fonts, shadow, ink } from "@/tokens";
 
 /**
  * The dark "code editor" chrome shared by docs code blocks and tab groups, mirroring
@@ -8,9 +8,9 @@ import { colors, fonts, shadow } from "@/tokens";
  * so code in the docs reads as the same component as the hero, not a different box.
  */
 export const editorSurface = css`
-  border: 1px solid light-dark(rgba(31, 10, 77, 0.12), rgba(255, 253, 248, 0.14));
+  border: 1px solid ${ink.border};
   border-radius: 12px;
-  background: ${colors.ink};
+  background: ${ink.card};
   box-shadow: ${shadow.card};
   overflow: hidden;
 `;
@@ -26,7 +26,7 @@ export const editorHeader = css`
   gap: 10px;
   min-height: 44px;
   padding: 6px 12px;
-  border-bottom: 2px solid ${colors.onInkDivider};
+  border-bottom: 2px solid ${ink.border};
 `;
 
 /**

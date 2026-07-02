@@ -6,6 +6,9 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // yak files import sibling modules with explicit `.ts` extensions (the yak evaluator runs
+    // as native Node ESM, which needs exact specifiers). Safe with `noEmit`.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",

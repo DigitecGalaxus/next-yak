@@ -7,9 +7,7 @@ import Link from "next/link";
 import NavLink from "./nav-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
-import { asset } from "@/lib/site";
-import { screen, colors, fonts, headerHeight, maxContentWidth, typography } from "@/tokens";
-import Image from "next/image";
+import { screen, fonts, headerHeight, maxContentWidth, typography, light, dark, headerBg } from "@/tokens";
 import Yak from "./yak";
 
 export default function Header({
@@ -28,13 +26,12 @@ export default function Header({
         display: flex;
         justify-content: center;
         min-height: ${headerHeight};
-        border-bottom: 2px solid ${colors.violet};
         /* sticky so search/nav stay reachable; the docs sidebar + TOC already pin at
            top:72/96px expecting this. Translucent + blur lets content scroll under it. */
         position: sticky;
         top: 0;
         z-index: 40;
-        background: light-dark(rgba(248, 245, 242, 0.82), rgba(20, 16, 25, 0.82));
+        background: ${headerBg};
         backdrop-filter: blur(10px);
         /* a container so the nav collapses based on the bar's own width (see MobileMenu) */
         container: header / inline-size;
@@ -75,7 +72,7 @@ export default function Header({
                 font-family: ${fonts.title};
                 font-size: ${typography.display};
                 letter-spacing: -0.44px;
-                color: ${colors.violet};
+                color: light-dark(${light.violet}, ${dark.white});
               `}
             >
               yak
