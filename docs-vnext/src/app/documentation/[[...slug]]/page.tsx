@@ -3,7 +3,7 @@ import { findNeighbour } from "fumadocs-core/page-tree";
 import { styled } from "next-yak";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { screen, colors, headerHeight } from "@/tokens";
+import { screen, headerHeight, light, dark } from "@/tokens";
 import { inlineCode } from "@/lib/mixins";
 import PageFooter from "@/components/docs/page-footer";
 import Toc from "@/components/docs/toc";
@@ -85,13 +85,13 @@ const Title = styled.h1`
   margin-bottom: 4px;
   font-size: 34px;
   line-height: 1.25;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Description = styled.p`
   margin: 6px 0 4px;
   font-size: 18px;
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 const TocRail = styled.aside`
@@ -117,7 +117,7 @@ const Prose = styled.div`
   h2,
   h3,
   h4 {
-    color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
     line-height: 1.25;
   }
   /* Hierarchy comes from size + weight + generous top margin rather than a rule,
@@ -137,7 +137,7 @@ const Prose = styled.div`
   li a,
   td a,
   blockquote a {
-    color: ${colors.red};
+    color: light-dark(${light.red}, ${dark.red});
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -175,6 +175,6 @@ const Prose = styled.div`
   blockquote {
     margin: 16px 0;
     padding-left: 14px;
-    border-left: 3px solid ${colors.violet};
+    border-left: 3px solid light-dark(${light.violet}, ${dark.white});
   }
 `;

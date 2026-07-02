@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { styled } from "next-yak";
 import CtaButton from "@/components/landing-page/cta-button";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { MessagePage, MessageActions } from "@/components/message-page";
 import { overline } from "@/lib/mixins";
 
@@ -32,13 +32,13 @@ const Eyebrow = styled.span`
   ${overline};
   font-size: 13px;
   letter-spacing: 0.6px;
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 const Heading = styled.h1`
   font-size: 40px;
   line-height: 1.1;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Text = styled.p`

@@ -3,7 +3,7 @@
 import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
 import { useState } from "react";
 import { css, styled } from "next-yak";
-import { colors, container, fonts } from "@/tokens";
+import { container, fonts, shadow, light, dark, ink } from "@/tokens";
 import { focusRing, overlineSmall, slidingIndicator } from "@/lib/mixins";
 import Card from "./card";
 import Badge from "./badge";
@@ -38,7 +38,7 @@ export default function Coverage() {
         css={css`
           padding: 24px;
           border-radius: 20px;
-          border: 1px solid ${colors.cardBorder};
+          border: 1px solid light-dark(${light.beige5}, ${dark.navy5});
         `}
       >
         <div
@@ -75,7 +75,7 @@ export default function Coverage() {
               </TabRow>
             </BaseTabs.Root>
 
-            <Terminal>
+            <Terminal data-ink>
               <TerminalLabel>install</TerminalLabel>
               <div
                 css={css`
@@ -89,7 +89,7 @@ export default function Coverage() {
                   css={css`
                     font-family: ${fonts.mono};
                     font-size: 14px;
-                    color: ${colors.onInkMuted};
+                    color: ${ink.fgMuted};
                   `}
                 >
                   <Accent>$</Accent> npm i <Pkg>{activeTab.pkg}</Pkg>
@@ -130,7 +130,7 @@ export default function Coverage() {
       <p
         css={css`
           font-size: 13px;
-          color: ${colors.violetLight};
+          color: light-dark(${light.violetSoft}, ${dark.fog});
           margin-top: 24px;
           margin-left: 8px;
         `}
@@ -149,7 +149,7 @@ const TabRow = styled(BaseTabs.List)`
   gap: 4px;
   padding: 4px;
   border-radius: 10px;
-  background: ${colors.beigeDark};
+  background: light-dark(${light.beige3}, ${dark.navy3});
 `;
 
 const TabIndicator = styled(BaseTabs.Indicator)`
@@ -159,8 +159,8 @@ const TabIndicator = styled(BaseTabs.Indicator)`
      keeps its normal violet — readable on the pill AND on the track — instead of flipping
      to white, which vanished whenever the indicator measured narrower than the label
      (e.g. the initially-selected tab, before the mono font/icon settle). */
-  background: ${colors.beigeLight};
-  box-shadow: 0 1px 3px light-dark(rgba(31, 10, 77, 0.16), rgba(0, 0, 0, 0.4));
+  background: light-dark(${light.beige1}, ${dark.navy1});
+  box-shadow: ${shadow.indicator};
 `;
 
 const Tab = styled(BaseTabs.Tab)`
@@ -176,7 +176,7 @@ const Tab = styled(BaseTabs.Tab)`
   font-family: ${fonts.mono};
   font-size: 13px;
   font-weight: 700;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
   cursor: pointer;
 
   &:focus-visible {
@@ -190,11 +190,11 @@ const Terminal = styled.div`
   gap: 12px;
   padding: 16px 18px;
   border-radius: 10px;
-  background: ${colors.ink};
+  background: ${ink.base};
 `;
 
 const Accent = styled.span`
-  color: ${colors.cyan};
+  color: ${ink.cyan};
 `;
 
 const TerminalLabel = styled(Accent)`
@@ -202,10 +202,10 @@ const TerminalLabel = styled(Accent)`
 `;
 
 const Pkg = styled.span`
-  color: ${colors.onInk};
+  color: ${ink.fg};
 `;
 
 const WorksWithLabel = styled.span`
   ${overlineSmall};
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;

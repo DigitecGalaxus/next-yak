@@ -25,7 +25,7 @@ import {
 } from "../components/landing-page/feature-icons";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { colors, container, fonts, fontWeight, maxContentWidth } from "@/tokens";
+import { container, fonts, fontWeight, maxContentWidth, light, dark } from "@/tokens";
 import Yak from "../components/landing-page/yak";
 import Link from "next/link";
 
@@ -37,7 +37,7 @@ export default async function Home() {
       <section
         css={css`
           container: hero / inline-size;
-          color: ${colors.violet};
+          color: light-dark(${light.violet}, ${dark.white});
           /* keep the editor's floating mascot/terminal from forcing page-wide scroll */
           overflow-x: clip;
         `}
@@ -54,7 +54,7 @@ export default async function Home() {
             @container hero (min-width: ${container.hero.split}) {
               flex-direction: row;
               justify-content: space-between;
-              align-items: flex-end;
+              align-items: center;
               gap: 24px;
               padding: 92px 48px 96px;
             }
@@ -83,8 +83,9 @@ export default async function Home() {
             >
               <h1
                 css={css`
-                  leading-trim: both;
-                  text-edge: cap;
+                  text-box-trim: trim-end;
+                  text-box-edge: cap alphabetic;
+                  margin-right: 1rem;
                   font-family: ${fonts.title};
                   font-size: clamp(96px, 22cqi, 200px);
                   line-height: 0.82;
@@ -102,10 +103,10 @@ export default async function Home() {
                   font-family: ${fonts.mono};
                   font-weight: ${fontWeight.bold};
                   font-size: 15px;
-                  border: 2.5px solid ${colors.violet};
+                  border: 2.5px solid light-dark(${light.violet}, ${dark.white});
                   border-radius: 10px;
                   padding: 5px 11px;
-                  background: ${colors.chip};
+                  background: light-dark(${light.beige4}, ${dark.navy4});
                   font-variant-numeric: tabular-nums;
 
                   @media (prefers-reduced-motion: no-preference) {
@@ -116,8 +117,8 @@ export default async function Home() {
 
                   &:hover,
                   &:focus-visible {
-                    color: ${colors.red};
-                    border-color: ${colors.red};
+                    color: light-dark(${light.red}, ${dark.red});
+                    border-color: light-dark(${light.red}, ${dark.red});
                   }
                 `}
               >
@@ -175,7 +176,7 @@ export default async function Home() {
           <HeroEditor />
         </div>
       </section>
-      <Section background={colors.beigeDark} wave>
+      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
         <Container
           css={css`
             padding-top: clamp(44px, 6vw, 56px);
@@ -243,7 +244,7 @@ export default async function Home() {
               <span
                 css={css`
                   font-weight: ${fontWeight.bold};
-                  color: ${colors.violet};
+                  color: light-dark(${light.violet}, ${dark.white});
                 `}
               >
                 Static components: renders per second
@@ -292,7 +293,7 @@ export default async function Home() {
           </figure>
         </Container>
       </Section>
-      <Section background={colors.beige}>
+      <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
         <Container
           css={css`
             padding-top: clamp(56px, 7vw, 84px);
@@ -315,8 +316,8 @@ export default async function Home() {
               display: grid;
               grid-template-columns: 1fr;
               gap: 1px;
-              background: ${colors.raised};
-              border: 1px solid ${colors.raised};
+              background: light-dark(${light.beige4}, ${dark.navy4});
+              border: 1px solid light-dark(${light.beige4}, ${dark.navy4});
               border-radius: 16px;
               overflow: hidden;
               list-style: none;
@@ -358,7 +359,7 @@ export default async function Home() {
           </ul>
         </Container>
       </Section>
-      <Section background={colors.beigeDark} wave>
+      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
         <Container
           css={css`
             padding-top: clamp(48px, 6vw, 72px);
@@ -467,7 +468,7 @@ export default async function Home() {
           </div>
         </Container>
       </Section>
-      <Section background={colors.beige}>
+      <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
         <Container
           css={css`
             padding-top: clamp(56px, 7vw, 84px);
@@ -500,7 +501,7 @@ export default async function Home() {
           <Coverage />
         </Container>
       </Section>
-      <Section background={colors.beigeDark} wave="top">
+      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave="top">
         <Container
           css={css`
             padding-top: clamp(56px, 7vw, 80px);
@@ -545,8 +546,8 @@ export default async function Home() {
               >
                 <span
                   css={css`
-                    color: ${colors.violetLight};
                     font-size: 13px;
+                    color: light-dark(${light.violetSoft}, ${dark.fog});
                   `}
                 >
                   next-yak
@@ -555,7 +556,7 @@ export default async function Home() {
                   css={css`
                     font-size: 18px;
                     font-weight: ${fontWeight.bold};
-                    color: ${colors.violet};
+                    color: light-dark(${light.violet}, ${dark.white});
                   `}
                 >
                   → Yak CSS
@@ -589,7 +590,7 @@ export default async function Home() {
                 <a
                   href="/documentation/getting-started"
                   css={css`
-                    color: ${colors.red};
+                    color: light-dark(${light.red}, ${dark.red});
                     font-weight: ${fontWeight.bold};
                   `}
                 >

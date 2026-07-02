@@ -3,7 +3,7 @@
 import { Meter } from "@base-ui-components/react/meter";
 import { css, styled } from "next-yak";
 import type { CSSProperties } from "react";
-import { colors, fonts, fontWeight, radii } from "@/tokens";
+import { fonts, fontWeight, radii, light, dark } from "@/tokens";
 
 // A single labelled benchmark bar, built on Base UI Meter — it owns the role="meter"
 // semantics and aria-value* wiring, and sizes the fill from the value for us.
@@ -59,7 +59,7 @@ const BarLabel = styled(Meter.Label)<{ $accent?: boolean }>`
     $accent &&
     css`
       font-weight: ${fontWeight.bold};
-      color: ${colors.violet};
+      color: light-dark(${light.violet}, ${dark.white});
     `}
 `;
 
@@ -70,7 +70,7 @@ const BarValue = styled.span<{ $accent?: boolean }>`
   ${({ $accent }) =>
     $accent &&
     css`
-      color: ${colors.red};
+      color: light-dark(${light.red}, ${dark.red});
     `}
 `;
 
@@ -78,17 +78,17 @@ const Track = styled(Meter.Track)`
   width: 100%;
   height: 18px;
   border-radius: ${radii.pill};
-  background: ${colors.raised};
+  background: light-dark(${light.beige4}, ${dark.navy4});
   overflow: hidden;
 `;
 
 const Indicator = styled(Meter.Indicator)<{ $accent?: boolean }>`
   height: 100%;
   border-radius: ${radii.pill};
-  background: light-dark(#c2b69b, #5b5280);
+  background: light-dark(${light.beige6}, ${dark.navy6});
   ${({ $accent }) =>
     $accent &&
     css`
-      background: ${colors.red};
+      background: light-dark(${light.red}, ${dark.redDeep});
     `}
 `;

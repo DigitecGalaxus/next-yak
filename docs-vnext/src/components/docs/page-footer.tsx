@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Item } from "fumadocs-core/page-tree";
 import { css, styled } from "next-yak";
-import { colors, fonts, fontWeight } from "@/tokens";
+import { fonts, fontWeight, light, dark } from "@/tokens";
 import { buttonStyles } from "@/components/landing-page/button";
 
 /** Previous / next page links, derived from `findNeighbour(tree, url)`. */
@@ -39,6 +39,8 @@ const Footer = styled.div`
 
 const Card = styled(Link)<{ $align: "start" | "end" }>`
   ${buttonStyles};
+  /* A "normal" button — the deeper 4px offset shadow, not the 3px header controls. */
+  --btn-offset: 4px;
 
   display: flex;
   flex-direction: column;
@@ -58,12 +60,12 @@ const Card = styled(Link)<{ $align: "start" | "end" }>`
 
 const Direction = styled.span`
   font-family: ${fonts.mono};
-  color: ${colors.violetLight};
   font-size: 13px;
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 const Name = styled.span`
   font-size: 15px;
   font-weight: ${fontWeight.semibold};
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;

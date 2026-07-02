@@ -1,6 +1,6 @@
 "use client";
 
-import { colors, fonts } from "@/tokens";
+import { fonts, ink } from "@/tokens";
 import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
 import { styled } from "next-yak";
 import { useState, type ReactNode } from "react";
@@ -25,7 +25,7 @@ export function Tabs({
   const icon = iconForTab(value);
 
   return (
-    <Root value={value} onValueChange={setTab}>
+    <Root data-ink value={value} onValueChange={setTab}>
       <Header>
         <Title>
           {icon ? <TabIcon>{icon}</TabIcon> : null}
@@ -35,7 +35,7 @@ export function Tabs({
         <EditorSwitcher
           value={value}
           onValueChange={setTab}
-          items={items}
+          items={items.map((item) => ({ value: item, node: item }))}
           ariaLabel="Select tab"
         />
       </Header>
@@ -86,8 +86,8 @@ const TitleText = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: ${fonts.mono};
-  color: ${colors.onInkMuted};
   font-size: 13px;
+  color: ${ink.fgMuted};
 `;
 
 const Panel = styled(BaseTabs.Panel)`

@@ -3,7 +3,7 @@
 import { PreviewCard } from "@base-ui-components/react/preview-card";
 import type { ReactNode } from "react";
 import { styled } from "next-yak";
-import { colors, fonts, shadow } from "@/tokens";
+import { fonts, shadow, light, dark, ink } from "@/tokens";
 
 /**
  * Maps the `<Popup>/<PopupTrigger>/<PopupContent>` hover popups emitted by fumadocs'
@@ -22,14 +22,14 @@ export function PopupContent({ children }: { children: ReactNode }) {
   return (
     <PreviewCard.Portal>
       <Positioner side="bottom" align="start" sideOffset={6}>
-        <Content>{children}</Content>
+        <Content data-ink>{children}</Content>
       </Positioner>
     </PreviewCard.Portal>
   );
 }
 
 const Trigger = styled.span`
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
+  border-bottom: 1px dashed ${ink.underline};
   cursor: help;
 `;
 
@@ -44,10 +44,10 @@ const Content = styled(PreviewCard.Popup)`
   padding: 10px 12px;
   /* violetLight (not violet): in light mode violet == the navy code fill, so the border would
      vanish. popover bg sits a step above the code so the panel reads as floating. */
-  border: 1.5px solid ${colors.violetLight};
+  border: 1.5px solid light-dark(${light.violetSoft}, ${dark.fog});
   border-radius: 8px;
-  background: ${colors.popover};
-  color: ${colors.onInk};
+  background: ${ink.popover};
+  color: ${ink.fg};
   font-family: ${fonts.mono};
   font-size: 13px;
   line-height: 1.5;
@@ -67,14 +67,14 @@ const Content = styled(PreviewCard.Popup)`
   & .twoslash-popup-docs {
     margin-top: 6px;
     padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    color: #c7bce0;
+    border-top: 1px solid ${ink.divider};
+    color: ${ink.fgSubtle};
     font-family: ${fonts.body};
     font-size: 13px;
   }
 
   & .twoslash-popup-docs-tags {
     margin-top: 4px;
-    color: #aa9fc6;
+    color: ${ink.fgSubtle};
   }
 `;

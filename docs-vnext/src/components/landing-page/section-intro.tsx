@@ -1,6 +1,6 @@
 import { styled } from "next-yak";
 import type { CSSProperties, ReactNode } from "react";
-import { colors, fontWeight } from "@/tokens";
+import { fontWeight, light, dark } from "@/tokens";
 import Eyebrow from "./eyebrow";
 
 // className/style are forwarded to the root Wrap, so a call site can overstyle the
@@ -28,7 +28,7 @@ export default function SectionIntro({
 }
 
 export const SectionHeading = styled.h2`
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
   /* fluid: scales with the section's width (cqi), capped at the desktop size */
   font-size: clamp(30px, 6cqi, 48px);
   font-weight: ${fontWeight.black};

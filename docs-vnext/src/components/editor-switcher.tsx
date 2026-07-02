@@ -3,8 +3,9 @@
 import { Select } from "@base-ui-components/react/select";
 import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
 import { styled } from "next-yak";
-import { colors, container, fonts, shadow } from "@/tokens";
+import { container, fonts, shadow, light, dark, ink } from "@/tokens";
 import { focusRing, slidingIndicator } from "@/lib/mixins";
+import type { ReactNode } from "react";
 
 /**
  * The dark editor's framework switcher, shared by the hero editor and docs code-block
@@ -20,27 +21,26 @@ export function EditorSwitcher({
 }: {
   value: string;
   onValueChange: (value: string) => void;
-  items: readonly string[];
+  items: readonly { value: string; node: ReactNode }[];
   ariaLabel?: string;
 }) {
   const handleChange = (next: unknown) => onValueChange(String(next));
 
   return (
     <>
-      {/* activateOnFocus → arrow keys switch tabs immediately */}
-      <SwitcherRoot value={value} onValueChange={handleChange}>
+      <SwitcherRoot data-ink value={value} onValueChange={handleChange}>
         <SwitcherList activateOnFocus>
           <SwitcherIndicator />
           {items.map((item) => (
-            <SwitcherTab key={item} value={item}>
-              {item}
+            <SwitcherTab key={item.value} value={item.value}>
+              {item.node}
             </SwitcherTab>
           ))}
         </SwitcherList>
       </SwitcherRoot>
 
       <Select.Root value={value} onValueChange={handleChange}>
-        <SelectTrigger aria-label={ariaLabel}>
+        <SelectTrigger data-ink aria-label={ariaLabel}>
           <Select.Value />
           <SelectIcon>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -56,10 +56,10 @@ export function EditorSwitcher({
         </SelectTrigger>
         <Select.Portal>
           <SelectPositioner sideOffset={6} alignItemWithTrigger={false}>
-            <SelectPopup>
+            <SelectPopup data-ink>
               {items.map((item) => (
-                <SelectItem key={item} value={item}>
-                  <Select.ItemText>{item}</Select.ItemText>
+                <SelectItem key={item.value} value={item.value}>
+                  {item.node}
                 </SelectItem>
               ))}
             </SelectPopup>
@@ -84,28 +84,25 @@ const SwitcherList = styled(BaseTabs.List)`
   align-items: center;
   gap: 2px;
   padding: 3px;
-  border-radius: 8px;
-  background: ${colors.editorTrack};
-`;
-
-const SwitcherIndicator = styled(BaseTabs.Indicator)`
-  ${slidingIndicator};
-  border-radius: 6px;
-  background: ${colors.cyanFill};
-  outline: 1px solid ${colors.cyan};
+  border-radius: 9999px;
+  background: ${ink.switcherTrack};
+  border: 1px solid ${ink.switcherBorder};
 `;
 
 const SwitcherTab = styled(BaseTabs.Tab)`
+  display: flex;
+  gap: 4px;
+  align-items: center;
   position: relative;
   z-index: 1;
   padding: 4px 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: 9999px;
   background: transparent;
   font-family: ${fonts.mono};
   font-size: 13px;
   text-align: center;
-  color: ${colors.onInkSubtle};
+  color: ${ink.fgSubtle};
   cursor: pointer;
 
   @media (prefers-reduced-motion: no-preference) {
@@ -113,33 +110,41 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   }
 
   &[data-active] {
-    color: ${colors.cyan};
+    color: #fff;
   }
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${colors.cyan};
+    --focus-ring: ${ink.cyan};
     --focus-ring-offset: 1px;
   }
+`;
+
+const SwitcherIndicator = styled(BaseTabs.Indicator)`
+  ${slidingIndicator};
+  background: hsl(from ${ink.card} h 45 50);
+  border-radius: 9999px;
 `;
 
 const SelectTrigger = styled(Select.Trigger)`
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  min-width: 75px;
   /* matches the pills' height so the title bar doesn't resize when it swaps in */
   padding: 6px 9px;
-  border: 1px solid ${colors.cyanBorder};
+  border: 1px solid ${ink.border};
   border-radius: 6px;
-  background: ${colors.editorTrack};
-  color: ${colors.cyan};
+  background: ${ink.track};
+  color: ${ink.fgMuted};
   font-family: ${fonts.mono};
   font-size: 13px;
   cursor: pointer;
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${colors.cyan};
+    --focus-ring: ${ink.cyan};
     --focus-ring-offset: 1px;
   }
 
@@ -161,11 +166,11 @@ const SelectPopup = styled(Select.Popup)`
   padding: 4px;
   /* the popup is a dark panel in both themes (like the editor/terminal); keep it subtle
      in dark mode rather than a bright violet */
-  border: 1px solid ${colors.cyanBorder};
+  border: 1px solid ${ink.cyanBorder};
   border-radius: 8px;
-  background: ${colors.editorPopup};
+  background: ${ink.popup};
   box-shadow: ${shadow.popover};
-  color: ${colors.onInk};
+  color: ${ink.fg};
   font-family: ${fonts.mono};
   font-size: 13px;
 `;
@@ -173,18 +178,19 @@ const SelectPopup = styled(Select.Popup)`
 const SelectItem = styled(Select.Item)`
   display: flex;
   align-items: center;
+  gap: 4px;
   padding: 6px 10px;
   border-radius: 5px;
-  color: ${colors.onInkSubtle};
+  color: ${ink.fgSubtle};
   cursor: pointer;
   outline: none;
 
   &[data-highlighted] {
-    background: ${colors.onInkHover};
-    color: ${colors.onInk};
+    background: ${ink.hover};
+    color: ${ink.fg};
   }
 
   &[data-selected] {
-    color: ${colors.cyan};
+    color: light-dark(${light.red}, ${dark.red});
   }
 `;

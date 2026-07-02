@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { styled } from "next-yak";
-import { colors, fonts, shadow, status } from "@/tokens";
+import { fonts, shadow, status, syntax, light, dark, ink } from "@/tokens";
 import { editorSurface, editorHeader } from "@/lib/editor-surface";
 import { useCopy } from "@/lib/use-copy";
 
@@ -21,7 +21,7 @@ export function CodeBlock({
   const preRef = useRef<HTMLPreElement>(null);
 
   return (
-    <Figure>
+    <Figure data-ink>
       {title ? (
         <TitleBar>
           {icon ? <Icon aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon }} /> : null}
@@ -90,8 +90,8 @@ const TitleBar = styled.div`
   /* extra right room so a long filename never collides with the copy button */
   padding-right: 44px;
   font-family: ${fonts.mono};
-  color: ${colors.onInkMuted};
   font-size: 13px;
+  color: ${ink.fgMuted};
 `;
 
 const Icon = styled.span`
@@ -122,10 +122,10 @@ const Copy = styled.button`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border: 1.5px solid ${ink.border};
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #ece3d2;
+  background: ${ink.fill};
+  color: ${syntax.fg};
   cursor: pointer;
   opacity: 0;
 
@@ -171,7 +171,7 @@ const Pre = styled.pre`
     background: color-mix(in srgb, ${status.error} 16%, transparent);
   }
   & .line.highlighted {
-    background: rgba(255, 255, 255, 0.08);
+    background: ${ink.fill};
   }
 
   & .twoslash-error {
@@ -179,7 +179,7 @@ const Pre = styled.pre`
     border-bottom: 2px dotted ${status.error};
   }
   & .twoslash-highlighted {
-    background: rgba(255, 255, 255, 0.1);
+    background: ${ink.hover};
     border-radius: 3px;
   }
 
@@ -194,7 +194,7 @@ const Pre = styled.pre`
     content: "";
     width: 1px;
     height: 1.3em;
-    background: ${colors.cyan};
+    background: ${ink.cyan};
   }
   & .twoslash-completion-list {
     user-select: none;
@@ -206,11 +206,11 @@ const Pre = styled.pre`
     margin: 2px 0 6px;
     padding: 4px;
     list-style: none;
-    border: 1px solid ${colors.violetLight};
+    border: 1px solid light-dark(${light.violetSoft}, ${dark.fog});
     border-radius: 8px;
-    background: ${colors.popover};
+    background: ${ink.popover};
     box-shadow: ${shadow.popover};
-    color: ${colors.onInk};
+    color: ${ink.fg};
   }
   & .twoslash-completion-list li {
     display: flex;
@@ -228,7 +228,7 @@ const Pre = styled.pre`
     width: 1em;
     height: 1em;
     flex: none;
-    color: ${colors.onInkSubtle};
+    color: ${ink.fgSubtle};
   }
   & .twoslash-completion-list .twoslash-completions-icon svg {
     display: block;
@@ -236,6 +236,6 @@ const Pre = styled.pre`
     height: 1em;
   }
   & .twoslash-completion-list .twoslash-completions-unmatched {
-    color: ${colors.onInkMuted};
+    color: ${ink.fgMuted};
   }
 `;

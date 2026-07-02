@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import { styled } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 
 // fumadocs returns result snippets as text with `<mark>…</mark>` wrapping the
 // matched terms. We render those marks as highlights and everything else as
@@ -31,6 +31,6 @@ export function Highlight({ text }: { text: string }) {
 
 const Mark = styled.mark`
   background: transparent;
-  color: ${colors.red};
+  color: light-dark(${light.red}, ${dark.red});
   font-weight: 700;
 `;
