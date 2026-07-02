@@ -1,5 +1,22 @@
 # next-yak
 
+## 9.5.0
+
+### Minor Changes
+
+- 818e953: Declare React >=19 as peer dependency.
+
+  The runtime already requires React 19 since 8.0.0 — `useTheme` is built on the `use()` hook (added for async RSC theme contexts in #429), which does not exist in React 18. The peer dependency range just didn't reflect that yet, so React 18 installs would pass `npm install` and then crash at runtime when rendering a themed or dynamic component. This makes the existing requirement explicit.
+
+- 527b667: Add rsbuild 2 support with the new `next-yak/rsbuild` plugin
+- c9bd2de: Update dependencies
+
+### Patch Changes
+
+- Updated dependencies [5d40a77]
+- Updated dependencies [c9bd2de]
+  - yak-swc@9.5.0
+
 ## 9.4.2
 
 ### Patch Changes
