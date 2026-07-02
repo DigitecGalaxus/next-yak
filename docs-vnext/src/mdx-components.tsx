@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, ComponentType } from "react";
 import { styled } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { Callout } from "@/components/mdx/callout";
 import { CodeBlock } from "@/components/mdx/code-block";
 import { SideBySide } from "@/components/mdx/sideBySide";
@@ -98,7 +98,7 @@ const HeadingAnchor = styled.a`
     content: "#";
     position: absolute;
     left: -0.85em;
-    color: ${colors.violetLight};
+    color: light-dark(${light.violetSoft}, ${dark.fog});
     opacity: 0;
 
     @media (prefers-reduced-motion: no-preference) {

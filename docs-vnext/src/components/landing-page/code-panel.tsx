@@ -1,7 +1,7 @@
 import { css } from "next-yak";
 import type { CSSProperties } from "react";
 import { highlighterPromise, yakTheme } from "@/lib/shiki";
-import { colors, fonts } from "@/tokens";
+import { fonts, ink } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/editor-surface";
 
 type Block = { code: string; lang: string };
@@ -24,6 +24,7 @@ export default async function CodePanel({
 
   return (
     <figure
+      data-ink
       className={className}
       style={style}
       css={css`
@@ -37,9 +38,9 @@ export default async function CodePanel({
         css={css`
           padding: 10px 12px;
           font-family: ${fonts.mono};
-          color: ${colors.onInkMuted};
-          border-bottom: 2px solid ${colors.onInkDivider};
           font-size: 13px;
+          color: ${ink.fgMuted};
+          border-bottom: 2px solid ${ink.divider};
         `}
       >
         {title}

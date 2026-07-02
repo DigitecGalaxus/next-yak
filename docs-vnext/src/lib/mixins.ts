@@ -1,28 +1,28 @@
 import { css } from "next-yak";
-import { colors, fonts, fontSize, fontWeight } from "@/tokens";
+import { fonts, fontSize, fontWeight, light, dark, scrim } from "@/tokens";
 
 export const keycapStyles = css`
   padding: 2px 8px;
-  border: 1.5px solid ${colors.violet};
+  border: 1.5px solid light-dark(${light.violet}, ${dark.white});
   border-radius: 6px;
-  background: ${colors.chip};
+  background: light-dark(${light.beige4}, ${dark.navy4});
   font-family: ${fonts.mono};
   font-size: 13px;
   font-weight: 700;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 export const backdropStyles = css`
   position: fixed;
   inset: 0;
-  background: rgba(20, 16, 25, 0.45);
+  background: ${scrim};
   backdrop-filter: blur(2px);
 `;
 
 export const subsectionHeading = css`
   font-size: ${fontSize.h3};
   font-weight: ${fontWeight.bold};
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 /**
@@ -59,7 +59,7 @@ export const overline = css`
  * the tighter cyan ring used on the dark editor surface.
  */
 export const focusRing = css`
-  outline: 2px solid var(--focus-ring, ${colors.violet});
+  outline: 2px solid var(--focus-ring, light-dark(${light.violet}, ${dark.white}));
   outline-offset: var(--focus-ring-offset, 2px);
 `;
 
@@ -71,7 +71,7 @@ export const sectionLabel = css`
   ${overline};
   font-size: 13px;
   letter-spacing: 0.6px;
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
 /**
@@ -87,9 +87,10 @@ export const overlineSmall = css`
 /** The inline `<code>` chip — shared by the landing <Code> and the docs prose. */
 export const inlineCode = css`
   font-family: ${fonts.mono};
-  color: ${colors.violet};
-  background: ${colors.chip};
+  /* stays slightly smaller than surrounding text, but never dips below the 13px floor */
   font-size: max(0.88em, 13px);
+  color: light-dark(${light.violet}, ${dark.white});
+  background: light-dark(${light.beige4}, ${dark.navy4});
   padding: 2px 5px;
   border-radius: 5px;
 `;

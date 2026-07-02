@@ -1,6 +1,6 @@
 import { styled } from "next-yak";
 import CtaButton from "@/components/landing-page/cta-button";
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { MessagePage, MessageActions } from "@/components/message-page";
 
 export default function NotFound() {
@@ -22,12 +22,12 @@ export default function NotFound() {
 const Code = styled.span`
   font-size: 96px;
   line-height: 1;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Heading = styled.h1`
   font-size: 28px;
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Text = styled.p`

@@ -3,10 +3,20 @@ import { highlighterPromise, yakTheme } from "@/lib/shiki";
 import HeroEditorView from "./hero-editor-view";
 import { frameworks } from "./frameworks";
 
-const TABS = frameworks.map((f) => f.pkg);
+const TABS = frameworks.map((f) => ({
+  value: f.id,
+  node: (
+    <>
+      <f.Icon />
+      {f.id}
+    </>
+  ),
+}));
 
 // Only the import line differs between frameworks; everything else is identical.
-const codeFor = (pkg: string) => `import { styled, css } from "${pkg}";
+const codeFor = (
+  id: string,
+) => `import { styled, css } from "${frameworks.find((f) => f.id === id)?.pkg}";
 
 const Button = styled.button<{ $primary?: boolean }>\`
   font-size: 1.5em;
@@ -37,8 +47,8 @@ export default async function HeroEditor({
   // client view, which swaps between them without shipping the highlighter.
   const codeByTab: Record<string, string> = Object.fromEntries(
     TABS.map((tab) => [
-      tab,
-      highlighter.codeToHtml(codeFor(tab), { lang: "tsx", theme: yakTheme.name }),
+      tab.value,
+      highlighter.codeToHtml(codeFor(tab.value), { lang: "tsx", theme: yakTheme.name }),
     ]),
   );
 
