@@ -4,14 +4,33 @@ import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Elem = ({ active }: {
     active: boolean;
 })=>{
-    return <div className={active ? "input_Elem_m7uBBu" : "input_Elem_m7uBBu-01"}/>;
+    return <div className={active ? /*YAK Extracted CSS:
+:global(.input_Elem_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ "input_Elem_m7uBBu" : /*YAK Extracted CSS:
+:global(.input_Elem_m7uBBu-01) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem_m7uBBu-01"}/>;
 };
 // folds: one arm carries its own condition
 const Elem2 = ({ active, big }: {
     active: boolean;
     big: boolean;
 })=>{
-    return <div className={active ? "input_Elem2_m7uBBu" + (big ? " input_Elem2__big_m7uBBu" : "") : "input_Elem2_m7uBBu-01"}/>;
+    return <div className={active ? /*YAK Extracted CSS:
+:global(.input_Elem2_m7uBBu) {
+  color: red;
+}
+:global(.input_Elem2__big_m7uBBu) {
+  font-size: 20px;
+}
+*/ /*#__PURE__*/ "input_Elem2_m7uBBu" + (big ? " input_Elem2__big_m7uBBu" : "") : /*YAK Extracted CSS:
+:global(.input_Elem2_m7uBBu-01) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem2_m7uBBu-01"}/>;
 };
 // stays on the runtime path: one arm holds a dynamic value
 const Elem3 = ({ active, width }: {

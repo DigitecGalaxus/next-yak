@@ -146,15 +146,22 @@ impl CSSProp {
   /// Folds a compiled css expression into a className expression.
   /// Outer `None` = not statically foldable (keep the runtime path),
   /// inner `None` = folds to nothing (empty css``).
+  ///
+  /// The folded expression reuses the span of the css call it replaces: the
+  /// `/*YAK Extracted CSS:*/` comment is attached to that span and is
+  /// LOAD-BEARING — `loaders/lib/extractCss.ts` parses it out of the
+  /// transformed source to build the stylesheet — so it must stay anchored to
+  /// an emitted node.
   fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
     match expr.unwrap_parens() {
       Expr::Call(call) => Self::fold_css_call(call, yak_imports),
-      // css={cond ? css`…` : css`…`} — fold both arms
+      // css={cond ? css`…` : css`…`} — fold both arms (each arm keeps its own
+      // span and thereby its own extracted-css comment)
       Expr::Cond(cond) => {
         let cons = Self::fold_css_expr(&cond.cons, yak_imports)??;
         let alt = Self::fold_css_expr(&cond.alt, yak_imports)??;
         Some(Some(Box::new(Expr::Cond(CondExpr {
-          span: DUMMY_SP,
+          span: cond.span,
           test: cond.test.clone(),
           cons,
           alt,
@@ -211,6 +218,13 @@ impl CSSProp {
           alt: Self::str_expr("".into()),
         })),
       }));
+    }
+    // anchor the folded expression to the original css call so the leading
+    // /*YAK Extracted CSS:*/ comment (parsed by extractCss) stays attached
+    match &mut *class_name_expr {
+      Expr::Lit(Lit::Str(class_name)) => class_name.span = call.span,
+      Expr::Bin(bin) => bin.span = call.span,
+      _ => {}
     }
     Some(Some(class_name_expr))
   }
