@@ -1,16 +1,25 @@
 "use client";
 
 import { styled } from "next-yak";
-import { colors } from "@/tokens";
+import { light, dark, ink } from "@/tokens";
 import { focusRing } from "@/lib/mixins";
 import { useCopy } from "@/lib/use-copy";
+import { CSSProperties } from "react";
 
 /**
  * The red "install" copy button shared by the hero npm terminal and the coverage card.
  * A brutalist offset-shadow button (the same haptic as the CTA buttons) that flips to a
  * cyan "COPIED" confirmation. Self-contained — pass the text to copy.
  */
-export function CopyButton({ text, className }: { text: string; className?: string }) {
+export function CopyButton({
+  text,
+  className,
+  style,
+}: {
+  text: string;
+  className?: string;
+  style?: CSSProperties;
+}) {
   const { copied, copy } = useCopy();
   return (
     <Button
@@ -19,6 +28,7 @@ export function CopyButton({ text, className }: { text: string; className?: stri
       data-copied={copied}
       title={text}
       className={className}
+      style={style}
     >
       {copied ? "COPIED" : "COPY"}
     </Button>
@@ -26,19 +36,17 @@ export function CopyButton({ text, className }: { text: string; className?: stri
 }
 
 const Button = styled.button`
-  /* the hard offset shadow that collapses as the button presses down — the same
-     "brutalist" haptic the CTA buttons use, scaled to this small button */
-  --bevel: #99291a;
+  --edge: ${ink.copyEdge};
   min-width: 58px;
   padding: 5px 10px;
   border-radius: 6px;
-  border: none;
+  border: 2px solid var(--edge);
   font-weight: 700;
-  background: ${colors.red};
+  background: light-dark(${light.red}, ${dark.redDeep});
   color: white;
   font-size: 13px;
   cursor: pointer;
-  box-shadow: 2px 2px 0 0 var(--bevel);
+  box-shadow: 2px 2px 0 0 var(--edge);
 
   @media (prefers-reduced-motion: no-preference) {
     transition:
@@ -50,22 +58,22 @@ const Button = styled.button`
 
   &:hover {
     transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 0 var(--bevel);
+    box-shadow: 1px 1px 0 0 var(--edge);
   }
 
   &:active {
     transform: translate(2px, 2px);
-    box-shadow: 0 0 0 0 var(--bevel);
+    box-shadow: 0 0 0 0 var(--edge);
   }
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${colors.cyan};
+    --focus-ring: ${ink.cyan};
   }
 
   &[data-copied="true"] {
-    --bevel: #0b8e96;
-    background: ${colors.cyan};
-    color: ${colors.ink};
+    --edge: ${ink.copyActive};
+    background: ${ink.cyan};
+    color: ${ink.base};
   }
 `;

@@ -1,10 +1,10 @@
 import { styled } from "next-yak";
-import { colors, fontSize } from "@/tokens";
+import { fontSize, light, dark } from "@/tokens";
 import { overline } from "@/lib/mixins";
 
 const Eyebrow = styled.span`
   ${overline};
-  color: ${colors.red};
+  color: light-dark(${light.red}, ${dark.red});
   font-size: ${fontSize.eyebrow};
   letter-spacing: 1.82px;
 `;

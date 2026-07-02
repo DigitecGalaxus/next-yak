@@ -4,7 +4,7 @@ import { SearchProvider } from "../components/search/search-provider";
 import { NextProvider } from "fumadocs-core/framework/next";
 import { styled } from "next-yak";
 import "./global.css";
-import { bricolageSans, colors, hankenSans, initVars, jetbrainsMono } from "@/tokens";
+import { bricolageSans, hankenSans, initVars, jetbrainsMono, light, dark } from "@/tokens";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -69,6 +69,6 @@ try{
 
 const Html = styled.html`
   ${initVars};
-  background: ${colors.beige};
-  color: ${colors.violetLight};
+  background: light-dark(${light.beige2}, ${dark.navy2});
+  color: light-dark(${light.violetSoft}, ${dark.fog});
 `;

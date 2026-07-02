@@ -1,13 +1,15 @@
-import { colors, radii } from "@/tokens";
+import { radii, light, dark } from "@/tokens";
 import { css } from "next-yak";
 
 export const buttonStyles = css`
-  color: ${colors.violet};
-  border: 2.5px solid ${colors.violet};
+  --btn-offset: 3px;
+  --btn-edge: light-dark(${light.violet}, ${dark.black});
+  color: light-dark(${light.violet}, ${dark.white});
+  border: 2.5px solid var(--btn-edge);
   border-radius: ${radii.card};
-  box-shadow: 3px 3px 0 0 ${colors.violet};
+  box-shadow: var(--btn-offset) var(--btn-offset) 0 0 var(--btn-edge);
   cursor: pointer;
-  background: ${colors.beigeLight};
+  background: light-dark(${light.beige1}, ${dark.navy1});
 
   @media (prefers-reduced-motion: no-preference) {
     transition:
@@ -18,18 +20,18 @@ export const buttonStyles = css`
 
   &:hover {
     transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 0 ${colors.violet};
+    box-shadow: calc(var(--btn-offset) - 1px) calc(var(--btn-offset) - 1px) 0 0 var(--btn-edge);
   }
 
   &:active {
-    transform: translate(3px, 3px);
-    box-shadow: 0 0 0 0 ${colors.violet};
+    transform: translate(var(--btn-offset), var(--btn-offset));
+    box-shadow: 0 0 0 0 var(--btn-edge);
   }
 
   &:focus-visible {
     outline: none;
-    border-color: ${colors.red};
-    box-shadow: 3px 3px 0 0 ${colors.red};
+    border-color: light-dark(${light.red}, ${dark.red});
+    box-shadow: var(--btn-offset) var(--btn-offset) 0 0 light-dark(${light.red}, ${dark.red});
   }
 `;
 

@@ -1,20 +1,22 @@
-import { colors, status } from "@/tokens";
+import { status, light, dark } from "@/tokens";
 import { styled } from "next-yak";
 import type { ReactNode } from "react";
 
 type CalloutType = "info" | "warn" | "error";
 
-// Accent (icon + ring) and soft fill per type, both from the shared `status` palette so
-// callouts, code-block diff lines, and the comparison table stay in agreement.
+// Accent (icon + ring) per type from the shared `status` palette. The soft fill is derived from
+// the accent as a translucent tint — same mechanism as the code-block diff lines — so there's no
+// separate per-type bg token.
+const softFill = (accent: string) => `color-mix(in srgb, ${accent} 12%, transparent)`;
 const TONE: Record<CalloutType, { accent: string; bg: string }> = {
-  info: { accent: status.info, bg: status.infoBg },
-  warn: { accent: status.warn, bg: status.warnBg },
-  error: { accent: status.error, bg: status.errorBg },
+  info: { accent: status.info, bg: softFill(status.info) },
+  warn: { accent: status.warn, bg: softFill(status.warn) },
+  error: { accent: status.error, bg: softFill(status.error) },
 };
 
-// Outline + brutalist shadow color. A local light-dark pair, not the violet token: the dark
-// half is intentionally a dimmer lavender so the near-white ink isn't harsh on the dark page.
-const edge = "light-dark(#1f0a4d, #8a7fae)";
+// The callout outline + brutalist shadow use their own edge pairing (interpolated directly
+// below): `light.violet` in light, but a dimmer lavender (`dark.violetGlow`) in dark rather
+// than `dark.white`, so the near-white ink isn't harsh on the dark page.
 
 const ICONS: Record<CalloutType, ReactNode> = {
   info: <InfoGlyph />,
@@ -101,11 +103,11 @@ const Box = styled.aside<{ $bg: string }>`
   margin: 26px 0;
   /* left gutter + top room so the corner ring never collides with the first line */
   padding: 16px 18px 16px 28px;
-  border: 2px solid ${edge};
+  border: 2px solid light-dark(${light.violet}, ${dark.violetGlow});
   border-radius: 10px;
   background: ${({ $bg }) => $bg};
-  box-shadow: 3px 3px 0 0 ${edge};
-  color: ${colors.violet};
+  box-shadow: 3px 3px 0 0 light-dark(${light.violet}, ${dark.violetGlow});
+  color: light-dark(${light.violet}, ${dark.white});
 
   & > :last-child {
     margin-bottom: 0;
@@ -123,9 +125,9 @@ const IconRing = styled.span<{ $accent: string }>`
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 2px solid ${edge};
+  border: 2px solid light-dark(${light.violet}, ${dark.violetGlow});
   border-radius: 50%;
-  background: ${colors.beige};
+  background: light-dark(${light.beige2}, ${dark.navy2});
   color: ${({ $accent }) => $accent};
 
   & svg {

@@ -24,50 +24,11 @@ export const fonts = {
   mono: `var(--font-mono)`,
 } as const;
 
-export const colors = {
-  violet: "var(--violet)",
-  violetLight: "var(--violet-light)",
-  red: "var(--red)",
-  beigeDark: "var(--beige-dark)",
-  beige: "var(--beige)",
-  beigeLight: "var(--beige-light)",
-  raised: "var(--raised)",
-  cardBorder: "var(--card-border)",
-  // Surfaces that stay dark in both themes (code panels, terminal) + their light text.
-  ink: "var(--ink)",
-  onInk: "var(--on-ink)",
-  cyan: "var(--cyan)",
-  onInkMuted: "var(--on-ink-muted)",
-  onInkSubtle: "var(--on-ink-subtle)",
-  onInkDivider: "var(--on-ink-divider)",
-  // Hovered row + translucent cyan chrome on the ink surface (switcher pills, popups).
-  // The pale cyan tints are deliberately softer than the bright --cyan text accent.
-  onInkHover: "var(--on-ink-hover)",
-  cyanFill: "var(--cyan-fill)",
-  cyanBorder: "var(--cyan-border)",
-  editorTrack: "var(--editor-track)",
-  editorPopup: "var(--editor-popup)",
-  // Elevated dark surface for the twoslash hover/completion popups. It sits a step ABOVE the
-  // ink code block so the popup doesn't melt into the navy.
-  popover: "var(--popover)",
-  chip: "var(--chip)",
-} as const;
-
-// Semantic status colors — one source of truth for callouts, the code-block diff /
-// error lines, and the comparison table's ✓/✗. The bright accent reads on both themes;
-// `Bg` (soft callout fill) and `Fg` (the table's readable solid shade) shift via
-// light-dark(). The diff lines tint the accent with color-mix() so there's no second copy.
-export const status = {
-  info: "var(--status-info)",
-  infoBg: "var(--status-info-bg)",
-  warn: "var(--status-warn)",
-  warnBg: "var(--status-warn-bg)",
-  success: "var(--status-success)",
-  successFg: "var(--status-success-fg)",
-  error: "var(--status-error)",
-  errorBg: "var(--status-error-bg)",
-  errorFg: "var(--status-error-fg)",
-} as const;
+// The palette is defined in ./theme/palette.yak.ts as plain color lists. Re-exported here so
+// `@/tokens` stays the single import surface. Components compose colors themselves, e.g.
+// `light-dark(${light.violet}, ${dark.white})` for theme-adaptive, `${ink.card}` for the
+// always-dark editor chrome.
+export { light, dark, ink, status, headerBg, scrim } from "./theme/palette.yak";
 
 // Soft elevation under a dark floating surface. `card` is the resting code/editor card;
 // `popover` is a panel floating above it (dropdowns, the twoslash hover, the hero
@@ -75,7 +36,15 @@ export const status = {
 export const shadow = {
   card: "0 18px 44px -14px rgba(8, 4, 20, 0.55)",
   popover: "0 16px 40px -10px rgba(15, 3, 38, 0.5)",
+  indicator: "0 1px 3px light-dark(rgba(31, 10, 77, 0.16), rgba(0, 0, 0, 0.4))", // coverage tab pill
 } as const;
+
+// The code-highlight (shiki) palette. Raw hex — NOT CSS vars — because it's consumed at
+// build time by the shiki theme in lib/yak-theme.ts (imported by source.config.ts, which
+// runs outside Next and can't resolve `var(--…)` or `next/font`). Defined there so that
+// leaf file stays dependency-free; re-exported here so `@/tokens` is the single palette
+// import surface for runtime code (e.g. the docs code-block icon color).
+export { syntax } from "@/lib/yak-theme";
 
 export const typography = {
   display: "22px",
@@ -151,53 +120,11 @@ export const container = {
   },
 } as const;
 
+// Colors now live inline in each component via `light-dark()`, so all this needs to do is set
+// `color-scheme` — that's what `light-dark()` reads to pick a side. The theme toggle sets
+// `data-theme` on <html>; with no attribute, `light dark` follows the OS preference.
 export const initVars = css`
   color-scheme: light dark;
-  --violet: light-dark(#1f0a4d, #f4eee4);
-  --violet-light: light-dark(#5a4a7a, #aaa0bf);
-  --red: light-dark(#f2462e, #ff5d45);
-  --beige-dark: light-dark(#f0eae5, #1c1726);
-  --beige: light-dark(#f8f5f2, #141019);
-  --beige-light: light-dark(#fffdf8, #221c30);
-  --raised: light-dark(#e7e2db, #2b2540);
-  --card-border: light-dark(#d9d4ce, #353049);
-  /* Dark-mode ink sits a touch ABOVE the page background (--beige #141019) so code
-     panels / the editor / terminal read as elevated surfaces instead of darker holes. */
-  --ink: light-dark(#1f0a4d, #1c1531);
-  --on-ink: light-dark(#fffdf8, #efe9f5);
-
-  /* Editor/code-surface palette. These sit on the always-dark ink card (code panels,
-     the hero editor, the switcher) in both themes: the accents stay constant, the panel
-     fills shift a touch between modes. */
-  --cyan: #0eebf1;
-  --on-ink-muted: rgba(255, 253, 248, 0.7);
-  --on-ink-subtle: #c0b5e1;
-  --on-ink-divider: rgba(255, 253, 248, 0.18);
-  --editor-track: light-dark(#392969, #1a1433);
-  --editor-popup: light-dark(#19083f, #130d28);
-  /* A step lighter than --ink at the SAME rich indigo hue (not a muddier, desaturated
-     violet), so popups over the code read as the same surface raised — not a clashing color. */
-  --popover: light-dark(#2e1070, #2c2050);
-  --chip: light-dark(#f1e9da, #2b2540);
-
-  /* Translucent cyan chrome + hover on the always-dark ink surface (the editor
-     switcher, its popups). The pale cyan stays distinct from --cyan (the bright text
-     accent); the border dims a step in dark mode so it doesn't glare. */
-  --on-ink-hover: rgba(255, 253, 248, 0.1);
-  --cyan-fill: rgba(152, 246, 248, 0.2);
-  --cyan-border: light-dark(rgba(152, 246, 248, 0.25), rgba(152, 246, 248, 0.12));
-
-  /* Semantic status palette (see the \`status\` export). Accents stay bright in both
-     themes; the soft callout fills and the comparison table's fg shades use light-dark(). */
-  --status-info: #3b82f6;
-  --status-info-bg: light-dark(#eff6ff, #13203a);
-  --status-warn: #f59e0b;
-  --status-warn-bg: light-dark(#fffbeb, #2a2310);
-  --status-success: #22c55e;
-  --status-success-fg: light-dark(#0f840e, #4ec43a);
-  --status-error: #ef4444;
-  --status-error-bg: light-dark(#fef2f2, #2c1618);
-  --status-error-fg: light-dark(#c0241b, #ec6a5a);
 
   &[data-theme="dark"] {
     color-scheme: dark;

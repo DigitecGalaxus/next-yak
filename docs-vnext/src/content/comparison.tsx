@@ -1,7 +1,7 @@
 "use client";
 import { css, styled } from "next-yak";
 import { useState } from "react";
-import { container, fontWeight, status } from "@/tokens";
+import { container, fontWeight, status, light, dark } from "@/tokens";
 
 type Features =
   | "INP optimized"
@@ -453,7 +453,7 @@ const Frame = styled.div`
     bottom: 0;
     width: 40px;
     pointer-events: none;
-    background: linear-gradient(to right, transparent, var(--beige));
+    background: linear-gradient(to right, transparent, light-dark(${light.beige2}, ${dark.navy2}));
   }
 `;
 
@@ -522,14 +522,14 @@ export const IconYes = styled.span`
   &::before {
     content: "✓" / "supported";
   }
-  color: ${status.successFg};
+  color: ${status.success};
 `;
 
 export const IconNo = styled.span`
   &::before {
     content: "✘" / "not supported";
   }
-  color: ${status.errorFg};
+  color: ${status.error};
 `;
 
 const ColumnFeatureName = styled.td`

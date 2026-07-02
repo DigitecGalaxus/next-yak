@@ -1,4 +1,4 @@
-import { colors } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { styled } from "next-yak";
 
 export const Steps = styled.ol`
@@ -37,8 +37,8 @@ export const Step = styled.li`
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: ${colors.red};
-    color: ${colors.onInk};
+    background: light-dark(${light.red}, ${dark.redDeep});
+    color: #fff;
     font-size: 13px;
     font-weight: 700;
   }

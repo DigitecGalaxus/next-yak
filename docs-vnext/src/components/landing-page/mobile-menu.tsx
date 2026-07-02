@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { Root } from "fumadocs-core/page-tree";
 import { useEffect, useState } from "react";
 import { css, styled } from "next-yak";
-import { screen, colors } from "@/tokens";
+import { screen, light, dark } from "@/tokens";
 import { iconButton } from "./button";
 import { backdropStyles } from "@/lib/mixins";
 import NavLink from "./nav-link";
@@ -43,7 +43,7 @@ export default function MobileMenu({ tree }: { tree: Root }) {
               css={css`
                 margin-bottom: 18px;
                 font-size: 18px;
-                color: ${colors.violet};
+                color: light-dark(${light.violet}, ${dark.white});
               `}
             >
               Menu
@@ -112,7 +112,7 @@ const Bar = styled.div`
 
 const Trigger = styled(Dialog.Trigger)`
   ${iconButton};
-  color: ${colors.violet};
+  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Backdrop = styled(Dialog.Backdrop)`
@@ -140,8 +140,8 @@ const Drawer = styled(Dialog.Popup)`
   height: 100dvh;
   overflow-y: auto;
   padding: 24px 18px;
-  background: ${colors.beige};
-  border-right: 2.5px solid ${colors.violet};
+  background: light-dark(${light.beige2}, ${dark.navy2});
+  border-right: 2.5px solid light-dark(${light.violet}, ${dark.white});
 
   @media (prefers-reduced-motion: no-preference) {
     transition: transform 0.25s ease;
@@ -174,11 +174,11 @@ const Section = styled.div`
 const SubNav = styled.div`
   margin-left: 4px;
   padding-left: 10px;
-  border-left: 2px solid ${colors.beigeDark};
+  border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
 `;
 
 const ExternalLink = styled.a`
-  color: ${colors.violetLight};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
   text-decoration: none;
 
   @media (prefers-reduced-motion: no-preference) {
@@ -186,7 +186,7 @@ const ExternalLink = styled.a`
   }
 
   &:hover {
-    color: ${colors.violet};
+    color: light-dark(${light.violet}, ${dark.white});
   }
 `;
 
