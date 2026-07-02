@@ -117,7 +117,9 @@ impl CSSProp {
         _ => return false,
       }
     }
-    let Ok(css_expr) = Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span) else {
+    let Ok(css_expr) =
+      Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)
+    else {
       // invalid css attribute: let the regular transform path report the error
       return false;
     };
@@ -200,7 +202,11 @@ impl CSSProp {
       // no static base class: an empty css`` folds to nothing; conditions
       // without a base would change the leading-space layout of the class
       // string — keep the runtime path for that (rare) shape
-      return if segments.is_empty() { Some(None) } else { None };
+      return if segments.is_empty() {
+        Some(None)
+      } else {
+        None
+      };
     };
     // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : "") …
     let mut class_name_expr = Self::str_expr(base);
