@@ -36,7 +36,7 @@ const Button = styled.button`
   font-weight: 700;
   background: ${colors.red};
   color: white;
-  font-size: 10px;
+  font-size: 13px;
   cursor: pointer;
   box-shadow: 2px 2px 0 0 var(--bevel);
 
