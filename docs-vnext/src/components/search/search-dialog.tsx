@@ -228,8 +228,8 @@ const ResultLink = styled(Link)<{ $active: boolean; $nested: boolean }>`
 `;
 
 const Crumbs = styled.span`
-  font-size: 11px;
   color: ${colors.violetLight};
+  font-size: 13px;
 `;
 
 const Content = styled.span<{ $page: boolean }>`

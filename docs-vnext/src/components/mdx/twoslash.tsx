@@ -49,7 +49,7 @@ const Content = styled(PreviewCard.Popup)`
   background: ${colors.popover};
   color: ${colors.onInk};
   font-family: ${fonts.mono};
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   box-shadow: ${shadow.popover};
 
@@ -70,7 +70,7 @@ const Content = styled(PreviewCard.Popup)`
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     color: #c7bce0;
     font-family: ${fonts.body};
-    font-size: 12px;
+    font-size: 13px;
   }
 
   & .twoslash-popup-docs-tags {
