@@ -58,8 +58,8 @@ const Card = styled(Link)<{ $align: "start" | "end" }>`
 
 const Direction = styled.span`
   font-family: ${fonts.mono};
-  font-size: 12px;
   color: ${colors.violetLight};
+  font-size: 13px;
 `;
 
 const Name = styled.span`

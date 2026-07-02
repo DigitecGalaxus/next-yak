@@ -251,7 +251,7 @@ export default async function Home() {
               <span
                 css={css`
                   font-family: ${fonts.mono};
-                  font-size: 11px;
+                  font-size: 13px;
                   white-space: nowrap;
                 `}
               >
@@ -443,7 +443,7 @@ export default async function Home() {
                 gap: 14px;
                 padding: 0 8px;
                 font-family: ${fonts.mono};
-                font-size: 11px;
+                font-size: 13px;
               `}
             >
               <span
@@ -545,8 +545,8 @@ export default async function Home() {
               >
                 <span
                   css={css`
-                    font-size: 12px;
                     color: ${colors.violetLight};
+                    font-size: 13px;
                   `}
                 >
                   next-yak
