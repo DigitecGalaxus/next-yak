@@ -1,7 +1,7 @@
 /**
  * Test helper that gives each Playwright test access to the case files dir.
  *
- * Wraps the test body so it receives an `FsTmp` object for reading/writing
+ * Wraps the test body so it receives a `TestEnv` object for reading/writing
  * files in the running dev server's case directory. Modified files are
  * automatically restored after the test (important for HMR tests that mutate
  * source files).
@@ -18,13 +18,13 @@ import { readFile, writeFile, copyFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import type { Page, TestInfo } from "@playwright/test";
 
-export interface FsTmp {
+export interface TestEnv {
   /** Absolute path to the .tmp/cases/<case> dir */
   cwd: string;
   /** URL path to navigate to */
   url: string;
-  /** The bundler being tested */
-  bundlerName: string;
+  /** Directory name under bundlers/ identifying the bundler being tested */
+  bundlerDirName: string;
   readFile(rel: string): Promise<string>;
   writeFile(rel: string, content: string): Promise<void>;
   /** Restore a file from the original case source */
@@ -33,19 +33,20 @@ export interface FsTmp {
 
 const e2eRoot = import.meta.dirname;
 
-export function withTestEnv(caseName: string, fn: (fsTmp: FsTmp, page: Page) => Promise<void>) {
+export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page) => Promise<void>) {
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
-    const bundlerName =
-      (testInfo.project.metadata as { bundlerName?: string }).bundlerName ?? testInfo.project.name;
-    const tmpDir = resolve(e2eRoot, "bundlers", bundlerName, ".tmp", "cases", caseName);
+    const bundlerDirName =
+      (testInfo.project.metadata as { bundlerDirName?: string }).bundlerDirName ??
+      testInfo.project.name;
+    const tmpDir = resolve(e2eRoot, "bundlers", bundlerDirName, ".tmp", "cases", caseName);
     const srcDir = resolve(e2eRoot, "cases", caseName);
 
     const originals = new Map<string, string>();
 
-    const fsTmp: FsTmp = {
+    const testEnv: TestEnv = {
       cwd: tmpDir,
       url: (testInfo.project.metadata as { url: string }).url,
-      bundlerName,
+      bundlerDirName,
       async readFile(rel: string) {
         return readFile(join(tmpDir, rel), "utf-8");
       },
@@ -65,7 +66,7 @@ export function withTestEnv(caseName: string, fn: (fsTmp: FsTmp, page: Page) => 
     };
 
     try {
-      await fn(fsTmp, page);
+      await fn(testEnv, page);
     } finally {
       for (const [rel, original] of originals) {
         await writeFile(join(tmpDir, rel), original).catch(() => {});

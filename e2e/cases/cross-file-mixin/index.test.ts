@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders styled component with cross-file css mixin",
-  withTestEnv("cross-file-mixin", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("cross-file-mixin", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const item = page.getByTestId("item");
     await expect(item).toHaveCSS("color", "rgb(255, 0, 0)");

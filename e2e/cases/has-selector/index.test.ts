@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders :has() selector — parent reacts to child focus",
-  withTestEnv("has-selector", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("has-selector", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const wrapper = page.getByTestId("wrapper");
     const input = page.getByTestId("input");

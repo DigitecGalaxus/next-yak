@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "HMR updates CSS without full page reload",
-  withTestEnv("hmr-css-change", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("hmr-css-change", async (testEnv, page) => {
+    await page.goto(testEnv.url);
     const box = page.getByTestId("box");
     await expect(box).toHaveCSS("color", "rgb(255, 0, 0)");
 
@@ -14,8 +14,8 @@ test(
     });
 
     // Modify the source file
-    const src = await fsTmp.readFile("index.tsx");
-    await fsTmp.writeFile("index.tsx", src.replace("color: red", "color: blue"));
+    const src = await testEnv.readFile("index.tsx");
+    await testEnv.writeFile("index.tsx", src.replace("color: red", "color: blue"));
 
     // Wait for HMR to apply the change
     await expect(box).toHaveCSS("color", "rgb(0, 0, 255)", {

@@ -1,0 +1,24 @@
+{
+  "name": "rsbuild-yak-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "build:yak": "pnpm run --filter next-yak build",
+    "build:swc": "pnpm run --filter yak-swc build"
+  },
+  "dependencies": {
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "catalog:dev",
+    "@rsbuild/plugin-react": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders shared .yak.ts tokens across multiple components with correct CSS",
-  withTestEnv("yak-file-with-import", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("yak-file-with-import", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     const accordion = page.getByTestId("accordion");
     const button = page.getByTestId("button");

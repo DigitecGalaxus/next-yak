@@ -181,9 +181,27 @@ export default defineConfig([
     outDir: "dist/loaders",
     outExtensions,
   },
-  // webpack-loader and turbo-loader each need to be a self-contained CJS
-  // file (Next.js loads them by path, no sibling chunks), so they're built
-  // separately with codeSplitting disabled.
+  // rsbuild plugin (ESM, like the vite plugin). Keeps package imports and
+  // ../withYak external so its types re-import rather than inline.
+  {
+    entry: ["rsbuild/index.ts"],
+    format: ["esm"],
+    minify: false,
+    sourcemap: true,
+    clean: false,
+    deps: {
+      neverBundle: [/^[@a-zA-Z]/, /^node:/, /\.\.\/withYak\//],
+    },
+    outputOptions: { ...stripJsdoc, codeSplitting: false },
+    dts: true,
+    platform: "node",
+    target: "es2022",
+    outDir: "dist/rsbuild",
+    outExtensions,
+  },
+  // webpack-loader and turbo-loader each need to be a self-contained CJS file
+  // (loaded by path, no sibling chunks), so they're built separately with
+  // codeSplitting disabled. The rsbuild plugin reuses turbo-loader.cjs as-is.
   ...["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"].map(
     (loaderEntry): UserConfig => ({
       entry: [loaderEntry],

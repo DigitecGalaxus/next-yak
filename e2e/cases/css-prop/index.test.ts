@@ -3,8 +3,8 @@ import { withTestEnv } from "next-yak-e2e";
 
 test(
   "renders css prop with basic, conditional, and nested styles",
-  withTestEnv("css-prop", async (fsTmp, page) => {
-    await page.goto(fsTmp.url);
+  withTestEnv("css-prop", async (testEnv, page) => {
+    await page.goto(testEnv.url);
 
     // Basic css prop
     const basic = page.getByTestId("basic");
