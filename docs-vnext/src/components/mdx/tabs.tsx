@@ -86,8 +86,8 @@ const TitleText = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: ${fonts.mono};
-  font-size: 12px;
   color: ${colors.onInkMuted};
+  font-size: 13px;
 `;
 
 const Panel = styled(BaseTabs.Panel)`

@@ -90,8 +90,8 @@ const TitleBar = styled.div`
   /* extra right room so a long filename never collides with the copy button */
   padding-right: 44px;
   font-family: ${fonts.mono};
-  font-size: 12px;
   color: ${colors.onInkMuted};
+  font-size: 13px;
 `;
 
 const Icon = styled.span`

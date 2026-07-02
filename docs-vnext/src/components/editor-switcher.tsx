@@ -103,7 +103,7 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   border-radius: 6px;
   background: transparent;
   font-family: ${fonts.mono};
-  font-size: 11px;
+  font-size: 13px;
   text-align: center;
   color: ${colors.onInkSubtle};
   cursor: pointer;
@@ -134,7 +134,7 @@ const SelectTrigger = styled(Select.Trigger)`
   background: ${colors.editorTrack};
   color: ${colors.cyan};
   font-family: ${fonts.mono};
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
 
   &:focus-visible {
@@ -167,7 +167,7 @@ const SelectPopup = styled(Select.Popup)`
   box-shadow: ${shadow.popover};
   color: ${colors.onInk};
   font-family: ${fonts.mono};
-  font-size: 12px;
+  font-size: 13px;
 `;
 
 const SelectItem = styled(Select.Item)`

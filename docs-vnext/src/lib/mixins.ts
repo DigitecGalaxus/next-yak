@@ -7,7 +7,7 @@ export const keycapStyles = css`
   border-radius: 6px;
   background: ${colors.chip};
   font-family: ${fonts.mono};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: ${colors.violet};
 `;
@@ -69,7 +69,7 @@ export const focusRing = css`
  */
 export const sectionLabel = css`
   ${overline};
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.6px;
   color: ${colors.violetLight};
 `;
@@ -80,16 +80,16 @@ export const sectionLabel = css`
  */
 export const overlineSmall = css`
   ${overline};
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1.5px;
 `;
 
 /** The inline `<code>` chip — shared by the landing <Code> and the docs prose. */
 export const inlineCode = css`
   font-family: ${fonts.mono};
-  font-size: 0.88em;
   color: ${colors.violet};
   background: ${colors.chip};
+  font-size: max(0.88em, 13px);
   padding: 2px 5px;
   border-radius: 5px;
 `;

@@ -37,9 +37,9 @@ export default async function CodePanel({
         css={css`
           padding: 10px 12px;
           font-family: ${fonts.mono};
-          font-size: 10px;
           color: ${colors.onInkMuted};
           border-bottom: 2px solid ${colors.onInkDivider};
+          font-size: 13px;
         `}
       >
         {title}

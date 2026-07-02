@@ -142,7 +142,7 @@ export default function HeroEditorView({
               css={css`
                 color: ${colors.onInkMuted};
                 font-family: ${fonts.mono};
-                font-size: 10px;
+                font-size: 13px;
               `}
             >
               Button.tsx
@@ -165,7 +165,7 @@ export default function HeroEditorView({
 
             ${codeReset};
             pre {
-              font-size: 11px;
+              font-size: 13px;
               line-height: 1.7;
             }
           `}
