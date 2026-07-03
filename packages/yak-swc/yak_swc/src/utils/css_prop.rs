@@ -105,7 +105,7 @@ impl CSSProp {
     let Ok(css_expr) =
       Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)
     else {
-      // invalid css attribute: let the regular transform path report the error
+      // invalid css attribute
       return false;
     };
     let Some(folded) = Self::fold_css_expr(&css_expr, yak_imports) else {
