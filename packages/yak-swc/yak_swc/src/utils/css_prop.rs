@@ -44,11 +44,6 @@ impl CSSProp {
   ///   })} />
   /// ```
   pub fn transform(&self, opening_element: &mut JSXOpeningElement, yak_imports: &mut YakImports) {
-    // Constant folding: when the css prop compiled to a statically known set of
-    // class names (and the element has no className/spread that would need
-    // runtime merging), replace the whole mergeCssProp call with a plain
-    // className attribute — the merge machinery is a per-element, per-render
-    // cost for a result that is known at build time.
     if self.try_fold(opening_element, yak_imports) {
       return;
     }
@@ -85,29 +80,19 @@ impl CSSProp {
     }
   }
 
-  /// Tries to replace the css prop with a compile-time className attribute.
+  /// Replaces a statically known css prop with a plain className attribute
+  /// to avoid the runtime `mergeCssProp` call.
+  /// Bails out (returns false) if the element has a className or spread attribute
+  /// or if the css expression contains dynamic values or mixin references.
   ///
-  /// Folds only when every part is statically known — the conservative bail-out
-  /// keeps the runtime `mergeCssProp` path for everything else:
-  /// - the element has no `className` attribute and no spread attribute
-  ///   (`style` attributes are fine: a class-only css prop never touches style,
-  ///   so they simply stay in place untouched),
-  /// - the css attribute holds an already-compiled `css(...)` call (or a
-  ///   ternary of them) whose arguments are one static class string and/or
-  ///   param-less `() => cond && css("x")` condition arrows.
-  ///
+  /// e.g.
   /// ```jsx
-  /// <div css={css("a")} />                                // -> <div className="a" />
-  /// <div css={css(() => on && css("b"), "a")} />          // -> <div className={"a" + (on ? " b" : "")} />
-  /// <div css={on ? css("a") : css("b")} />                // -> <div className={on ? "a" : "b"} />
+  /// <div css={css("a")} />                        // -> <div className="a" />
+  /// <div css={css(() => on && css("b"), "a")} />  // -> <div className={"a" + (on ? " b" : "")} />
+  /// <div css={on ? css("a") : css("b")} />        // -> <div className={on ? "a" : "b"} />
   /// ```
-  ///
-  /// Class order matches the runtime processor exactly: the base class first,
-  /// then each conditional class in argument order. Conditions are still
-  /// evaluated once per render in the same order as before.
   fn try_fold(&self, opening_element: &mut JSXOpeningElement, yak_imports: &YakImports) -> bool {
-    // className or spread attributes require the runtime merge (a spread may
-    // carry a className we cannot see at build time)
+    // a spread may carry a className that is only known at runtime
     for &index in &self.relevant_props_indices {
       match &opening_element.attrs[index] {
         JSXAttrOrSpread::JSXAttr(attr) => match &attr.name {
@@ -127,7 +112,6 @@ impl CSSProp {
       return false;
     };
     match folded {
-      // an empty css`` contributes nothing — drop the attribute entirely
       None => {
         opening_element.attrs.remove(self.index);
       }
@@ -148,17 +132,9 @@ impl CSSProp {
   /// Folds a compiled css expression into a className expression.
   /// Outer `None` = not statically foldable (keep the runtime path),
   /// inner `None` = folds to nothing (empty css``).
-  ///
-  /// The folded expression reuses the span of the css call it replaces: the
-  /// `/*YAK Extracted CSS:*/` comment is attached to that span and is
-  /// LOAD-BEARING — `loaders/lib/extractCss.ts` parses it out of the
-  /// transformed source to build the stylesheet — so it must stay anchored to
-  /// an emitted node.
   fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
     match expr.unwrap_parens() {
       Expr::Call(call) => Self::fold_css_call(call, yak_imports),
-      // css={cond ? css`…` : css`…`} — fold both arms (each arm keeps its own
-      // span and thereby its own extracted-css comment)
       Expr::Cond(cond) => {
         let cons = Self::fold_css_expr(&cond.cons, yak_imports)??;
         let alt = Self::fold_css_expr(&cond.alt, yak_imports)??;
@@ -193,15 +169,13 @@ impl CSSProp {
           base = Some(class_name.value.clone());
         }
         Expr::Arrow(arrow) => segments.push(Self::fold_condition_arrow(arrow, yak_imports)?),
-        // dynamic values (`{ style: … }`), mixin references, nested runtime
-        // logic — not foldable
+        // dynamic values and mixin references are not foldable
         _ => return None,
       }
     }
     let Some(base) = base else {
-      // no static base class: an empty css`` folds to nothing; conditions
-      // without a base would change the leading-space layout of the class
-      // string — keep the runtime path for that (rare) shape
+      // conditions without a base class would change the leading space of the
+      // class string, so only an empty css`` folds (to nothing)
       return if segments.is_empty() {
         Some(None)
       } else {
@@ -225,8 +199,8 @@ impl CSSProp {
         })),
       }));
     }
-    // anchor the folded expression to the original css call so the leading
-    // /*YAK Extracted CSS:*/ comment (parsed by extractCss) stays attached
+    // keep the span of the original css call so the /*YAK Extracted CSS:*/
+    // comment (parsed by extractCss.ts) stays attached
     match &mut *class_name_expr {
       Expr::Lit(Lit::Str(class_name)) => class_name.span = call.span,
       Expr::Bin(bin) => bin.span = call.span,
@@ -256,7 +230,7 @@ impl CSSProp {
     }
   }
 
-  /// Matches `css("x")` — a css call carrying exactly one static class string.
+  /// Matches a `css("x")` call carrying exactly one static class string.
   fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
     let Expr::Call(call) = expr.unwrap_parens() else {
       return None;
