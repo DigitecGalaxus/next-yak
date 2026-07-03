@@ -81,9 +81,9 @@ impl CSSProp {
   }
 
   /// Replaces a statically known css prop with a plain className attribute
-  /// to avoid the runtime `mergeCssProp` call.
+  /// to avoid the runtime `mergeCssProp` call
   /// Bails out (returns false) if the element has a className or spread attribute
-  /// or if the css expression contains dynamic values or mixin references.
+  /// or if the css expression contains dynamic values or mixin references
   ///
   /// e.g.
   /// ```jsx
@@ -129,9 +129,9 @@ impl CSSProp {
     true
   }
 
-  /// Folds a compiled css expression into a className expression.
+  /// Folds a compiled css expression into a className expression
   /// Outer `None` = not statically foldable (keep the runtime path),
-  /// inner `None` = folds to nothing (empty css``).
+  /// inner `None` = folds to nothing (empty css``)
   fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
     match expr.unwrap_parens() {
       Expr::Call(call) => Self::fold_css_call(call, yak_imports),
@@ -150,7 +150,7 @@ impl CSSProp {
   }
 
   /// Folds one compiled `css(...)` call: one optional static class string plus
-  /// zero or more `() => cond && css("x")` condition arrows.
+  /// zero or more `() => cond && css("x")` condition arrows
   fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
     if !Self::is_yak_css_callee(&call.callee, yak_imports) {
       return None;
@@ -210,7 +210,7 @@ impl CSSProp {
   }
 
   /// Matches the compiled condition shape `() => cond && css("x")` and returns
-  /// the condition expression plus the static class name.
+  /// the condition expression plus the static class name
   fn fold_condition_arrow(
     arrow: &ArrowExpr,
     yak_imports: &YakImports,
@@ -230,7 +230,7 @@ impl CSSProp {
     }
   }
 
-  /// Matches a `css("x")` call carrying exactly one static class string.
+  /// Matches a `css("x")` call carrying exactly one static class string
   fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
     let Expr::Call(call) = expr.unwrap_parens() else {
       return None;
