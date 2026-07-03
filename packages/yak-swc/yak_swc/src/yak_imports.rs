@@ -53,7 +53,7 @@ pub fn visit_module_imports(module: &mut Module) -> YakImports {
   yak_import_visitor.into()
 }
 
-const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp"];
+const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp", "mergeClassNames"];
 
 impl From<YakImportVisitor> for YakImports {
   fn from(value: YakImportVisitor) -> Self {

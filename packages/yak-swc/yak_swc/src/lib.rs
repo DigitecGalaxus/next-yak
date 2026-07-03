@@ -18,6 +18,7 @@ use utils::add_suffix_to_expr::add_suffix_to_expr;
 use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
+use utils::styled_jsx_fold::StyledJsxFold;
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -37,6 +38,7 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod native_elements;
+  pub(crate) mod styled_jsx_fold;
 }
 pub mod naming_convention;
 use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
@@ -166,6 +168,9 @@ where
   react_refresh_reg: bool,
   /// Names of exported styled components to register with $RefreshReg$
   exported_styled_names: Vec<String>,
+  /// Registry of fully static styled components whose JSX usages
+  /// are folded into plain DOM elements in a deferred pass
+  styled_jsx_fold: StyledJsxFold,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -204,6 +209,7 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
+      styled_jsx_fold: StyledJsxFold::default(),
     }
   }
 
@@ -665,6 +671,12 @@ where
     let basename = self.naming_convention.get_base_file_name();
 
     module.visit_mut_children_with(self);
+
+    // Fold JSX usages of fully static styled components into plain DOM elements
+    // This must run before the utility imports below are collected
+    self
+      .styled_jsx_fold
+      .fold_jsx_usages(module, self.yak_library_imports.as_mut().unwrap());
 
     // Add the css module import to the top of the file
     // if any yak imports are used
@@ -1142,6 +1154,7 @@ where
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
 
+    let is_fully_static = runtime_expressions.is_empty() && runtime_css_variables.is_empty();
     let transform_result = transform.transform_expression(
       n,
       runtime_expressions,
@@ -1149,6 +1162,15 @@ where
       runtime_css_variables,
       self.yak_library_imports.as_mut().unwrap(),
     );
+
+    if is_top_level && yak_library_function_name.deref() == "styled" {
+      self.styled_jsx_fold.try_register(
+        self.current_variable_name.as_ref(),
+        &n.tag,
+        &transform_result.expression,
+        is_fully_static,
+      );
+    }
 
     if is_top_level {
       self.current_declaration = vec![];
@@ -1293,8 +1315,10 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
 mod tests {
   use super::*;
   use std::path::PathBuf;
+  use swc_core::common::Mark;
   use swc_core::ecma::{
     parser::{Syntax, TsSyntax},
+    transforms::base::resolver,
     transforms::testing::{test_fixture, test_transform, FixtureTestConfig},
     visit::visit_mut_pass,
   };
@@ -1307,7 +1331,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
+        // apply the resolver like the real SWC pipeline does before plugins
+        // so scoped variables get distinct syntax contexts
+        (
+          resolver(Mark::new(), Mark::new(), true),
+          visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
           false,
@@ -1320,7 +1348,8 @@ mod tests {
           },
           false,
           false,
-        ))
+          )),
+        )
       },
       &input,
       &input.with_file_name("output.dev.tsx"),
@@ -1340,20 +1369,25 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          false,
-          None,
-          true,
-          CssImportConfig {
-            value: "data:text/css;base64,".to_string(),
-            transpilation: TranspilationMode::Css,
-            encoding: ImportModeEncoding::Base64,
-          },
-          false,
-          false,
-        ))
+        // apply the resolver like the real SWC pipeline does before plugins
+        // so scoped variables get distinct syntax contexts
+        (
+          resolver(Mark::new(), Mark::new(), true),
+          visit_mut_pass(TransformVisitor::new(
+            Some(tester.comments.clone()),
+            "path/input.tsx",
+            false,
+            None,
+            true,
+            CssImportConfig {
+              value: "data:text/css;base64,".to_string(),
+              transpilation: TranspilationMode::Css,
+              encoding: ImportModeEncoding::Base64,
+            },
+            false,
+            false,
+          )),
+        )
       },
       &input,
       &input.with_file_name("output.turbo.dev.tsx"),
@@ -1373,7 +1407,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
+        // apply the resolver like the real SWC pipeline does before plugins
+        // so scoped variables get distinct syntax contexts
+        (
+          resolver(Mark::new(), Mark::new(), true),
+          visit_mut_pass(TransformVisitor::new(
           Some(tester.comments.clone()),
           "path/input.tsx",
           true,
@@ -1386,7 +1424,8 @@ mod tests {
           },
           false,
           false,
-        ))
+          )),
+        )
       },
       &input,
       &input.with_file_name("output.prod.tsx"),
@@ -1406,20 +1445,25 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          true,
-          None,
-          false,
-          CssImportConfig {
-            value: "data:text/css;base64,".to_string(),
-            transpilation: TranspilationMode::Css,
-            encoding: ImportModeEncoding::Base64,
-          },
-          false,
-          false,
-        ))
+        // apply the resolver like the real SWC pipeline does before plugins
+        // so scoped variables get distinct syntax contexts
+        (
+          resolver(Mark::new(), Mark::new(), true),
+          visit_mut_pass(TransformVisitor::new(
+            Some(tester.comments.clone()),
+            "path/input.tsx",
+            true,
+            None,
+            false,
+            CssImportConfig {
+              value: "data:text/css;base64,".to_string(),
+              transpilation: TranspilationMode::Css,
+              encoding: ImportModeEncoding::Base64,
+            },
+            false,
+            false,
+          )),
+        )
       },
       &input,
       &input.with_file_name("output.turbo.prod.tsx"),

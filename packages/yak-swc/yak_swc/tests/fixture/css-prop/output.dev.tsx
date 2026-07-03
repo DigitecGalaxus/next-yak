@@ -78,10 +78,10 @@ const Text = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Text_m7uBBu"), {
     "displayName": "Text"
 });
-const StyledComponentWithCSSProp = ()=><Text className={/*YAK Extracted CSS:
+const StyledComponentWithCSSProp = ()=><p className={/*YAK Extracted CSS:
 :global(.input_StyledComponentWithCSSProp_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "input_StyledComponentWithCSSProp_m7uBBu"}>
+*/ /*#__PURE__*/ "input_Text_m7uBBu input_StyledComponentWithCSSProp_m7uBBu"}>
     test
-  </Text>;
+  </p>;
