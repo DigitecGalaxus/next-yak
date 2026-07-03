@@ -49,15 +49,16 @@ const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*#__PURE__*/ css("ym7uBBu6"))}/>;
+const Elem9 = ()=><div className={/*#__PURE__*/ "ym7uBBu7"}/>;
 const Text = /*YAK Extracted CSS:
-:global(.ym7uBBu7) {
+:global(.ym7uBBu8) {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu7");
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu8");
 const StyledComponentWithCSSProp = ()=><Text className={/*YAK Extracted CSS:
-:global(.ym7uBBu8) {
+:global(.ym7uBBu9) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu8"}>
+*/ /*#__PURE__*/ "ym7uBBu9"}>
     test
   </Text>;

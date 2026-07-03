@@ -49,6 +49,7 @@ const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*#__PURE__*/ css("input_Elem8_m7uBBu"))}/>;
+const Elem9 = ()=><div className={/*#__PURE__*/ "input_Elem9_m7uBBu"}/>;
 const Text = /*YAK Extracted CSS:
 :global(.input_Text_m7uBBu) {
   font-size: 20px;

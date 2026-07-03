@@ -108,42 +108,34 @@ impl CSSProp {
       // invalid css attribute
       return false;
     };
-    let Some(folded) = Self::fold_css_expr(&css_expr, yak_imports) else {
+    let Some(class_name_expr) = Self::fold_css_expr(&css_expr, yak_imports) else {
       return false;
     };
-    match folded {
-      None => {
-        opening_element.attrs.remove(self.index);
-      }
-      Some(class_name_expr) => {
-        opening_element.attrs[self.index] = JSXAttrOrSpread::JSXAttr(JSXAttr {
-          span: DUMMY_SP,
-          name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
-          value: Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
-            span: DUMMY_SP,
-            expr: JSXExpr::Expr(class_name_expr),
-          })),
-        });
-      }
-    }
+    opening_element.attrs[self.index] = JSXAttrOrSpread::JSXAttr(JSXAttr {
+      span: DUMMY_SP,
+      name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
+      value: Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+        span: DUMMY_SP,
+        expr: JSXExpr::Expr(class_name_expr),
+      })),
+    });
     true
   }
 
   /// Folds a compiled css expression into a className expression
-  /// Outer `None` = not statically foldable (keep the runtime path),
-  /// inner `None` = folds to nothing (empty css``)
-  fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
+  /// Returns `None` if the expression is not statically foldable
+  fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
     match expr.unwrap_parens() {
       Expr::Call(call) => Self::fold_css_call(call, yak_imports),
       Expr::Cond(cond) => {
-        let cons = Self::fold_css_expr(&cond.cons, yak_imports)??;
-        let alt = Self::fold_css_expr(&cond.alt, yak_imports)??;
-        Some(Some(Box::new(Expr::Cond(CondExpr {
+        let cons = Self::fold_css_expr(&cond.cons, yak_imports)?;
+        let alt = Self::fold_css_expr(&cond.alt, yak_imports)?;
+        Some(Box::new(Expr::Cond(CondExpr {
           span: cond.span,
           test: cond.test.clone(),
           cons,
           alt,
-        }))))
+        })))
       }
       _ => None,
     }
@@ -151,7 +143,7 @@ impl CSSProp {
 
   /// Folds one compiled `css(...)` call: one optional static class string plus
   /// zero or more `() => cond && css("x")` condition arrows
-  fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Option<Box<Expr>>> {
+  fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>> {
     if !Self::is_yak_css_callee(&call.callee, yak_imports) {
       return None;
     }
@@ -173,15 +165,8 @@ impl CSSProp {
         _ => return None,
       }
     }
-    let Some(base) = base else {
-      // conditions without a base class would change the leading space of the
-      // class string, so only an empty css`` folds (to nothing)
-      return if segments.is_empty() {
-        Some(None)
-      } else {
-        None
-      };
-    };
+    // css calls without a base class stay on the runtime path
+    let base = base?;
     // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : "") …
     let mut class_name_expr = Self::str_expr(base);
     for (condition, class_name) in segments {
@@ -206,7 +191,7 @@ impl CSSProp {
       Expr::Bin(bin) => bin.span = call.span,
       _ => {}
     }
-    Some(Some(class_name_expr))
+    Some(class_name_expr)
   }
 
   /// Matches the compiled condition shape `() => cond && css("x")` and returns

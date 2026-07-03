@@ -1,6 +1,6 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1NyB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnU4IHsKICBjb2xvcjogcmVkOwp9";
+import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1OCB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnU5IHsKICBjb2xvcjogcmVkOwp9";
 const Elem = ()=><div className={/*YAK Extracted CSS:
 .ym7uBBu {
   color: red;
@@ -49,15 +49,16 @@ const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*#__PURE__*/ css("ym7uBBu6"))}/>;
+const Elem9 = ()=><div className={/*#__PURE__*/ "ym7uBBu7"}/>;
 const Text = /*YAK Extracted CSS:
-.ym7uBBu7 {
+.ym7uBBu8 {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu7");
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBu8");
 const StyledComponentWithCSSProp = ()=><Text className={/*YAK Extracted CSS:
-.ym7uBBu8 {
+.ym7uBBu9 {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu8"}>
+*/ /*#__PURE__*/ "ym7uBBu9"}>
     test
   </Text>;
