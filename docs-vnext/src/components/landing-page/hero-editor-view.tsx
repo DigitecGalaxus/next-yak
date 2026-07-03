@@ -184,7 +184,7 @@ function Terminal({ packageName }: { packageName?: string }) {
         flex-direction: column;
         gap: 12px;
         transform: rotate(2deg);
-        min-width: 280px;
+        min-width: 300px;
         padding: 12px 14px 14px;
         border: 1px solid ${ink.border};
         border-radius: 12px;

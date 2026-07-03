@@ -3,7 +3,7 @@ import { fonts, fontSize, fontWeight, light, dark, scrim } from "@/tokens";
 
 export const keycapStyles = css`
   padding: 2px 8px;
-  border: 1.5px solid light-dark(${light.violet}, ${dark.white});
+  border: 1.5px solid light-dark(${light.violet}, ${dark.navy5});
   border-radius: 6px;
   background: light-dark(${light.beige4}, ${dark.navy4});
   font-family: ${fonts.mono};
