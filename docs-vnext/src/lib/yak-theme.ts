@@ -4,7 +4,7 @@
 // `next/font`, and next-yak. `@/tokens` re-exports this as `syntax` for runtime use.
 export const syntax = {
   fg: "#ece3d2",
-  bg: "#1f0a4d",
+  bg: "#231442",
   comment: "#8a7daf",
   keyword: "#f178b6",
   string: "#f5a973",
