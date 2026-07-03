@@ -3,7 +3,7 @@
 import { Select } from "@base-ui-components/react/select";
 import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
 import { styled } from "next-yak";
-import { container, fonts, shadow, light, dark, ink } from "@/tokens";
+import { container, fonts, shadow, ink } from "@/tokens";
 import { focusRing, slidingIndicator } from "@/lib/mixins";
 import type { ReactNode } from "react";
 
@@ -41,7 +41,7 @@ export function EditorSwitcher({
 
       <Select.Root value={value} onValueChange={handleChange}>
         <SelectTrigger data-ink aria-label={ariaLabel}>
-          <Select.Value />
+          <SelectValue>{items.find((i) => i.value === value)?.node}</SelectValue>
           <SelectIcon>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
               <path
@@ -60,6 +60,17 @@ export function EditorSwitcher({
               {items.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
                   {item.node}
+                  <SelectItemIndicator>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path
+                        d="M2.5 6.5 5 9l4.5-5.5"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </SelectItemIndicator>
                 </SelectItem>
               ))}
             </SelectPopup>
@@ -83,7 +94,7 @@ const SwitcherList = styled(BaseTabs.List)`
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 3px;
+  padding: 4px 5px;
   border-radius: 9999px;
   background: ${ink.switcherTrack};
   border: 1px solid ${ink.switcherBorder};
@@ -91,11 +102,11 @@ const SwitcherList = styled(BaseTabs.List)`
 
 const SwitcherTab = styled(BaseTabs.Tab)`
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   position: relative;
   z-index: 1;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border: none;
   border-radius: 9999px;
   background: transparent;
@@ -115,36 +126,38 @@ const SwitcherTab = styled(BaseTabs.Tab)`
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${ink.cyan};
+    --focus-ring: ${ink.success};
     --focus-ring-offset: 1px;
   }
 `;
 
 const SwitcherIndicator = styled(BaseTabs.Indicator)`
   ${slidingIndicator};
-  background: hsl(from ${ink.card} h 45 50);
+  box-sizing: border-box;
+  background: ${ink.track};
+  border: 1.5px solid ${ink.switcherEdge};
   border-radius: 9999px;
+  box-shadow: 2px 2px 0 0 ${ink.switcherEdge};
 `;
 
 const SelectTrigger = styled(Select.Trigger)`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  min-width: 75px;
-  /* matches the pills' height so the title bar doesn't resize when it swaps in */
-  padding: 6px 9px;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 96px;
+  padding: 6px 10px;
   border: 1px solid ${ink.border};
   border-radius: 6px;
   background: ${ink.track};
-  color: ${ink.fgMuted};
+  color: ${ink.fg};
   font-family: ${fonts.mono};
   font-size: 13px;
   cursor: pointer;
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${ink.cyan};
+    --focus-ring: ${ink.success};
     --focus-ring-offset: 1px;
   }
 
@@ -153,8 +166,15 @@ const SelectTrigger = styled(Select.Trigger)`
   }
 `;
 
+const SelectValue = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
 const SelectIcon = styled(Select.Icon)`
   display: flex;
+  color: ${ink.fgMuted};
 `;
 
 const SelectPositioner = styled(Select.Positioner)`
@@ -164,9 +184,7 @@ const SelectPositioner = styled(Select.Positioner)`
 const SelectPopup = styled(Select.Popup)`
   min-width: var(--anchor-width);
   padding: 4px;
-  /* the popup is a dark panel in both themes (like the editor/terminal); keep it subtle
-     in dark mode rather than a bright violet */
-  border: 1px solid ${ink.cyanBorder};
+  border: 1px solid ${ink.border};
   border-radius: 8px;
   background: ${ink.popup};
   box-shadow: ${shadow.popover};
@@ -178,7 +196,7 @@ const SelectPopup = styled(Select.Popup)`
 const SelectItem = styled(Select.Item)`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 6px 10px;
   border-radius: 5px;
   color: ${ink.fgSubtle};
@@ -191,6 +209,13 @@ const SelectItem = styled(Select.Item)`
   }
 
   &[data-selected] {
-    color: light-dark(${light.red}, ${dark.red});
+    color: ${ink.fg};
   }
+`;
+
+const SelectItemIndicator = styled(Select.ItemIndicator)`
+  display: flex;
+  margin-left: auto;
+  padding-left: 10px;
+  color: ${ink.success};
 `;

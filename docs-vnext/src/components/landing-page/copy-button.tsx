@@ -9,7 +9,7 @@ import { CSSProperties } from "react";
 /**
  * The red "install" copy button shared by the hero npm terminal and the coverage card.
  * A brutalist offset-shadow button (the same haptic as the CTA buttons) that flips to a
- * cyan "COPIED" confirmation. Self-contained — pass the text to copy.
+ * green "COPIED" confirmation while keeping its dark edge. Self-contained — pass the text.
  */
 export function CopyButton({
   text,
@@ -36,17 +36,16 @@ export function CopyButton({
 }
 
 const Button = styled.button`
-  --edge: ${ink.copyEdge};
-  min-width: 58px;
+  min-width: 72px;
   padding: 5px 10px;
   border-radius: 6px;
-  border: 2px solid var(--edge);
+  border: 2px solid ${ink.copyEdge};
   font-weight: 700;
   background: light-dark(${light.red}, ${dark.redDeep});
   color: white;
   font-size: 13px;
   cursor: pointer;
-  box-shadow: 2px 2px 0 0 var(--edge);
+  box-shadow: 2px 2px 0 0 ${ink.copyEdge};
 
   @media (prefers-reduced-motion: no-preference) {
     transition:
@@ -58,22 +57,20 @@ const Button = styled.button`
 
   &:hover {
     transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 0 var(--edge);
+    box-shadow: 1px 1px 0 0 ${ink.copyEdge};
   }
 
   &:active {
     transform: translate(2px, 2px);
-    box-shadow: 0 0 0 0 var(--edge);
+    box-shadow: 0 0 0 0 ${ink.copyEdge};
   }
 
   &:focus-visible {
     ${focusRing};
-    --focus-ring: ${ink.cyan};
+    --focus-ring: ${ink.success};
   }
 
   &[data-copied="true"] {
-    --edge: ${ink.copyActive};
-    background: ${ink.cyan};
-    color: ${ink.base};
+    background: ${ink.successDeep};
   }
 `;

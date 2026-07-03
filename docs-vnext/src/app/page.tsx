@@ -56,7 +56,7 @@ export default async function Home() {
               justify-content: space-between;
               align-items: center;
               gap: 24px;
-              padding: 92px 48px 96px;
+              padding: 48px 48px 96px;
             }
           `}
         >
@@ -103,7 +103,7 @@ export default async function Home() {
                   font-family: ${fonts.mono};
                   font-weight: ${fontWeight.bold};
                   font-size: 15px;
-                  border: 2.5px solid light-dark(${light.violet}, ${dark.white});
+                  border: 2.5px solid light-dark(${light.violet}, ${dark.navy5});
                   border-radius: 10px;
                   padding: 5px 11px;
                   background: light-dark(${light.beige4}, ${dark.navy4});
