@@ -194,7 +194,7 @@ const Terminal = styled.div`
 `;
 
 const Accent = styled.span`
-  color: ${ink.cyan};
+  color: ${ink.success};
 `;
 
 const TerminalLabel = styled(Accent)`

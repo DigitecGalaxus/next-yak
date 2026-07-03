@@ -194,7 +194,7 @@ const Pre = styled.pre`
     content: "";
     width: 1px;
     height: 1.3em;
-    background: ${ink.cyan};
+    background: ${ink.success};
   }
   & .twoslash-completion-list {
     user-select: none;

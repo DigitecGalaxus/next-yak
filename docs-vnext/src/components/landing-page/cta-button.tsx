@@ -13,7 +13,6 @@ const CtaButton = styled(ButtonLink)<{ $primary?: boolean }>`
     css`
       background: light-dark(${light.red}, ${dark.redDeep});
       color: white;
-      --btn-edge: light-dark(${light.violet}, ${dark.black});
     `}
 `;
 

@@ -3,7 +3,7 @@ import { css } from "next-yak";
 
 export const buttonStyles = css`
   --btn-offset: 3px;
-  --btn-edge: light-dark(${light.violet}, ${dark.black});
+  --btn-edge: light-dark(${light.violet}, ${dark.edge});
   color: light-dark(${light.violet}, ${dark.white});
   border: 2.5px solid var(--btn-edge);
   border-radius: ${radii.card};
