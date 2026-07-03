@@ -50,6 +50,27 @@ const Elem8 = ()=><div {...__yak_mergeCssProp({
         className: "empty-css"
     }, /*#__PURE__*/ css("input_Elem8_m7uBBu"))}/>;
 const Elem9 = ()=><div className={/*#__PURE__*/ "input_Elem9_m7uBBu"}/>;
+const Elem10 = ({ on }: {
+    on: boolean;
+})=><div className={/*YAK Extracted CSS:
+:global(.input_Elem10__on_m7uBBu) {
+  color: red;
+}
+:global(.input_Elem10__not_on_m7uBBu) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem10_m7uBBu" + (on ? " input_Elem10__on_m7uBBu" : " input_Elem10__not_on_m7uBBu")}/>;
+const Elem11 = ({ on }: {
+    on: boolean;
+})=><div className={on ? /*YAK Extracted CSS:
+:global(.input_Elem11_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ "input_Elem11_m7uBBu" : /*YAK Extracted CSS:
+:global(.input_Elem11_m7uBBu-01) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem11_m7uBBu-01"}/>;
 const Text = /*YAK Extracted CSS:
 :global(.input_Text_m7uBBu) {
   font-size: 20px;
