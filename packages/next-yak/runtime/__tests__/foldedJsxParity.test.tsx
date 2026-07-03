@@ -16,9 +16,7 @@ const Card = styledFn("div")("yakClass");
 const renderedHtml = (element) => render(element).container.innerHTML;
 
 it("renders the same DOM as a plain usage", () => {
-  expect(renderedHtml(<div className="yakClass">hi</div>)).toEqual(
-    renderedHtml(<Card>hi</Card>),
-  );
+  expect(renderedHtml(<div className="yakClass">hi</div>)).toEqual(renderedHtml(<Card>hi</Card>));
 });
 
 it("renders the same DOM with forwarded attributes", () => {
@@ -39,18 +37,16 @@ it("renders the same class names when merging a className", () => {
   // static class first - the class names are unique so the order is irrelevant
   const renderedClassNames = (element) =>
     [...render(element).container.firstChild.classList].sort();
-  expect(
-    renderedClassNames(<div className={mergeClassNames("yakClass", "user")} />),
-  ).toEqual(renderedClassNames(<Card className="user" />));
+  expect(renderedClassNames(<div className={mergeClassNames("yakClass", "user")} />)).toEqual(
+    renderedClassNames(<Card className="user" />),
+  );
 });
 
 it("ignores falsy class names", () => {
   const active = false;
-  expect(
-    renderedHtml(
-      <div className={mergeClassNames("yakClass", active && "active")} />,
-    ),
-  ).toEqual('<div class="yakClass"></div>');
+  expect(renderedHtml(<div className={mergeClassNames("yakClass", active && "active")} />)).toEqual(
+    '<div class="yakClass"></div>',
+  );
 });
 
 it("keeps only the static class for undefined class names", () => {
