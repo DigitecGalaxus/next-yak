@@ -11,11 +11,13 @@ use swc_core::atoms::Wtf8Atom;
 use swc_core::common::comments::Comment;
 use swc_core::common::comments::Comments;
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
-use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
+use utils::ast_helper::{
+  extract_ident_and_parts, is_valid_tagged_tpl, unwrap_type_casts, TemplateIterator,
+};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
 use utils::styled_jsx_fold::StyledJsxFold;
@@ -80,10 +82,19 @@ pub struct Config {
   /// Enable this in development to prevent full-page reloads on CSS-only edits.
   #[serde(default)]
   pub react_refresh_reg: bool,
+  /// Fold JSX usages of fully static styled components into plain DOM
+  /// elements, skipping the runtime wrapper component.
+  /// Enabled by default.
+  #[serde(default = "Config::optimize_static_jsx_default")]
+  pub optimize_static_jsx: bool,
 }
 
 impl Config {
   fn minify_default() -> bool {
+    true
+  }
+
+  fn optimize_static_jsx_default() -> bool {
     true
   }
 
@@ -106,6 +117,7 @@ impl Default for Config {
       import_mode: Config::import_mode_default(),
       suppress_deprecation_warnings: Default::default(),
       react_refresh_reg: Default::default(),
+      optimize_static_jsx: Config::optimize_static_jsx_default(),
     }
   }
 }
@@ -124,6 +136,10 @@ where
   current_declaration: Vec<Declaration>,
   /// e.g Button in const Button = styled.button`color: red;`
   current_variable_name: Option<ScopedVariableReference>,
+  /// Span of the current variable declarator's initializer (type casts and
+  /// parens stripped) - used to check a styled template is the whole
+  /// initializer and not nested inside e.g. an HOC call or ternary
+  current_declarator_init_span: Option<Span>,
   /// Current condition to name nested css expressions
   current_condition: Vec<String>,
   /// Current css expression is exported
@@ -171,6 +187,8 @@ where
   /// Registry of fully static styled components whose JSX usages
   /// are folded into plain DOM elements in a deferred pass
   styled_jsx_fold: StyledJsxFold,
+  /// Fold JSX usages of fully static styled components into plain DOM elements
+  optimize_static_jsx: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -186,11 +204,13 @@ where
     import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
     react_refresh_reg: bool,
+    optimize_static_jsx: bool,
   ) -> Self {
     Self {
       current_css_state: None,
       current_declaration: vec![],
       current_variable_name: None,
+      current_declarator_init_span: None,
       current_condition: vec![],
       current_exported: false,
       variables: VariableVisitor::new(),
@@ -210,6 +230,7 @@ where
       react_refresh_reg,
       exported_styled_names: Vec::new(),
       styled_jsx_fold: StyledJsxFold::default(),
+      optimize_static_jsx,
     }
   }
 
@@ -672,7 +693,8 @@ where
 
     module.visit_mut_children_with(self);
 
-    // Fold JSX usages of fully static styled components into plain DOM elements
+    // Fold JSX usages of fully static styled components into plain DOM
+    // elements or their wrapped component
     // This must run before the utility imports below are collected
     self
       .styled_jsx_fold
@@ -904,12 +926,18 @@ where
     for decl in &mut n.decls {
       if let Pat::Ident(BindingIdent { id, .. }) = &decl.name {
         let previous_variable_name = self.current_variable_name.clone();
+        let previous_init_span = self.current_declarator_init_span;
         self.current_variable_name = Some(ScopedVariableReference::new(
           id.to_id(),
           vec![id.sym.clone().into()],
         ));
+        self.current_declarator_init_span = decl
+          .init
+          .as_deref()
+          .map(|init| unwrap_type_casts(init).span());
         decl.init.visit_mut_with(self);
         self.current_variable_name = previous_variable_name;
+        self.current_declarator_init_span = previous_init_span;
       }
     }
   }
@@ -1163,7 +1191,13 @@ where
       self.yak_library_imports.as_mut().unwrap(),
     );
 
-    if is_top_level && yak_library_function_name.deref() == "styled" {
+    // only a template that is the whole initializer may fold - a template
+    // nested inside e.g. an HOC call or ternary must keep the runtime path
+    if self.optimize_static_jsx
+      && is_top_level
+      && yak_library_function_name.deref() == "styled"
+      && self.current_declarator_init_span == Some(n.span)
+    {
       self.styled_jsx_fold.try_register(
         self.current_variable_name.as_ref(),
         &n.tag,
@@ -1348,6 +1382,7 @@ mod tests {
           },
           false,
           false,
+          true,
           )),
         )
       },
@@ -1386,6 +1421,7 @@ mod tests {
             },
             false,
             false,
+            true,
           )),
         )
       },
@@ -1424,6 +1460,7 @@ mod tests {
           },
           false,
           false,
+          true,
           )),
         )
       },
@@ -1462,6 +1499,7 @@ mod tests {
             },
             false,
             false,
+            true,
           )),
         )
       },

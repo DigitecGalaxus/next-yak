@@ -28,6 +28,12 @@ export type YakConfigOptions = {
    * - Increases bundle size slightly when enabled
    */
   displayNames?: boolean;
+  /**
+   * Fold JSX usages of fully static styled components into plain DOM
+   * elements at build time, skipping the runtime wrapper component.
+   * @defaultValue true
+   */
+  optimizeStaticJsx?: boolean;
   experiments?: {
     /**
      * Debug logging for transformed files.
@@ -62,6 +68,7 @@ export function buildYakPluginOptions(yakOptions: YakConfigOptions, basePath: st
     basePath,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
+    optimizeStaticJsx: yakOptions.optimizeStaticJsx ?? true,
     suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
   };
@@ -109,6 +116,7 @@ function addYakTurbopack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
+    optimizeStaticJsx: boolean;
     importMode: {
       value: string;
       transpilation: string;
@@ -164,6 +172,7 @@ function addYakWebpack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
+    optimizeStaticJsx: boolean;
     importMode: {
       value: string;
       transpilation: string;

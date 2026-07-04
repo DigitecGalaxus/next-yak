@@ -1,10 +1,13 @@
+import React, { memo } from "react";
 import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
+import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X011dGFibGVfbTd1QkJ1IHsKICBjb2xvcjogcGluazsKfS5pbnB1dF9MYXRlX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0uaW5wdXRfT3B0aW1pemFibGVfbTd1QkJ1IHsKICBjb2xvcjogb3JhbmdlOwp9";
+import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X0V4dGVuZGVkSW1wb3J0X203dUJCdSB7CiAgY29sb3I6IHNpbHZlcjsKfS5pbnB1dF9FeHRlbmRlZExvd2VyY2FzZV9tN3VCQnUgewogIGNvbG9yOiBnb2xkOwp9LmlucHV0X0V4dGVuZGVkTXV0YWJsZV9tN3VCQnUgewogIGNvbG9yOiBpdm9yeTsKfS5pbnB1dF9NdXRhYmxlX203dUJCdSB7CiAgY29sb3I6IHBpbms7Cn0uaW5wdXRfTGF0ZV9tN3VCQnUgewogIGNvbG9yOiBncmF5Owp9LmlucHV0X01lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IHRlYWw7Cn0uaW5wdXRfQ2FzdF9tN3VCQnUgewogIGNvbG9yOiBicm93bjsKfS5pbnB1dF9Cb3hXaXRoTWl4aW5fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kOiB3aGl0ZTsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfS5pbnB1dF9SZWFjdE1lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IG9saXZlOwp9LmlucHV0X0NvbmRpdGlvbmFsX203dUJCdSB7CiAgY29sb3I6IGNyaW1zb247Cn0uaW5wdXRfQ29uZGl0aW9uYWxfbTd1QkJ1LTAxIHsKICBjb2xvcjogbmF2eTsKfQ==";
 const someRef = {
     current: null
 } as any;
 const props = {} as any;
+const mixin = /*#__PURE__*/ css();
 // folds
 const Card = /*YAK Extracted CSS:
 .input_Card_m7uBBu {
@@ -51,13 +54,39 @@ const WithAttrs = /*YAK Extracted CSS:
 })("input_WithAttrs_m7uBBu"), {
     "displayName": "WithAttrs"
 });
-// bails: styled(Component)
+// folds to the wrapped component: <Extended> becomes <Card className="...">
 const Extended = /*YAK Extracted CSS:
 .input_Extended_m7uBBu {
   color: yellow;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Card)("input_Extended_m7uBBu"), {
     "displayName": "Extended"
+});
+// folds although the wrapped component comes from another file
+const ExtendedImport = /*YAK Extracted CSS:
+.input_ExtendedImport_m7uBBu {
+  color: silver;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ImportedCard)("input_ExtendedImport_m7uBBu"), {
+    "displayName": "ExtendedImport"
+});
+// bails: a lowercase name would be parsed as an intrinsic element in JSX
+const lowercaseComponent = (p: any)=><i {...p}/>;
+const ExtendedLowercase = /*YAK Extracted CSS:
+.input_ExtendedLowercase_m7uBBu {
+  color: gold;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(lowercaseComponent)("input_ExtendedLowercase_m7uBBu"), {
+    "displayName": "ExtendedLowercase"
+});
+// bails: the wrapped component binding can be reassigned
+let MutableTarget = (p: any)=><b {...p}/>;
+const ExtendedMutable = /*YAK Extracted CSS:
+.input_ExtendedMutable_m7uBBu {
+  color: ivory;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(MutableTarget)("input_ExtendedMutable_m7uBBu"), {
+    "displayName": "ExtendedMutable"
 });
 // bails: let declaration
 let Mutable = /*YAK Extracted CSS:
@@ -75,6 +104,30 @@ const Late = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Late_m7uBBu"), {
     "displayName": "Late"
+});
+// bails: wrapped in an HOC - folding would drop the wrapper
+const Memoized = memo(/*YAK Extracted CSS:
+.input_Memoized_m7uBBu {
+  color: teal;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Memoized_m7uBBu"), {
+    "displayName": "Memoized"
+}));
+// folds: type casts are unwrapped
+const Cast = /*YAK Extracted CSS:
+.input_Cast_m7uBBu {
+  color: brown;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Cast_m7uBBu"), {
+    "displayName": "Cast"
+}) as unknown as typeof Card;
+const BoxWithMixin = /*YAK Extracted CSS:
+.input_BoxWithMixin_m7uBBu {
+  background: white;
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_BoxWithMixin_m7uBBu"), {
+    "displayName": "BoxWithMixin"
 });
 const Optimizable = ({ active }: {
     active?: boolean;
@@ -99,15 +152,46 @@ const Optimizable = ({ active }: {
       <section className="input_Box_m7uBBu"/>
     </div>
     <h1 className="input_Title_m7uBBu">folds</h1>
+    <div className="input_Cast_m7uBBu">folds through the type cast</div>
+    <Card className="input_Extended_m7uBBu">folds to the wrapped component</Card>
+    <Card className="input_Extended_m7uBBu user">merges into the wrapped component</Card>
+    <ImportedCard className="input_ExtendedImport_m7uBBu">folds to the imported component</ImportedCard>
+    <div className="input_BoxWithMixin_m7uBBu">folds with mixin</div>
   </>;
+// bails: wrapped in React.memo - the HOC result must not fold to a bare DOM element
+const ReactMemoized = React.memo(/*YAK Extracted CSS:
+.input_ReactMemoized_m7uBBu {
+  color: olive;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_ReactMemoized_m7uBBu"), {
+    "displayName": "ReactMemoized"
+}));
+// bails: conditional initializer - the branch is only known at runtime
+const Conditional = props.flag ? /*YAK Extracted CSS:
+.input_Conditional_m7uBBu {
+  color: crimson;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_a("input_Conditional_m7uBBu"), {
+    "displayName": "Conditional"
+}) : /*YAK Extracted CSS:
+.input_Conditional_m7uBBu-01 {
+  color: navy;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Conditional_m7uBBu-01"), {
+    "displayName": "Conditional"
+});
 const NotOptimizable = ()=><>
     <Card {...props}>bails: spread</Card>
     <Card theme={props.theme}>bails: theme</Card>
     <Card<any>>bails: type arguments</Card>
     <Dynamic $color="red">bails</Dynamic>
     <WithAttrs>bails</WithAttrs>
-    <Extended>bails</Extended>
-    <Mutable>bails</Mutable></>;
+    <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
+    <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
+    <Mutable>bails</Mutable>
+    <Memoized>bails: HOC wrapper</Memoized>
+    <ReactMemoized>bails: HOC wrapper</ReactMemoized>
+    <Conditional>bails: conditional initializer</Conditional></>;
 const Shadowed = ()=>{
     const Card = (p: any)=><span {...p}/>;
     return <Card>bails: shadowed local</Card>;

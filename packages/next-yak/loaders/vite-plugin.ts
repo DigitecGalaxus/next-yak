@@ -298,6 +298,7 @@ function transform(
               basePath: rootPath,
               prefix: yakOptions.prefix,
               displayNames: yakOptions.displayNames,
+              optimizeStaticJsx: yakOptions.optimizeStaticJsx ?? true,
               suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               importMode: {

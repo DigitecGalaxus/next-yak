@@ -12,6 +12,11 @@ import { styled as styledFn } from "../styled";
 
 // A fully static styled component as compiled by the SWC plugin
 const Card = styledFn("div")("yakClass");
+// A fully static styled(Component) wrapper - its usages fold to the
+// wrapped component with the static class name
+const Base = (props) => <p {...props} />;
+const Extended = styledFn(Base)("extendedClass");
+const ExtendedCard = styledFn(Card)("extendedCardClass");
 
 const renderedHtml = (element) => render(element).container.innerHTML;
 
@@ -47,6 +52,20 @@ it("ignores falsy class names", () => {
   expect(renderedHtml(<div className={mergeClassNames("yakClass", active && "active")} />)).toEqual(
     '<div class="yakClass"></div>',
   );
+});
+
+it("renders the same DOM as the wrapped component with the static class", () => {
+  expect(renderedHtml(<Base className="extendedClass">hi</Base>)).toEqual(
+    renderedHtml(<Extended>hi</Extended>),
+  );
+});
+
+it("renders the same class names as a wrapped yak component", () => {
+  const renderedClassNames = (element) =>
+    [...render(element).container.firstChild.classList].sort();
+  expect(
+    renderedClassNames(<Card className="extendedCardClass">hi</Card>),
+  ).toEqual(renderedClassNames(<ExtendedCard>hi</ExtendedCard>));
 });
 
 it("keeps only the static class for undefined class names", () => {
