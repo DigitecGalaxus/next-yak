@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Item } from "fumadocs-core/page-tree";
-import { css, styled } from "next-yak";
-import { fonts, fontWeight, light, dark } from "@/tokens";
+import { styled } from "next-yak";
+import { fontWeight, light, dark } from "@/tokens";
 import { buttonStyles } from "@/components/landing-page/button";
 
 /** Previous / next page links, derived from `findNeighbour(tree, url)`. */
@@ -11,18 +11,20 @@ export default function PageFooter({ previous, next }: { previous?: Item; next?:
   return (
     <Footer>
       {previous ? (
-        <Card href={previous.url} $align="start">
-          <Direction>← Previous</Direction>
-          <Name>{previous.name}</Name>
-        </Card>
+        <PageLink href={previous.url}>
+          <Sr>Previous page: </Sr>
+          <Arrow aria-hidden>←</Arrow>
+          {previous.name}
+        </PageLink>
       ) : (
         <span />
       )}
       {next ? (
-        <Card href={next.url} $align="end">
-          <Direction>Next →</Direction>
-          <Name>{next.name}</Name>
-        </Card>
+        <PageLink href={next.url}>
+          <Sr>Next page: </Sr>
+          {next.name}
+          <Arrow aria-hidden>→</Arrow>
+        </PageLink>
       ) : (
         <span />
       )}
@@ -37,35 +39,34 @@ const Footer = styled.div`
   margin-top: 64px;
 `;
 
-const Card = styled(Link)<{ $align: "start" | "end" }>`
+const PageLink = styled(Link)`
   ${buttonStyles};
   /* A "normal" button — the deeper 4px offset shadow, not the 3px header controls. */
   --btn-offset: 4px;
 
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  max-width: 320px;
-  padding: 14px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: ${fontWeight.semibold};
+  color: light-dark(${light.violet}, ${dark.white});
   text-decoration: none;
-
-  ${({ $align }) =>
-    $align === "end" &&
-    css`
-      align-items: flex-end;
-      text-align: right;
-    `}
 `;
 
-const Direction = styled.span`
-  font-family: ${fonts.mono};
-  font-size: 13px;
+const Arrow = styled.span`
   color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
-const Name = styled.span`
-  font-size: 15px;
-  font-weight: ${fontWeight.semibold};
-  color: light-dark(${light.violet}, ${dark.white});
+// Screen-reader-only direction prefix; the arrow alone wouldn't announce anything useful.
+const Sr = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 `;

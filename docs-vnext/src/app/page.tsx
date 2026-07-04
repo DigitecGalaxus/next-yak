@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, keyframes, styled } from "next-yak";
 import CtaButton from "../components/landing-page/cta-button";
 import CodePanel from "../components/landing-page/code-panel";
 import HeroEditor from "../components/landing-page/hero-editor";
@@ -25,7 +25,15 @@ import {
 } from "../components/landing-page/feature-icons";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { container, fonts, fontWeight, maxContentWidth, light, dark } from "@/tokens";
+import {
+  container,
+  fonts,
+  fontWeight,
+  headerHeight,
+  maxContentWidth,
+  light,
+  dark,
+} from "@/tokens";
 import Yak from "../components/landing-page/yak";
 import Link from "next/link";
 
@@ -34,29 +42,40 @@ export default async function Home() {
 
   return (
     <>
-      <section
-        css={css`
-          container: hero / inline-size;
-          color: light-dark(${light.violet}, ${dark.white});
-          /* keep the editor's floating mascot/terminal from forcing page-wide scroll */
-          overflow-x: clip;
-        `}
-      >
-        <div
+      {/* The hero pins in place while the performance section scrolls over it like a
+          curtain; this wrapper bounds the stickiness so the hero is pushed back out
+          of the viewport once it's fully covered (instead of staying pinned behind
+          the whole page). */}
+      <div>
+        <section
           css={css`
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 48px 20px 64px;
-            max-width: ${maxContentWidth};
-            margin-inline: auto;
+            container: hero / inline-size;
+            color: light-dark(${light.violet}, ${dark.white});
+            /* keep the editor's floating mascot/terminal from forcing page-wide scroll */
+            overflow-x: clip;
 
-            @container hero (min-width: ${container.hero.split}) {
-              flex-direction: row;
-              justify-content: space-between;
-              align-items: center;
-              gap: 24px;
-              padding: 48px 48px 96px;
+            /* Curtain effect: on desktop viewports tall enough to show the whole hero,
+               pin it in place and let the next section slide over it. z-index: 0 makes
+               the hero a single stacking unit so none of its layered internals paint
+               through the covering section. */
+            @media (min-width: ${container.hero.split}) and (min-height: 720px) {
+              position: sticky;
+              top: ${headerHeight};
+              z-index: 0;
+            }
+
+            /* Depth cue while it's being covered: recede and dim over roughly the
+               hero's own height of scroll (a fixed distance instead of a view timeline,
+               which would already be mid-progress at load on tall viewports).
+               Progressive enhancement — browsers without scroll-driven animations
+               just get the pin. */
+            @media (min-width: ${container.hero.split}) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
+              @supports (animation-timeline: scroll()) {
+                transform-origin: 50% 30%;
+                animation: ${recede} linear both;
+                animation-timeline: scroll(root);
+                animation-range: 0px 720px;
+              }
             }
           `}
         >
@@ -64,235 +83,266 @@ export default async function Home() {
             css={css`
               display: flex;
               flex-direction: column;
-              align-items: flex-start;
-              gap: 36px;
+              gap: 20px;
+              padding: 48px 20px 64px;
+              max-width: ${maxContentWidth};
+              margin-inline: auto;
 
               @container hero (min-width: ${container.hero.split}) {
-                gap: 32px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 24px;
+                padding: 48px 48px 96px;
               }
             `}
           >
-            <Eyebrow>🦀 zero-runtime · rust-powered</Eyebrow>
             <div
-              css={css`
-                display: flex;
-                align-items: flex-end;
-                gap: 22px;
-                padding-block: 8px 32px;
-              `}
-            >
-              <h1
-                css={css`
-                  text-box-trim: trim-end;
-                  text-box-edge: cap alphabetic;
-                  margin-right: 1rem;
-                  font-family: ${fonts.title};
-                  font-size: clamp(96px, 22cqi, 200px);
-                  line-height: 0.82;
-                  letter-spacing: -0.05em;
-                `}
-              >
-                yak
-              </h1>
-              <Link
-                href="https://npmx.dev/package/next-yak"
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`next-yak${version ? ` v${version}` : ""} on npm`}
-                css={css`
-                  font-family: ${fonts.mono};
-                  font-weight: ${fontWeight.bold};
-                  font-size: 15px;
-                  border: 2.5px solid light-dark(${light.violet}, ${dark.navy5});
-                  border-radius: 10px;
-                  padding: 5px 11px;
-                  background: light-dark(${light.beige4}, ${dark.navy4});
-                  font-variant-numeric: tabular-nums;
-
-                  @media (prefers-reduced-motion: no-preference) {
-                    transition:
-                      color 0.15s ease,
-                      border-color 0.15s ease;
-                  }
-
-                  &:hover,
-                  &:focus-visible {
-                    color: light-dark(${light.red}, ${dark.red});
-                    border-color: light-dark(${light.red}, ${dark.red});
-                  }
-                `}
-              >
-                {version ? `v${version}` : "npm"}
-              </Link>
-            </div>
-            <p
-              css={css`
-                max-width: 620px;
-                font-size: 20px;
-                line-height: 30px;
-              `}
-            >
-              Write <b>styled-components</b> syntax, get build-time CSS extraction and full{" "}
-              <b>RSC</b> compatibility. Use build-time CSS-in-JS without the hassle.
-            </p>
-            <ul
-              css={css`
-                width: 100%;
-                display: flex;
-                align-items: flex-start;
-                align-content: flex-start;
-                gap: 9px 10px;
-                flex-wrap: wrap;
-
-                @container hero (min-width: ${container.hero.split}) {
-                  margin-top: -8px;
-                }
-              `}
-            >
-              {FRAMEWORKS.map(({ name, Icon }) => (
-                <Badge key={name}>
-                  <Icon />
-                  {name}
-                </Badge>
-              ))}
-            </ul>
-            <div
-              css={css`
-                display: flex;
-                flex-wrap: wrap;
-                gap: 16px;
-              `}
-            >
-              <CtaButton href="/documentation/getting-started" $primary>
-                Get started <ArrowRightIcon />
-              </CtaButton>
-              <CtaButton href="https://github.com/digitecgalaxus/next-yak">
-                <GitHubIcon />
-                Github
-              </CtaButton>
-            </div>
-          </div>
-
-          <HeroEditor />
-        </div>
-      </section>
-      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
-        <Container
-          css={css`
-            padding-top: clamp(44px, 6vw, 56px);
-            padding-bottom: clamp(60px, 9vw, 96px);
-          `}
-        >
-          <SectionIntro
-            eyebrow="performance"
-            title="Faster than styled-components on every benchmark."
-            css={css`
-              max-width: 450px;
-            `}
-          >
-            The same API you already write, compiled to zero runtime in the browser. A drop-in swap
-            that's measurably faster.
-          </SectionIntro>
-
-          <div
-            css={css`
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 16px;
-
-              @container section (min-width: ${container.section.statGrid}) {
-                grid-template-columns: repeat(4, 1fr);
-              }
-            `}
-          >
-            <StatCard value="14" suffix="/14" description="won every case in our SSR benchmark" />
-            <StatCard
-              value="3.8"
-              suffix="×"
-              description="more renders/sec, static components"
-              accent
-            />
-            <StatCard value="4.3" suffix="×" description="more renders/sec, css-prop styling" />
-            <StatCard value="~2.8" suffix="KB" description="gzipped runtime, the whole library" />
-          </div>
-
-          <figure
-            css={css`
-              ${cardStyles};
-              padding: 32px 24px;
-              border-radius: 16px;
-
-              & p {
-                font-size: 13px;
-              }
-            `}
-          >
-            <figcaption
               css={css`
                 display: flex;
                 flex-direction: column;
-                gap: 4px;
+                align-items: flex-start;
+                gap: 36px;
 
-                @container section (min-width: ${container.section.figureRow}) {
-                  flex-direction: row;
-                  justify-content: space-between;
-                  align-items: baseline;
-                  gap: 16px;
+                @container hero (min-width: ${container.hero.split}) {
+                  gap: 32px;
                 }
               `}
             >
-              <span
+              <Eyebrow>🦀 zero-runtime · rust-powered</Eyebrow>
+              <div
                 css={css`
-                  font-weight: ${fontWeight.bold};
-                  color: light-dark(${light.violet}, ${dark.white});
+                  display: flex;
+                  align-items: baseline;
+                  gap: 22px;
+                  padding-block: 8px 32px;
                 `}
               >
-                Static components: renders per second
-              </span>
-              <span
+                <h1
+                  css={css`
+                    /* spacing-only where supported: trims the descender space below the
+                       baseline. The badge no longer relies on it — it baseline-aligns. */
+                    text-box-trim: trim-end;
+                    text-box-edge: cap alphabetic;
+                    margin-right: 1rem;
+                    font-family: ${fonts.title};
+                    font-size: clamp(96px, 22cqi, 200px);
+                    line-height: 0.82;
+                    letter-spacing: -0.05em;
+                  `}
+                >
+                  yak
+                </h1>
+                {/* The span/inline-block split matters: the row baseline-aligns the span,
+                    whose baseline comes from its line box, and per CSS2.1 an inline-block
+                    with overflow ≠ visible contributes its bottom edge as that baseline.
+                    So the badge's bottom border lands exactly on the "yak" baseline in
+                    every browser (text-box-trim isn't universal, and flex items no longer
+                    synthesize baselines from their bottom edge). */}
+                <span>
+                  <Link
+                    href="https://npmx.dev/package/next-yak"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`next-yak${version ? ` v${version}` : ""} on npm`}
+                    css={css`
+                      display: inline-block;
+                      overflow: hidden;
+                      font-family: ${fonts.mono};
+                      font-weight: ${fontWeight.bold};
+                      font-size: 15px;
+                      border: 2.5px solid light-dark(${light.violet}, ${dark.navy5});
+                      border-radius: 10px;
+                      padding: 5px 11px;
+                      background: light-dark(${light.beige4}, ${dark.navy4});
+                      font-variant-numeric: tabular-nums;
+
+                      @media (prefers-reduced-motion: no-preference) {
+                        transition:
+                          color 0.15s ease,
+                          border-color 0.15s ease;
+                      }
+
+                      &:hover,
+                      &:focus-visible {
+                        color: light-dark(${light.red}, ${dark.red});
+                        border-color: light-dark(${light.red}, ${dark.red});
+                      }
+                    `}
+                  >
+                    {version ? `v${version}` : "npm"}
+                  </Link>
+                </span>
+              </div>
+              <p
                 css={css`
-                  font-family: ${fonts.mono};
-                  font-size: 13px;
-                  white-space: nowrap;
+                  max-width: 620px;
+                  font-size: 20px;
+                  line-height: 30px;
                 `}
               >
-                renders / sec · higher is better
-              </span>
-            </figcaption>
-            <p
+                Write <b>styled-components</b> syntax, get build-time CSS extraction and full{" "}
+                <b>RSC</b> compatibility. Use build-time CSS-in-JS without the hassle.
+              </p>
+              <ul
+                css={css`
+                  width: 100%;
+                  display: flex;
+                  align-items: flex-start;
+                  align-content: flex-start;
+                  gap: 9px 10px;
+                  flex-wrap: wrap;
+
+                  @container hero (min-width: ${container.hero.split}) {
+                    margin-top: -8px;
+                  }
+                `}
+              >
+                {FRAMEWORKS.map(({ name, Icon }) => (
+                  <Badge key={name}>
+                    <Icon />
+                    {name}
+                  </Badge>
+                ))}
+              </ul>
+              <div
+                css={css`
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 16px;
+                `}
+              >
+                <CtaButton href="/documentation/getting-started" $primary>
+                  Get started <ArrowRightIcon />
+                </CtaButton>
+                <CtaButton href="https://github.com/digitecgalaxus/next-yak">
+                  <GitHubIcon />
+                  Github
+                </CtaButton>
+              </div>
+            </div>
+
+            <HeroEditor />
+          </div>
+        </section>
+        <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
+          <Container
+            css={css`
+              padding-top: clamp(44px, 6vw, 56px);
+              padding-bottom: clamp(60px, 9vw, 96px);
+            `}
+          >
+            <SectionIntro
+              eyebrow="performance"
+              title="Faster than styled-components on every benchmark."
               css={css`
-                margin-top: 8px;
-                max-width: 600px;
+                max-width: 450px;
               `}
             >
-              The test: each library renders the same component repeatedly on the server (Node,
-              production build). These are micro-benchmarks, they isolate the library's own render
-              cost and nothing else.
-            </p>
+              The same API you already write, compiled to zero runtime in the browser. A drop-in swap
+              that's measurably faster.
+            </SectionIntro>
+
             <div
               css={css`
-                margin-top: 24px;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
 
-                & > * + * {
-                  margin-top: 14px;
+                @container section (min-width: ${container.section.statGrid}) {
+                  grid-template-columns: repeat(4, 1fr);
                 }
               `}
             >
-              <Bar label="Yak CSS" value="3,151" percent={100} accent />
-              <Bar label="Vanilla JSX · no library" value="2,160" percent={68.5} />
-              <Bar label="styled-components" value="819" percent={26} />
+              <StatCard value="14" suffix="/14" description="won every case in our SSR benchmark" />
+              <StatCard
+                value="3.8"
+                suffix="×"
+                description="more renders/sec, static components"
+                accent
+              />
+              <StatCard value="4.3" suffix="×" description="more renders/sec, css-prop styling" />
+              <StatCard value="~2.8" suffix="KB" description="gzipped runtime, the whole library" />
             </div>
-            <p
+
+            <figure
               css={css`
-                margin-top: 24px;
+                ${cardStyles};
+                padding: 32px 24px;
+                border-radius: 16px;
+
+                & p {
+                  font-size: 13px;
+                }
               `}
             >
-              SSR extraction runs up to <b>~13× faster</b>. Static components even outrun
-              hand-written vanilla JSX — one hot, JIT-optimized path beats a thousand cold ones.
-            </p>
-          </figure>
-        </Container>
-      </Section>
+              <figcaption
+                css={css`
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+
+                  @container section (min-width: ${container.section.figureRow}) {
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: baseline;
+                    gap: 16px;
+                  }
+                `}
+              >
+                <span
+                  css={css`
+                    font-weight: ${fontWeight.bold};
+                    color: light-dark(${light.violet}, ${dark.white});
+                  `}
+                >
+                  Static components: renders per second
+                </span>
+                <span
+                  css={css`
+                    font-family: ${fonts.mono};
+                    font-size: 13px;
+                    white-space: nowrap;
+                  `}
+                >
+                  renders / sec · higher is better
+                </span>
+              </figcaption>
+              <p
+                css={css`
+                  margin-top: 8px;
+                  max-width: 600px;
+                `}
+              >
+                The test: each library renders the same component repeatedly on the server (Node,
+                production build). These are micro-benchmarks, they isolate the library's own render
+                cost and nothing else.
+              </p>
+              <div
+                css={css`
+                  margin-top: 24px;
+
+                  & > * + * {
+                    margin-top: 14px;
+                  }
+                `}
+              >
+                <Bar label="Yak CSS" value="3,151" percent={100} accent />
+                <Bar label="Vanilla JSX · no library" value="2,160" percent={68.5} />
+                <Bar label="styled-components" value="819" percent={26} />
+              </div>
+              <p
+                css={css`
+                  margin-top: 24px;
+                `}
+              >
+                SSR extraction runs up to <b>~13× faster</b>. Static components even outrun
+                hand-written vanilla JSX — one hot, JIT-optimized path beats a thousand cold ones.
+              </p>
+            </figure>
+          </Container>
+        </Section>
+      </div>
       <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
         <Container
           css={css`
@@ -638,4 +688,11 @@ const SHIP_HTML = `<button class="button_x7a" />`;
 const PanelColumn = styled.div`
   flex: 1;
   min-width: 0;
+`;
+
+const recede = keyframes`
+  to {
+    scale: 0.96;
+    opacity: 0.45;
+  }
 `;
