@@ -7,7 +7,7 @@ const TABS = frameworks.map((f) => ({
   value: f.id,
   node: (
     <>
-      <f.Icon />
+      <f.Icon mono />
       {f.id}
     </>
   ),

@@ -25,10 +25,16 @@ export function Section({
   const top = wave === true || wave === "top";
   const bottom = wave === true || wave === "bottom";
   return (
-    <Outer $bg={background} $wave={top || bottom} className={className} style={style}>
-      {top ? <WaveDivider /> : null}
+    <Outer
+      $bg={background}
+      $waveTop={top}
+      $waveBottom={bottom}
+      className={className}
+      style={style}
+    >
+      {top ? <WaveDivider background={background} /> : null}
       {children}
-      {bottom ? <WaveDivider flip /> : null}
+      {bottom ? <WaveDivider background={background} flip /> : null}
     </Outer>
   );
 }
@@ -58,10 +64,30 @@ export const Container = styled.div`
   }
 `;
 
-const Outer = styled.section<{ $bg: string; $wave: boolean }>`
-  background: ${({ $bg }) => $bg};
-  ${({ $wave }) =>
-    $wave &&
+const Outer = styled.section<{ $bg: string; $waveTop: boolean; $waveBottom: boolean }>`
+  /* The background is painted as a clipped layer so the wave-divider strips stay
+     unpainted: the divider's own below-curve fill supplies the wavy edge there and
+     the area above the curve is real transparency (the pinned hero shows through).
+     The clip stops 1px inside each strip so the two same-color layers overlap
+     instead of meeting at an anti-aliased hairline seam. */
+  --section-bg: ${({ $bg }) => $bg};
+  background-image: linear-gradient(var(--section-bg), var(--section-bg));
+  background-repeat: no-repeat;
+  background-position: 0 var(--wave-clip-top, 0px);
+  background-size: 100% calc(100% - var(--wave-clip-top, 0px) - var(--wave-clip-bottom, 0px));
+
+  ${({ $waveTop }) =>
+    $waveTop &&
+    css`
+      --wave-clip-top: 37px;
+    `}
+  ${({ $waveBottom }) =>
+    $waveBottom &&
+    css`
+      --wave-clip-bottom: 37px;
+    `}
+  ${({ $waveTop, $waveBottom }) =>
+    ($waveTop || $waveBottom) &&
     css`
       position: relative;
       z-index: 0;

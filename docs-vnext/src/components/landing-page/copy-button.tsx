@@ -8,8 +8,8 @@ import { CSSProperties } from "react";
 
 /**
  * The red "install" copy button shared by the hero npm terminal and the coverage card.
- * A brutalist offset-shadow button (the same haptic as the CTA buttons) that flips to a
- * green "COPIED" confirmation while keeping its dark edge. Self-contained — pass the text.
+ * A flat, dark-edged button that flips to a green "COPIED" confirmation.
+ * Self-contained — pass the text.
  */
 export function CopyButton({
   text,
@@ -45,24 +45,15 @@ const Button = styled.button`
   color: white;
   font-size: 13px;
   cursor: pointer;
-  box-shadow: 2px 2px 0 0 ${ink.copyEdge};
 
   @media (prefers-reduced-motion: no-preference) {
     transition:
-      transform 0.08s ease,
-      box-shadow 0.08s ease,
       background 0.18s ease,
       color 0.18s ease;
   }
 
   &:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 0 ${ink.copyEdge};
-  }
-
-  &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 0 ${ink.copyEdge};
+    background: light-dark(${light.redDeep}, ${dark.red});
   }
 
   &:focus-visible {

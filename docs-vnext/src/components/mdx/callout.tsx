@@ -14,9 +14,8 @@ const TONE: Record<CalloutType, { accent: string; bg: string }> = {
   error: { accent: status.error, bg: softFill(status.error) },
 };
 
-// The callout outline + brutalist shadow use their own edge pairing (interpolated directly
-// below): `light.violet` in light, but a dimmer lavender (`dark.violetGlow`) in dark rather
-// than `dark.white`, so the near-white ink isn't harsh on the dark page.
+// The callout outline + brutalist shadow use the same edge pairing as the buttons
+// (`light.violet` / `dark.edge`), so the card chrome reads as one family with them.
 
 const ICONS: Record<CalloutType, ReactNode> = {
   info: <InfoGlyph />,
@@ -103,10 +102,10 @@ const Box = styled.aside<{ $bg: string }>`
   margin: 26px 0;
   /* left gutter + top room so the corner ring never collides with the first line */
   padding: 16px 18px 16px 28px;
-  border: 2px solid light-dark(${light.violet}, ${dark.violetGlow});
+  border: 2px solid light-dark(${light.violet}, ${dark.edge});
   border-radius: 10px;
   background: ${({ $bg }) => $bg};
-  box-shadow: 3px 3px 0 0 light-dark(${light.violet}, ${dark.violetGlow});
+  box-shadow: 3px 3px 0 0 light-dark(${light.violet}, ${dark.edge});
   color: light-dark(${light.violet}, ${dark.white});
 
   & > :last-child {
@@ -125,7 +124,7 @@ const IconRing = styled.span<{ $accent: string }>`
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 2px solid light-dark(${light.violet}, ${dark.violetGlow});
+  border: 2px solid light-dark(${light.violet}, ${dark.edge});
   border-radius: 50%;
   background: light-dark(${light.beige2}, ${dark.navy2});
   color: ${({ $accent }) => $accent};
