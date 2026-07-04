@@ -15,6 +15,7 @@ export const light = {
   beige5: paper(0.872),
   beige6: paper(0.779),
   red: redOk(0.641, 0.212),
+  redDeep: redOk(0.58, 0.212),
 };
 
 export const dark = {
@@ -29,7 +30,6 @@ export const dark = {
   red: redOk(0.689, 0.201),
   redDeep: redOk(0.562, 0.201),
   edge: brand(0.148, 0.032),
-  violetGlow: brand(0.624, 0.071),
 };
 
 // The always-dark editor/code surface stays the same in both themes, so these aren't light/dark pairs.

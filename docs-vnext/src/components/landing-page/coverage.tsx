@@ -68,7 +68,7 @@ export default function Coverage() {
                 <TabIndicator />
                 {TABS.map((tab) => (
                   <Tab key={tab.id} value={tab.id}>
-                    <tab.Icon />
+                    <tab.Icon mono />
                     {tab.label}
                   </Tab>
                 ))}
