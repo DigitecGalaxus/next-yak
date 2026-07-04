@@ -63,9 +63,9 @@ it("renders the same DOM as the wrapped component with the static class", () => 
 it("renders the same class names as a wrapped yak component", () => {
   const renderedClassNames = (element) =>
     [...render(element).container.firstChild.classList].sort();
-  expect(
-    renderedClassNames(<Card className="extendedCardClass">hi</Card>),
-  ).toEqual(renderedClassNames(<ExtendedCard>hi</ExtendedCard>));
+  expect(renderedClassNames(<Card className="extendedCardClass">hi</Card>)).toEqual(
+    renderedClassNames(<ExtendedCard>hi</ExtendedCard>),
+  );
 });
 
 it("keeps only the static class for undefined class names", () => {
