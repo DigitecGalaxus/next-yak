@@ -3,13 +3,13 @@
 import { Select } from "@base-ui-components/react/select";
 import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
 import { styled } from "next-yak";
-import { container, fonts, shadow, ink } from "@/tokens";
+import { container, fonts, radii, shadow, ink } from "@/tokens";
 import { focusRing, slidingIndicator } from "@/lib/mixins";
 import type { ReactNode } from "react";
 
 /**
  * The dark editor's framework switcher, shared by the hero editor and docs code-block
- * tabs. Fully controlled (drive via `value`/`onValueChange`). The pill group swaps to a
+ * tabs. Fully controlled (drive via `value`/`onValueChange`). The tab group swaps to a
  * compact dropdown when narrow, driven by an `editor` query container — so consumers must
  * set `container: editor / inline-size` on an ancestor.
  */
@@ -95,7 +95,7 @@ const SwitcherList = styled(BaseTabs.List)`
   align-items: center;
   gap: 2px;
   padding: 4px 5px;
-  border-radius: 9999px;
+  border-radius: ${radii.card};
   background: ${ink.switcherTrack};
   border: 1px solid ${ink.switcherBorder};
 `;
@@ -108,7 +108,8 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   z-index: 1;
   padding: 6px 12px;
   border: none;
-  border-radius: 9999px;
+  /* track radius minus its 4px padding keeps the nested corners concentric */
+  border-radius: calc(${radii.card} - 4px);
   background: transparent;
   font-family: ${fonts.mono};
   font-size: 13px;
@@ -136,7 +137,7 @@ const SwitcherIndicator = styled(BaseTabs.Indicator)`
   box-sizing: border-box;
   background: ${ink.track};
   border: 1.5px solid ${ink.switcherEdge};
-  border-radius: 9999px;
+  border-radius: calc(${radii.card} - 4px);
   box-shadow: 2px 2px 0 0 ${ink.switcherEdge};
 `;
 
