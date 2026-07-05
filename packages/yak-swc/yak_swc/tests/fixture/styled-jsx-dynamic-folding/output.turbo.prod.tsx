@@ -1,7 +1,7 @@
 import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGRpc3BsYXk6IGZsZXg7CiAgbWluLWhlaWdodDogMjRweDsKfQoueW03dUJCdTEgewogIG1hcmdpbi1yaWdodDogMTJweDsKfS55bTd1QkJ1MiB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1MyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdTQgewogIGNvbG9yOiBibHVlOwp9Ci55bTd1QkJ1NSB7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0ueW03dUJCdTYgewogIGNvbG9yOiBncmF5Owp9Ci55bTd1QkJ1NyB7CiAgY29sb3I6IGJsYWNrOwp9LnltN3VCQnU4IHsKICBjb2xvcjogZ3JlZW47Cn0KLnltN3VCQnU5IHsKICBsaW5lLWhlaWdodDogMTsKfS55bTd1QkJ1QSB7CiAgcGFkZGluZzogMXB4Owp9Ci55bTd1QkJ1QiB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVDIHsKICBjb2xvcjogYmx1ZTsKfQoueW03dUJCdUQgewogIGN1cnNvcjogcG9pbnRlcjsKfS55bTd1QkJ1RSB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1RiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1SCB7CiAgd2lkdGg6IHZhcigtLXltN3VCQnVJKTsKfS55bTd1QkJ1SyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1TSB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1TyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1UCB7CiAgY29sb3I6IG9yYW5nZTsKfQ==";
+import "data:text/css;base64,LnltN3VCQnUgewogIGRpc3BsYXk6IGZsZXg7CiAgbWluLWhlaWdodDogMjRweDsKfQoueW03dUJCdTEgewogIG1hcmdpbi1yaWdodDogMTJweDsKfS55bTd1QkJ1MiB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1MyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdTQgewogIGNvbG9yOiBibHVlOwp9Ci55bTd1QkJ1NSB7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0ueW03dUJCdTYgewogIGNvbG9yOiBncmF5Owp9Ci55bTd1QkJ1NyB7CiAgY29sb3I6IGJsYWNrOwp9LnltN3VCQnU4IHsKICBjb2xvcjogZ3JlZW47Cn0KLnltN3VCQnU5IHsKICBsaW5lLWhlaWdodDogMTsKfS55bTd1QkJ1QSB7CiAgcGFkZGluZzogMXB4Owp9Ci55bTd1QkJ1QiB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVDIHsKICBjb2xvcjogYmx1ZTsKfQoueW03dUJCdUQgewogIGN1cnNvcjogcG9pbnRlcjsKfS55bTd1QkJ1RSB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1RiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1SCB7CiAgd2lkdGg6IHZhcigtLXltN3VCQnVJKTsKfS55bTd1QkJ1SyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1TSB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1TyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1UCB7CiAgZGlzcGxheTogaW5saW5lLWZsZXg7Cn0KLnltN3VCQnVRIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDFkNWRiOwp9Ci55bTd1QkJ1UiB7CiAgYmFja2dyb3VuZC1jb2xvcjogI2YzZjRmNjsKfQoueW03dUJCdVMgewogIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9Ci55bTd1QkJ1VCB7CiAgd2lkdGg6IDEwMCU7Cn0ueW03dUJCdVYgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdVggewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdVogewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdWEgewogIGNvbG9yOiBvcmFuZ2U7Cn0=";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage
 const IconContainer = /*YAK Extracted CSS:
@@ -107,9 +107,47 @@ const ClassNameBail = /*YAK Extracted CSS:
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuN", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuO"));
-const Optimizable = ({ active, size }: {
+// folds: identifier param with member access - `(p) => p.$x` is the common
+// real-world styled-components style
+const MemberButton = /*YAK Extracted CSS:
+.ym7uBBuP {
+  display: inline-flex;
+}
+.ym7uBBuQ {
+  background-color: #d1d5db;
+}
+.ym7uBBuR {
+  background-color: #f3f4f6;
+}
+.ym7uBBuS {
+  background-color: transparent;
+}
+.ym7uBBuT {
+  width: 100%;
+}
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuP", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBuQ"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBuR"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBuS"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBuT"));
+// usages bail: the whole props object escapes into the function call
+const MemberEscape = /*YAK Extracted CSS:
+.ym7uBBuV {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuU", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuV"));
+// usages bail: theme access through the identifier param
+const MemberTheme = /*YAK Extracted CSS:
+.ym7uBBuX {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuW", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuX"));
+// usages bail: computed member access
+const MemberComputed = /*YAK Extracted CSS:
+.ym7uBBuZ {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuY", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBuZ"));
+const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
+    i: number;
 })=><>
     <span aria-hidden className={"ym7uBBu" + (true ? " ym7uBBu1" : "")}>
       <i/>
@@ -125,10 +163,10 @@ const Optimizable = ({ active, size }: {
       runtime class merge
     </span>
     <span className={"ym7uBBu" + (true ? " ym7uBBu1" : "") + /*YAK Extracted CSS:
-.ym7uBBuP {
+.ym7uBBua {
   color: orange;
 }
-*/ /*#__PURE__*/ " ym7uBBuP"}>
+*/ /*#__PURE__*/ " ym7uBBua"}>
       css prop merge
     </span>
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
@@ -139,6 +177,9 @@ const Optimizable = ({ active, size }: {
     <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
     <button disabled={active} className={"ym7uBBuC" + (!active ? " ym7uBBuD" : "")}>kept on the element and inlined</button>
     <button disabled className={"ym7uBBuC" + (!true ? " ym7uBBuD" : "")}>bare non-$ prop</button>
+    <button className={"ym7uBBuP" + (!(i1 % 4 !== 0) ? " ym7uBBuQ" : "") + ("primary" === "secondary" ? " ym7uBBuR" : "") + ("primary" === "ghost" ? " ym7uBBuS" : "") + (i1 % 3 === 0 ? " ym7uBBuT" : "")}>
+      {i1}
+    </button>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -151,4 +192,7 @@ const NotOptimizable = ()=><>
     <ActionButton disabled={props.isBusy()}>
       bails: the kept attribute would evaluate a second time in the className
     </ActionButton>
+    <MemberEscape $active>bails: whole props object escapes</MemberEscape>
+    <MemberTheme $accent>bails: theme access</MemberTheme>
+    <MemberComputed $active>bails: computed member access</MemberComputed>
   </>;

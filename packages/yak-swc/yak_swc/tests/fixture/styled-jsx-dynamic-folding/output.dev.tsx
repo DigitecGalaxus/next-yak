@@ -129,9 +129,55 @@ const ClassNameBail = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_ClassNameBail_m7uBBu", ({ className })=>className && /*#__PURE__*/ css("input_ClassNameBail__className_m7uBBu")), {
     "displayName": "ClassNameBail"
 });
-const Optimizable = ({ active, size }: {
+// folds: identifier param with member access - `(p) => p.$x` is the common
+// real-world styled-components style
+const MemberButton = /*YAK Extracted CSS:
+:global(.input_MemberButton_m7uBBu) {
+  display: inline-flex;
+}
+:global(.input_MemberButton___m7uBBu) {
+  background-color: #d1d5db;
+}
+:global(.input_MemberButton___m7uBBu-01) {
+  background-color: #f3f4f6;
+}
+:global(.input_MemberButton___m7uBBu-02) {
+  background-color: transparent;
+}
+:global(.input_MemberButton__p_\$fullWidth_m7uBBu) {
+  width: 100%;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_MemberButton_m7uBBu", (p)=>!p.$active && /*#__PURE__*/ css("input_MemberButton___m7uBBu"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("input_MemberButton___m7uBBu-01"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("input_MemberButton___m7uBBu-02"), (p)=>p.$fullWidth && /*#__PURE__*/ css("input_MemberButton__p_$fullWidth_m7uBBu")), {
+    "displayName": "MemberButton"
+});
+// usages bail: the whole props object escapes into the function call
+const MemberEscape = /*YAK Extracted CSS:
+:global(.input_MemberEscape___m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_MemberEscape_m7uBBu", (p)=>props.calculate(p) && /*#__PURE__*/ css("input_MemberEscape___m7uBBu")), {
+    "displayName": "MemberEscape"
+});
+// usages bail: theme access through the identifier param
+const MemberTheme = /*YAK Extracted CSS:
+:global(.input_MemberTheme___m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_MemberTheme_m7uBBu", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("input_MemberTheme___m7uBBu")), {
+    "displayName": "MemberTheme"
+});
+// usages bail: computed member access
+const MemberComputed = /*YAK Extracted CSS:
+:global(.input_MemberComputed___m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_MemberComputed_m7uBBu", (p)=>p["$active"] && /*#__PURE__*/ css("input_MemberComputed___m7uBBu")), {
+    "displayName": "MemberComputed"
+});
+const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
+    i: number;
 })=><>
     <span aria-hidden className={"input_IconContainer_m7uBBu" + (true ? " input_IconContainer__$hasChildren_m7uBBu" : "")}>
       <i/>
@@ -161,6 +207,9 @@ const Optimizable = ({ active, size }: {
     <li className={"input_Twice_m7uBBu" + (size && size === "big" ? " input_Twice___m7uBBu" : "")}>safe to duplicate</li>
     <button disabled={active} className={"input_ActionButton_m7uBBu" + (!active ? " input_ActionButton___m7uBBu" : "")}>kept on the element and inlined</button>
     <button disabled className={"input_ActionButton_m7uBBu" + (!true ? " input_ActionButton___m7uBBu" : "")}>bare non-$ prop</button>
+    <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
+      {i1}
+    </button>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -173,4 +222,7 @@ const NotOptimizable = ()=><>
     <ActionButton disabled={props.isBusy()}>
       bails: the kept attribute would evaluate a second time in the className
     </ActionButton>
+    <MemberEscape $active>bails: whole props object escapes</MemberEscape>
+    <MemberTheme $accent>bails: theme access</MemberTheme>
+    <MemberComputed $active>bails: computed member access</MemberComputed>
   </>;

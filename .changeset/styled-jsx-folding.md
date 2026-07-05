@@ -3,4 +3,23 @@
 "next-yak": minor
 ---
 
-Fold JSX usages of fully static styled components declared in the same file into plain DOM elements at build time, e.g. `const Card = styled.div`color: red`;` with `<Card>hi</Card>` becomes `<div className="yX">hi</div>`, skipping the runtime wrapper component entirely. The declaration is kept for exports, selectors and non-foldable usages and is dead-code eliminated by the minifier when unused. An existing `className` is merged at compile time for string literals or through the new `__yak_mergeClassNames` runtime helper for expressions. Fully static `styled(Component)` wrappers fold to the wrapped component instead, e.g. `<Extended>hi</Extended>` becomes `<Card className="yE">hi</Card>` — the wrapped component may come from another file but must be an immutable binding (import or top-level `const`) with an uppercase name. Class-toggling expressions over props are inlined at the usage by substituting the destructured props with the attribute values: `<Box $active={on} />` with `${({ $active }) => $active && css`…`}` becomes `<div className={"yB" + (on ? " yA" : "")} />` (native elements only; all `$`-prefixed attributes are dropped from these folded elements exactly like the runtime strips them). Usages with spread props, a `theme` prop, theme-dependent styles, dynamic css values (css variables) or `.attrs()` keep the runtime path. Note: foreign `$`-prefixed props on folded usages of fully static components are forwarded to the DOM element or wrapped component instead of being filtered by the runtime (which also dropped `undefined`-valued props and always passed a `style` object to non-yak wrapped components). Folded usages also render the native element directly, so the React element type changes from the styled wrapper component to the DOM tag (e.g. `"div"`): `child.type === Card` checks no longer match folded children, `React.cloneElement(child, { className })` replaces the class instead of merging it (the runtime wrapper used to merge), and when the same component renders folded in one place and unfolded in another (e.g. one usage has spread props), toggling between them remounts the DOM subtree instead of updating in place. Components used with these patterns should keep dynamic styles or spread props to stay on the runtime path.
+Fold JSX usages of styled components declared in the same file into plain elements at build time, skipping the runtime wrapper component:
+
+```tsx
+const Icon = styled.span<{ $active?: boolean }>`
+  min-height: 24px;
+  ${({ $active }) => $active && css`color: red;`}
+`;
+const App = () => <Icon $active={on} />;
+
+// compiles to
+const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />;
+```
+
+- Fully static components fold to the plain DOM element, `styled(Component)` wrappers fold to the wrapped component (which may be imported).
+- Class-toggling expressions (`({ $active }) => $active && css`…`` or `(p) => p.$active && css`…``) are inlined by substituting the props with the attribute values; the `$` attributes are dropped like the runtime drops them.
+- An existing `className` is merged at compile time, or through the new `__yak_mergeClassNames` helper for runtime values.
+- Usages with spread props, `theme`, dynamic css values (css variables) or `.attrs()` keep the runtime path, as do components not declared as top-level `const`.
+- The optimization can be disabled with the new `optimizeStaticJsx: false` option.
+
+Behavioral notes: a folded usage renders the native element directly, so `child.type === Icon` checks don't match it and toggling between a folded and non-folded usage of the same component remounts instead of updating. Foreign `$props` on fully static folded usages are forwarded instead of stripped.

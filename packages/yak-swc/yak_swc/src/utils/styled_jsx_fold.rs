@@ -528,14 +528,15 @@ fn inline_runtime_expressions(
   Some(class_name_expr)
 }
 
-/// Inlines one class-toggling expression by substituting its destructured
-/// props with the JSX attribute values, e.g. with `$active={on}`:
+/// Inlines one class-toggling expression by substituting its prop reads
+/// with the JSX attribute values, e.g. with `$active={on}`:
 /// `({ $active }) => $active && css("yY")` becomes the segment `on ? " yY" : ""`
 ///
-/// The props parameter must be a plain object destructuring - `theme` and
-/// props like `children` which are not plain attributes bail. A `$`-prop
-/// expression referenced once is inlined as-is: the `$` attribute is dropped
-/// from the folded element, so it is still evaluated exactly once, only its
+/// The props parameter must be a plain object destructuring or an identifier
+/// read through plain members (`(p) => p.$active`) - `theme` and props like
+/// `children` which are not plain attributes bail. A `$`-prop expression
+/// referenced once is inlined as-is: the `$` attribute is dropped from the
+/// folded element, so it is still evaluated exactly once, only its
 /// evaluation position may move relative to the other attributes which is
 /// fine as a render must not rely on attribute evaluation order. Referenced
 /// more than once - or kept on the element as a non-$ attribute - the
@@ -585,10 +586,7 @@ fn inline_expression(
         };
         // the runtime passes more than the attributes to the expressions -
         // only plain props can be substituted
-        if matches!(
-          key.sym.as_ref(),
-          "theme" | "children" | "className" | "style"
-        ) {
+        if is_runtime_injected_prop(&key.sym) {
           return None;
         }
         // an absent attribute is undefined as spreads bail
@@ -613,9 +611,30 @@ fn inline_expression(
         return None;
       }
     }
+    // e.g. `${(p) => p.$active && css`...`}` - plain member reads on the
+    // props parameter substitute like destructured props; any other use of
+    // the parameter (e.g. forwarding it with `calculate(p)`) bails
+    [Pat::Ident(param)] => {
+      let mut substitution = SubstituteMemberProps {
+        param: param.to_id(),
+        attr_values,
+        substituted: FxHashSet::default(),
+        failed: false,
+      };
+      body.visit_mut_with(&mut substitution);
+      if substitution.failed {
+        return None;
+      }
+    }
     _ => return None,
   }
   fold_condition_body(&body, yak_imports)
+}
+
+/// The runtime passes more than the plain attributes to the class-toggling
+/// expressions - these props can not be substituted from the JSX attributes
+fn is_runtime_injected_prop(name: &Atom) -> bool {
+  matches!(name.as_ref(), "theme" | "children" | "className" | "style")
 }
 
 /// Maps the attribute names to their value expressions for substitution
@@ -688,6 +707,65 @@ impl VisitMut for SubstituteProps<'_> {
         });
         return;
       }
+    }
+    prop.visit_mut_children_with(self);
+  }
+}
+
+/// Replaces plain `p.prop` member reads on the props parameter with the
+/// attribute values - the identifier param counterpart of [SubstituteProps]
+/// Any other use of the parameter escapes the whole props object (forwarding
+/// it with `calculate(p)`, spreads, computed access) and bails
+struct SubstituteMemberProps<'a> {
+  param: Id,
+  attr_values: &'a FxHashMap<Atom, Expr>,
+  /// prop names substituted at least once - a second substitution duplicates
+  /// the attribute expression which is only allowed for safe expressions
+  substituted: FxHashSet<Atom>,
+  failed: bool,
+}
+
+impl VisitMut for SubstituteMemberProps<'_> {
+  fn visit_mut_expr(&mut self, expr: &mut Expr) {
+    if let Expr::Member(member) = expr {
+      if matches!(&*member.obj, Expr::Ident(obj) if obj.to_id() == self.param) {
+        if let MemberProp::Ident(name) = &member.prop {
+          // the runtime passes more than the attributes to the expressions -
+          // only plain props can be substituted
+          if is_runtime_injected_prop(&name.sym) {
+            self.failed = true;
+            return;
+          }
+          // an absent attribute is undefined as spreads bail
+          let replacement = self
+            .attr_values
+            .get(&name.sym)
+            .cloned()
+            .unwrap_or_else(undefined_expr);
+          // a non-$ attribute is kept on the element, so its value is already
+          // referenced once - substituting it into the className duplicates it
+          let repeated = !self.substituted.insert(name.sym.clone());
+          if (repeated || !name.sym.starts_with('$')) && !is_duplication_safe(&replacement) {
+            self.failed = true;
+            return;
+          }
+          *expr = replacement;
+          return;
+        }
+      }
+    }
+    if matches!(expr, Expr::Ident(ident) if ident.to_id() == self.param) {
+      self.failed = true;
+      return;
+    }
+    expr.visit_mut_children_with(self);
+  }
+
+  // a shorthand `{ p }` also escapes the whole props object
+  fn visit_mut_prop(&mut self, prop: &mut Prop) {
+    if matches!(prop, Prop::Shorthand(ident) if ident.to_id() == self.param) {
+      self.failed = true;
+      return;
     }
     prop.visit_mut_children_with(self);
   }

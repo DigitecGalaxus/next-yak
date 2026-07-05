@@ -82,7 +82,36 @@ const ClassNameBail = styled.div`
   ${({ className }) => className && css`color: red;`}
 `;
 
-const Optimizable = ({ active, size }: { active?: boolean; size?: string }) => (
+// folds: identifier param with member access - `(p) => p.$x` is the common
+// real-world styled-components style
+const MemberButton = styled.button<{
+  $active?: boolean;
+  $fullWidth?: boolean;
+  $variant?: "primary" | "secondary" | "ghost";
+}>`
+  display: inline-flex;
+  ${(p) => !p.$active && css`background-color: #d1d5db;`}
+  ${(p) => p.$variant === "secondary" && css`background-color: #f3f4f6;`}
+  ${(p) => p.$variant === "ghost" && css`background-color: transparent;`}
+  ${(p) => p.$fullWidth && css`width: 100%;`}
+`;
+
+// usages bail: the whole props object escapes into the function call
+const MemberEscape = styled.div<{ $active?: boolean }>`
+  ${(p) => props.calculate(p) && css`color: red;`}
+`;
+
+// usages bail: theme access through the identifier param
+const MemberTheme = styled.div<{ $accent?: boolean }>`
+  ${(p) => p.theme.highContrast && p.$accent && css`color: red;`}
+`;
+
+// usages bail: computed member access
+const MemberComputed = styled.div<{ $active?: boolean }>`
+  ${(p) => p["$active"] && css`color: red;`}
+`;
+
+const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: number }) => (
   <>
     <IconContainer aria-hidden $hasChildren>
       <i />
@@ -113,6 +142,9 @@ const Optimizable = ({ active, size }: { active?: boolean; size?: string }) => (
     <Twice $size={size}>safe to duplicate</Twice>
     <ActionButton disabled={active}>kept on the element and inlined</ActionButton>
     <ActionButton disabled>bare non-$ prop</ActionButton>
+    <MemberButton $active={i % 4 !== 0} $fullWidth={i % 3 === 0} $variant="primary">
+      {i}
+    </MemberButton>
   </>
 );
 
@@ -128,5 +160,8 @@ const NotOptimizable = () => (
     <ActionButton disabled={props.isBusy()}>
       bails: the kept attribute would evaluate a second time in the className
     </ActionButton>
+    <MemberEscape $active>bails: whole props object escapes</MemberEscape>
+    <MemberTheme $accent>bails: theme access</MemberTheme>
+    <MemberComputed $active>bails: computed member access</MemberComputed>
   </>
 );
