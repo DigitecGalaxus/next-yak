@@ -8,7 +8,11 @@ Fold JSX usages of styled components declared in the same file into plain elemen
 ```tsx
 const Icon = styled.span<{ $active?: boolean }>`
   min-height: 24px;
-  ${({ $active }) => $active && css`color: red;`}
+  ${({ $active }) =>
+    $active &&
+    css`
+      color: red;
+    `}
 `;
 const App = () => <Icon $active={on} />;
 
