@@ -1,14 +1,12 @@
-use crate::utils::ast_helper::unwrap_type_casts;
+use crate::utils::class_name_fold::fold_css_expr;
 use crate::yak_imports::YakImports;
 use swc_core::{
-  atoms::Wtf8Atom,
   common::errors::HANDLER,
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, ExprOrSpread,
-    Ident, IdentName, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXExpr,
-    JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement, Str,
+    CallExpr, Callee, Expr, ExprOrSpread, Ident, IdentName, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    JSXAttrValue, JSXExpr, JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop,
+    PropName, PropOrSpread, SpreadElement,
   },
 };
 
@@ -115,7 +113,7 @@ impl CSSProp {
       // invalid css attribute - the runtime path reports the error
       return false;
     };
-    let Some(class_name_expr) = Self::fold_css_expr(css_expr, yak_imports) else {
+    let Some(class_name_expr) = fold_css_expr(css_expr, yak_imports) else {
       return false;
     };
     opening_element.attrs[self.index] = JSXAttrOrSpread::JSXAttr(JSXAttr {
@@ -127,150 +125,6 @@ impl CSSProp {
       })),
     });
     true
-  }
-
-  /// Folds a compiled css expression into a className expression
-  /// Returns `None` if the expression is not statically foldable
-  fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
-    match unwrap_type_casts(expr) {
-      Expr::Call(call) => Self::fold_css_call(call, yak_imports),
-      Expr::Cond(cond) => {
-        let cons = Self::fold_css_expr(&cond.cons, yak_imports)?;
-        let alt = Self::fold_css_expr(&cond.alt, yak_imports)?;
-        Some(Box::new(Expr::Cond(CondExpr {
-          span: cond.span,
-          test: cond.test.clone(),
-          cons,
-          alt,
-        })))
-      }
-      _ => None,
-    }
-  }
-
-  /// Folds one compiled `css(...)` call: one optional static class string plus
-  /// zero or more `() => cond && css("x")` or `() => cond ? css("x") : css("y")`
-  /// condition arrows
-  fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>> {
-    if !Self::is_yak_css_callee(&call.callee, yak_imports) {
-      return None;
-    }
-    let mut base: Option<Wtf8Atom> = None;
-    let mut segments: Vec<(Box<Expr>, Wtf8Atom, Option<Wtf8Atom>)> = Vec::new();
-    for arg in &call.args {
-      if arg.spread.is_some() {
-        return None;
-      }
-      match unwrap_type_casts(&arg.expr) {
-        Expr::Lit(Lit::Str(class_name)) => {
-          if base.is_some() {
-            return None;
-          }
-          base = Some(class_name.value.clone());
-        }
-        Expr::Arrow(arrow) => segments.push(Self::fold_condition_arrow(arrow, yak_imports)?),
-        // dynamic values and mixin references are not foldable
-        _ => return None,
-      }
-    }
-    // css calls without a base class stay on the runtime path
-    let base = base?;
-    // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : " c") …
-    let mut class_name_expr = Self::str_expr(base);
-    for (condition, cons_class, alt_class) in segments {
-      let alt = match alt_class {
-        Some(class_name) => Self::str_expr(Self::with_leading_space(&class_name)),
-        None => Self::str_expr("".into()),
-      };
-      class_name_expr = Box::new(Expr::Bin(BinExpr {
-        span: DUMMY_SP,
-        op: BinaryOp::Add,
-        left: class_name_expr,
-        right: Box::new(Expr::Cond(CondExpr {
-          span: DUMMY_SP,
-          test: condition,
-          cons: Self::str_expr(Self::with_leading_space(&cons_class)),
-          alt,
-        })),
-      }));
-    }
-    // keep the span of the original css call so the /*YAK Extracted CSS:*/
-    // comment (parsed by extractCss.ts) stays attached
-    match &mut *class_name_expr {
-      Expr::Lit(Lit::Str(class_name)) => class_name.span = call.span,
-      Expr::Bin(bin) => bin.span = call.span,
-      _ => {}
-    }
-    Some(class_name_expr)
-  }
-
-  /// Matches the compiled condition shapes `() => cond && css("x")` and
-  /// `() => cond ? css("x") : css("y")` and returns the condition expression
-  /// plus the static class name(s)
-  fn fold_condition_arrow(
-    arrow: &ArrowExpr,
-    yak_imports: &YakImports,
-  ) -> Option<(Box<Expr>, Wtf8Atom, Option<Wtf8Atom>)> {
-    if !arrow.params.is_empty() || arrow.is_async || arrow.is_generator {
-      return None;
-    }
-    let BlockStmtOrExpr::Expr(body) = &*arrow.body else {
-      return None;
-    };
-    match unwrap_type_casts(body) {
-      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => {
-        let class_name = Self::pure_static_css_class(&bin.right, yak_imports)?;
-        Some((bin.left.clone(), class_name, None))
-      }
-      Expr::Cond(cond) => {
-        let cons_class = Self::pure_static_css_class(&cond.cons, yak_imports)?;
-        let alt_class = Self::pure_static_css_class(&cond.alt, yak_imports)?;
-        Some((cond.test.clone(), cons_class, Some(alt_class)))
-      }
-      _ => None,
-    }
-  }
-
-  /// Matches a `css("x")` call carrying exactly one static class string
-  fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
-    let Expr::Call(call) = unwrap_type_casts(expr) else {
-      return None;
-    };
-    if !Self::is_yak_css_callee(&call.callee, yak_imports) || call.args.len() != 1 {
-      return None;
-    }
-    let arg = &call.args[0];
-    if arg.spread.is_some() {
-      return None;
-    }
-    match unwrap_type_casts(&arg.expr) {
-      Expr::Lit(Lit::Str(class_name)) => Some(class_name.value.clone()),
-      _ => None,
-    }
-  }
-
-  fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
-    match callee {
-      Callee::Expr(expr) => match unwrap_type_casts(expr) {
-        Expr::Ident(ident) => yak_imports.yak_css_idents().contains(&ident.to_id()),
-        _ => false,
-      },
-      _ => false,
-    }
-  }
-
-  fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
-    let mut with_space = String::from(" ");
-    with_space.push_str(class_name.as_str().unwrap_or_default());
-    with_space.into()
-  }
-
-  fn str_expr(value: Wtf8Atom) -> Box<Expr> {
-    Box::new(Expr::Lit(Lit::Str(Str {
-      span: DUMMY_SP,
-      value,
-      raw: None,
-    })))
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.

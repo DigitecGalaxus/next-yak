@@ -3,14 +3,18 @@ use swc_core::{
   atoms::{Atom, Wtf8Atom},
   common::{SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Decl, Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr,
-    JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementName, JSXExpr,
-    JSXExprContainer, Lit, MemberProp, Module, ModuleDecl, ModuleItem, Pat, Stmt, Str, VarDecl,
-    VarDeclKind,
+    AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr, Callee, Decl,
+    Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr, JSXAttrName,
+    JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementName, JSXExpr, JSXExprContainer,
+    KeyValueProp, Lit, MemberProp, Module, ModuleDecl, ModuleItem, Number, ObjectPatProp, Pat,
+    Prop, PropName, Stmt, Str, UnaryExpr, UnaryOp, VarDecl, VarDeclKind,
   },
   ecma::visit::{VisitMut, VisitMutWith},
 };
 
+use crate::utils::class_name_fold::{
+  append_condition_segment, fold_condition_body, str_expr, with_leading_space, ConditionSegment,
+};
 use crate::utils::native_elements::VALID_ELEMENTS;
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
@@ -24,13 +28,18 @@ enum FoldTarget {
   Component(Ident),
 }
 
-/// A fully static styled component whose JSX usages can be folded
-/// into their fold target
+/// A styled component whose JSX usages can be folded into their fold target
 #[derive(Debug)]
 struct FoldableComponent {
   target: FoldTarget,
   /// The generated static class name e.g. "ym7uBBu"
   class_name: Wtf8Atom,
+  /// The compiled class-toggling expressions over props
+  /// e.g. `({ $active }) => $active && css("ym7uBBu1")`
+  /// Empty for fully static components; usages of dynamic components only
+  /// fold if these can be inlined by substituting the props with the
+  /// JSX attribute values
+  runtime_expressions: Vec<Expr>,
 }
 
 /// Folds JSX usages of fully static styled components declared in the same
@@ -58,6 +67,19 @@ struct FoldableComponent {
 /// <Card className="yE">Hello</Card>
 /// ```
 ///
+/// Class-toggling expressions over props are inlined at the usage by
+/// substituting the destructured props with the attribute values:
+/// ```jsx
+/// const Box = styled.div`${({ $active }) => $active && css`color: red;`}`;
+/// <Box $active={on}>Hello</Box>
+/// ```
+/// becomes
+/// ```jsx
+/// <div className={"yB" + (on ? " yA" : "")}>Hello</div>
+/// ```
+/// (no constant folding for literal values like `<Box $active>` - the
+/// minifier simplifies `"yB" + (true ? " yA" : "")` in production)
+///
 /// The declaration is kept untouched - it is /*#__PURE__*/ annotated so the
 /// minifier removes it if all usages could be folded and it is not exported
 ///
@@ -75,17 +97,18 @@ impl StyledJsxFold {
   /// - `tag` (the original tagged template tag) is styled.element,
   ///   styled("element") with a native DOM element or styled(Component) -
   ///   these shapes exclude .attrs(...) chains
-  /// - `is_fully_static` - the css has no runtime expressions or css variables
+  /// - `has_runtime_css_variables` - dynamic css values compile to css
+  ///   variables set through the style prop which are not folded yet
   /// - `transformed` (the emitted expression) carries the class name as its
-  ///   only call argument which doubles as a second staticness guarantee
+  ///   first call argument followed by the class-toggling expressions
   pub fn try_register(
     &mut self,
     declaration: Option<&ScopedVariableReference>,
     tag: &Expr,
     transformed: &Expr,
-    is_fully_static: bool,
+    has_runtime_css_variables: bool,
   ) {
-    if !is_fully_static {
+    if has_runtime_css_variables {
       return;
     }
     let Some(declaration) = declaration else {
@@ -97,12 +120,21 @@ impl StyledJsxFold {
     let Some(target) = Self::fold_target(tag) else {
       return;
     };
-    let Some(class_name) = Self::static_class_name(transformed) else {
+    let Some((class_name, runtime_expressions)) = Self::compiled_styled_args(transformed) else {
       return;
     };
+    // dynamic styled(Component) wrappers keep the runtime path - the $prop
+    // forwarding semantics depend on the wrapped component
+    if !runtime_expressions.is_empty() && matches!(target, FoldTarget::Component(_)) {
+      return;
+    }
     let previous = self.components.insert(
       declaration.id.clone(),
-      FoldableComponent { target, class_name },
+      FoldableComponent {
+        target,
+        class_name,
+        runtime_expressions,
+      },
     );
     // a binding can only hold one styled component - a second registration
     // would mean the whole-initializer check in the visitor broke
@@ -184,12 +216,14 @@ impl StyledJsxFold {
     }
   }
 
-  /// Extracts the class name from a compiled styled component expression
-  /// e.g. `__yak.__yak_div("yX")` or `styled("custom")("yX")`
+  /// Extracts the class name and the class-toggling expressions from a
+  /// compiled styled component expression
+  /// e.g. `__yak.__yak_div("yX", ({ $a }) => $a && css("yY"))`
   /// unwrapping the dev mode `Object.assign(call, { displayName })` wrapper
-  /// Requires exactly one string argument - a dynamic styled component
-  /// carries additional runtime arguments
-  fn static_class_name(transformed: &Expr) -> Option<Wtf8Atom> {
+  /// Requires a string as the first argument and arrows/functions for the
+  /// rest - anything else (e.g. the trailing css variables style object)
+  /// keeps the runtime path
+  fn compiled_styled_args(transformed: &Expr) -> Option<(Wtf8Atom, Vec<Expr>)> {
     let Expr::Call(call) = transformed else {
       return None;
     };
@@ -197,21 +231,26 @@ impl StyledJsxFold {
       if let Expr::Member(member) = &**callee {
         if let (Expr::Ident(obj), MemberProp::Ident(prop)) = (&*member.obj, &member.prop) {
           if obj.sym == *"Object" && prop.sym == *"assign" {
-            return Self::static_class_name(&call.args.first()?.expr);
+            return Self::compiled_styled_args(&call.args.first()?.expr);
           }
         }
       }
     }
-    let [arg] = call.args.as_slice() else {
+    let (class_name_arg, expression_args) = call.args.split_first()?;
+    if class_name_arg.spread.is_some() {
+      return None;
+    }
+    let Expr::Lit(Lit::Str(class_name)) = &*class_name_arg.expr else {
       return None;
     };
-    if arg.spread.is_some() {
-      return None;
+    let mut runtime_expressions = Vec::with_capacity(expression_args.len());
+    for arg in expression_args {
+      if arg.spread.is_some() || !matches!(&*arg.expr, Expr::Arrow(_) | Expr::Fn(_)) {
+        return None;
+      }
+      runtime_expressions.push((*arg.expr).clone());
     }
-    match &*arg.expr {
-      Expr::Lit(Lit::Str(class_name)) => Some(class_name.value.clone()),
-      _ => None,
-    }
+    Some((class_name.value.clone(), runtime_expressions))
   }
 
   /// Collects the module scope bindings which can not be reassigned:
@@ -298,7 +337,23 @@ impl VisitMut for FoldVisitor<'_> {
         }
       }
     }
+    // the class-toggling expressions consumed the $props at compile time -
+    // drop them all like the runtime does before the DOM
+    if !component.runtime_expressions.is_empty() {
+      n.opening.attrs.retain(|attr| !is_transient_prop(attr));
+    }
   }
+}
+
+/// Matches `$`-prefixed attributes like `$active`
+fn is_transient_prop(attr: &JSXAttrOrSpread) -> bool {
+  matches!(
+    attr,
+    JSXAttrOrSpread::JSXAttr(JSXAttr {
+      name: JSXAttrName::Ident(name),
+      ..
+    }) if name.sym.starts_with('$')
+  )
 }
 
 /// How the static class name is added to the folded element
@@ -309,14 +364,34 @@ enum ClassNameFold {
   Replace(usize, JSXAttrValue),
 }
 
+/// The class name(s) a folded usage contributes
+enum YakClassName {
+  /// A fully static component - mergeable into string literals at compile time
+  Static(Wtf8Atom),
+  /// A dynamic component - the base class concatenated with the inlined
+  /// class-toggling conditions e.g. `"yX" + (on ? " yY" : "")`
+  Dynamic(Box<Expr>),
+}
+
+impl YakClassName {
+  fn into_expr(self) -> Box<Expr> {
+    match self {
+      YakClassName::Static(class_name) => {
+        Box::new(Expr::Lit(Lit::Str(str_lit(class_name, DUMMY_SP))))
+      }
+      YakClassName::Dynamic(expr) => expr,
+    }
+  }
+}
+
 impl FoldVisitor<'_> {
   /// Checks all attributes and computes the folded className value
   /// Returns `None` if the usage is not foldable
   ///
-  /// All other attributes (style, ref, event handlers, even $props) are
-  /// forwarded unchanged - a fully static styled component passes them
-  /// through to the DOM element or the wrapped component. Foreign $props
-  /// are treated as user error and not filtered out
+  /// All other attributes (style, ref, event handlers, $props of fully
+  /// static components) are forwarded unchanged - a fully static styled
+  /// component passes them through to the DOM element or the wrapped
+  /// component. Foreign $props are treated as user error and not filtered out
   fn fold_attrs(
     &mut self,
     attrs: &[JSXAttrOrSpread],
@@ -350,17 +425,27 @@ impl FoldVisitor<'_> {
         _ => return None,
       }
     }
-    let Some((index, attr)) = class_name_attr else {
-      return Some(ClassNameFold::Append(JSXAttrValue::Str(str_lit(
-        component.class_name.clone(),
-        DUMMY_SP,
-      ))));
+    let yak_class = if component.runtime_expressions.is_empty() {
+      YakClassName::Static(component.class_name.clone())
+    } else {
+      YakClassName::Dynamic(inline_runtime_expressions(
+        component,
+        attrs,
+        self.yak_imports,
+      )?)
     };
-    let value = self.merge_class_name(attr.value.as_ref()?, component)?;
+    let Some((index, attr)) = class_name_attr else {
+      let value = match yak_class {
+        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(class_name, DUMMY_SP)),
+        YakClassName::Dynamic(expr) => expr_attr_value(expr),
+      };
+      return Some(ClassNameFold::Append(value));
+    };
+    let value = self.merge_class_name(attr.value.as_ref()?, yak_class)?;
     Some(ClassNameFold::Replace(index, value))
   }
 
-  /// Merges the static class name with an existing className value
+  /// Merges the folded yak class name with an existing className value
   /// The class names are unique so the order doesn't matter and no
   /// deduplication is needed
   /// - string literals are merged at compile time
@@ -369,14 +454,20 @@ impl FoldVisitor<'_> {
   fn merge_class_name(
     &mut self,
     value: &JSXAttrValue,
-    component: &FoldableComponent,
+    yak_class: YakClassName,
   ) -> Option<JSXAttrValue> {
     match value {
       // className="user"
-      JSXAttrValue::Str(user) => Some(JSXAttrValue::Str(str_lit(
-        merged_class_names(&component.class_name, &user.value),
-        user.span,
-      ))),
+      JSXAttrValue::Str(user) => Some(match yak_class {
+        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(
+          merged_class_names(&class_name, &user.value),
+          user.span,
+        )),
+        // `"yX" + (on ? " yY" : "") + " user"`
+        YakClassName::Dynamic(expr) => {
+          expr_attr_value(append_class_name_str(expr, &user.value, user.span))
+        }
+      }),
       JSXAttrValue::JSXExprContainer(JSXExprContainer {
         expr: JSXExpr::Expr(user),
         ..
@@ -384,11 +475,14 @@ impl FoldVisitor<'_> {
         let merged = match &**user {
           // className={"user"} - keep the span so an attached
           // /*YAK Extracted CSS:*/ comment from a folded css prop survives
-          Expr::Lit(Lit::Str(user)) => Expr::Lit(Lit::Str(str_lit(
-            merged_class_names(&component.class_name, &user.value),
-            user.span,
-          ))),
-          _ => Expr::Call(CallExpr {
+          Expr::Lit(Lit::Str(user)) => match yak_class {
+            YakClassName::Static(class_name) => Box::new(Expr::Lit(Lit::Str(str_lit(
+              merged_class_names(&class_name, &user.value),
+              user.span,
+            )))),
+            YakClassName::Dynamic(expr) => append_class_name_str(expr, &user.value, user.span),
+          },
+          _ => Box::new(Expr::Call(CallExpr {
             span: DUMMY_SP,
             callee: Callee::Expr(Box::new(Expr::Ident(
               self.yak_imports.get_yak_utility_ident("mergeClassNames"),
@@ -396,10 +490,7 @@ impl FoldVisitor<'_> {
             args: vec![
               ExprOrSpread {
                 spread: None,
-                expr: Box::new(Expr::Lit(Lit::Str(str_lit(
-                  component.class_name.clone(),
-                  DUMMY_SP,
-                )))),
+                expr: yak_class.into_expr(),
               },
               ExprOrSpread {
                 spread: None,
@@ -408,16 +499,265 @@ impl FoldVisitor<'_> {
             ],
             ctxt: SyntaxContext::empty(),
             type_args: None,
-          }),
+          })),
         };
         Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
           span: DUMMY_SP,
-          expr: JSXExpr::Expr(Box::new(merged)),
+          expr: JSXExpr::Expr(merged),
         }))
       }
       _ => None,
     }
   }
+}
+
+/// Inlines the class-toggling expressions of a dynamic component at a JSX
+/// usage into a single className expression
+/// e.g. `"yX" + (on ? " yY" : "")` for `<Box $active={on}>`
+fn inline_runtime_expressions(
+  component: &FoldableComponent,
+  attrs: &[JSXAttrOrSpread],
+  yak_imports: &YakImports,
+) -> Option<Box<Expr>> {
+  let attr_values = attr_value_map(attrs);
+  let mut class_name_expr = str_expr(component.class_name.clone());
+  for expression in &component.runtime_expressions {
+    let segment = inline_expression(expression, &attr_values, yak_imports)?;
+    class_name_expr = append_condition_segment(class_name_expr, segment);
+  }
+  Some(class_name_expr)
+}
+
+/// Inlines one class-toggling expression by substituting its destructured
+/// props with the JSX attribute values, e.g. with `$active={on}`:
+/// `({ $active }) => $active && css("yY")` becomes the segment `on ? " yY" : ""`
+///
+/// The props parameter must be a plain object destructuring - `theme` and
+/// props like `children` which are not plain attributes bail. A `$`-prop
+/// expression referenced once is inlined as-is: the `$` attribute is dropped
+/// from the folded element, so it is still evaluated exactly once, only its
+/// evaluation position may move relative to the other attributes which is
+/// fine as a render must not rely on attribute evaluation order. Referenced
+/// more than once - or kept on the element as a non-$ attribute - the
+/// expression is duplicated and must be safe to duplicate
+fn inline_expression(
+  expression: &Expr,
+  attr_values: &FxHashMap<Atom, Expr>,
+  yak_imports: &YakImports,
+) -> Option<ConditionSegment> {
+  let (params, mut body): (Vec<&Pat>, Expr) = match expression {
+    Expr::Arrow(arrow) if !arrow.is_async && !arrow.is_generator => {
+      let body = match &*arrow.body {
+        BlockStmtOrExpr::Expr(expr) => (**expr).clone(),
+        BlockStmtOrExpr::BlockStmt(block) => single_return_expr(block)?,
+        #[cfg(swc_ast_unknown)]
+        _ => return None,
+      };
+      (arrow.params.iter().collect(), body)
+    }
+    Expr::Fn(function) if !function.function.is_async && !function.function.is_generator => {
+      let body = single_return_expr(function.function.body.as_ref()?)?;
+      (
+        function
+          .function
+          .params
+          .iter()
+          .map(|param| &param.pat)
+          .collect(),
+        body,
+      )
+    }
+    _ => return None,
+  };
+  match params.as_slice() {
+    // e.g. `${() => darkMode && css`...`}` - references the outer scope only
+    [] => {}
+    [Pat::Object(param)] => {
+      let mut replacements = FxHashMap::default();
+      let mut substituted = FxHashSet::default();
+      for prop in &param.props {
+        // only plain destructuring - renames, defaults and rest bail
+        let ObjectPatProp::Assign(AssignPatProp {
+          key, value: None, ..
+        }) = prop
+        else {
+          return None;
+        };
+        // the runtime passes more than the attributes to the expressions -
+        // only plain props can be substituted
+        if matches!(
+          key.sym.as_ref(),
+          "theme" | "children" | "className" | "style"
+        ) {
+          return None;
+        }
+        // an absent attribute is undefined as spreads bail
+        let value = attr_values
+          .get(&key.sym)
+          .cloned()
+          .unwrap_or_else(undefined_expr);
+        // a non-$ attribute is kept on the element, so its value is already
+        // referenced once - substituting it into the className duplicates it
+        if !key.sym.starts_with('$') {
+          substituted.insert(key.to_id());
+        }
+        replacements.insert(key.to_id(), value);
+      }
+      let mut substitution = SubstituteProps {
+        replacements: &replacements,
+        substituted,
+        failed: false,
+      };
+      body.visit_mut_with(&mut substitution);
+      if substitution.failed {
+        return None;
+      }
+    }
+    _ => return None,
+  }
+  fold_condition_body(&body, yak_imports)
+}
+
+/// Maps the attribute names to their value expressions for substitution
+/// A bare attribute (`<Box $active>`) counts as `true`
+fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Expr> {
+  let mut values = FxHashMap::default();
+  for attr in attrs {
+    let JSXAttrOrSpread::JSXAttr(attr) = attr else {
+      continue;
+    };
+    let JSXAttrName::Ident(name) = &attr.name else {
+      continue;
+    };
+    let value = match &attr.value {
+      None => Expr::Lit(Lit::Bool(Bool {
+        span: DUMMY_SP,
+        value: true,
+      })),
+      Some(JSXAttrValue::Str(value)) => Expr::Lit(Lit::Str(value.clone())),
+      Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+        expr: JSXExpr::Expr(expr),
+        ..
+      })) => (**expr).clone(),
+      Some(JSXAttrValue::JSXElement(element)) => Expr::JSXElement(element.clone()),
+      Some(JSXAttrValue::JSXFragment(fragment)) => Expr::JSXFragment(fragment.clone()),
+      _ => continue,
+    };
+    values.insert(name.sym.clone(), value);
+  }
+  values
+}
+
+/// Replaces the destructured prop references with the attribute values
+struct SubstituteProps<'a> {
+  replacements: &'a FxHashMap<Id, Expr>,
+  /// keys substituted at least once - a second substitution duplicates the
+  /// attribute expression which is only allowed for safe expressions
+  substituted: FxHashSet<Id>,
+  failed: bool,
+}
+
+impl SubstituteProps<'_> {
+  fn replacement_for(&mut self, ident: &Ident) -> Option<Expr> {
+    let replacement = self.replacements.get(&ident.to_id())?;
+    if !self.substituted.insert(ident.to_id()) && !is_duplication_safe(replacement) {
+      self.failed = true;
+    }
+    Some(replacement.clone())
+  }
+}
+
+impl VisitMut for SubstituteProps<'_> {
+  fn visit_mut_expr(&mut self, expr: &mut Expr) {
+    if let Expr::Ident(ident) = expr {
+      if let Some(replacement) = self.replacement_for(ident) {
+        *expr = replacement;
+        return;
+      }
+    }
+    expr.visit_mut_children_with(self);
+  }
+
+  // expand a shorthand `{ $active }` to `{ $active: value }`
+  fn visit_mut_prop(&mut self, prop: &mut Prop) {
+    if let Prop::Shorthand(ident) = prop {
+      if let Some(replacement) = self.replacement_for(ident) {
+        *prop = Prop::KeyValue(KeyValueProp {
+          key: PropName::Ident(IdentName::new(ident.sym.clone(), ident.span)),
+          value: Box::new(replacement),
+        });
+        return;
+      }
+    }
+    prop.visit_mut_children_with(self);
+  }
+}
+
+/// Whether inlining the expression more than once is safe: it must have no
+/// side effects and always evaluate to the same value during one render
+fn is_duplication_safe(expr: &Expr) -> bool {
+  match expr {
+    Expr::Lit(_) | Expr::Ident(_) => true,
+    Expr::Member(member) => {
+      let safe_prop = match &member.prop {
+        MemberProp::Ident(_) => true,
+        MemberProp::Computed(computed) => matches!(&*computed.expr, Expr::Lit(_)),
+        MemberProp::PrivateName(_) => false,
+        #[cfg(swc_ast_unknown)]
+        _ => false,
+      };
+      safe_prop && is_duplication_safe(&member.obj)
+    }
+    // delete is excluded - it mutates its operand
+    Expr::Unary(unary) => unary.op != UnaryOp::Delete && is_duplication_safe(&unary.arg),
+    _ => false,
+  }
+}
+
+/// Matches a function body holding a single `return <expr>;`
+fn single_return_expr(block: &BlockStmt) -> Option<Expr> {
+  let [Stmt::Return(return_stmt)] = block.stmts.as_slice() else {
+    return None;
+  };
+  return_stmt.arg.as_deref().cloned()
+}
+
+/// `undefined` for absent attributes
+fn undefined_expr() -> Expr {
+  Expr::Unary(UnaryExpr {
+    span: DUMMY_SP,
+    op: UnaryOp::Void,
+    arg: Box::new(Expr::Lit(Lit::Num(Number {
+      span: DUMMY_SP,
+      value: 0.0,
+      raw: None,
+    }))),
+  })
+}
+
+/// `<class_name_expr> + " user"` keeping the user span so an attached
+/// /*YAK Extracted CSS:*/ comment from a folded css prop survives
+fn append_class_name_str(
+  class_name_expr: Box<Expr>,
+  user_class_name: &Wtf8Atom,
+  span: swc_core::common::Span,
+) -> Box<Expr> {
+  Box::new(Expr::Bin(BinExpr {
+    span: DUMMY_SP,
+    op: BinaryOp::Add,
+    left: class_name_expr,
+    right: Box::new(Expr::Lit(Lit::Str(str_lit(
+      with_leading_space(user_class_name),
+      span,
+    )))),
+  }))
+}
+
+fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
+  JSXAttrValue::JSXExprContainer(JSXExprContainer {
+    span: DUMMY_SP,
+    expr: JSXExpr::Expr(expr),
+  })
 }
 
 fn merged_class_names(yak_class_name: &Wtf8Atom, user_class_name: &Wtf8Atom) -> Wtf8Atom {
@@ -519,22 +859,45 @@ mod tests {
     );
   }
 
+  fn arrow_expr() -> Expr {
+    Expr::Arrow(swc_core::ecma::ast::ArrowExpr {
+      span: DUMMY_SP,
+      params: vec![],
+      body: Box::new(BlockStmtOrExpr::Expr(Box::new(str_expr_lit("x")))),
+      is_async: false,
+      is_generator: false,
+      type_params: None,
+      return_type: None,
+      ctxt: SyntaxContext::empty(),
+    })
+  }
+
+  fn str_expr_lit(value: &str) -> Expr {
+    Expr::Lit(Lit::Str(str_lit(value.into(), DUMMY_SP)))
+  }
+
   #[test]
-  fn static_class_name_requires_a_single_string_argument() {
+  fn compiled_styled_args_requires_a_class_string_and_expressions() {
     let styled_call = |args| call(member("__yak", "__yak_div"), args);
+    // fully static
+    assert!(matches!(
+      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX")])),
+      Some((class_name, expressions)) if class_name == *"yX" && expressions.is_empty()
+    ));
+    // class-toggling expressions are collected
+    assert!(matches!(
+      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX"), arrow_expr()])),
+      Some((class_name, expressions)) if class_name == *"yX" && expressions.len() == 1
+    ));
+    // anything else (e.g. the trailing css variables style object) bails
     assert_eq!(
-      StyledJsxFold::static_class_name(&styled_call(vec![str_expr("yX")])),
-      Some("yX".into())
-    );
-    // dynamic styled components carry additional runtime arguments
-    assert_eq!(
-      StyledJsxFold::static_class_name(&styled_call(vec![str_expr("yX"), ident("dynamic")])),
+      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX"), ident("dynamic")])),
       None
     );
   }
 
   #[test]
-  fn static_class_name_unwraps_the_display_name_wrapper() {
+  fn compiled_styled_args_unwraps_the_display_name_wrapper() {
     let wrapped = call(
       member("Object", "assign"),
       vec![
@@ -542,9 +905,9 @@ mod tests {
         ident("displayNameProps"),
       ],
     );
-    assert_eq!(
-      StyledJsxFold::static_class_name(&wrapped),
-      Some("yX".into())
-    );
+    assert!(matches!(
+      StyledJsxFold::compiled_styled_args(&wrapped),
+      Some((class_name, _)) if class_name == *"yX"
+    ));
   }
 }

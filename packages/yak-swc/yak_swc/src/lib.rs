@@ -36,6 +36,7 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
+  pub(crate) mod class_name_fold;
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
@@ -1182,7 +1183,7 @@ where
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
 
-    let is_fully_static = runtime_expressions.is_empty() && runtime_css_variables.is_empty();
+    let has_runtime_css_variables = !runtime_css_variables.is_empty();
     let transform_result = transform.transform_expression(
       n,
       runtime_expressions,
@@ -1202,7 +1203,7 @@ where
         self.current_variable_name.as_ref(),
         &n.tag,
         &transform_result.expression,
-        is_fully_static,
+        has_runtime_css_variables,
       );
     }
 

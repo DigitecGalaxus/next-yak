@@ -7,11 +7,19 @@
 import { render } from "@testing-library/react";
 import React from "react";
 import { expect, it } from "vitest";
+import { css as cssFn } from "../cssLiteral";
 import { mergeClassNames } from "../internals/mergeClassNames";
 import { styled as styledFn } from "../styled";
 
 // A fully static styled component as compiled by the SWC plugin
 const Card = styledFn("div")("yakClass");
+// A dynamic class-toggling styled component - its usages fold to the
+// inlined condition e.g. <Toggle $active={on} /> becomes
+// <span className={"toggleBase" + (on ? " toggleOn" : "")} />
+const Toggle = styledFn("span")(
+  "toggleBase",
+  ({ $active }) => $active && cssFn("toggleOn"),
+);
 // A fully static styled(Component) wrapper - its usages fold to the
 // wrapped component with the static class name
 const Base = (props) => <p {...props} />;
@@ -66,6 +74,23 @@ it("renders the same class names as a wrapped yak component", () => {
   expect(renderedClassNames(<Card className="extendedCardClass">hi</Card>)).toEqual(
     renderedClassNames(<ExtendedCard>hi</ExtendedCard>),
   );
+});
+
+it("renders the same DOM as the runtime for inlined $prop conditions", () => {
+  // truthy - the class-toggling condition adds the class
+  expect(renderedHtml(<span className={"toggleBase" + (true ? " toggleOn" : "")} />)).toEqual(
+    renderedHtml(<Toggle $active />),
+  );
+  // falsy - only the base class remains
+  expect(renderedHtml(<span className={"toggleBase" + (false ? " toggleOn" : "")} />)).toEqual(
+    renderedHtml(<Toggle $active={false} />),
+  );
+  // absent $props count as undefined (spreads never fold)
+  expect(renderedHtml(<span className={"toggleBase" + (void 0 ? " toggleOn" : "")} />)).toEqual(
+    renderedHtml(<Toggle />),
+  );
+  // the $prop is dropped from the folded element like the runtime strips it
+  expect(renderedHtml(<Toggle $active />)).toEqual('<span class="toggleBase toggleOn"></span>');
 });
 
 it("keeps only the static class for undefined class names", () => {
