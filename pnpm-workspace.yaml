@@ -98,6 +98,7 @@ catalogs:
     tsdown: 0.22.3
     tsx: 4.22.4
     typescript: 6.0.3
+    vinext: 1.0.0-beta.0
     vite: 8.1.1
     vitest: 4.1.9
     wasm-pack: 0.15.0
