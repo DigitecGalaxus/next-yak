@@ -16,10 +16,7 @@ const Card = styledFn("div")("yakClass");
 // A dynamic class-toggling styled component - its usages fold to the
 // inlined condition e.g. <Toggle $active={on} /> becomes
 // <span className={"toggleBase" + (on ? " toggleOn" : "")} />
-const Toggle = styledFn("span")(
-  "toggleBase",
-  ({ $active }) => $active && cssFn("toggleOn"),
-);
+const Toggle = styledFn("span")("toggleBase", ({ $active }) => $active && cssFn("toggleOn"));
 // A fully static styled(Component) wrapper - its usages fold to the
 // wrapped component with the static class name
 const Base = (props) => <p {...props} />;
