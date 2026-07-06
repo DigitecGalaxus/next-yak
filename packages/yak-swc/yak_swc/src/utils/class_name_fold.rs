@@ -8,9 +8,10 @@ use crate::utils::ast_helper::unwrap_type_casts;
 use crate::yak_imports::YakImports;
 use swc_core::{
   atoms::Wtf8Atom,
-  common::DUMMY_SP,
+  common::{Span, DUMMY_SP},
   ecma::ast::{
-    ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, Lit, Str,
+    ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, IdentName,
+    JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXExpr, JSXExprContainer, Lit, Str,
   },
 };
 
@@ -165,15 +166,34 @@ fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
 }
 
 pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
-  let mut with_space = String::from(" ");
-  with_space.push_str(class_name.as_str().unwrap_or_default());
-  with_space.into()
+  format!(" {}", class_name.to_string_lossy()).into()
+}
+
+pub(crate) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
+  Str {
+    span,
+    value,
+    raw: None,
+  }
 }
 
 pub(crate) fn str_expr(value: Wtf8Atom) -> Box<Expr> {
-  Box::new(Expr::Lit(Lit::Str(Str {
+  Box::new(Expr::Lit(Lit::Str(str_lit(value, DUMMY_SP))))
+}
+
+/// Wraps an expression into a `{...}` JSX attribute value
+pub(crate) fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
+  JSXAttrValue::JSXExprContainer(JSXExprContainer {
     span: DUMMY_SP,
-    value,
-    raw: None,
-  })))
+    expr: JSXExpr::Expr(expr),
+  })
+}
+
+/// Builds a `className` JSX attribute
+pub(crate) fn class_name_attr(value: JSXAttrValue) -> JSXAttrOrSpread {
+  JSXAttrOrSpread::JSXAttr(JSXAttr {
+    span: DUMMY_SP,
+    name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
+    value: Some(value),
+  })
 }

@@ -18,6 +18,7 @@ import type {
 // to another file for classic react components
 import { useTheme } from "next-yak/context";
 import type { YakTheme } from "./context/index.tsx";
+import { mergeClassNames } from "./internals/mergeClassNames.js";
 
 /**
  * This Symbol is a fake theme which was used instead of the real one from the context
@@ -189,14 +190,6 @@ const removeNonDomProperties = <T extends Record<string, unknown>>(obj: T): T =>
     }
   }
   return result;
-};
-
-// util function to merge class names, as they are concatenated with a space
-const mergeClassNames = (a?: string, b?: string) => {
-  if (!a && !b) return undefined;
-  if (!a) return b;
-  if (!b) return a;
-  return a + " " + b;
 };
 
 /**

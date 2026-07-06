@@ -1,19 +1,28 @@
-use crate::utils::class_name_fold::fold_css_expr;
+use crate::utils::class_name_fold::{class_name_attr, expr_attr_value, fold_css_expr};
 use crate::yak_imports::YakImports;
 use swc_core::{
   common::errors::HANDLER,
   common::{Span, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, IdentName, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop,
     PropName, PropOrSpread, SpreadElement,
   },
 };
 
+/// An attribute that has to be merged with the css prop
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum RelevantProp {
+  ClassName,
+  Style,
+  /// A spread may carry a className or style only known at runtime
+  Spread,
+}
+
 #[derive(Debug)]
 pub struct CSSProp {
   index: usize,
-  relevant_props_indices: Vec<usize>,
+  relevant_props: Vec<(usize, RelevantProp)>,
 }
 
 impl CSSProp {
@@ -51,10 +60,10 @@ impl CSSProp {
       let value = opening_element.attrs.remove(self.index);
 
       let removed_attrs: Vec<_> = self
-        .relevant_props_indices
+        .relevant_props
         .iter()
         .rev()
-        .map(|&index| {
+        .map(|&(index, _)| {
           let adjusted_index = if index > self.index { index - 1 } else { index };
           opening_element.attrs.remove(adjusted_index)
         })
@@ -91,15 +100,13 @@ impl CSSProp {
   /// <div css={on ? css("a") : css("b")} />        // -> <div className={on ? "a" : "b"} />
   /// ```
   fn try_fold(&self, opening_element: &mut JSXOpeningElement, yak_imports: &YakImports) -> bool {
-    // a spread may carry a className that is only known at runtime
-    for &index in &self.relevant_props_indices {
-      match &opening_element.attrs[index] {
-        JSXAttrOrSpread::JSXAttr(attr) => match &attr.name {
-          JSXAttrName::Ident(ident) if ident.sym == *"style" => {}
-          _ => return false,
-        },
-        _ => return false,
-      }
+    // a spread or className may carry class names only known at runtime
+    if self
+      .relevant_props
+      .iter()
+      .any(|&(_, kind)| kind != RelevantProp::Style)
+    {
+      return false;
     }
     let JSXAttrOrSpread::JSXAttr(JSXAttr {
       value:
@@ -116,14 +123,7 @@ impl CSSProp {
     let Some(class_name_expr) = fold_css_expr(css_expr, yak_imports) else {
       return false;
     };
-    opening_element.attrs[self.index] = JSXAttrOrSpread::JSXAttr(JSXAttr {
-      span: DUMMY_SP,
-      name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
-      value: Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
-        span: DUMMY_SP,
-        expr: JSXExpr::Expr(class_name_expr),
-      })),
-    });
+    opening_element.attrs[self.index] = class_name_attr(expr_attr_value(class_name_expr));
     true
   }
 
@@ -238,18 +238,19 @@ impl HasCSSProp for JSXOpeningElement {
           if let JSXAttrName::Ident(ident) = &attr.name {
             match ident.sym.as_ref() {
               "css" => css_index = Some(index),
-              "className" | "style" => relevant_props.push(index),
+              "className" => relevant_props.push((index, RelevantProp::ClassName)),
+              "style" => relevant_props.push((index, RelevantProp::Style)),
               _ => {}
             }
           }
         }
-        _ => relevant_props.push(index),
+        _ => relevant_props.push((index, RelevantProp::Spread)),
       }
     }
 
     css_index.map(|index| CSSProp {
       index,
-      relevant_props_indices: relevant_props,
+      relevant_props,
     })
   }
 }

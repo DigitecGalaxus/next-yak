@@ -1183,7 +1183,24 @@ where
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
 
-    let has_runtime_css_variables = !runtime_css_variables.is_empty();
+    // only a template that is the whole initializer may fold - a template
+    // nested inside e.g. an HOC call or ternary must keep the runtime path
+    // dynamic css values compile to css variables set through the style prop
+    // which are not folded yet
+    if self.optimize_static_jsx
+      && runtime_css_variables.is_empty()
+      && self.current_declarator_init_span == Some(n.span)
+    {
+      if let Some(class_name) = transform.get_component_class_name() {
+        self.styled_jsx_fold.try_register(
+          self.current_variable_name.as_ref(),
+          &n.tag,
+          class_name,
+          &runtime_expressions,
+        );
+      }
+    }
+
     let transform_result = transform.transform_expression(
       n,
       runtime_expressions,
@@ -1191,21 +1208,6 @@ where
       runtime_css_variables,
       self.yak_library_imports.as_mut().unwrap(),
     );
-
-    // only a template that is the whole initializer may fold - a template
-    // nested inside e.g. an HOC call or ternary must keep the runtime path
-    if self.optimize_static_jsx
-      && is_top_level
-      && yak_library_function_name.deref() == "styled"
-      && self.current_declarator_init_span == Some(n.span)
-    {
-      self.styled_jsx_fold.try_register(
-        self.current_variable_name.as_ref(),
-        &n.tag,
-        &transform_result.expression,
-        has_runtime_css_variables,
-      );
-    }
 
     if is_top_level {
       self.current_declaration = vec![];
@@ -1358,6 +1360,38 @@ mod tests {
     visit::visit_mut_pass,
   };
 
+  /// The fixture test pass: the resolver runs first like in the real SWC
+  /// pipeline so scoped variables get distinct syntax contexts
+  fn fixture_pass<C: Comments>(
+    comments: C,
+    minify: bool,
+    display_names: bool,
+    import_mode: CssImportConfig,
+  ) -> impl swc_core::ecma::ast::Pass {
+    (
+      resolver(Mark::new(), Mark::new(), true),
+      visit_mut_pass(TransformVisitor::new(
+        Some(comments),
+        "path/input.tsx",
+        minify,
+        None,
+        display_names,
+        import_mode,
+        false,
+        false,
+        true,
+      )),
+    )
+  }
+
+  fn data_url_import_config() -> CssImportConfig {
+    CssImportConfig {
+      value: "data:text/css;base64,".to_string(),
+      transpilation: TranspilationMode::Css,
+      encoding: ImportModeEncoding::Base64,
+    }
+  }
+
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {
     test_fixture(
@@ -1366,25 +1400,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        // apply the resolver like the real SWC pipeline does before plugins
-        // so scoped variables get distinct syntax contexts
-        (
-          resolver(Mark::new(), Mark::new(), true),
-          visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          false,
-          None,
-          true,
-          CssImportConfig {
-            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
-            transpilation: TranspilationMode::CssModule,
-            encoding: ImportModeEncoding::None,
-          },
-          false,
+        fixture_pass(
+          tester.comments.clone(),
           false,
           true,
-          )),
+          Config::import_mode_default(),
         )
       },
       &input,
@@ -1405,25 +1425,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        // apply the resolver like the real SWC pipeline does before plugins
-        // so scoped variables get distinct syntax contexts
-        (
-          resolver(Mark::new(), Mark::new(), true),
-          visit_mut_pass(TransformVisitor::new(
-            Some(tester.comments.clone()),
-            "path/input.tsx",
-            false,
-            None,
-            true,
-            CssImportConfig {
-              value: "data:text/css;base64,".to_string(),
-              transpilation: TranspilationMode::Css,
-              encoding: ImportModeEncoding::Base64,
-            },
-            false,
-            false,
-            true,
-          )),
+        fixture_pass(
+          tester.comments.clone(),
+          false,
+          true,
+          data_url_import_config(),
         )
       },
       &input,
@@ -1444,25 +1450,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        // apply the resolver like the real SWC pipeline does before plugins
-        // so scoped variables get distinct syntax contexts
-        (
-          resolver(Mark::new(), Mark::new(), true),
-          visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
+        fixture_pass(
+          tester.comments.clone(),
           true,
-          None,
           false,
-          CssImportConfig {
-            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
-            transpilation: TranspilationMode::CssModule,
-            encoding: ImportModeEncoding::None,
-          },
-          false,
-          false,
-          true,
-          )),
+          Config::import_mode_default(),
         )
       },
       &input,
@@ -1483,25 +1475,11 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        // apply the resolver like the real SWC pipeline does before plugins
-        // so scoped variables get distinct syntax contexts
-        (
-          resolver(Mark::new(), Mark::new(), true),
-          visit_mut_pass(TransformVisitor::new(
-            Some(tester.comments.clone()),
-            "path/input.tsx",
-            true,
-            None,
-            false,
-            CssImportConfig {
-              value: "data:text/css;base64,".to_string(),
-              transpilation: TranspilationMode::Css,
-              encoding: ImportModeEncoding::Base64,
-            },
-            false,
-            false,
-            true,
-          )),
+        fixture_pass(
+          tester.comments.clone(),
+          true,
+          false,
+          data_url_import_config(),
         )
       },
       &input,

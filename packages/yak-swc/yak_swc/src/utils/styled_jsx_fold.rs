@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::{
   atoms::{Atom, Wtf8Atom},
@@ -7,13 +9,14 @@ use swc_core::{
     Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr, JSXAttrName,
     JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementName, JSXExpr, JSXExprContainer,
     KeyValueProp, Lit, MemberProp, Module, ModuleDecl, ModuleItem, Number, ObjectPatProp, Pat,
-    Prop, PropName, Stmt, Str, UnaryExpr, UnaryOp, VarDecl, VarDeclKind,
+    Prop, PropName, Stmt, UnaryExpr, UnaryOp, VarDecl, VarDeclKind,
   },
   ecma::visit::{VisitMut, VisitMutWith},
 };
 
 use crate::utils::class_name_fold::{
-  append_condition_segment, fold_condition_body, str_expr, with_leading_space, ConditionSegment,
+  append_condition_segment, class_name_attr, expr_attr_value, fold_condition_body, str_expr,
+  str_lit, with_leading_space, ConditionSegment,
 };
 use crate::utils::native_elements::VALID_ELEMENTS;
 use crate::variable_visitor::ScopedVariableReference;
@@ -97,20 +100,18 @@ impl StyledJsxFold {
   /// - `tag` (the original tagged template tag) is styled.element,
   ///   styled("element") with a native DOM element or styled(Component) -
   ///   these shapes exclude .attrs(...) chains
-  /// - `has_runtime_css_variables` - dynamic css values compile to css
-  ///   variables set through the style prop which are not folded yet
-  /// - `transformed` (the emitted expression) carries the class name as its
-  ///   first call argument followed by the class-toggling expressions
+  /// - `class_name` is the static class name the compiled call carries as
+  ///   its first argument
+  /// - `runtime_expressions` must all be class-toggling arrows/functions
+  ///   over props - anything else (e.g. an unresolved mixin reference) keeps
+  ///   the runtime path
   pub fn try_register(
     &mut self,
     declaration: Option<&ScopedVariableReference>,
     tag: &Expr,
-    transformed: &Expr,
-    has_runtime_css_variables: bool,
+    class_name: &str,
+    runtime_expressions: &[Expr],
   ) {
-    if has_runtime_css_variables {
-      return;
-    }
     let Some(declaration) = declaration else {
       return;
     };
@@ -120,9 +121,12 @@ impl StyledJsxFold {
     let Some(target) = Self::fold_target(tag) else {
       return;
     };
-    let Some((class_name, runtime_expressions)) = Self::compiled_styled_args(transformed) else {
+    if !runtime_expressions
+      .iter()
+      .all(|expr| matches!(expr, Expr::Arrow(_) | Expr::Fn(_)))
+    {
       return;
-    };
+    }
     // dynamic styled(Component) wrappers keep the runtime path - the $prop
     // forwarding semantics depend on the wrapped component
     if !runtime_expressions.is_empty() && matches!(target, FoldTarget::Component(_)) {
@@ -132,8 +136,8 @@ impl StyledJsxFold {
       declaration.id.clone(),
       FoldableComponent {
         target,
-        class_name,
-        runtime_expressions,
+        class_name: class_name.into(),
+        runtime_expressions: runtime_expressions.to_vec(),
       },
     );
     // a binding can only hold one styled component - a second registration
@@ -216,43 +220,6 @@ impl StyledJsxFold {
     }
   }
 
-  /// Extracts the class name and the class-toggling expressions from a
-  /// compiled styled component expression
-  /// e.g. `__yak.__yak_div("yX", ({ $a }) => $a && css("yY"))`
-  /// unwrapping the dev mode `Object.assign(call, { displayName })` wrapper
-  /// Requires a string as the first argument and arrows/functions for the
-  /// rest - anything else (e.g. the trailing css variables style object)
-  /// keeps the runtime path
-  fn compiled_styled_args(transformed: &Expr) -> Option<(Wtf8Atom, Vec<Expr>)> {
-    let Expr::Call(call) = transformed else {
-      return None;
-    };
-    if let Callee::Expr(callee) = &call.callee {
-      if let Expr::Member(member) = &**callee {
-        if let (Expr::Ident(obj), MemberProp::Ident(prop)) = (&*member.obj, &member.prop) {
-          if obj.sym == *"Object" && prop.sym == *"assign" {
-            return Self::compiled_styled_args(&call.args.first()?.expr);
-          }
-        }
-      }
-    }
-    let (class_name_arg, expression_args) = call.args.split_first()?;
-    if class_name_arg.spread.is_some() {
-      return None;
-    }
-    let Expr::Lit(Lit::Str(class_name)) = &*class_name_arg.expr else {
-      return None;
-    };
-    let mut runtime_expressions = Vec::with_capacity(expression_args.len());
-    for arg in expression_args {
-      if arg.spread.is_some() || !matches!(&*arg.expr, Expr::Arrow(_) | Expr::Fn(_)) {
-        return None;
-      }
-      runtime_expressions.push((*arg.expr).clone());
-    }
-    Some((class_name.value.clone(), runtime_expressions))
-  }
-
   /// Collects the module scope bindings which can not be reassigned:
   /// top level `const X = ...` declarations (including `export const`)
   /// and import bindings
@@ -332,9 +299,11 @@ impl VisitMut for FoldVisitor<'_> {
     match class_name_fold {
       ClassNameFold::Append(value) => n.opening.attrs.push(class_name_attr(value)),
       ClassNameFold::Replace(index, value) => {
-        if let JSXAttrOrSpread::JSXAttr(attr) = &mut n.opening.attrs[index] {
-          attr.value = Some(value);
-        }
+        let JSXAttrOrSpread::JSXAttr(attr) = &mut n.opening.attrs[index] else {
+          // fold_attrs only records indices of plain JSXAttr entries
+          unreachable!("className index points at a JSXAttr");
+        };
+        attr.value = Some(value);
       }
     }
     // the class-toggling expressions consumed the $props at compile time -
@@ -376,9 +345,7 @@ enum YakClassName {
 impl YakClassName {
   fn into_expr(self) -> Box<Expr> {
     match self {
-      YakClassName::Static(class_name) => {
-        Box::new(Expr::Lit(Lit::Str(str_lit(class_name, DUMMY_SP))))
-      }
+      YakClassName::Static(class_name) => str_expr(class_name),
       YakClassName::Dynamic(expr) => expr,
     }
   }
@@ -501,10 +468,7 @@ impl FoldVisitor<'_> {
             type_args: None,
           })),
         };
-        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
-          span: DUMMY_SP,
-          expr: JSXExpr::Expr(merged),
-        }))
+        Some(expr_attr_value(merged))
       }
       _ => None,
     }
@@ -532,6 +496,10 @@ fn inline_runtime_expressions(
 /// with the JSX attribute values, e.g. with `$active={on}`:
 /// `({ $active }) => $active && css("yY")` becomes the segment `on ? " yY" : ""`
 ///
+/// The condition shape is folded before substituting: the class names are
+/// verified static, so props can only appear inside the condition expression
+/// and unfoldable shapes bail before any substitution work
+///
 /// The props parameter must be a plain object destructuring or an identifier
 /// read through plain members (`(p) => p.$active`) - `theme` and props like
 /// `children` which are not plain attributes bail. A `$`-prop expression
@@ -543,39 +511,36 @@ fn inline_runtime_expressions(
 /// expression is duplicated and must be safe to duplicate
 fn inline_expression(
   expression: &Expr,
-  attr_values: &FxHashMap<Atom, Expr>,
+  attr_values: &FxHashMap<Atom, Cow<Expr>>,
   yak_imports: &YakImports,
 ) -> Option<ConditionSegment> {
-  let (params, mut body): (Vec<&Pat>, Expr) = match expression {
+  let (params, body): (Vec<&Pat>, &Expr) = match expression {
     Expr::Arrow(arrow) if !arrow.is_async && !arrow.is_generator => {
       let body = match &*arrow.body {
-        BlockStmtOrExpr::Expr(expr) => (**expr).clone(),
+        BlockStmtOrExpr::Expr(expr) => &**expr,
         BlockStmtOrExpr::BlockStmt(block) => single_return_expr(block)?,
         #[cfg(swc_ast_unknown)]
         _ => return None,
       };
       (arrow.params.iter().collect(), body)
     }
-    Expr::Fn(function) if !function.function.is_async && !function.function.is_generator => {
-      let body = single_return_expr(function.function.body.as_ref()?)?;
-      (
-        function
-          .function
-          .params
-          .iter()
-          .map(|param| &param.pat)
-          .collect(),
-        body,
-      )
-    }
+    Expr::Fn(function) if !function.function.is_async && !function.function.is_generator => (
+      function
+        .function
+        .params
+        .iter()
+        .map(|param| &param.pat)
+        .collect(),
+      single_return_expr(function.function.body.as_ref()?)?,
+    ),
     _ => return None,
   };
+  let (mut condition, cons_class, alt_class) = fold_condition_body(body, yak_imports)?;
   match params.as_slice() {
     // e.g. `${() => darkMode && css`...`}` - references the outer scope only
     [] => {}
     [Pat::Object(param)] => {
       let mut replacements = FxHashMap::default();
-      let mut substituted = FxHashSet::default();
       for prop in &param.props {
         // only plain destructuring - renames, defaults and rest bail
         let ObjectPatProp::Assign(AssignPatProp {
@@ -593,20 +558,15 @@ fn inline_expression(
         let value = attr_values
           .get(&key.sym)
           .cloned()
-          .unwrap_or_else(undefined_expr);
-        // a non-$ attribute is kept on the element, so its value is already
-        // referenced once - substituting it into the className duplicates it
-        if !key.sym.starts_with('$') {
-          substituted.insert(key.to_id());
-        }
+          .unwrap_or_else(|| Cow::Owned(undefined_expr()));
         replacements.insert(key.to_id(), value);
       }
       let mut substitution = SubstituteProps {
         replacements: &replacements,
-        substituted,
+        substituted: FxHashSet::default(),
         failed: false,
       };
-      body.visit_mut_with(&mut substitution);
+      condition.visit_mut_with(&mut substitution);
       if substitution.failed {
         return None;
       }
@@ -621,14 +581,14 @@ fn inline_expression(
         substituted: FxHashSet::default(),
         failed: false,
       };
-      body.visit_mut_with(&mut substitution);
+      condition.visit_mut_with(&mut substitution);
       if substitution.failed {
         return None;
       }
     }
     _ => return None,
   }
-  fold_condition_body(&body, yak_imports)
+  Some((condition, cons_class, alt_class))
 }
 
 /// The runtime passes more than the plain attributes to the class-toggling
@@ -639,7 +599,8 @@ fn is_runtime_injected_prop(name: &Atom) -> bool {
 
 /// Maps the attribute names to their value expressions for substitution
 /// A bare attribute (`<Box $active>`) counts as `true`
-fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Expr> {
+/// Values are borrowed where possible and only cloned when substituted
+fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
   let mut values = FxHashMap::default();
   for attr in attrs {
     let JSXAttrOrSpread::JSXAttr(attr) = attr else {
@@ -649,17 +610,17 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Expr> {
       continue;
     };
     let value = match &attr.value {
-      None => Expr::Lit(Lit::Bool(Bool {
+      None => Cow::Owned(Expr::Lit(Lit::Bool(Bool {
         span: DUMMY_SP,
         value: true,
-      })),
-      Some(JSXAttrValue::Str(value)) => Expr::Lit(Lit::Str(value.clone())),
+      }))),
+      Some(JSXAttrValue::Str(value)) => Cow::Owned(Expr::Lit(Lit::Str(value.clone()))),
       Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
         expr: JSXExpr::Expr(expr),
         ..
-      })) => (**expr).clone(),
-      Some(JSXAttrValue::JSXElement(element)) => Expr::JSXElement(element.clone()),
-      Some(JSXAttrValue::JSXFragment(fragment)) => Expr::JSXFragment(fragment.clone()),
+      })) => Cow::Borrowed(&**expr),
+      Some(JSXAttrValue::JSXElement(element)) => Cow::Owned(Expr::JSXElement(element.clone())),
+      Some(JSXAttrValue::JSXFragment(fragment)) => Cow::Owned(Expr::JSXFragment(fragment.clone())),
       _ => continue,
     };
     values.insert(name.sym.clone(), value);
@@ -667,22 +628,38 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Expr> {
   values
 }
 
+/// Records one substitution of `key` and applies the duplication rule shared
+/// by both substitution visitors: a repeated reference - or any reference to
+/// a non-$ attribute, which is kept on the element and therefore already
+/// referenced once - duplicates the attribute expression which is only
+/// allowed for expressions that are safe to duplicate
+/// Returns false if the substitution must bail
+fn may_substitute<K: Eq + std::hash::Hash>(
+  substituted: &mut FxHashSet<K>,
+  key: K,
+  name: &Atom,
+  replacement: &Expr,
+) -> bool {
+  let first = substituted.insert(key);
+  (first && name.starts_with('$')) || is_duplication_safe(replacement)
+}
+
 /// Replaces the destructured prop references with the attribute values
 struct SubstituteProps<'a> {
-  replacements: &'a FxHashMap<Id, Expr>,
-  /// keys substituted at least once - a second substitution duplicates the
-  /// attribute expression which is only allowed for safe expressions
+  replacements: &'a FxHashMap<Id, Cow<'a, Expr>>,
+  /// keys substituted at least once - see [may_substitute]
   substituted: FxHashSet<Id>,
   failed: bool,
 }
 
 impl SubstituteProps<'_> {
   fn replacement_for(&mut self, ident: &Ident) -> Option<Expr> {
-    let replacement = self.replacements.get(&ident.to_id())?;
-    if !self.substituted.insert(ident.to_id()) && !is_duplication_safe(replacement) {
+    let id = ident.to_id();
+    let replacement = self.replacements.get(&id)?;
+    if !may_substitute(&mut self.substituted, id, &ident.sym, replacement) {
       self.failed = true;
     }
-    Some(replacement.clone())
+    Some(Expr::clone(replacement))
   }
 }
 
@@ -718,9 +695,8 @@ impl VisitMut for SubstituteProps<'_> {
 /// it with `calculate(p)`, spreads, computed access) and bails
 struct SubstituteMemberProps<'a> {
   param: Id,
-  attr_values: &'a FxHashMap<Atom, Expr>,
-  /// prop names substituted at least once - a second substitution duplicates
-  /// the attribute expression which is only allowed for safe expressions
+  attr_values: &'a FxHashMap<Atom, Cow<'a, Expr>>,
+  /// prop names substituted at least once - see [may_substitute]
   substituted: FxHashSet<Atom>,
   failed: bool,
 }
@@ -737,15 +713,16 @@ impl VisitMut for SubstituteMemberProps<'_> {
             return;
           }
           // an absent attribute is undefined as spreads bail
-          let replacement = self
-            .attr_values
-            .get(&name.sym)
-            .cloned()
-            .unwrap_or_else(undefined_expr);
-          // a non-$ attribute is kept on the element, so its value is already
-          // referenced once - substituting it into the className duplicates it
-          let repeated = !self.substituted.insert(name.sym.clone());
-          if (repeated || !name.sym.starts_with('$')) && !is_duplication_safe(&replacement) {
+          let replacement = match self.attr_values.get(&name.sym) {
+            Some(value) => Expr::clone(value),
+            None => undefined_expr(),
+          };
+          if !may_substitute(
+            &mut self.substituted,
+            name.sym.clone(),
+            &name.sym,
+            &replacement,
+          ) {
             self.failed = true;
             return;
           }
@@ -793,11 +770,11 @@ fn is_duplication_safe(expr: &Expr) -> bool {
 }
 
 /// Matches a function body holding a single `return <expr>;`
-fn single_return_expr(block: &BlockStmt) -> Option<Expr> {
+fn single_return_expr(block: &BlockStmt) -> Option<&Expr> {
   let [Stmt::Return(return_stmt)] = block.stmts.as_slice() else {
     return None;
   };
-  return_stmt.arg.as_deref().cloned()
+  return_stmt.arg.as_deref()
 }
 
 /// `undefined` for absent attributes
@@ -831,13 +808,6 @@ fn append_class_name_str(
   }))
 }
 
-fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
-  JSXAttrValue::JSXExprContainer(JSXExprContainer {
-    span: DUMMY_SP,
-    expr: JSXExpr::Expr(expr),
-  })
-}
-
 fn merged_class_names(yak_class_name: &Wtf8Atom, user_class_name: &Wtf8Atom) -> Wtf8Atom {
   format!(
     "{} {}",
@@ -845,22 +815,6 @@ fn merged_class_names(yak_class_name: &Wtf8Atom, user_class_name: &Wtf8Atom) -> 
     user_class_name.to_string_lossy()
   )
   .into()
-}
-
-fn str_lit(value: Wtf8Atom, span: swc_core::common::Span) -> Str {
-  Str {
-    span,
-    value,
-    raw: None,
-  }
-}
-
-fn class_name_attr(value: JSXAttrValue) -> JSXAttrOrSpread {
-  JSXAttrOrSpread::JSXAttr(JSXAttr {
-    span: DUMMY_SP,
-    name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
-    value: Some(value),
-  })
 }
 
 #[cfg(test)]
@@ -895,7 +849,7 @@ mod tests {
     })
   }
 
-  fn str_expr(value: &str) -> Expr {
+  fn str_lit_expr(value: &str) -> Expr {
     Expr::Lit(Lit::Str(str_lit(value.into(), DUMMY_SP)))
   }
 
@@ -912,7 +866,7 @@ mod tests {
     );
     // styled("section")
     assert_eq!(
-      StyledJsxFold::fold_target(&call(ident("styled"), vec![str_expr("section")])),
+      StyledJsxFold::fold_target(&call(ident("styled"), vec![str_lit_expr("section")])),
       Some(FoldTarget::Native("section".into()))
     );
     // styled(Component)
@@ -935,57 +889,5 @@ mod tests {
       StyledJsxFold::fold_target(&call(member("styled.div", "attrs"), vec![])),
       None
     );
-  }
-
-  fn arrow_expr() -> Expr {
-    Expr::Arrow(swc_core::ecma::ast::ArrowExpr {
-      span: DUMMY_SP,
-      params: vec![],
-      body: Box::new(BlockStmtOrExpr::Expr(Box::new(str_expr_lit("x")))),
-      is_async: false,
-      is_generator: false,
-      type_params: None,
-      return_type: None,
-      ctxt: SyntaxContext::empty(),
-    })
-  }
-
-  fn str_expr_lit(value: &str) -> Expr {
-    Expr::Lit(Lit::Str(str_lit(value.into(), DUMMY_SP)))
-  }
-
-  #[test]
-  fn compiled_styled_args_requires_a_class_string_and_expressions() {
-    let styled_call = |args| call(member("__yak", "__yak_div"), args);
-    // fully static
-    assert!(matches!(
-      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX")])),
-      Some((class_name, expressions)) if class_name == *"yX" && expressions.is_empty()
-    ));
-    // class-toggling expressions are collected
-    assert!(matches!(
-      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX"), arrow_expr()])),
-      Some((class_name, expressions)) if class_name == *"yX" && expressions.len() == 1
-    ));
-    // anything else (e.g. the trailing css variables style object) bails
-    assert_eq!(
-      StyledJsxFold::compiled_styled_args(&styled_call(vec![str_expr("yX"), ident("dynamic")])),
-      None
-    );
-  }
-
-  #[test]
-  fn compiled_styled_args_unwraps_the_display_name_wrapper() {
-    let wrapped = call(
-      member("Object", "assign"),
-      vec![
-        call(member("__yak", "__yak_div"), vec![str_expr("yX")]),
-        ident("displayNameProps"),
-      ],
-    );
-    assert!(matches!(
-      StyledJsxFold::compiled_styled_args(&wrapped),
-      Some((class_name, _)) if class_name == *"yX"
-    ));
   }
 }

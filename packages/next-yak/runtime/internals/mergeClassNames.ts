@@ -1,9 +1,9 @@
 /**
- * This is an internal helper function to merge the static class name of a
- * folded styled component with a dynamic className expression.
- * It's automatically added when the compiler replaces a JSX usage of a fully
- * static styled component with a plain DOM element.
- * e.g.:
+ * Merges two optional class name values with a space.
+ *
+ * Used by the styled runtime to combine incoming and generated class names,
+ * and injected by the compiler (as `__yak_mergeClassNames`) when it replaces
+ * a JSX usage of a fully static styled component with a plain DOM element:
  * ```tsx
  * const Card = styled.div`color: red;`;
  * <Card className={active && "active"} />
@@ -14,6 +14,10 @@
  * ```
  */
 export const mergeClassNames = (
-  yakClassName: string,
-  className: string | false | null | undefined,
-) => (className ? yakClassName + " " + className : yakClassName);
+  a: string | false | null | undefined,
+  b: string | false | null | undefined,
+) => {
+  if (!a) return b || undefined;
+  if (!b) return a;
+  return a + " " + b;
+};
