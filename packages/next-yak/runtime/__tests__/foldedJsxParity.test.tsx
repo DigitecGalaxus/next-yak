@@ -27,8 +27,7 @@ const renderedHtml = (element) => render(element).container.innerHTML;
 // sorted because the runtime puts the incoming className first while the
 // fold puts the static class first - the class names are unique so the
 // order is irrelevant
-const renderedClassNames = (element) =>
-  [...render(element).container.firstChild.classList].sort();
+const renderedClassNames = (element) => [...render(element).container.firstChild.classList].sort();
 
 it("renders the same DOM as a plain usage", () => {
   expect(renderedHtml(<div className="yakClass">hi</div>)).toEqual(renderedHtml(<Card>hi</Card>));
