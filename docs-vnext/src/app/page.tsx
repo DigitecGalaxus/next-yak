@@ -28,14 +28,19 @@ import path from "node:path";
 import {
   container,
   fonts,
+  fontSize,
   fontWeight,
   headerHeight,
   maxContentWidth,
   light,
   dark,
+  ink,
 } from "@/tokens";
 import Yak from "../components/landing-page/yak";
 import Link from "next/link";
+import Image from "next/image";
+import { asset } from "@/lib/site";
+import { Fragment } from "react";
 
 export default async function Home() {
   const version = await getReleasedVersion();
@@ -69,7 +74,8 @@ export default async function Home() {
                which would already be mid-progress at load on tall viewports).
                Progressive enhancement — browsers without scroll-driven animations
                just get the pin. */
-            @media (min-width: ${container.hero.split}) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
+            @media (min-width: ${container.hero
+              .split}) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
               @supports (animation-timeline: scroll()) {
                 transform-origin: 50% 30%;
                 animation: ${recede} linear both;
@@ -228,118 +234,231 @@ export default async function Home() {
         <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
           <Container
             css={css`
-              padding-top: clamp(44px, 6vw, 56px);
-              padding-bottom: clamp(60px, 9vw, 96px);
+              padding-top: clamp(48px, 7vw, 88px);
+              padding-bottom: clamp(64px, 9vw, 112px);
             `}
           >
-            <SectionIntro
-              eyebrow="performance"
-              title="Faster than styled-components on every benchmark."
-              css={css`
-                max-width: 450px;
-              `}
-            >
-              The same API you already write, compiled to zero runtime in the browser. A drop-in swap
-              that's measurably faster.
-            </SectionIntro>
-
             <div
               css={css`
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
+                grid-template-columns: minmax(0, 1fr);
+                align-items: center;
+                gap: 40px;
 
-                @container section (min-width: ${container.section.statGrid}) {
-                  grid-template-columns: repeat(4, 1fr);
+                @container section (min-width: ${container.section.flow}) {
+                  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+                  gap: clamp(40px, 6cqi, 88px);
                 }
               `}
             >
-              <StatCard value="14" suffix="/14" description="won every case in our SSR benchmark" />
-              <StatCard
-                value="3.8"
-                suffix="×"
-                description="more renders/sec, static components"
-                accent
-              />
-              <StatCard value="4.3" suffix="×" description="more renders/sec, css-prop styling" />
-              <StatCard value="~2.8" suffix="KB" description="gzipped runtime, the whole library" />
-            </div>
-
-            <figure
-              css={css`
-                ${cardStyles};
-                padding: 32px 24px;
-                border-radius: 16px;
-
-                & p {
-                  font-size: 13px;
-                }
-              `}
-            >
-              <figcaption
+              <div
                 css={css`
                   display: flex;
                   flex-direction: column;
-                  gap: 4px;
+                  align-items: flex-start;
+                  gap: 16px;
+                `}
+              >
+                <Eyebrow>performance · benchmarks</Eyebrow>
+                <SectionHeading>
+                  Fastest{" "}
+                  <span
+                    css={css`
+                      white-space: nowrap;
+                    `}
+                  >
+                    CSS-in-JS
+                  </span>{" "}
+                  solution
+                </SectionHeading>
+                <SubHeading
+                  css={css`
+                    max-width: 420px;
+                  `}
+                >
+                  We built a comprehensive benchmark suite across the CSS-in-JS field.{" "}
+                  <b>Yak pairs unmatched render performance with the most flexible API.</b> It is
+                  always faster than runtime solutions like styled-components or emotion.
+                </SubHeading>
+                {/* TODO: point at a dedicated benchmark-results page once it exists */}
+                <a
+                  href="https://github.com/DigitecGalaxus/next-yak/tree/main/benchmarks"
+                  css={css`
+                    margin-top: 10px;
+                    font-family: ${fonts.mono};
+                    font-size: ${fontSize.small};
+                    font-weight: ${fontWeight.bold};
+                    /*color: light-dark(${light.red}, ${dark.red});*/
+                    text-decoration: underline;
+                    text-decoration-thickness: 1.5px;
+                    text-underline-offset: 7px;
 
-                  @container section (min-width: ${container.section.figureRow}) {
-                    flex-direction: row;
+                    &:hover,
+                    &:focus-visible {
+                      color: light-dark(${light.red}, ${dark.red});
+                    }
+                  `}
+                >
+                  See all 14 benchmark results →
+                </a>
+              </div>
+
+              <figure
+                css={css`
+                  --card-bg: light-dark(${light.beige1}, ${dark.navy1});
+                  --frame: light-dark(${light.violet}, ${dark.white});
+                  --card-pad: clamp(16px, 3.5cqi, 36px);
+
+                  position: relative;
+                  background: var(--card-bg);
+                  border: 1px solid light-dark(${light.beige5}, ${dark.navy5});
+                  border-radius: 16px;
+                  padding: clamp(16px, 3cqi, 28px) var(--card-pad) clamp(20px, 3.5cqi, 32px);
+                `}
+              >
+                <figcaption
+                  css={css`
+                    display: flex;
+                    /* on narrow cards the note drops to its own line instead of
+                       breaking the title mid-phrase */
+                    flex-wrap: wrap;
                     justify-content: space-between;
                     align-items: baseline;
-                    gap: 16px;
-                  }
-                `}
-              >
-                <span
-                  css={css`
-                    font-weight: ${fontWeight.bold};
-                    color: light-dark(${light.violet}, ${dark.white});
+                    gap: 4px 16px;
+                    /* extra headroom so the rider on the winning bar stays clear of
+                       the caption */
+                    margin-bottom: clamp(46px, 7cqi, 60px);
                   `}
                 >
-                  Static components: renders per second
-                </span>
-                <span
+                  <span
+                    css={css`
+                      font-size: ${fontSize.h3};
+                      font-weight: ${fontWeight.bold};
+                      white-space: nowrap;
+                      color: light-dark(${light.violet}, ${dark.white});
+                    `}
+                  >
+                    SSR performance
+                  </span>
+                  <span
+                    css={css`
+                      font-family: ${fonts.mono};
+                      font-size: 13px;
+                      white-space: nowrap;
+                      color: light-dark(${light.violetSoft}, ${dark.fog});
+                    `}
+                  >
+                    renders / second · higher is better ↑
+                  </span>
+                </figcaption>
+                <div
                   css={css`
-                    font-family: ${fonts.mono};
-                    font-size: 13px;
-                    white-space: nowrap;
+                    display: grid;
+                    /* fit-content instead of max-content so "styled-components" wraps
+                       at its hyphen instead of widening the label column */
+                    grid-template-columns: fit-content(140px) minmax(0, 1fr);
+                    column-gap: clamp(10px, 2cqi, 20px);
+                    row-gap: clamp(12px, 2.5cqi, 22px);
+                    align-items: center;
                   `}
                 >
-                  renders / sec · higher is better
-                </span>
-              </figcaption>
-              <p
-                css={css`
-                  margin-top: 8px;
-                  max-width: 600px;
-                `}
-              >
-                The test: each library renders the same component repeatedly on the server (Node,
-                production build). These are micro-benchmarks, they isolate the library's own render
-                cost and nothing else.
-              </p>
-              <div
-                css={css`
-                  margin-top: 24px;
-
-                  & > * + * {
-                    margin-top: 14px;
-                  }
-                `}
-              >
-                <Bar label="Yak CSS" value="3,151" percent={100} accent />
-                <Bar label="Vanilla JSX · no library" value="2,160" percent={68.5} />
-                <Bar label="styled-components" value="819" percent={26} />
-              </div>
-              <p
-                css={css`
-                  margin-top: 24px;
-                `}
-              >
-                SSR extraction runs up to <b>~13× faster</b>. Static components even outrun
-                hand-written vanilla JSX — one hot, JIT-optimized path beats a thousand cold ones.
-              </p>
-            </figure>
+                  <span
+                    css={css`
+                      text-align: right;
+                      font-size: 13px;
+                      font-weight: ${fontWeight.bold};
+                      line-height: 1.25;
+                      color: light-dark(${light.violet}, ${dark.white});
+                    `}
+                  >
+                    yak
+                  </span>
+                  <div
+                    css={css`
+                      position: relative;
+                      display: flex;
+                      align-items: center;
+                      justify-content: flex-end;
+                      height: clamp(32px, 4.5cqi, 40px);
+                      padding-inline: clamp(12px, 2cqi, 18px);
+                      background: light-dark(${light.red}, ${dark.redDeep});
+                      border: var(--card-bw) solid var(--frame);
+                      border-radius: 10px;
+                    `}
+                  >
+                    <span
+                      css={css`
+                        /* keep the number clear of the rider parked on the bar tip */
+                        font-family: ${fonts.mono};
+                        font-size: 15px;
+                        font-weight: ${fontWeight.bold};
+                        white-space: nowrap;
+                        color: ${ink.fg};
+                      `}
+                    >
+                      216,856
+                    </span>
+                    {/* the mascot rides the bar tip; % offsets are relative to the bar
+                        height so the pose scales with it — bottom is tuned so the
+                        yak straddles the bar's top edge with its leg draping over
+                        the face */}
+                    <Image
+                      src={asset("/yak-riding-2.png")}
+                      alt=""
+                      width="810"
+                      height="647"
+                      css={css`
+                        position: absolute;
+                        right: -6px;
+                        bottom: 66%;
+                        height: 170%;
+                        width: auto;
+                      `}
+                    />
+                  </div>
+                  {BENCH_ROWS.map(({ label, value, percent }) => (
+                    <Fragment key={label}>
+                      <span
+                        css={css`
+                          text-align: right;
+                          font-size: 13px;
+                          line-height: 1.25;
+                        `}
+                      >
+                        {label}
+                      </span>
+                      <div
+                        style={{ width: `${percent}%` }}
+                        css={css`
+                          display: flex;
+                          align-items: center;
+                          justify-content: flex-end;
+                          height: clamp(32px, 4.5cqi, 40px);
+                          padding-inline: clamp(8px, 1.5cqi, 14px);
+                          border-radius: 10px;
+                          background: light-dark(${light.beige6}, ${dark.navy6});
+                          /* deliberate: Emotion's bar is too short for its number, so
+                             the leading digits clip away — just like in the mock */
+                          overflow: hidden;
+                        `}
+                      >
+                        <span
+                          css={css`
+                            font-family: ${fonts.mono};
+                            font-size: 13px;
+                            font-weight: ${fontWeight.semibold};
+                            white-space: nowrap;
+                            color: light-dark(${light.violet}, ${dark.white});
+                          `}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                    </Fragment>
+                  ))}
+                </div>
+              </figure>
+            </div>
           </Container>
         </Section>
       </div>
@@ -670,6 +789,17 @@ async function getReleasedVersion(): Promise<string | null> {
     }
   }
 }
+
+// Renders/second from the SSR benchmark suite. `percent` is the library's share of
+// yak's 216,856; yak's own bar spans the full chart column, so the bar-to-bar
+// ratios are data-accurate.
+const BENCH_ROWS = [
+  { label: "StyleX", value: "197,008", percent: 90.8 },
+  { label: "Panda", value: "144,635", percent: 66.7 },
+  { label: "tailwind-merge", value: "114,708", percent: 52.9 },
+  { label: "styled-components", value: "55,753", percent: 25.7 },
+  { label: "Emotion", value: "31,789", percent: 14.7 },
+];
 
 const WRITE_CODE = `const Button = styled.button\`
   font-size: 1.5em;
