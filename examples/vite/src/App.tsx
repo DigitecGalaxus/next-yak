@@ -5,6 +5,7 @@ import { queries, colors } from "./theme/constants.yak";
 import { Clock } from "./Clock";
 import { Inputs } from "./Input";
 import { HighContrastToggle } from "./HighContrastToggle";
+import { DynamicMixinDemo } from "./DynamicMixinDemo";
 import { typography } from "./mixins";
 import { mixins, tokens } from "./constants";
 import defaultColor from "./constantColors";
@@ -240,6 +241,7 @@ function App() {
         Atoms in styled components work if this is small, green and italic
       </Wrap>
       <SpacingDemo>.yak.ts tokens</SpacingDemo>
+      <DynamicMixinDemo />
       <Inputs />
     </main>
   );

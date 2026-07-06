@@ -6,9 +6,9 @@ use crate::utils::cross_file_selectors::encode_percent;
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
-use swc_core::common::errors::HANDLER;
 use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
+use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 
 use crate::naming_convention::{NamingConvention, TranspilationMode};
 
@@ -141,6 +141,125 @@ impl YakTransform for TransformNestedCss {
   }
 }
 
+/// Extracts the raw class name from a css scope name
+/// e.g. ":global(.foo)" -> "foo" and ".foo" -> "foo"
+/// CSS escapes (e.g. "\$") are removed as the corresponding
+/// javascript string literals contain the unescaped name
+fn scope_name_to_class_name(scope_name: &str) -> String {
+  scope_name
+    .strip_prefix(":global(")
+    .and_then(|name| name.strip_suffix(")"))
+    .unwrap_or(scope_name)
+    .strip_prefix('.')
+    .unwrap_or(scope_name)
+    .replace('\\', "")
+}
+
+/// Rewrites baked branch class name string literals into scope handle calls
+/// e.g. css("mixin__$active_x") -> css(__yak_b(0))
+/// Used for exported dynamic mixins where the final class names are only
+/// known at the consumer's usage site
+struct BranchClassNameRewriter<'a> {
+  /// Maps raw branch class names to their stable branch id
+  branch_ids: &'a FxHashMap<String, usize>,
+  /// The scope handle parameter of the mixin factory
+  scope_handle: Ident,
+}
+
+impl VisitMut for BranchClassNameRewriter<'_> {
+  fn visit_mut_expr(&mut self, expr: &mut Expr) {
+    expr.visit_mut_children_with(self);
+    if let Expr::Lit(Lit::Str(str_lit)) = expr {
+      if let Some(branch_id) = str_lit
+        .value
+        .as_str()
+        .and_then(|value| self.branch_ids.get(value))
+      {
+        *expr = Expr::Call(CallExpr {
+          span: DUMMY_SP,
+          ctxt: SyntaxContext::empty(),
+          callee: Callee::Expr(Box::new(Expr::Ident(self.scope_handle.clone()))),
+          args: vec![Expr::Lit(Lit::Num(Number {
+            span: DUMMY_SP,
+            value: *branch_id as f64,
+            raw: None,
+          }))
+          .into()],
+          type_args: None,
+        });
+      }
+    }
+  }
+}
+
+/// Rewrites the fixed scope prefix of `__yak_use` calls into slot references
+/// e.g. __yak_use(inner, "mixin__inner_x") -> __yak_use(inner, __yak_b.sub(0))
+///
+/// Inside an exported dynamic mixin the final scope of a nested cross-file
+/// mixin depends on where the exported mixin itself is used - the factory's
+/// scope handle derives it at runtime (`<prefix>-s0`) while the css payload
+/// carries the matching `@s0` slot marker for the resolver
+struct SlotRewriter {
+  /// Maps the fixed scope prefixes (assigned in `lib.rs` before the export
+  /// was known to be dynamic) to their stable slot id
+  slot_ids: Vec<(String, usize)>,
+  /// The scope handle parameter of the mixin factory
+  scope_handle: Ident,
+  /// The `__yak_use` utility identifier
+  use_ident: Ident,
+}
+
+impl SlotRewriter {
+  fn slot_id(&mut self, prefix: &str) -> usize {
+    if let Some((_, slot_id)) = self.slot_ids.iter().find(|(known, _)| known == prefix) {
+      return *slot_id;
+    }
+    let slot_id = self.slot_ids.len();
+    self.slot_ids.push((prefix.to_string(), slot_id));
+    slot_id
+  }
+}
+
+impl VisitMut for SlotRewriter {
+  fn visit_mut_call_expr(&mut self, call: &mut CallExpr) {
+    call.visit_mut_children_with(self);
+    let is_yak_use = matches!(
+      &call.callee,
+      Callee::Expr(callee) if matches!(&**callee, Expr::Ident(ident) if ident.sym == self.use_ident.sym)
+    );
+    if !is_yak_use || call.args.len() != 2 {
+      return;
+    }
+    let Expr::Lit(Lit::Str(prefix)) = &*call.args[1].expr else {
+      return;
+    };
+    let Some(prefix) = prefix.value.as_str().map(|value| value.to_string()) else {
+      return;
+    };
+    let slot_id = self.slot_id(&prefix);
+    call.args[1] = Expr::Call(CallExpr {
+      span: DUMMY_SP,
+      ctxt: SyntaxContext::empty(),
+      callee: Callee::Expr(Box::new(Expr::Member(MemberExpr {
+        span: DUMMY_SP,
+        obj: Box::new(Expr::Ident(self.scope_handle.clone())),
+        prop: MemberProp::Ident(IdentName {
+          span: DUMMY_SP,
+          sym: "sub".into(),
+        }),
+      }))),
+      args: vec![Expr::Lit(Lit::Num(Number {
+        span: DUMMY_SP,
+        value: slot_id as f64,
+        raw: None,
+      }))
+      .into()],
+      type_args: None,
+    })
+    .into();
+  }
+}
+
 /// Transform for CSS Mixins
 /// e.g. const myMixin = css`...`
 pub struct TransformCssMixin {
@@ -150,6 +269,9 @@ pub struct TransformCssMixin {
   is_within_jsx_attribute: bool,
   class_name: String,
   transpilation_mode: TranspilationMode,
+  /// Set when the mixin was compiled as a dynamic template (V2)
+  /// so that the default export comment uses the matching marker
+  compiled_dynamic: bool,
 }
 
 impl TransformCssMixin {
@@ -168,6 +290,179 @@ impl TransformCssMixin {
       is_within_jsx_attribute,
       class_name,
       transpilation_mode,
+      compiled_dynamic: false,
+    }
+  }
+
+  fn exported_mixin_name(&self) -> String {
+    self
+      .export_name
+      .parts
+      .iter()
+      .map(|atom| encode_percent(atom.to_string_lossy().as_ref())) // If the name contains surrogates, other CSS parser would have problems as well
+      .collect::<Vec<_>>()
+      .join(":")
+  }
+
+  /// Transforms an exported mixin with dynamic content (conditional branches
+  /// and/or css variables) into a class-name-parameterized template.
+  ///
+  /// The css payload keeps the branch structure by wrapping every branch in a
+  /// `@yak-branch bN { ... }` block:
+  ///
+  /// ```css
+  /// /*YAK EXPORTED MIXIN V2:highlight
+  /// color: black;
+  /// @yak-branch b0 {
+  ///   color: red;
+  /// }
+  /// */
+  /// ```
+  ///
+  /// The runtime expression becomes a factory which receives a scope handle
+  /// that maps branch ids to the class names of the consuming usage site:
+  ///
+  /// ```js
+  /// __yak_mixin((__yak_b) => [({ $active }) => $active && css(__yak_b(0))])
+  /// ```
+  ///
+  /// The cross-file resolver renders the payload with the same usage-site
+  /// prefix (`<prefix>-b0`), so both sides agree on the class names without
+  /// ever seeing each other.
+  fn transform_dynamic_exported_mixin(
+    &mut self,
+    expression: &mut TaggedTpl,
+    mut runtime_expressions: Vec<Expr>,
+    declarations: &[Declaration],
+    runtime_css_variables: FxHashMap<String, Expr>,
+    yak_imports: &mut YakImports,
+  ) -> YakTransformResult {
+    self.compiled_dynamic = true;
+    let own_scope_name = self.transpilation_mode.css_class_name(&self.class_name);
+
+    // Assign stable branch ids (b0, b1, ...) to the conditional branch classes
+    // in order of first appearance. Branch declarations are recognizable by a
+    // root scope that differs from the mixin's own class scope - it was
+    // replaced by TransformNestedCss when the branch was processed.
+    let mut branch_scope_ids: Vec<(String, usize)> = vec![];
+    let mut branch_class_ids: FxHashMap<String, usize> = FxHashMap::default();
+    for declaration in declarations {
+      if let Some(root_scope) = declaration.scope.first() {
+        if root_scope.name != own_scope_name
+          && !branch_scope_ids
+            .iter()
+            .any(|(scope_name, _)| scope_name == &root_scope.name)
+        {
+          let branch_id = branch_scope_ids.len();
+          branch_scope_ids.push((root_scope.name.clone(), branch_id));
+          branch_class_ids.insert(scope_name_to_class_name(&root_scope.name), branch_id);
+        }
+      }
+    }
+
+    // Rewrite the baked branch class names inside the runtime expressions to
+    // scope handle calls e.g. css("mixin__$active_x") -> css(__yak_b(0))
+    let scope_handle = Ident::from("__yak_b");
+    let mut rewriter = BranchClassNameRewriter {
+      branch_ids: &branch_class_ids,
+      scope_handle: scope_handle.clone(),
+    };
+    for runtime_expression in runtime_expressions.iter_mut() {
+      runtime_expression.visit_mut_with(&mut rewriter);
+    }
+
+    // Rewrite the fixed scope prefixes of nested cross-file mixins into slot
+    // references e.g. __yak_use(inner, "mixin__inner_x") -> __yak_use(inner, __yak_b.sub(0))
+    // (if __yak_use was never requested this file has no cross-file mixin references)
+    let mut slot_ids: Vec<(String, usize)> = vec![];
+    if let Some(use_ident) = yak_imports.peek_yak_utility_ident("use") {
+      let mut slot_rewriter = SlotRewriter {
+        slot_ids: vec![],
+        scope_handle: scope_handle.clone(),
+        use_ident,
+      };
+      for runtime_expression in runtime_expressions.iter_mut() {
+        runtime_expression.visit_mut_with(&mut slot_rewriter);
+      }
+      slot_ids = slot_rewriter.slot_ids;
+    }
+
+    // Render the payload: the mixin's own scope is dropped (the static css is
+    // spliced in place by the resolver), branch scopes are replaced with
+    // their stable @yak-branch marker and the scope prefixes of nested
+    // cross-file markers are replaced with their matching @sN slot reference
+    let payload_declarations = declarations.to_vec().move_map(|mut declaration| {
+      if let Some(root_scope) = declaration.scope.first() {
+        if root_scope.name == own_scope_name {
+          declaration.scope.remove(0);
+        } else if let Some((_, branch_id)) = branch_scope_ids
+          .iter()
+          .find(|(scope_name, _)| scope_name == &root_scope.name)
+        {
+          declaration.scope[0] = CssScope {
+            name: format!("@yak-branch b{}", branch_id),
+            scope_type: ScopeType::AtRule,
+          };
+        }
+      }
+      if declaration.property.trim() == "--yak-css-import" {
+        for (prefix, slot_id) in &slot_ids {
+          declaration.value = declaration
+            .value
+            .replace(&format!(",\"{}\")", prefix), &format!(",@s{})", slot_id));
+        }
+      }
+      declaration
+    });
+
+    let mut factory_elements: Vec<Option<ExprOrSpread>> = runtime_expressions
+      .into_iter()
+      .map(|expr| Some(expr.into()))
+      .collect();
+    if !runtime_css_variables.is_empty() {
+      factory_elements.push(Some(
+        expr_hash_map_to_object(FxHashMap::from_iter([(
+          "style".to_string(),
+          expr_hash_map_to_object(runtime_css_variables),
+        )]))
+        .into(),
+      ));
+    }
+
+    let factory = Expr::Arrow(ArrowExpr {
+      span: DUMMY_SP,
+      ctxt: SyntaxContext::empty(),
+      params: vec![Pat::Ident(BindingIdent {
+        id: scope_handle,
+        type_ann: None,
+      })],
+      body: Box::new(BlockStmtOrExpr::Expr(Box::new(Expr::Array(ArrayLit {
+        span: DUMMY_SP,
+        elems: factory_elements,
+      })))),
+      is_async: false,
+      is_generator: false,
+      return_type: None,
+      type_params: None,
+    });
+
+    YakTransformResult {
+      css: YakCss {
+        comment_prefix: Some(format!(
+          "YAK EXPORTED MIXIN V2:{}",
+          self.exported_mixin_name()
+        )),
+        declarations: payload_declarations,
+      },
+      expression: Box::new(Expr::Call(CallExpr {
+        span: expression.span,
+        ctxt: SyntaxContext::empty(),
+        callee: Callee::Expr(Box::new(Expr::Ident(
+          yak_imports.get_yak_utility_ident("mixin"),
+        ))),
+        args: vec![factory.into()],
+        type_args: None,
+      })),
     }
   }
 }
@@ -188,21 +483,18 @@ impl YakTransform for TransformCssMixin {
     runtime_expressions: Vec<Expr>,
     declarations: &[Declaration],
     runtime_css_variables: FxHashMap<String, Expr>,
-    _yak_imports: &mut YakImports,
+    yak_imports: &mut YakImports,
   ) -> YakTransformResult {
     let has_dynamic_content = !runtime_expressions.is_empty() || !runtime_css_variables.is_empty();
 
     if self.is_exported && has_dynamic_content && !self.is_within_jsx_attribute {
-      // For now dynamic mixins are not supported cross file
-      // as the scope handling is quite complicated
-      HANDLER.with(|handler| {
-        handler
-          .struct_span_err(
-            expression.span,
-            "Dynamic mixins must not be exported. Please ensure that this mixin requires no props.",
-          )
-          .emit();
-      });
+      return self.transform_dynamic_exported_mixin(
+        expression,
+        runtime_expressions,
+        declarations,
+        runtime_css_variables,
+        yak_imports,
+      );
     }
 
     let mut arguments: Vec<ExprOrSpread> = vec![];
@@ -230,13 +522,7 @@ impl YakTransform for TransformCssMixin {
     } else if self.is_exported {
       Some(format!(
         "YAK EXPORTED MIXIN:{}",
-        self
-          .export_name
-          .parts
-          .iter()
-          .map(|atom| encode_percent(atom.to_string_lossy().as_ref())) // If the name contains surrogates, other CSS parser would have problems as well
-          .collect::<Vec<_>>()
-          .join(":")
+        self.exported_mixin_name()
       ))
     } else {
       None
@@ -274,7 +560,8 @@ impl YakTransform for TransformCssMixin {
   /// Replaces the current variable name with "default" for the comment marker
   fn get_default_export_comment_prefix(&self) -> Option<String> {
     Some(format!(
-      "YAK EXPORTED MIXIN:default{}",
+      "YAK EXPORTED MIXIN{}:default{}",
+      if self.compiled_dynamic { " V2" } else { "" },
       self
         .export_name
         .parts

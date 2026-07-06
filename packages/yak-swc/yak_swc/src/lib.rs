@@ -342,8 +342,12 @@ where
           // e.g.:
           // import { colors } from "./theme";
           // styled.button`color: ${colors.primary};`
-          else if let Some((_import_source_type, import_kind)) =
-            self.variables.get_imported_variable(&scoped_name.id)
+          else if let Some((_import_source_type, import_kind)) = self
+            .variables
+            .get_imported_variable(&scoped_name.id)
+            // Cloned so that the naming convention and utility imports can be
+            // borrowed mutably while encoding the import below
+            .map(|(source_type, kind)| (source_type, kind.clone()))
           {
             let code_after_expression = &quasis[pair.index + 1..]
               .iter()
@@ -367,10 +371,58 @@ where
                 // e.g. styled.button`${colors.primary}`
                 None => ImportType::Mixin,
               };
-            let cross_file_import_token =
-              import_kind.encode_module_import(import_type, scoped_name.parts);
+            // Statement-position mixin imports (e.g. `${highlight};` but not
+            // `color: ${colors.primary};`) may resolve to a dynamic mixin.
+            // As the transform can not see the other file it always:
+            // - mints a usage-site scope prefix and encodes it into the css marker
+            // - passes the imported value through __yak_use at runtime
+            // For static mixins and constants __yak_use is a no-op - the call
+            // intentionally keeps the producer module referenced so that e.g.
+            // its @keyframes definitions survive tree-shaking (see issue #419)
+            let is_inside_property_value = css_state
+              .as_ref()
+              .is_some_and(|state| state.is_inside_property_value);
+            let scope_prefix = if import_type == ImportType::Mixin && !is_inside_property_value {
+              let readable_name = format!(
+                "{}__{}",
+                self.get_current_component_id().id.0,
+                scoped_name.to_readable_string().replace('.', "_")
+              );
+              let scope_prefix = self
+                .naming_convention
+                .get_css_variable_name(readable_name.as_str());
+              runtime_expressions.push(Expr::Call(CallExpr {
+                span: DUMMY_SP,
+                ctxt: SyntaxContext::empty(),
+                callee: Callee::Expr(Box::new(Expr::Ident(
+                  self
+                    .yak_library_imports
+                    .as_mut()
+                    .unwrap()
+                    .get_yak_utility_ident("use"),
+                ))),
+                args: vec![
+                  expr.clone().into(),
+                  Expr::Lit(Lit::Str(Str {
+                    span: DUMMY_SP,
+                    value: scope_prefix.clone().into(),
+                    raw: None,
+                  }))
+                  .into(),
+                ],
+                type_args: None,
+              }));
+              Some(scope_prefix)
+            } else {
+              None
+            };
 
-            // TODO Track Dynamic Mixins as runtime dependency to pass props: `runtime_expressions.push(*expr.clone());`
+            let cross_file_import_token = import_kind.encode_module_import(
+              import_type,
+              scoped_name.parts,
+              scope_prefix.as_deref(),
+            );
+
             let (new_state, _) = parse_css(&cross_file_import_token, css_state);
             css_state = Some(new_state);
           }
@@ -1166,7 +1218,8 @@ where
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
         // Don't add invalid CSS rules to the list of all CSS rules
         // Mixin code should always be used in other components so that they target the correct element
-        if !comment_prefix.starts_with("YAK EXPORTED MIXIN:") {
+        // (covers both "YAK EXPORTED MIXIN:" and "YAK EXPORTED MIXIN V2:")
+        if !comment_prefix.starts_with("YAK EXPORTED MIXIN") {
           self.all_css_rules.push(css_code.trim().into());
         }
 

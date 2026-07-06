@@ -53,7 +53,7 @@ pub fn visit_module_imports(module: &mut Module) -> YakImports {
   yak_import_visitor.into()
 }
 
-const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp"];
+const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp", "mixin", "use"];
 
 impl From<YakImportVisitor> for YakImports {
   fn from(value: YakImportVisitor) -> Self {
@@ -128,6 +128,15 @@ impl YakImports {
       return None;
     }
     self.yak_library_imports.get(id).map(|id| id.0.clone())
+  }
+
+  /// Returns the utility function identifier if it was already requested
+  /// without registering the import (unlike `get_yak_utility_ident`)
+  pub fn peek_yak_utility_ident(&self, name: impl AsRef<str>) -> Option<Ident> {
+    self
+      .yak_utilities
+      .get(&format!("__yak_{}", name.as_ref()))
+      .cloned()
   }
 
   /// Returns the utility function identifier

@@ -12,10 +12,14 @@ import {
   ResolveError,
   UnsupportedExportError,
 } from "./Errors.js";
+import { renderDynamicMixin } from "./renderDynamicMixin.js";
 
 const yakCssImportRegex =
   // Make mixin and selector non optional once we dropped support for the babel plugin
-  /--yak-css-import:\s*url\("([^"]+)",?(|mixin|selector)\)(;?)/g;
+  // The optional quoted argument after the import kind is the usage-site scope
+  // prefix for dynamic mixins e.g.:
+  // --yak-css-import: url("./styles:highlight",mixin,"Button__highlight_x")
+  /--yak-css-import:\s*url\("([^"]+)",?(|mixin|selector)(?:,"([^"]+)")?\)(;?)/g;
 
 /**
  * Resolves cross-file selectors in css files
@@ -73,20 +77,49 @@ export async function resolveCrossFileConstant(
   return cached;
 }
 
+/**
+ * Rendering a dynamic mixin can splice new markers into the css (nested
+ * cross-file mixins whose slot prefixes were just derived) - those are
+ * resolved in a follow-up pass. The pass count only grows with the mixin
+ * nesting depth, so hitting this limit indicates a circular reference.
+ */
+const maxResolvePasses = 20;
+
 export async function uncachedResolveCrossFileConstant(
   context: ResolveContext,
   filePath: string,
   css: string,
 ): Promise<{ resolved: string; dependencies: string[] }> {
+  const dependencies = new Set<string>();
+  let resolved = css;
+
+  for (let pass = 0; ; pass++) {
+    const done = await resolveCrossFileConstantPass(context, filePath, resolved, dependencies);
+    if (done.finished) {
+      return { resolved: done.resolved, dependencies: Array.from(dependencies) };
+    }
+    if (pass >= maxResolvePasses) {
+      throw new CauseError(`Error while resolving cross-file selectors in file "${filePath}"`, {
+        cause: `Mixins are nested more than ${maxResolvePasses} levels deep - this usually indicates a circular mixin reference`,
+      });
+    }
+    resolved = done.resolved;
+  }
+}
+
+async function resolveCrossFileConstantPass(
+  context: ResolveContext,
+  filePath: string,
+  css: string,
+  dependencies: Set<string>,
+): Promise<{ resolved: string; finished: boolean }> {
   const yakImports = await parseYakCssImport(context, filePath, css);
 
   if (yakImports.length === 0) {
-    return { resolved: css, dependencies: [] };
+    return { resolved: css, finished: true };
   }
 
   try {
-    const dependencies = new Set<string>();
-
     const resolvedValues = await Promise.all(
       yakImports.map(async ({ moduleSpecifier, specifier }) => {
         const { resolved: resolvedModule } = await resolveModule(context, moduleSpecifier);
@@ -106,9 +139,10 @@ export async function uncachedResolveCrossFileConstant(
     );
 
     // Replace the imports with the resolved values
+    // (iterating backwards so earlier marker positions stay valid)
     let result = css;
     for (let i = yakImports.length - 1; i >= 0; i--) {
-      const { position, size, importKind, specifier, semicolon } = yakImports[i];
+      const { position, size, importKind, specifier, scopePrefix, semicolon } = yakImports[i];
       const resolved = resolvedValues[i];
 
       let replacement: string;
@@ -120,6 +154,26 @@ export async function uncachedResolveCrossFileConstant(
         // interpolate an empty string, and for selectors we interpolate
         // "undefined" (a selector that would match nothing)
         replacement = importKind === "mixin" ? "" : "undefined";
+      } else if (resolved.type === "mixin" && resolved.dynamic) {
+        if (!scopePrefix) {
+          // Markers without a scope prefix are either value/selector position
+          // usages (e.g. `color: ${dynamicMixin};`) or produced by an
+          // outdated compiler - both can not toggle branch classes
+          throw new Error(
+            `Dynamic mixin "${specifier.join(
+              ".",
+            )}" can only be used as a top level statement of a css literal (e.g. \`\${${specifier.join(
+              ".",
+            )}};\`) - not inside a property value or selector.\nIf the usage looks correct please ensure that next-yak and the yak compiler have matching versions.`,
+          );
+        }
+        replacement = renderDynamicMixin({
+          css: result,
+          position,
+          payload: String(resolved.value),
+          scopePrefix,
+          transpilationMode: context.transpilationMode,
+        });
       } else {
         if (importKind === "selector") {
           if (resolved.type !== "styled-component" && resolved.type !== "constant") {
@@ -150,12 +204,48 @@ export async function uncachedResolveCrossFileConstant(
       result = result.slice(0, position) + String(replacement) + result.slice(position + size);
     }
 
-    return { resolved: result, dependencies: Array.from(dependencies) };
+    return { resolved: result, finished: false };
   } catch (error) {
     throw new CauseError(`Error while resolving cross-file selectors in file "${filePath}"`, {
       cause: error,
     });
   }
+}
+
+const slotMarkerSpecifierRegex =
+  /(--yak-css-import:\s*url\(")([^"]+)(",(?:mixin|selector),@s\d+\))/g;
+
+/**
+ * Slot markers (`--yak-css-import: url("../mixin:name",mixin,@s0)`) are kept
+ * unresolved inside a mixin payload until it is rendered for a usage site -
+ * but their module specifiers are relative to the file that exported the
+ * mixin, not to the consumer. This rewrites them to the resolved absolute
+ * path while the exporting module is being parsed.
+ *
+ * The path is percent-encoded so that a ":" inside it (e.g. windows drive
+ * letters) survives the ":"-separated marker encoding.
+ */
+async function absolutizeSlotMarkerSpecifiers(
+  context: ResolveContext,
+  producerPath: string,
+  css: string,
+): Promise<string> {
+  let result = "";
+  let lastIndex = 0;
+  for (const match of css.matchAll(slotMarkerSpecifierRegex)) {
+    const [fullMatch, prefix, encodedArguments, suffix] = match;
+    // The module specifier is always the first entry and never contains ":"
+    const [specifier, ...exportParts] = encodedArguments.split(":");
+    const resolvedPath = await context.resolve(decodeURIComponent(specifier), producerPath);
+    const encodedPath = resolvedPath.replace(/[:%"]/g, (char) => encodeURIComponent(char));
+    result +=
+      css.slice(lastIndex, match.index) +
+      prefix +
+      [encodedPath, ...exportParts].join(":") +
+      suffix;
+    lastIndex = match.index + fullMatch.length;
+  }
+  return result + css.slice(lastIndex);
 }
 
 /**
@@ -169,7 +259,7 @@ async function parseYakCssImport(
   const yakImports: YakCssImport[] = [];
 
   for (const match of css.matchAll(yakCssImportRegex)) {
-    const [fullMatch, encodedArguments, importKind, semicolon] = match;
+    const [fullMatch, encodedArguments, importKind, scopePrefix, semicolon] = match;
     const [moduleSpecifier, ...specifier] = encodedArguments
       .split(":")
       .map((entry) => decodeURIComponent(entry));
@@ -179,6 +269,7 @@ async function parseYakCssImport(
       moduleSpecifier: await context.resolve(moduleSpecifier, filePath),
       specifier,
       importKind: importKind as YakImportKind,
+      scopePrefix,
       semicolon,
       position: match.index,
       size: fullMatch.length,
@@ -280,10 +371,20 @@ async function uncachedResolveModule(
   if (parsedModule.mixins) {
     await Promise.all(
       Object.values(parsedModule.mixins).map(async (mixin) => {
-        const { resolved, dependencies: deps } = await resolveCrossFileConstant(
+        // Nested cross-file references inside a mixin payload are resolved
+        // upfront - except slot markers (`,@sN`), which stay in the payload
+        // until it is rendered for a concrete usage site. Their module
+        // specifiers are relative to this module though, so they are
+        // rewritten to absolute paths while the base path is still known
+        const { resolved: resolvedConstants, dependencies: deps } = await resolveCrossFileConstant(
           context,
           parsedModule.path,
           mixin.value,
+        );
+        const resolved = await absolutizeSlotMarkerSpecifiers(
+          context,
+          parsedModule.path,
+          resolvedConstants,
         );
 
         for (const dep of deps) {
@@ -294,6 +395,7 @@ async function uncachedResolveModule(
           exports.named[mixin.nameParts[0]] = {
             type: "mixin",
             value: resolved,
+            dynamic: mixin.dynamic,
           };
         } else {
           let exportEntry = exports.named[mixin.nameParts[0]];
@@ -323,6 +425,7 @@ async function uncachedResolveModule(
           current[mixin.nameParts[mixin.nameParts.length - 1]] = {
             type: "mixin",
             value: resolved,
+            dynamic: mixin.dynamic,
           };
         }
       }),
@@ -514,6 +617,7 @@ async function resolveModuleExport(
           from: [filePath],
           source: filePath,
           value: moduleExport.value,
+          dynamic: moduleExport.dynamic,
         };
       }
       case "unsupported": {
@@ -680,7 +784,13 @@ type ResolvedCssImport =
       from: string[];
       name: string;
     }
-  | { type: "mixin"; source: string; from: string[]; value: string | number }
+  | {
+      type: "mixin";
+      source: string;
+      from: string[];
+      value: string | number;
+      dynamic?: boolean;
+    }
   | {
       type: "constant";
       source: string;
@@ -696,6 +806,8 @@ export type ResolveContext = {
   };
   exportAllLimit?: number;
   resolve: (specifier: string, importer: string) => Promise<string> | string;
+  /** How class selectors are transpiled - needed to render dynamic mixin branch classes */
+  transpilationMode?: "Css" | "CssModule";
 };
 
 type YakImportKind = "mixin" | "selector";
@@ -705,6 +817,8 @@ type YakCssImport = {
   moduleSpecifier: string;
   specifier: string[];
   importKind: YakImportKind;
+  /** Usage-site scope prefix for dynamic mixins (undefined for older markers) */
+  scopePrefix: string | undefined;
   semicolon: string;
   position: number;
   size: number;
@@ -715,7 +829,7 @@ export type ExtendedRecordExport = {
   value: Record<string, ResolvedExport>;
 };
 
-export type ResolvedMixin = { type: "mixin"; value: string };
+export type ResolvedMixin = { type: "mixin"; value: string; dynamic?: boolean };
 export type ResolvedStyledComponent = {
   type: "styled-component";
   className: string;

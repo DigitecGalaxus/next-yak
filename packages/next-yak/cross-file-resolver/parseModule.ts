@@ -80,12 +80,36 @@ export async function uncachedParseModule(
 }
 
 function parseMixins(sourceContents: string): Record<string, Mixin> {
-  // Mixins are always in the following format:
+  // Static mixins are always in the following format:
   // /*YAK EXPORTED MIXIN:fancy:aspectRatio:16:9
   // css
   // */
-  const mixinParts = sourceContents.split("/*YAK EXPORTED MIXIN:");
-  let mixins: Record<string, { type: "mixin"; value: string; nameParts: string[] }> = {};
+  //
+  // Dynamic mixins (mixins with conditional branches and/or css variables)
+  // use a V2 marker - their css payload keeps the branch structure inside
+  // `@yak-branch bN { ... }` blocks which are rendered per usage site:
+  // /*YAK EXPORTED MIXIN V2:highlight
+  // color: black;
+  // @yak-branch b0 {
+  //   color: red;
+  // }
+  // */
+  //
+  // The markers are disjoint: splitting on "YAK EXPORTED MIXIN:" never
+  // matches a V2 comment and vice versa
+  return {
+    ...parseMixinComments(sourceContents, "/*YAK EXPORTED MIXIN:", false),
+    ...parseMixinComments(sourceContents, "/*YAK EXPORTED MIXIN V2:", true),
+  };
+}
+
+function parseMixinComments(
+  sourceContents: string,
+  marker: string,
+  dynamic: boolean,
+): Record<string, Mixin> {
+  const mixinParts = sourceContents.split(marker);
+  let mixins: Record<string, Mixin> = {};
 
   for (let i = 1; i < mixinParts.length; i++) {
     const [comment] = mixinParts[i].split("*/", 1);
@@ -96,6 +120,7 @@ function parseMixins(sourceContents: string): Record<string, Mixin> {
       type: "mixin",
       value,
       nameParts: name.split(":").map((part) => decodeURIComponent(part)),
+      ...(dynamic ? { dynamic } : {}),
     };
   }
   return mixins;
@@ -212,4 +237,10 @@ export type StyledComponent = {
   nameParts: string[];
 };
 
-export type Mixin = { type: "mixin"; value: string; nameParts: string[] };
+export type Mixin = {
+  type: "mixin";
+  value: string;
+  nameParts: string[];
+  /** True for V2 mixins whose payload contains `@yak-branch` blocks and/or css variables */
+  dynamic?: boolean;
+};

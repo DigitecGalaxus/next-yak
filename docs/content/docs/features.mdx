@@ -418,6 +418,43 @@ background-color: yellow;
 </Tabs>
 </details>
 
+### Cross-file mixins
+
+Mixins can be exported and used in other files - including dynamic mixins with
+conditional styles and runtime values:
+
+```jsx title="mixin.ts"
+import { css } from "next-yak";
+
+export const highlight = css`
+  color: black;
+  ${(props) =>
+    props.$active &&
+    css`
+      color: red;
+    `}
+`;
+```
+
+```jsx title="my-component.tsx"
+import { styled } from "next-yak";
+import { highlight } from "./mixin";
+
+const MyComp = styled.div`
+  padding: 10px;
+  ${highlight};
+`;
+
+// <MyComp $active /> renders red, <MyComp /> renders black
+```
+
+The static css of the mixin is inlined into the component's stylesheet at
+build time; conditional styles are toggled through generated class names at
+runtime - the same way they work within a single file.
+
+Cross-file dynamic mixins must be interpolated as statements (`${highlight};`)
+- not inside a property value or as a selector. Importing a mixin also keeps
+its module (e.g. `keyframes` it defines) in the bundle.
 
 ## Automatic CSS variables
 

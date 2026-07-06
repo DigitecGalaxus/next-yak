@@ -8,13 +8,16 @@ import { resolveCrossFileConstant } from "../resolveCrossFileConstant.js";
  * Creates a resolve context that wires real source strings through
  * parseExports → parseModule → resolveCrossFileConstant.
  */
-function createParseContext(files: Record<string, string>) {
+function createParseContext(
+  files: Record<string, string>,
+  transformedFiles: Record<string, string> = {},
+) {
   return {
     parse: (modulePath: string) =>
       parseModule(
         {
           extractExports: (p: string) => parseExports(files[p]),
-          getTransformed: () => ({ code: "" }),
+          getTransformed: (p: string) => ({ code: transformedFiles[p] ?? "" }),
         },
         modulePath,
       ),
@@ -891,4 +894,315 @@ test("Error: unsupported value from an evaluated .yak.ts file explains supported
   Caused by: \`flag\` evaluated to a value that cannot be inlined into CSS (got \`true\`).
   help: replace it with a string, number, or plain object/array of those
   see:  https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files`);
+});
+
+test("resolve dynamic cross-file mixin (V2) - splices static css and hoists branch rules", async () => {
+  // Producer source as written by the user
+  const producerSource = `
+import { css } from "next-yak";
+export const highlight = css\`
+  color: black;
+  \${({ $active }) => $active && css\`color: red;\`}
+\`;
+`;
+  // Producer as compiled by yak-swc (V2 payload + __yak_mixin template)
+  const producerTransformed = `
+import { css, __yak_mixin } from "next-yak/internal";
+export const highlight = /*YAK EXPORTED MIXIN V2:highlight
+color: black;
+@yak-branch b0 {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak_mixin((__yak_b)=>[
+        ({ $active })=>$active && /*#__PURE__*/ css(__yak_b(0))
+    ]);
+`;
+  // Consumer css as extracted by yak-swc
+  const consumerCss = [
+    ":global(.Button_x) {",
+    "  padding: 10px;",
+    '  --yak-css-import: url("./highlight.ts:highlight",mixin,"Button__highlight_x");',
+    "  color: green;",
+    "}",
+  ].join("\n");
+
+  const { resolved, dependencies } = await resolveCrossFileConstant(
+    createParseContext(
+      { "/foo/highlight.ts": producerSource },
+      { "/foo/highlight.ts": producerTransformed },
+    ),
+    "/foo/bar.ts",
+    consumerCss,
+  );
+
+  expect(resolved).toMatchInlineSnapshot(`
+    ":global(.Button_x) {
+      padding: 10px;
+      color: black;
+    }
+    :global(.Button__highlight_x-b0) {
+    color: red;
+    }
+    :global(.Button_x) {
+      color: green;
+    }"
+  `);
+  expect(dependencies).to.have.members(["/foo/highlight.ts"]);
+});
+
+test("resolve dynamic cross-file mixin (V2) - rejects markers without a scope prefix", async () => {
+  const producerTransformed = `
+export const highlight = /*YAK EXPORTED MIXIN V2:highlight
+@yak-branch b0 {
+  color: red;
+}
+*/ __yak_mixin((__yak_b)=>[]);
+`;
+  await expect(() =>
+    resolveCrossFileConstant(
+      createParseContext(
+        { "/foo/highlight.ts": `import { css } from "next-yak";\nexport const highlight = css\`\`;` },
+        { "/foo/highlight.ts": producerTransformed },
+      ),
+      "/foo/bar.ts",
+      `:global(.Button_x) {\n  --yak-css-import: url("./highlight.ts:highlight",mixin);\n}`,
+    ),
+  ).rejects.toThrow("can only be used as a top level statement");
+});
+
+test("resolve dynamic mixin used inside another exported mixin (slot scoping, two hops)", async () => {
+  const innerSource = `
+import { css } from "next-yak";
+export const inner = css\`
+  color: black;
+  \${({ $a }) => $a && css\`color: red;\`}
+\`;
+`;
+  const innerTransformed = `
+import { css, __yak_mixin } from "next-yak/internal";
+export const inner = /*YAK EXPORTED MIXIN V2:inner
+color: black;
+@yak-branch b0 {
+  color: red;
+}
+*/ __yak_mixin((__yak_b)=>[
+        ({ $a })=>$a && css(__yak_b(0))
+    ]);
+`;
+  const outerSource = `
+import { css } from "next-yak";
+import { inner } from "./inner.ts";
+export const outer = css\`
+  font-size: 16px;
+  \${inner};
+  \${({ $b }) => $b && css\`border: 1px solid;\`}
+\`;
+`;
+  const outerTransformed = `
+import { css, __yak_use, __yak_mixin } from "next-yak/internal";
+import { inner } from "./inner.ts";
+export const outer = /*YAK EXPORTED MIXIN V2:outer
+font-size: 16px;
+--yak-css-import: url("./inner.ts:inner",mixin,@s0);
+@yak-branch b0 {
+  border: 1px solid;
+}
+*/ __yak_mixin((__yak_b)=>[
+        __yak_use(inner, __yak_b.sub(0)),
+        ({ $b })=>$b && css(__yak_b(0))
+    ]);
+`;
+  const consumerCss = [
+    ":global(.Card_x) {",
+    "  padding: 4px;",
+    '  --yak-css-import: url("./outer.ts:outer",mixin,"Card__outer_x");',
+    "  color: green;",
+    "}",
+  ].join("\n");
+
+  const { resolved, dependencies } = await resolveCrossFileConstant(
+    createParseContext(
+      { "/foo/inner.ts": innerSource, "/foo/outer.ts": outerSource },
+      { "/foo/inner.ts": innerTransformed, "/foo/outer.ts": outerTransformed },
+    ),
+    "/foo/bar.ts",
+    consumerCss,
+  );
+
+  expect(resolved).toMatchInlineSnapshot(`
+    ":global(.Card_x) {
+      padding: 4px;
+      font-size: 16px;
+    color: black;
+    }
+    :global(.Card__outer_x-s0-b0) {
+    color: red;
+    }
+    :global(.Card_x) {
+    }
+    :global(.Card__outer_x-b0) {
+    border: 1px solid;
+    }
+    :global(.Card_x) {
+      color: green;
+    }"
+  `);
+  expect(dependencies).to.have.members(["/foo/inner.ts", "/foo/outer.ts"]);
+});
+
+test("resolve dynamic mixin with nested branches and nesting context inside a branch", async () => {
+  // payload taken from the cross-file-mixin-dynamic-nested-branches fixture
+  const producerTransformed = `
+import { css, __yak_mixin } from "next-yak/internal";
+export const fancy = /*YAK EXPORTED MIXIN V2:fancy
+color: black;
+@yak-branch b0 {
+  color: red;
+  &:hover {
+    color: darkred;
+  }
+}
+@yak-branch b1 {
+  color: blue;
+}
+*/ __yak_mixin((__yak_b)=>[
+        ({ $a })=>$a && css(__yak_b(0), ({ $b })=>$b && css(__yak_b(1)))
+    ]);
+`;
+  const consumerCss = [
+    ":global(.Button_x) {",
+    "  &:focus {",
+    '    --yak-css-import: url("./fancy.ts:fancy",mixin,"Button__fancy_x");',
+    "  }",
+    "}",
+  ].join("\n");
+
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext(
+      { "/foo/fancy.ts": `import { css } from "next-yak";\nexport const fancy = css\`\`;` },
+      { "/foo/fancy.ts": producerTransformed },
+    ),
+    "/foo/bar.ts",
+    consumerCss,
+  );
+
+  expect(resolved).toMatchInlineSnapshot(`
+    ":global(.Button_x) {
+      &:focus {
+        color: black;
+    }
+    }
+    :global(.Button__fancy_x-b0) {
+    &:focus {
+    color: red;
+      &:hover {
+        color: darkred;
+      }
+    }
+    }
+    :global(.Button_x) {
+    &:focus {
+    }
+    }
+    :global(.Button__fancy_x-b1) {
+    &:focus {
+    color: blue;
+    }
+    }
+    :global(.Button_x) {
+    &:focus {
+      }
+    }"
+  `);
+});
+
+test("resolve dynamic mixin with css variables (values stay producer scoped)", async () => {
+  // payload taken from the cross-file-mixin-dynamic-vars fixture
+  const producerTransformed = `
+import { css, __yak_unitPostFix, __yak_mixin } from "next-yak/internal";
+export const pad = /*YAK EXPORTED MIXIN V2:pad
+padding: var(--input_pad__padding_x);
+margin: 0;
+*/ __yak_mixin((__yak_b)=>[
+        { "style": { "--input_pad__padding_x": __yak_unitPostFix(({ $pad })=>$pad, "px") } }
+    ]);
+`;
+  const consumerCss = [
+    ":global(.Box_x) {",
+    '  --yak-css-import: url("./pad.ts:pad",mixin,"Box__pad_x");',
+    "}",
+  ].join("\n");
+
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext(
+      { "/foo/pad.ts": `import { css } from "next-yak";\nexport const pad = css\`\`;` },
+      { "/foo/pad.ts": producerTransformed },
+    ),
+    "/foo/bar.ts",
+    consumerCss,
+  );
+
+  // no branches: the payload is spliced in place like a static mixin
+  expect(resolved).toMatchInlineSnapshot(`
+    ":global(.Box_x) {
+      padding: var(--input_pad__padding_x);
+    margin: 0;
+    }"
+  `);
+});
+
+test("slot markers inside exported mixins resolve relative to the exporting file", async () => {
+  // helper/outer.ts references ../inner.ts - the consumer lives next to
+  // inner.ts, so resolving the deferred marker against the consumer's
+  // directory would produce a wrong path (e2e regression: nested-mixin)
+  const innerSource = `
+import { css } from "next-yak";
+export const inner = css\`color: black;\`;
+`;
+  const innerTransformed = `
+export const inner = /*YAK EXPORTED MIXIN:inner
+color: black;
+*/ css();
+`;
+  const outerSource = `
+import { css } from "next-yak";
+import { inner } from "../inner.ts";
+export const outer = css\`
+  \${inner};
+  color: green;
+\`;
+`;
+  const outerTransformed = `
+import { css, __yak_use, __yak_mixin } from "next-yak/internal";
+import { inner } from "../inner.ts";
+export const outer = /*YAK EXPORTED MIXIN V2:outer
+--yak-css-import: url("../inner.ts:inner",mixin,@s0);
+color: green;
+*/ __yak_mixin((__yak_b)=>[
+        __yak_use(inner, __yak_b.sub(0))
+    ]);
+`;
+  const consumerCss = [
+    ":global(.Button_x) {",
+    '  --yak-css-import: url("./helper/outer.ts:outer",mixin,"Button__outer_x");',
+    "}",
+  ].join("\n");
+
+  const { resolved, dependencies } = await resolveCrossFileConstant(
+    createParseContext(
+      { "/foo/inner.ts": innerSource, "/foo/helper/outer.ts": outerSource },
+      { "/foo/inner.ts": innerTransformed, "/foo/helper/outer.ts": outerTransformed },
+    ),
+    "/foo/bar.ts",
+    consumerCss,
+  );
+
+  expect(resolved).toMatchInlineSnapshot(`
+    ":global(.Button_x) {
+      color: black;
+
+    color: green;
+    }"
+  `);
+  expect(dependencies).to.have.members(["/foo/inner.ts", "/foo/helper/outer.ts"]);
 });

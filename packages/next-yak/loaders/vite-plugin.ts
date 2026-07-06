@@ -177,6 +177,7 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
               }
               return resolved.id;
             },
+            transpilationMode: "Css",
           },
           originalId + queryString,
           extractedCss,

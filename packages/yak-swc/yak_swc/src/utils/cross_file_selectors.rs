@@ -7,7 +7,7 @@ pub enum ImportType {
   Mixin,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ImportKind {
   Default {
     import_source: Wtf8Atom,
@@ -61,10 +61,14 @@ impl ImportKind {
   /// - The function uses URL encoding for the import chain to handle special characters
   /// - The resulting string is meant to be processed and resolved by the yak css loader
   /// - The kind gives a hint how the import can be used - to provide an error message if the import is not supported
+  /// - `scope_prefix` is the usage-site scope for dynamic mixins - the resolver renders
+  ///   the mixin's conditional branch classes as `<scope_prefix>-bN` while the runtime
+  ///   derives the same names through `__yak_use(mixin, "<scope_prefix>")`
   pub fn encode_module_import(
     &self,
     import_type: ImportType,
     import_chain: Vec<Wtf8Atom>,
+    scope_prefix: Option<&str>,
   ) -> String {
     let first_entry = match &self {
       // Don't encode the namespace, as that's just used internally, but the loader needs the exported names
@@ -87,14 +91,17 @@ impl ImportKind {
     }
 
     format!(
-      "--yak-css-import: url(\"{}:{}\",{})",
+      "--yak-css-import: url(\"{}:{}\",{}{})",
       self.import_source().to_string_lossy(),
       encoded_parts.join(":"),
       if import_type == ImportType::Selector {
         "selector"
       } else {
         "mixin"
-      }
+      },
+      scope_prefix
+        .map(|prefix| format!(",\"{}\"", prefix))
+        .unwrap_or_default()
     )
   }
 }
@@ -120,6 +127,7 @@ mod tests {
     let selector = import_kind.encode_module_import(
       ImportType::Selector,
       vec!["breakpoints".into(), "<xs".into(), "min".into()],
+      None,
     );
 
     assert_eq!(
@@ -137,7 +145,7 @@ mod tests {
     };
 
     let selector =
-      import_kind.encode_module_import(ImportType::Selector, vec!["breakpoints".into()]);
+      import_kind.encode_module_import(ImportType::Selector, vec!["breakpoints".into()], None);
 
     assert_eq!(
       selector,
@@ -156,6 +164,7 @@ mod tests {
     let selector = import_kind.encode_module_import(
       ImportType::Selector,
       vec!["breakpoints".into(), "xs".into()],
+      None,
     );
 
     assert_eq!(
@@ -175,6 +184,7 @@ mod tests {
     let selector = import_kind.encode_module_import(
       ImportType::Selector,
       vec!["breakpoints".into(), "<:\">".into()],
+      None,
     );
 
     assert_eq!(
@@ -237,11 +247,31 @@ mod tests {
     let mixin = import_kind.encode_module_import(
       ImportType::Mixin,
       vec!["mixin".into(), "rotate".into(), "90deg".into()],
+      None,
     );
 
     assert_eq!(
       mixin,
       "--yak-css-import: url(\"./styles/mixins:mixin:rotate:90deg\",mixin)"
+    );
+  }
+
+  #[test]
+  fn test_encode_module_import_with_scope_prefix() {
+    let import_kind = ImportKind::Named {
+      external_name: "highlight".into(),
+      import_source: "./styles".into(),
+    };
+
+    let mixin = import_kind.encode_module_import(
+      ImportType::Mixin,
+      vec!["highlight".into()],
+      Some("Button__highlight_x"),
+    );
+
+    assert_eq!(
+      mixin,
+      "--yak-css-import: url(\"./styles:highlight\",mixin,\"Button__highlight_x\")"
     );
   }
 
@@ -255,6 +285,7 @@ mod tests {
     let selector = import_kind.encode_module_import(
       ImportType::Selector,
       vec!["utils".into(), "styles".into(), "button".into()],
+      None,
     );
 
     assert_eq!(

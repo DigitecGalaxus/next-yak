@@ -307,29 +307,29 @@ const MyComp = styled.div<{ $primary: boolean }>`
 `;
 ```
 
-Dynamic mixins work differently in next-yak than in styled-components. With next-yak you're currently not able to export a dynamic mixin and use it in other components.
-As we transform the styles on a per-file basis, we can't share dynamic values between files. If you need to use a dynamic mixin in multiple components, you unfortunately need to duplicate the mixin in each file or move the components to the same file.
+Dynamic mixins can also be exported and used in other files - just like in styled-components:
+
+```tsx title="mixin.ts"
+import { css } from "styled-components"; // [!code --]
+import { css } from "next-yak"; // [!code ++]
+
+export const mixin = css<{ $primary: boolean }>`
+  color: green;
+  ${(props) =>
+    props.$primary
+      ? css`
+          background: white;
+        `
+      : css`
+          background: black;
+        `}
+`;
+```
 
 ```tsx title="component.tsx"
 import styled from "styled-components"; // [!code --]
-import { css, styled } from "next-yak"; // [!code ++]
-
-import { mixin } from "./mixin"; // [!code --]
-const mixin = css<{ $primary: boolean }>`
-  // [!code ++]
-  color: green; // [!code ++]
-  // [!code ++]
-  ${
-    (props) =>
-      props.$primary // [!code ++]
-        ? css`
-            background: white;
-          ` // [!code ++]
-        : css`
-            background: black;
-          ` // [!code ++]
-  }// [!code ++]
-`; // [!code ++]
+import { styled } from "next-yak"; // [!code ++]
+import { mixin } from "./mixin";
 
 const MyComp = styled.div<{ $primary: boolean }>`
   background-color: yellow;
@@ -337,22 +337,19 @@ const MyComp = styled.div<{ $primary: boolean }>`
 `;
 ```
 
-```tsx title="mixin.ts"
-import { css } from "styled-components"; // [!code --]
+Two things are worth knowing about how this compiles:
 
-export const mixin = css<{ $primary: boolean }>`
-  // [!code --]
-  // [!code --]
-  color: green;
-  // [!code --]
-  ${
-    (props) =>
-      props.$primary // [!code --]
-        ? `background: white;` // [!code --]
-        : `background: black;` // [!code --]
-  }// [!code --]
-`; // [!code --]
-```
+- **Importing a mixin keeps its module in the bundle.** The component holds a
+  runtime reference to the imported mixin, so the mixin's file (including e.g.
+  `keyframes` it defines) is never tree-shaken away while the component is used.
+- **CSS variables keep the name of the file that defines the mixin.** A dynamic
+  value like `padding: ${(props) => props.$pad}px` uses the same css variable
+  name for every component that uses the mixin (unlike same-file mixins, which
+  get a per-component name). This is only visible in devtools - the values are
+  still set per element.
+
+Dynamic mixins can only be interpolated as statements (`${mixin};`) - not
+inside a property value (`color: ${mixin};`) or as a selector.
 
 ### Reference external styles
 

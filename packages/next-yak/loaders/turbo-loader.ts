@@ -100,6 +100,7 @@ export default async function cssExtractLoader(
           );
         },
         resolve: resolveFn,
+        transpilationMode: "Css",
       },
       this.resourcePath,
       css,

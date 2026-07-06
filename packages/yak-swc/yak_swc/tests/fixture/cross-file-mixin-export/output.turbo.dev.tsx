@@ -1,18 +1,20 @@
-import { css, styled } from "next-yak/internal";
+import { css, styled, __yak_use, __yak_mixin } from "next-yak/internal";
 import { typographyMixin } from "./typography";
 import * as __yak from "next-yak/internal";
 import "data:text/css;base64,LmlucHV0X0J1dHRvbl9tN3VCQnUgewogIHBhZGRpbmc6IDEwcHggMjBweDsKICBib3JkZXI6IG5vbmU7CiAgYm9yZGVyLXJhZGl1czogNXB4OwogIGN1cnNvcjogcG9pbnRlcjsKfQouaW5wdXRfQnV0dG9uX19fbTd1QkJ1IHsKICAmOmhvdmVyIHsKICAgIGZvbnQtc2l6ZTogMTZweDsKICAgIGNvbG9yOiBibGFjazsKICB9Cn0KLmlucHV0X0J1dHRvbl9tN3VCQnUgewogICY6Zm9jdXMgewogICAgZm9udC1zaXplOiAxNnB4OwogICAgY29sb3I6IGJsYWNrOwogICAgZm9udC1zaXplOiAxNnB4OwogICAgY29sb3I6IGJsYWNrOwogIH0KfQ==";
 const textColor = /*#__PURE__*/ css();
 const textStyles = /*#__PURE__*/ css();
-export const buttonStyles = /*YAK EXPORTED MIXIN:buttonStyles
+export const buttonStyles = /*YAK EXPORTED MIXIN V2:buttonStyles
 padding: 10px 20px;
 border: none;
 border-radius: 5px;
 cursor: pointer;
 font-size: 16px;
 color: black;
---yak-css-import: url("./typography:typographyMixin",mixin);
-*/ /*#__PURE__*/ css();
+--yak-css-import: url("./typography:typographyMixin",mixin,@s0);
+*/ /*#__PURE__*/ __yak_mixin((__yak_b)=>[
+        __yak_use(typographyMixin, __yak_b.sub(0))
+    ]);
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
 .input_Button_m7uBBu {
   padding: 10px 20px;

@@ -1,18 +1,20 @@
-import { css, styled } from "next-yak/internal";
+import { css, styled, __yak_use, __yak_mixin } from "next-yak/internal";
 import { typographyMixin } from "./typography";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css();
 const textStyles = /*#__PURE__*/ css();
-export const buttonStyles = /*YAK EXPORTED MIXIN:buttonStyles
+export const buttonStyles = /*YAK EXPORTED MIXIN V2:buttonStyles
 padding: 10px 20px;
 border: none;
 border-radius: 5px;
 cursor: pointer;
 font-size: 16px;
 color: black;
---yak-css-import: url("./typography:typographyMixin",mixin);
-*/ /*#__PURE__*/ css();
+--yak-css-import: url("./typography:typographyMixin",mixin,@s0);
+*/ /*#__PURE__*/ __yak_mixin((__yak_b)=>[
+        __yak_use(typographyMixin, __yak_b.sub(0))
+    ]);
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Button_m7uBBu) {
   padding: 10px 20px;

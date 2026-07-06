@@ -120,6 +120,7 @@ function getResolveContext(loader: LoaderContext<YakConfigOptions>): ResolveCont
     resolve: async (specifier, importer) => {
       return resolveModule(loader, specifier, dirname(importer));
     },
+    transpilationMode: parseContext.transpilationMode,
   };
 }
 
