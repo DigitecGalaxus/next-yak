@@ -27,6 +27,7 @@ Supported
 - Attrs
 - References to other components
 - Mixins
+- Global styles (`createGlobalStyle` becomes [`globalCss`](/docs/features#global-styles))
 - If some features are missing, please let us know and open a feature request on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
 
 Missing
@@ -35,7 +36,6 @@ Missing
 - Dynamic usage of the css prop
 - `as` prop – You can replace it with a [type-safe alternative](#property-as-does-not-exist)
 - `.withConfig`
-- CreateGlobalStyle - You can just import any global styles in your files directly
 
 ## Just change the import
 
@@ -353,6 +353,45 @@ export const mixin = css<{ $primary: boolean }>`
   }// [!code --]
 `; // [!code --]
 ```
+
+### Global styles
+
+`createGlobalStyle` returns a component that you render — in next-yak global styles are a statement.
+[`globalCss`](/docs/features#global-styles) applies as soon as the file declaring it is imported, so
+remove the JSX usage and import the file from your layout instead:
+
+```tsx title="globals.tsx"
+import { createGlobalStyle } from "styled-components"; // [!code --]
+import { globalCss } from "next-yak"; // [!code ++]
+
+const GlobalStyle = createGlobalStyle` // [!code --]
+globalCss` // [!code ++]
+  body {
+    margin: 0;
+  }
+`;
+```
+
+```tsx title="layout.tsx"
+import { GlobalStyle } from "./globals"; // [!code --]
+import "./globals"; // [!code ++]
+
+export default function Layout({ children }) {
+  return (
+    <html>
+      <body>
+        <GlobalStyle /> {/* [!code --] */}
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+Theme props like `${(props) => props.theme.color}` inside global styles become CSS custom properties
+toggled via an attribute or class on the root element, and a conditionally rendered `<GlobalStyle />`
+becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
+[Global styles](/docs/features#global-styles) for the patterns.
 
 ### Reference external styles
 

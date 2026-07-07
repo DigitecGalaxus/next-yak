@@ -341,6 +341,114 @@ animation: 1s var(--yakVar1) ease-out;
 </Tabs>
 </details>
 
+## Global styles
+
+For styles that don't belong to a single component — CSS resets, `@font-face` declarations, `:root` variables or view transitions — you can use the `globalCss` API. The styles are extracted at build time like all other yak styles and apply as soon as the file declaring them is imported, typically from your root layout or entry point.
+
+```jsx title="globals.tsx"
+import { globalCss, keyframes } from "next-yak";
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+`;
+
+globalCss`
+  :root {
+    --spacing: 4px;
+  }
+
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  ::view-transition-new(root) {
+    animation: ${fadeIn} 200ms ease;
+  }
+`;
+```
+
+```jsx title="layout.tsx"
+import "./globals";
+```
+
+Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components' `createGlobalStyle` there is no component to mount or unmount — express conditions in CSS instead (`@media`, `@supports`, `:root[data-theme]`, `:has()`).
+
+You can interpolate everything that is known at build time: constants, `keyframes`, static `css` mixins and even references to your styled components:
+
+```jsx title="my-dialog.tsx"
+import { globalCss, styled } from "next-yak";
+
+export const Dialog = styled.dialog`
+  padding: var(--spacing);
+`;
+
+globalCss`
+  /* prevent scrolling while the dialog is open */
+  body:has(${Dialog}[open]) {
+    overflow: hidden;
+  }
+`;
+```
+
+Runtime values (`${(props) => ...}`) are not supported inside `globalCss` — a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
+
+```jsx title="globals.tsx"
+import { globalCss } from "next-yak";
+
+globalCss`
+  :root {
+    --sidebar-width: 280px;
+  }
+
+  :root[data-collapsed] {
+    --sidebar-width: 64px;
+  }
+`;
+```
+
+<Callout type="info">
+  `globalCss` must be declared at module scope — using it inside a component or function is a
+  compile error, because the styles exist independently of any render.
+</Callout>
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+globalCss`
+  body {
+    margin: 0;
+  }
+`;
+```
+</Tab>
+<Tab value="output javascript">
+```jsx
+globalCss();
+```
+</Tab>
+<Tab value="output CSS">
+```css
+body {
+  margin: 0;
+}
+```
+</Tab>
+</Tabs>
+</details>
+
+<Callout type="warn">
+  When using Next.js with webpack, class selectors for markup you don't control (e.g. a third-party
+  widget's `.maps` class) need to be wrapped in `:global()` to escape CSS Modules scoping:
+  `:global(.maps) {/* ... */}`. In native CSS mode (Vite, Turbopack, Rsbuild) the same selector must be
+  written without the wrapper — plain `.maps {/* ... */}` just works there.
+</Callout>
+
 ## Mixins
 
 Mixins are declarations of the `css` utility function. You can declare a variable which holds the css declaration and

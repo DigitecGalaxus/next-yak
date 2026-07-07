@@ -528,6 +528,47 @@ impl YakTransform for TransformStyled {
   }
 }
 
+/// Transform for global styles
+/// e.g. globalCss`body { margin: 0; }`
+///
+/// The only transform without a name or scope: declarations are emitted
+/// verbatim — unscoped, unlayered and with untouched selectors in both
+/// transpilation modes. In `CssModule` mode this relies on css-loader leaving
+/// element/pseudo selectors alone; user class selectors that must stay global
+/// need an explicit `:global(.foo)` there.
+pub struct TransformGlobalCss;
+
+impl YakTransform for TransformGlobalCss {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+    ParserState::new()
+  }
+
+  fn transform_expression(
+    &mut self,
+    expression: &mut TaggedTpl,
+    _runtime_expressions: Vec<Expr>,
+    declarations: &[Declaration],
+    _runtime_css_variables: FxHashMap<String, Expr>,
+    _yak_imports: &mut YakImports,
+  ) -> YakTransformResult {
+    YakTransformResult {
+      css: YakCss {
+        comment_prefix: Some("YAK Extracted CSS:".into()),
+        declarations: declarations.to_vec(),
+      },
+      // Keep a bare `globalCss()` no-op call so the extracted-CSS comment has
+      // an expression to anchor to.
+      expression: Box::new(Expr::Call(CallExpr {
+        span: expression.span,
+        ctxt: SyntaxContext::empty(),
+        callee: Callee::Expr(expression.tag.clone()),
+        args: vec![],
+        type_args: None,
+      })),
+    }
+  }
+}
+
 /// Transform for keyframe animations
 /// e.g. const fadeIn = keyframes`...`
 pub struct TransformKeyframes {

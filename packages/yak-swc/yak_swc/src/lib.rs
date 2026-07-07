@@ -43,7 +43,8 @@ use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, T
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
+  TransformCssMixin, TransformGlobalCss, TransformKeyframes, TransformNestedCss, TransformStyled,
+  YakTransform,
 };
 
 /// Static plugin configuration.
@@ -166,6 +167,14 @@ where
   react_refresh_reg: bool,
   /// Names of exported styled components to register with $RefreshReg$
   exported_styled_names: Vec<String>,
+  /// True while processing a `globalCss` literal — runtime interpolations
+  /// are rejected there as a global rule has no element to attach them to
+  inside_global_css: bool,
+  /// True if the module declares global styles, so the side-effect CSS import
+  /// is injected even for modules without any named styles
+  has_global_css: bool,
+  /// Function/arrow nesting depth — `0` is the module scope `globalCss` requires
+  function_depth: u32,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -204,6 +213,9 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
+      inside_global_css: false,
+      has_global_css: false,
+      function_depth: 0,
     }
   }
 
@@ -286,8 +298,9 @@ where
       css_state = Some(new_state);
 
       // Check for user-written :global() selectors in the raw quasi string
-      // This checks the original source code, not the transformed CSS
-      if !self.suppress_deprecation_warnings && !self.has_user_global {
+      // This checks the original source code, not the transformed CSS.
+      // Inside globalCss :global() is the documented escape hatch, not deprecated.
+      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_css {
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
           eprintln!(
@@ -499,6 +512,20 @@ ${{() => {var}}};\n",
         // e.g. styled.button`.foo { ${({$x}) => $x && css`color: red`}; }`
         // e.g. styled.button`left: ${({$x}) => $x};`
         else {
+          if self.inside_global_css {
+            HANDLER.with(|handler| {
+              handler
+                .struct_span_err(
+                  expr.span(),
+                  "Dynamic values are not supported in global styles because there is no element to attach them to.\n\
+                   Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
+                   globalCss`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
+                   See https://yak.js.org/global-styles#dynamic",
+                )
+                .emit();
+            });
+            continue;
+          }
           // Used for resetting the css state after processing all expressions
           let css_state_before = self.current_css_state.clone();
           // store the current css state so we can use it in nested css expressions
@@ -681,7 +708,7 @@ where
         }
       }
 
-      if !self.variable_name_selector_mapping.is_empty() {
+      if !self.variable_name_selector_mapping.is_empty() || self.has_global_css {
         // search for the last import statement as position to insert the css module import
         // it has to be the last import to ensure that the css module is loaded after the other imports
         // and therefore the css is added to the end of the bundle css file
@@ -1084,6 +1111,23 @@ where
           self.import_mode.transpilation_mode(),
         ))
       }
+      // Global styles work only at module scope (not nested in another
+      // css literal and not inside a function/component body)
+      "globalCss" if is_top_level && self.function_depth == 0 => {
+        self.has_global_css = true;
+        Box::new(TransformGlobalCss)
+      }
+      "globalCss" => {
+        HANDLER.with(|handler| {
+          handler
+            .struct_span_err(
+              n.span,
+              "globalCss must be declared at module scope, not inside a component, function or another css template literal.",
+            )
+            .emit();
+        });
+        return;
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -1146,8 +1190,11 @@ where
         .insert(current_variable_id.clone(), css_reference_name);
     }
 
+    let was_inside_global_css = self.inside_global_css;
+    self.inside_global_css = yak_library_function_name.deref() == "globalCss";
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
+    self.inside_global_css = was_inside_global_css;
 
     let transform_result = transform.transform_expression(
       n,
@@ -1191,6 +1238,20 @@ where
     }
     self.comments.add_leading(result_span.lo, pure_annotation());
     self.expression_replacement = Some(transform_result.expression);
+  }
+
+  /// Track function nesting so `globalCss` can be restricted to module scope
+  fn visit_mut_function(&mut self, n: &mut Function) {
+    self.function_depth += 1;
+    n.visit_mut_children_with(self);
+    self.function_depth -= 1;
+  }
+
+  /// Track arrow-function nesting so `globalCss` can be restricted to module scope
+  fn visit_mut_arrow_expr(&mut self, n: &mut ArrowExpr) {
+    self.function_depth += 1;
+    n.visit_mut_children_with(self);
+    self.function_depth -= 1;
   }
 
   /// Report nested atom calls as an error
