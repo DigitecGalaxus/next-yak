@@ -855,21 +855,35 @@ where
   /// To store the current export state
   /// e.g. export default styled.button`color: red;`
   fn visit_mut_export_default_expr(&mut self, n: &mut ExportDefaultExpr) {
-    match n.expr.as_ref() {
-      Expr::Ident(ident) => match self.default_export_comment.as_ref() {
-        Some(comment) => {
-          self.comments.add_leading(
-            ident.span_lo(),
-            Comment {
-              kind: swc_core::common::comments::CommentKind::Block,
-              span: DUMMY_SP,
-              text: comment.clone().into(),
-            },
-          );
-        }
-        None => {}
-      },
-      _ => {}
+    // Unwrap TS-only wrappers so `export default Page as typeof Page` (or `!`,
+    // `satisfies`, parens, ...) still resolves to the underlying identifier.
+    // @swc/core strips these casts before the plugin runs while the native test
+    // harness keeps them, so without this the default-export marker would only be
+    // emitted in some pipelines.
+    let mut default_expr = n.expr.as_ref();
+    loop {
+      default_expr = match default_expr {
+        Expr::TsAs(e) => e.expr.as_ref(),
+        Expr::TsSatisfies(e) => e.expr.as_ref(),
+        Expr::TsConstAssertion(e) => e.expr.as_ref(),
+        Expr::TsNonNull(e) => e.expr.as_ref(),
+        Expr::TsTypeAssertion(e) => e.expr.as_ref(),
+        Expr::TsInstantiation(e) => e.expr.as_ref(),
+        Expr::Paren(e) => e.expr.as_ref(),
+        _ => break,
+      };
+    }
+    if let Expr::Ident(ident) = default_expr {
+      if let Some(comment) = self.default_export_comment.as_ref() {
+        self.comments.add_leading(
+          ident.span_lo(),
+          Comment {
+            kind: swc_core::common::comments::CommentKind::Block,
+            span: DUMMY_SP,
+            text: comment.clone().into(),
+          },
+        );
+      }
     }
 
     self.current_exported = true;
