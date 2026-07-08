@@ -444,11 +444,10 @@ body {
 </Tabs>
 </details>
 
-<Callout type="warn">
-  When using Next.js with webpack, class selectors for markup you don't control (e.g. a third-party
-  widget's `.maps` class) need to be wrapped in `:global()` to escape CSS Modules scoping:
-  `:global(.maps) {/* ... */}`. In native CSS mode (Vite, Turbopack, Rsbuild) the same selector must be
-  written without the wrapper — plain `.maps {/* ... */}` just works there.
+<Callout type="info">
+  Class selectors for markup you don't control (e.g. a third-party widget's `.maps` class) must never
+  be hashed. On Next.js with webpack, wrap them in `:global()` so css-loader keeps them intact:
+  `:global(.maps) {/* ... */}`. All other bundlers can be used without `:global()`.
 </Callout>
 
 ## Mixins

@@ -62,3 +62,15 @@ test(
     await expect(page.getByTestId("layer-box")).toHaveCSS("color", "rgb(0, 128, 0)");
   }),
 );
+
+test(
+  "globalCss :global() class selector applies to non-yak markup on every bundler",
+  withTestEnv("global-css", async (testEnv, page) => {
+    await page.goto(testEnv.url);
+    // `:global(.third-party-widget)` must reach the DOM as a plain, unhashed
+    // `.third-party-widget` rule: css-loader unwraps it on webpack, yak unwraps
+    // it for native CSS pipelines. If the wrapper leaked through, the selector
+    // would be invalid and the rule silently dropped.
+    await expect(page.getByTestId("third-party-widget")).toHaveCSS("color", "rgb(0, 0, 255)");
+  }),
+);

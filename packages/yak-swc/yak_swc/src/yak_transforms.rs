@@ -532,11 +532,22 @@ impl YakTransform for TransformStyled {
 /// e.g. globalCss`body { margin: 0; }`
 ///
 /// The only transform without a name or scope: declarations are emitted
-/// verbatim — unscoped, unlayered and with untouched selectors in both
-/// transpilation modes. In `CssModule` mode this relies on css-loader leaving
-/// element/pseudo selectors alone; user class selectors that must stay global
-/// need an explicit `:global(.foo)` there.
-pub struct TransformGlobalCss;
+/// unscoped and unlayered. Selectors are kept verbatim except for the
+/// `:global(...)` escape hatch used to opt class selectors out of scoping:
+/// in `CssModule` mode it is left intact for css-loader to unwrap, in native
+/// `Css` mode (Vite, Turbopack, Rsbuild) there is no css-loader, so it is
+/// unwrapped here — otherwise `:global(...)` would leak into the browser
+/// stylesheet as an invalid selector and the rule would be silently dropped.
+/// Writing `:global(.foo)` therefore works identically on every bundler.
+pub struct TransformGlobalCss {
+  transpilation_mode: TranspilationMode,
+}
+
+impl TransformGlobalCss {
+  pub fn new(transpilation_mode: TranspilationMode) -> Self {
+    Self { transpilation_mode }
+  }
+}
 
 impl YakTransform for TransformGlobalCss {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
@@ -551,10 +562,28 @@ impl YakTransform for TransformGlobalCss {
     _runtime_css_variables: FxHashMap<String, Expr>,
     _yak_imports: &mut YakImports,
   ) -> YakTransformResult {
+    // In native CSS mode there is no css-loader to interpret the `:global(...)`
+    // wrapper, so unwrap it to the bare selector. CssModule mode keeps it.
+    let declarations = match self.transpilation_mode {
+      TranspilationMode::CssModule => declarations.to_vec(),
+      TranspilationMode::Css => declarations
+        .iter()
+        .map(|declaration| {
+          let mut declaration = declaration.clone();
+          for scope in &mut declaration.scope {
+            if scope.scope_type == ScopeType::Selector {
+              scope.name = unwrap_global_selectors(&scope.name);
+            }
+          }
+          declaration
+        })
+        .collect(),
+    };
+
     YakTransformResult {
       css: YakCss {
         comment_prefix: Some("YAK Extracted CSS:".into()),
-        declarations: declarations.to_vec(),
+        declarations,
       },
       // Keep a bare `globalCss()` no-op call so the extracted-CSS comment has
       // an expression to anchor to.
@@ -567,6 +596,59 @@ impl YakTransform for TransformGlobalCss {
       })),
     }
   }
+}
+
+/// Remove the CSS-Modules `:global(...)` / `:global ` escape hatch from a
+/// selector, keeping the inner selector. Used for native CSS output where no
+/// css-loader is present to interpret it.
+///
+/// Handles the functional form with balanced parentheses (`:global(.a:has(.b))`
+/// -> `.a:has(.b)`) and the combinator form (`:global .foo` -> `.foo`).
+fn unwrap_global_selectors(selector: &str) -> String {
+  const GLOBAL: &[char] = &[':', 'g', 'l', 'o', 'b', 'a', 'l'];
+  let chars: Vec<char> = selector.chars().collect();
+  let mut result = String::new();
+  let mut i = 0;
+  while i < chars.len() {
+    if chars[i..].starts_with(GLOBAL) {
+      let after = i + GLOBAL.len();
+      // Functional form `:global(...)` — copy the balanced-paren contents
+      if chars.get(after) == Some(&'(') {
+        let mut depth = 1;
+        let mut j = after + 1;
+        while j < chars.len() && depth > 0 {
+          match chars[j] {
+            '(' => depth += 1,
+            ')' => {
+              depth -= 1;
+              if depth == 0 {
+                break;
+              }
+            }
+            _ => {}
+          }
+          j += 1;
+        }
+        let inner: String = chars[after + 1..j.min(chars.len())].iter().collect();
+        result.push_str(&unwrap_global_selectors(&inner));
+        // Skip past the closing paren (or to the end if it was unbalanced)
+        i = (j + 1).min(chars.len());
+        continue;
+      }
+      // Combinator form `:global .foo` (or a trailing `:global`) — drop the
+      // token and a single following whitespace, keep the descendant selector
+      if after >= chars.len() || chars[after].is_whitespace() {
+        i = after;
+        if i < chars.len() && chars[i].is_whitespace() {
+          i += 1;
+        }
+        continue;
+      }
+    }
+    result.push(chars[i]);
+    i += 1;
+  }
+  result
 }
 
 /// Transform for keyframe animations
@@ -651,5 +733,47 @@ impl YakTransform for TransformKeyframes {
       TranspilationMode::CssModule => format!("global({})", self.animation_name),
       TranspilationMode::Css => self.animation_name.clone(),
     })
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::unwrap_global_selectors;
+
+  #[test]
+  fn unwraps_functional_global() {
+    assert_eq!(unwrap_global_selectors(":global(.maps)"), ".maps");
+  }
+
+  #[test]
+  fn unwraps_functional_global_with_nested_parens() {
+    assert_eq!(
+      unwrap_global_selectors(":global(.legacy-widget:has(.icon))"),
+      ".legacy-widget:has(.icon)"
+    );
+  }
+
+  #[test]
+  fn unwraps_combinator_global() {
+    assert_eq!(unwrap_global_selectors(":global .maps"), ".maps");
+    assert_eq!(unwrap_global_selectors("body :global .maps"), "body .maps");
+  }
+
+  #[test]
+  fn unwraps_global_mixed_with_other_selectors() {
+    assert_eq!(
+      unwrap_global_selectors("body:has(:global(.legacy-widget)[open])"),
+      "body:has(.legacy-widget[open])"
+    );
+  }
+
+  #[test]
+  fn leaves_plain_selectors_untouched() {
+    assert_eq!(unwrap_global_selectors("body"), "body");
+    assert_eq!(unwrap_global_selectors(".global-thing"), ".global-thing");
+    assert_eq!(
+      unwrap_global_selectors("input:focus-visible"),
+      "input:focus-visible"
+    );
   }
 }

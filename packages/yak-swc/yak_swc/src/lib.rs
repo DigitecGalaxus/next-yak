@@ -520,7 +520,7 @@ ${{() => {var}}};\n",
                   "Dynamic values are not supported in global styles because there is no element to attach them to.\n\
                    Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
                    globalCss`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
-                   See https://yak.js.org/global-styles#dynamic",
+                   See https://yak.js.org/docs/features#global-styles",
                 )
                 .emit();
             });
@@ -1115,7 +1115,9 @@ where
       // css literal and not inside a function/component body)
       "globalCss" if is_top_level && self.function_depth == 0 => {
         self.has_global_css = true;
-        Box::new(TransformGlobalCss)
+        Box::new(TransformGlobalCss::new(
+          self.import_mode.transpilation_mode(),
+        ))
       }
       "globalCss" => {
         HANDLER.with(|handler| {
