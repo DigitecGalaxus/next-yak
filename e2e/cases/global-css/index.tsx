@@ -67,13 +67,6 @@ globalCss`
       color: rgb(255, 0, 0);
     }
   }
-
-  /* 7. :global() escape hatch for markup we don't own — the class must not be
-        hashed. css-loader unwraps it on webpack, yak unwraps it for native CSS,
-        so the same source applies on every bundler */
-  :global(.third-party-widget) {
-    color: rgb(0, 0, 255);
-  }
 `;
 
 export default function App() {
@@ -84,10 +77,6 @@ export default function App() {
       <OpenTrigger data-open="true" data-testid="open-trigger" />
       <FocusInput data-testid="focus-input" />
       <LayerBox data-testid="layer-box">authored layer loses to component</LayerBox>
-      {/* plain DOM class (not a yak component) styled via the :global() escape hatch */}
-      <div className="third-party-widget" data-testid="third-party-widget">
-        third party markup
-      </div>
     </div>
   );
 }

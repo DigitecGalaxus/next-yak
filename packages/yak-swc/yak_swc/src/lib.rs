@@ -1115,9 +1115,7 @@ where
       // css literal and not inside a function/component body)
       "globalCss" if is_top_level && self.function_depth == 0 => {
         self.has_global_css = true;
-        Box::new(TransformGlobalCss::new(
-          self.import_mode.transpilation_mode(),
-        ))
+        Box::new(TransformGlobalCss)
       }
       "globalCss" => {
         HANDLER.with(|handler| {
