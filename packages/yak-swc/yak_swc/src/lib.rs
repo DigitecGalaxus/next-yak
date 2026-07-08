@@ -43,8 +43,8 @@ use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, T
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformGlobalStyles, TransformKeyframes, TransformNestedCss, TransformStyled,
-  YakTransform,
+  TransformCssMixin, TransformGlobalStyles, TransformKeyframes, TransformNestedCss,
+  TransformStyled, YakTransform,
 };
 
 /// Static plugin configuration.
@@ -300,7 +300,8 @@ where
       // Check for user-written :global() selectors in the raw quasi string
       // This checks the original source code, not the transformed CSS.
       // Inside globalStyles :global() is the documented escape hatch, not deprecated.
-      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_styles {
+      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_styles
+      {
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
           eprintln!(
