@@ -27,7 +27,7 @@ Supported
 - Attrs
 - References to other components
 - Mixins
-- Global styles (`createGlobalStyle` becomes [`globalCss`](/docs/features#global-styles))
+- Global styles (`createGlobalStyle` becomes [`globalStyles`](/docs/features#global-styles))
 - If some features are missing, please let us know and open a feature request on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
 
 Missing
@@ -357,15 +357,15 @@ export const mixin = css<{ $primary: boolean }>`
 ### Global styles
 
 `createGlobalStyle` returns a component that you render — in next-yak global styles are a statement.
-[`globalCss`](/docs/features#global-styles) applies as soon as the file declaring it is imported, so
+[`globalStyles`](/docs/features#global-styles) applies as soon as the file declaring it is imported, so
 remove the JSX usage and import the file from your layout instead:
 
 ```tsx title="globals.tsx"
 import { createGlobalStyle } from "styled-components"; // [!code --]
-import { globalCss } from "next-yak"; // [!code ++]
+import { globalStyles } from "next-yak"; // [!code ++]
 
 const GlobalStyle = createGlobalStyle` // [!code --]
-globalCss` // [!code ++]
+globalStyles` // [!code ++]
   body {
     margin: 0;
   }

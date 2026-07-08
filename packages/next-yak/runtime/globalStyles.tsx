@@ -2,7 +2,7 @@ import type { ComponentStyles } from "./cssLiteral.js";
 import type { YakComponent } from "./publicStyledApi.js";
 
 /**
- * Values that may be interpolated into a `globalCss` template.
+ * Values that may be interpolated into a `globalStyles` template.
  *
  * Only build-time values are allowed — constants, `keyframes` animation names,
  * static `css` mixins and styled-component selectors. Runtime functions
@@ -10,7 +10,7 @@ import type { YakComponent } from "./publicStyledApi.js";
  * to attach a CSS variable to. Declare a CSS custom property instead and toggle
  * it via an attribute/class on the root element.
  */
-export type GlobalCssInterpolation =
+export type GlobalStylesInterpolation =
   | string
   | number
   // keyframes`...` resolves to the animation name (a string) at build time
@@ -30,13 +30,13 @@ export type GlobalCssInterpolation =
  * @usage
  *
  * ```tsx
- * import { globalCss, keyframes } from "next-yak";
+ * import { globalStyles, keyframes } from "next-yak";
  *
  * const fadeIn = keyframes`
  *   from { opacity: 0; }
  * `;
  *
- * globalCss`
+ * globalStyles`
  *   :root {
  *     --spacing: 4px;
  *   }
@@ -51,12 +51,12 @@ export type GlobalCssInterpolation =
  * `;
  * ```
  */
-export const globalCss = (
+export const globalStyles = (
   _styles: TemplateStringsArray,
-  ..._values: Array<GlobalCssInterpolation>
+  ..._values: Array<GlobalStylesInterpolation>
 ): void => {
-  // During compilation the entire globalCss template is extracted into a static
-  // stylesheet and this tagged template is replaced by a bare `globalCss()`
+  // During compilation the entire globalStyles template is extracted into a static
+  // stylesheet and this tagged template is replaced by a bare `globalStyles()`
   // no-op call. At runtime it does nothing.
   return undefined;
 };

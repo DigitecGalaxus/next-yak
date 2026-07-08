@@ -1,6 +1,6 @@
-import { globalCss } from "next-yak";
+import { globalStyles } from "next-yak";
 
-globalCss`
+globalStyles`
   body {
     color: ${(props) => props.$color};
   }

@@ -1,4 +1,4 @@
-import { globalCss } from "next-yak/internal";
+import { globalStyles } from "next-yak/internal";
 import "data:text/css;base64,QGxheWVyIGJhc2UgewogIGJvZHkgewogICAgbWFyZ2luOiAwOwogIH0KICBpbnB1dDpmb2N1cy12aXNpYmxlIHsKICAgIG91dGxpbmU6IDJweCBzb2xpZCByZWJlY2NhcHVycGxlOwogIH0KfQ==";
 // Cascade layers are not added automatically — users opt in by authoring
 // @layer themselves; the at-rule passes through verbatim.
@@ -11,4 +11,4 @@ import "data:text/css;base64,QGxheWVyIGJhc2UgewogIGJvZHkgewogICAgbWFyZ2luOiAwOwo
     outline: 2px solid rebeccapurple;
   }
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

@@ -343,10 +343,10 @@ animation: 1s var(--yakVar1) ease-out;
 
 ## Global styles
 
-For styles that don't belong to a single component like CSS resets, `@font-face` declarations, `:root` variables or view transitions, you can use the `globalCss` API. The styles are extracted at build time like all other yak styles and applied as soon as the file declaring them is imported, typically from your root layout or page entry.
+For styles that don't belong to a single component like CSS resets, `@font-face` declarations, `:root` variables or view transitions, you can use the `globalStyles` API. The styles are extracted at build time like all other yak styles and applied as soon as the file declaring them is imported, typically from your root layout or page entry.
 
 ```jsx title="globals.tsx"
-import { globalCss, keyframes } from "next-yak";
+import { globalStyles, keyframes } from "next-yak";
 
 const fadeIn = keyframes`
   from {
@@ -354,7 +354,7 @@ const fadeIn = keyframes`
   }
 `;
 
-globalCss`
+globalStyles`
   :root {
     --spacing: 4px;
   }
@@ -381,13 +381,13 @@ If you need conditional styling, you can use CSS native functionality for that l
 You can interpolate everything that is known at build time like constants, `keyframes`, static `css` mixins and even references to your styled components:
 
 ```jsx title="my-dialog.tsx"
-import { globalCss, styled } from "next-yak";
+import { globalStyles, styled } from "next-yak";
 
 export const Dialog = styled.dialog`
   padding: var(--spacing);
 `;
 
-globalCss`
+globalStyles`
   /* prevent scrolling while the dialog is open */
   body:has(${Dialog}[open]) {
     overflow: hidden;
@@ -395,12 +395,12 @@ globalCss`
 `;
 ```
 
-Runtime values (`${(props) => ...}`) are not supported inside `globalCss` as a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
+Runtime values (`${(props) => ...}`) are not supported inside `globalStyles` as a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
 
 ```jsx title="globals.tsx"
-import { globalCss } from "next-yak";
+import { globalStyles } from "next-yak";
 
-globalCss`
+globalStyles`
   :root {
     --sidebar-width: 280px;
   }
@@ -412,7 +412,7 @@ globalCss`
 ```
 
 <Callout type="info">
-  `globalCss` must be declared at module scope — using it inside a component or function is a
+  `globalStyles` must be declared at module scope — using it inside a component or function is a
   compile error, because the styles exist independently of any render.
 </Callout>
 
@@ -422,7 +422,7 @@ globalCss`
 <Tabs items={["input", "output javascript", "output CSS"]}>
 <Tab value="input">
 ```jsx
-globalCss`
+globalStyles`
   body {
     margin: 0;
   }
@@ -431,7 +431,7 @@ globalCss`
 </Tab>
 <Tab value="output javascript">
 ```jsx
-globalCss();
+globalStyles();
 ```
 </Tab>
 <Tab value="output CSS">

@@ -1,7 +1,7 @@
-  x globalCss must be declared at module scope, not inside a component, function or another css template literal.
+  x globalStyles must be declared at module scope, not inside a component, function or another css template literal.
    ,-[input.js:4:1]
  3 |     function Component() {
- 4 | ,->   globalCss`
+ 4 | ,->   globalStyles`
  5 | |       body {
  6 | |         margin: 0;
  7 | |       }

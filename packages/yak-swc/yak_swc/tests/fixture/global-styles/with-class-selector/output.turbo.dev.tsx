@@ -1,4 +1,4 @@
-import { globalCss } from "next-yak/internal";
+import { globalStyles } from "next-yak/internal";
 import "data:text/css;base64,Omdsb2JhbCgubWFwcykgewogIGJvcmRlcjogMXB4IHNvbGlkIGJsYWNrOwp9";
 // Markup rendered by third-party code (map widgets, markdown, CMS content)
 // ships fixed class names. On Next.js with webpack, CSS Modules would hash
@@ -8,4 +8,4 @@ import "data:text/css;base64,Omdsb2JhbCgubWFwcykgewogIGJvcmRlcjogMXB4IHNvbGlkIGJ
 :global(.maps) {
   border: 1px solid black;
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

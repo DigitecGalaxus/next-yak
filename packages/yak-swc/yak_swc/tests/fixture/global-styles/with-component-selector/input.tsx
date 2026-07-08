@@ -1,10 +1,10 @@
-import { globalCss, styled } from "next-yak";
+import { globalStyles, styled } from "next-yak";
 
 export const Dialog = styled.dialog`
   padding: 16px;
 `;
 
-globalCss`
+globalStyles`
   body:has(${Dialog}[open]) {
     overflow: hidden;
   }

@@ -1,4 +1,4 @@
-import { globalCss } from "next-yak/internal";
+import { globalStyles } from "next-yak/internal";
 import "data:text/css;base64,KiwKKjo6YmVmb3JlLAoqOjphZnRlciB7CiAgYm94LXNpemluZzogYm9yZGVyLWJveDsKfQo6cm9vdCB7CiAgLS1zcGFjaW5nOiA0cHg7CiAgLS1jb2xvci1icmFuZDogIzZiMjFmZjsKfQpib2R5IHsKICBtYXJnaW46IDA7CiAgZm9udC1mYW1pbHk6IHNhbnMtc2VyaWY7Cn0KOmdsb2JhbCguc3Itb25seSkgewogIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICB3aWR0aDogMXB4Owp9";
 /*YAK Extracted CSS:
 *,
@@ -18,4 +18,4 @@ body {
   position: absolute;
   width: 1px;
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

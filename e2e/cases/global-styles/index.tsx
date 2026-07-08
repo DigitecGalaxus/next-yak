@@ -1,13 +1,13 @@
-import { globalCss, keyframes, styled } from "next-yak";
+import { globalStyles, keyframes, styled } from "next-yak";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
 `;
 
-// Consumes a CSS custom property declared in globalCss on :root
+// Consumes a CSS custom property declared in globalStyles on :root
 const WidthConsumer = styled.div`
-  width: var(--global-css-width);
+  width: var(--global-styles-width);
   height: 10px;
 `;
 
@@ -33,7 +33,7 @@ const LayerBox = styled.div`
   color: rgb(0, 128, 0);
 `;
 
-globalCss`
+globalStyles`
   /* 1. plain element selector */
   body {
     background-color: rgb(1, 2, 3);
@@ -41,7 +41,7 @@ globalCss`
 
   /* 2. custom property consumed by a component via var() */
   :root {
-    --global-css-width: 123px;
+    --global-styles-width: 123px;
   }
 
   /* 3. keyframe interpolation applied to a component selector */

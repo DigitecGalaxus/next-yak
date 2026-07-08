@@ -1,4 +1,4 @@
-import { globalCss } from "next-yak/internal";
+import { globalStyles } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Cascade layers are not added automatically — users opt in by authoring
 // @layer themselves; the at-rule passes through verbatim.
@@ -11,4 +11,4 @@ import "./input.yak.module.css!=!./input?./input.yak.module.css";
     outline: 2px solid rebeccapurple;
   }
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

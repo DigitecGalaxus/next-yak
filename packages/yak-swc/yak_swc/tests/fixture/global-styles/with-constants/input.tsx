@@ -1,4 +1,4 @@
-import { globalCss, css } from "next-yak";
+import { globalStyles, css } from "next-yak";
 
 const brand = "#6b21ff";
 const spacing = 8;
@@ -8,7 +8,7 @@ const focusRing = css`
   outline-offset: 2px;
 `;
 
-globalCss`
+globalStyles`
   :root {
     --color-brand: ${brand};
     --spacing: ${spacing}px;

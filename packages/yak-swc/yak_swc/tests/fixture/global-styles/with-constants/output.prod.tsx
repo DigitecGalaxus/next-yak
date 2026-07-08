@@ -1,4 +1,4 @@
-import { globalCss, css } from "next-yak/internal";
+import { globalStyles, css } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const brand = "#6b21ff";
 const spacing = 8;
@@ -12,4 +12,4 @@ a:focus-visible {
   outline: 2px solid #6b21ff;
   outline-offset: 2px;
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

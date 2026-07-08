@@ -1,6 +1,6 @@
-import { globalCss } from "next-yak";
+import { globalStyles } from "next-yak";
 
-globalCss`
+globalStyles`
   @font-face {
     font-family: "Inter";
     src: url("/fonts/inter.woff2") format("woff2");

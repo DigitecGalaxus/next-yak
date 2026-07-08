@@ -43,7 +43,7 @@ use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, T
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformGlobalCss, TransformKeyframes, TransformNestedCss, TransformStyled,
+  TransformCssMixin, TransformGlobalStyles, TransformKeyframes, TransformNestedCss, TransformStyled,
   YakTransform,
 };
 
@@ -167,13 +167,13 @@ where
   react_refresh_reg: bool,
   /// Names of exported styled components to register with $RefreshReg$
   exported_styled_names: Vec<String>,
-  /// True while processing a `globalCss` literal — runtime interpolations
+  /// True while processing a `globalStyles` literal — runtime interpolations
   /// are rejected there as a global rule has no element to attach them to
-  inside_global_css: bool,
+  inside_global_styles: bool,
   /// True if the module declares global styles, so the side-effect CSS import
   /// is injected even for modules without any named styles
-  has_global_css: bool,
-  /// Function/arrow nesting depth — `0` is the module scope `globalCss` requires
+  has_global_styles: bool,
+  /// Function/arrow nesting depth — `0` is the module scope `globalStyles` requires
   function_depth: u32,
 }
 
@@ -213,8 +213,8 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
-      inside_global_css: false,
-      has_global_css: false,
+      inside_global_styles: false,
+      has_global_styles: false,
       function_depth: 0,
     }
   }
@@ -299,8 +299,8 @@ where
 
       // Check for user-written :global() selectors in the raw quasi string
       // This checks the original source code, not the transformed CSS.
-      // Inside globalCss :global() is the documented escape hatch, not deprecated.
-      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_css {
+      // Inside globalStyles :global() is the documented escape hatch, not deprecated.
+      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_styles {
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
           eprintln!(
@@ -512,14 +512,14 @@ ${{() => {var}}};\n",
         // e.g. styled.button`.foo { ${({$x}) => $x && css`color: red`}; }`
         // e.g. styled.button`left: ${({$x}) => $x};`
         else {
-          if self.inside_global_css {
+          if self.inside_global_styles {
             HANDLER.with(|handler| {
               handler
                 .struct_span_err(
                   expr.span(),
                   "Dynamic values are not supported in global styles because there is no element to attach them to.\n\
                    Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
-                   globalCss`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
+                   globalStyles`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
                    See https://yak.js.org/docs/features#global-styles",
                 )
                 .emit();
@@ -708,7 +708,7 @@ where
         }
       }
 
-      if !self.variable_name_selector_mapping.is_empty() || self.has_global_css {
+      if !self.variable_name_selector_mapping.is_empty() || self.has_global_styles {
         // search for the last import statement as position to insert the css module import
         // it has to be the last import to ensure that the css module is loaded after the other imports
         // and therefore the css is added to the end of the bundle css file
@@ -1113,16 +1113,16 @@ where
       }
       // Global styles work only at module scope (not nested in another
       // css literal and not inside a function/component body)
-      "globalCss" if is_top_level && self.function_depth == 0 => {
-        self.has_global_css = true;
-        Box::new(TransformGlobalCss)
+      "globalStyles" if is_top_level && self.function_depth == 0 => {
+        self.has_global_styles = true;
+        Box::new(TransformGlobalStyles)
       }
-      "globalCss" => {
+      "globalStyles" => {
         HANDLER.with(|handler| {
           handler
             .struct_span_err(
               n.span,
-              "globalCss must be declared at module scope, not inside a component, function or another css template literal.",
+              "globalStyles must be declared at module scope, not inside a component, function or another css template literal.",
             )
             .emit();
         });
@@ -1190,11 +1190,11 @@ where
         .insert(current_variable_id.clone(), css_reference_name);
     }
 
-    let was_inside_global_css = self.inside_global_css;
-    self.inside_global_css = yak_library_function_name.deref() == "globalCss";
+    let was_inside_global_styles = self.inside_global_styles;
+    self.inside_global_styles = yak_library_function_name.deref() == "globalStyles";
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
-    self.inside_global_css = was_inside_global_css;
+    self.inside_global_styles = was_inside_global_styles;
 
     let transform_result = transform.transform_expression(
       n,
@@ -1240,14 +1240,14 @@ where
     self.expression_replacement = Some(transform_result.expression);
   }
 
-  /// Track function nesting so `globalCss` can be restricted to module scope
+  /// Track function nesting so `globalStyles` can be restricted to module scope
   fn visit_mut_function(&mut self, n: &mut Function) {
     self.function_depth += 1;
     n.visit_mut_children_with(self);
     self.function_depth -= 1;
   }
 
-  /// Track arrow-function nesting so `globalCss` can be restricted to module scope
+  /// Track arrow-function nesting so `globalStyles` can be restricted to module scope
   fn visit_mut_arrow_expr(&mut self, n: &mut ArrowExpr) {
     self.function_depth += 1;
     n.visit_mut_children_with(self);

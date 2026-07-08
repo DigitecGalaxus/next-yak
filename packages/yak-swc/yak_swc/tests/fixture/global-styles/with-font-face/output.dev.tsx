@@ -1,4 +1,4 @@
-import { globalCss } from "next-yak/internal";
+import { globalStyles } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 /*YAK Extracted CSS:
 @property --progress {
@@ -15,4 +15,4 @@ import "./input.yak.module.css!=!./input?./input.yak.module.css";
 body {
   font-family: "Inter", sans-serif;
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

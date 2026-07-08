@@ -2,24 +2,24 @@ import { test, expect } from "@playwright/test";
 import { withTestEnv } from "next-yak-e2e";
 
 test(
-  "globalCss applies a plain element selector to body",
-  withTestEnv("global-css", async (testEnv, page) => {
+  "globalStyles applies a plain element selector to body",
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     await expect(page.locator("body")).toHaveCSS("background-color", "rgb(1, 2, 3)");
   }),
 );
 
 test(
-  "globalCss declares a custom property on :root consumed by a component",
-  withTestEnv("global-css", async (testEnv, page) => {
+  "globalStyles declares a custom property on :root consumed by a component",
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     await expect(page.getByTestId("width-consumer")).toHaveCSS("width", "123px");
   }),
 );
 
 test(
-  "globalCss can reference a keyframes animation",
-  withTestEnv("global-css", async (testEnv, page) => {
+  "globalStyles can reference a keyframes animation",
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     const animated = page.getByTestId("animated-box");
     await expect(animated).toHaveCSS("animation-duration", "1s");
@@ -29,8 +29,8 @@ test(
 );
 
 test(
-  "globalCss can target a component selector inside :has()",
-  withTestEnv("global-css", async (testEnv, page) => {
+  "globalStyles can target a component selector inside :has()",
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     // body:has(<OpenTrigger data-open="true">) { overflow: hidden }
     await expect(page.locator("body")).toHaveCSS("overflow-x", "hidden");
@@ -39,7 +39,7 @@ test(
 
 test(
   "unlayered globals win over component styles through regular specificity",
-  withTestEnv("global-css", async (testEnv, page) => {
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     const input = page.getByTestId("focus-input");
     // Blurred: only the component rule applies → black.
@@ -54,7 +54,7 @@ test(
 
 test(
   "user-authored @layer opts globals out of specificity fights with components",
-  withTestEnv("global-css", async (testEnv, page) => {
+  withTestEnv("global-styles", async (testEnv, page) => {
     await page.goto(testEnv.url);
     // The global rule inside `@layer base` sets red at the same specificity as
     // the component rule, but unlayered (component) beats layered → green wins

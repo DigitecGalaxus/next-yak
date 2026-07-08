@@ -1,4 +1,4 @@
-import { globalCss, keyframes } from "next-yak/internal";
+import { globalStyles, keyframes } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const fadeIn = /*YAK Extracted CSS:
 @keyframes :global(ym7uBBu) {
@@ -14,4 +14,4 @@ const fadeIn = /*YAK Extracted CSS:
 ::view-transition-new(root) {
   animation: global(ym7uBBu) 200ms ease;
 }
-*/ /*#__PURE__*/ globalCss();
+*/ /*#__PURE__*/ globalStyles();

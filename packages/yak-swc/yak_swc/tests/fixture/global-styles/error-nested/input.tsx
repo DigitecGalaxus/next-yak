@@ -1,7 +1,7 @@
-import { globalCss } from "next-yak";
+import { globalStyles } from "next-yak";
 
 function Component() {
-  globalCss`
+  globalStyles`
     body {
       margin: 0;
     }

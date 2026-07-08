@@ -1,7 +1,7 @@
   x Dynamic values are not supported in global styles because there is no element to attach them to.
   | Declare a CSS custom property instead and toggle it via an attribute/class on the root element:
   | 
-  | globalCss`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`
+  | globalStyles`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`
   | 
   | See https://yak.js.org/docs/features#global-styles
    ,-[input.js:5:1]

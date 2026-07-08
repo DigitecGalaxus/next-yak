@@ -1,8 +1,8 @@
-import { globalCss } from "next-yak";
+import { globalStyles } from "next-yak";
 
 // Cascade layers are not added automatically — users opt in by authoring
 // @layer themselves; the at-rule passes through verbatim.
-globalCss`
+globalStyles`
   @layer base {
     body {
       margin: 0;

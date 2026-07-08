@@ -529,16 +529,16 @@ impl YakTransform for TransformStyled {
 }
 
 /// Transform for global styles
-/// e.g. globalCss`body { margin: 0; }`
+/// e.g. globalStyles`body { margin: 0; }`
 ///
 /// The only transform without a name or scope: declarations are emitted
 /// verbatim — unscoped, unlayered and with untouched selectors in both
 /// transpilation modes. In `CssModule` mode this relies on css-loader leaving
 /// element/pseudo selectors alone; user class selectors that must stay global
 /// need an explicit `:global(.foo)` there.
-pub struct TransformGlobalCss;
+pub struct TransformGlobalStyles;
 
-impl YakTransform for TransformGlobalCss {
+impl YakTransform for TransformGlobalStyles {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     ParserState::new()
   }
@@ -556,7 +556,7 @@ impl YakTransform for TransformGlobalCss {
         comment_prefix: Some("YAK Extracted CSS:".into()),
         declarations: declarations.to_vec(),
       },
-      // Keep a bare `globalCss()` no-op call so the extracted-CSS comment has
+      // Keep a bare `globalStyles()` no-op call so the extracted-CSS comment has
       // an expression to anchor to.
       expression: Box::new(Expr::Call(CallExpr {
         span: expression.span,
