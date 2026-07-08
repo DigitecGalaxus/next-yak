@@ -343,7 +343,7 @@ animation: 1s var(--yakVar1) ease-out;
 
 ## Global styles
 
-For styles that don't belong to a single component — CSS resets, `@font-face` declarations, `:root` variables or view transitions — you can use the `globalCss` API. The styles are extracted at build time like all other yak styles and apply as soon as the file declaring them is imported, typically from your root layout or entry point.
+For styles that don't belong to a single component like CSS resets, `@font-face` declarations, `:root` variables or view transitions, you can use the `globalCss` API. The styles are extracted at build time like all other yak styles and applied as soon as the file declaring them is imported, typically from your root layout or page entry.
 
 ```jsx title="globals.tsx"
 import { globalCss, keyframes } from "next-yak";
