@@ -393,7 +393,7 @@ globalCss`
 `;
 ```
 
-Runtime values (`${(props) => ...}`) are not supported inside `globalCss` — a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
+Runtime values (`${(props) => ...}`) are not supported inside `globalCss` as a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
 
 ```jsx title="globals.tsx"
 import { globalCss } from "next-yak";
