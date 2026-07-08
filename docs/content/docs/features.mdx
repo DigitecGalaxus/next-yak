@@ -374,7 +374,9 @@ globalCss`
 import "./globals";
 ```
 
-Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components' `createGlobalStyle` there is no component to mount or unmount — express conditions in CSS instead (`@media`, `@supports`, `:root[data-theme]`, `:has()`).
+Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components `createGlobalStyle` there is no component to mount or unmount.
+
+If you need conditional styling, you can use CSS native functionality for that like `@media`, `@supports`, `:root[data-theme]` or `:has()`.
 
 You can interpolate everything that is known at build time like constants, `keyframes`, static `css` mixins and even references to your styled components:
 
