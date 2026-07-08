@@ -376,7 +376,7 @@ import "./globals";
 
 Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components' `createGlobalStyle` there is no component to mount or unmount — express conditions in CSS instead (`@media`, `@supports`, `:root[data-theme]`, `:has()`).
 
-You can interpolate everything that is known at build time: constants, `keyframes`, static `css` mixins and even references to your styled components:
+You can interpolate everything that is known at build time like constants, `keyframes`, static `css` mixins and even references to your styled components:
 
 ```jsx title="my-dialog.tsx"
 import { globalCss, styled } from "next-yak";
