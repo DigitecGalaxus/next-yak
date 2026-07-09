@@ -11,6 +11,25 @@ const packageRoot = dirname(scriptDir);
 const fixtureRoot = join(packageRoot, "yak_swc/tests/fixture");
 const wasmPath = join(packageRoot, "target/wasm32-wasip1/release/yak_swc.wasm");
 
+type ImportMode = {
+  value: string;
+  transpilation: string;
+  encoding: string;
+};
+
+type PluginOptions = {
+  minify: boolean;
+  displayNames: boolean;
+  importMode: ImportMode;
+};
+
+type Mode = {
+  name: string;
+  output: string;
+  stderr: string;
+  options: PluginOptions;
+};
+
 // The native fixture snapshots are emitted by swc's own codegen and keep
 // TypeScript syntax, whereas running the wasm plugin through @swc/core strips
 // types and formats comments/imports its own way. To compare like for like we
@@ -21,72 +40,50 @@ const wasmPath = join(packageRoot, "target/wasm32-wasip1/release/yak_swc.wasm");
 //
 // Fixtures listed here legitimately can't match even after normalization; keep
 // the list tiny and document why each one is here.
-const EXACT_MATCH_EXCEPTIONS = new Map([
-  [
-    "typecast-styled-component",
-    "@swc/core attaches the leading `// @ts-ignore` comment differently than the native codegen",
-  ],
+const EXACT_MATCH_EXCEPTIONS = new Set<string>([
+  // @swc/core attaches the leading `// @ts-ignore` comment differently than the
+  // native codegen.
+  "typecast-styled-component",
 ]);
 
-const MODES = [
-  [
-    "dev",
-    "output.dev.tsx",
-    "output.dev.stderr",
-    {
-      minify: false,
-      displayNames: true,
-      importMode: {
-        value:
-          "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css",
-        transpilation: "CssModule",
-        encoding: "None",
-      },
-    },
-  ],
-  [
-    "prod",
-    "output.prod.tsx",
-    "output.prod.stderr",
-    {
-      minify: true,
-      displayNames: false,
-      importMode: {
-        value:
-          "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css",
-        transpilation: "CssModule",
-        encoding: "None",
-      },
-    },
-  ],
-  [
-    "turbo.dev",
-    "output.turbo.dev.tsx",
-    "output.turbo.dev.stderr",
-    {
-      minify: false,
-      displayNames: true,
-      importMode: {
-        value: "data:text/css;base64,",
-        transpilation: "Css",
-        encoding: "Base64",
-      },
-    },
-  ],
-  [
-    "turbo.prod",
-    "output.turbo.prod.tsx",
-    "output.turbo.prod.stderr",
-    {
-      minify: true,
-      displayNames: false,
-      importMode: {
-        value: "data:text/css;base64,",
-        transpilation: "Css",
-        encoding: "Base64",
-      },
-    },
-  ],
+const CSS_MODULE_IMPORT: ImportMode = {
+  value:
+    "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css",
+  transpilation: "CssModule",
+  encoding: "None",
+};
+
+const TURBO_IMPORT: ImportMode = {
+  value: "data:text/css;base64,",
+  transpilation: "Css",
+  encoding: "Base64",
+};
+
+const MODES: Mode[] = [
+  {
+    name: "dev",
+    output: "output.dev.tsx",
+    stderr: "output.dev.stderr",
+    options: { minify: false, displayNames: true, importMode: CSS_MODULE_IMPORT },
+  },
+  {
+    name: "prod",
+    output: "output.prod.tsx",
+    stderr: "output.prod.stderr",
+    options: { minify: true, displayNames: false, importMode: CSS_MODULE_IMPORT },
+  },
+  {
+    name: "turbo.dev",
+    output: "output.turbo.dev.tsx",
+    stderr: "output.turbo.dev.stderr",
+    options: { minify: false, displayNames: true, importMode: TURBO_IMPORT },
+  },
+  {
+    name: "turbo.prod",
+    output: "output.turbo.prod.tsx",
+    stderr: "output.turbo.prod.stderr",
+    options: { minify: true, displayNames: false, importMode: TURBO_IMPORT },
+  },
 ];
 
 const BASE_SWC_OPTIONS = {
@@ -111,7 +108,7 @@ const BASE_SWC_OPTIONS = {
   },
   minify: false,
   isModule: true,
-};
+} as const;
 
 if (!existsSync(wasmPath)) {
   console.error(
@@ -121,7 +118,7 @@ if (!existsSync(wasmPath)) {
   process.exit(1);
 }
 
-const failures = [];
+const failures: string[] = [];
 const stats = {
   exact: 0,
   exactSkipped: 0,
@@ -129,7 +126,7 @@ const stats = {
   checked: 0,
 };
 
-const fixtures = [];
+const fixtures: string[] = [];
 for await (const entry of glob("**/input.tsx", { cwd: fixtureRoot })) {
   fixtures.push(dirname(entry));
 }
@@ -139,9 +136,9 @@ for (const fixtureName of fixtures) {
   const fixtureDir = join(fixtureRoot, fixtureName);
   const input = readFileSync(join(fixtureDir, "input.tsx"), "utf8");
 
-  for (const [modeName, outputName, stderrName, pluginOptions] of MODES) {
-    const outputPath = join(fixtureDir, outputName);
-    const stderrPath = join(fixtureDir, stderrName);
+  for (const { name: modeName, output, stderr, options } of MODES) {
+    const outputPath = join(fixtureDir, output);
+    const stderrPath = join(fixtureDir, stderr);
     const label = `${fixtureName}/${modeName}`;
 
     // Diagnostic fixtures: the plugin emits a recoverable error. Natively that
@@ -153,7 +150,7 @@ for (const fixtureName of fixtures) {
     // in some other way.
     if (existsSync(stderrPath)) {
       try {
-        runWasmTransform(input, pluginOptions);
+        runWasmTransform(input, options);
       } catch {
         // expected: the host surfaces the diagnostic as a throw
       }
@@ -162,13 +159,13 @@ for (const fixtureName of fixtures) {
     }
 
     if (!existsSync(outputPath)) {
-      failures.push(`${label}: missing expected output ${outputName}`);
+      failures.push(`${label}: missing expected output ${output}`);
       continue;
     }
 
-    let actual;
+    let actual: string;
     try {
-      actual = runWasmTransform(input, pluginOptions);
+      actual = runWasmTransform(input, options);
     } catch (error) {
       failures.push(`${label}: wasm transform threw unexpectedly\n${firstLine(error)}`);
       continue;
@@ -181,8 +178,8 @@ for (const fixtureName of fixtures) {
 
     stats.checked++;
 
-    let expected;
-    let normalizedActual;
+    let expected: string;
+    let normalizedActual: string;
     try {
       expected = normalize(readFileSync(outputPath, "utf8"));
       normalizedActual = normalize(actual);
@@ -223,11 +220,11 @@ if (failures.length > 0) {
 // Run a source string through @swc/core with no plugin: strips types, elides
 // unused imports and re-emits comments the same way for both sides so those
 // artifacts cancel when we diff.
-function normalize(code) {
+function normalize(code: string): string {
   return transformSync(code, BASE_SWC_OPTIONS).code;
 }
 
-function runWasmTransform(input, pluginOptions) {
+function runWasmTransform(input: string, options: PluginOptions): string {
   return transformSync(input, {
     ...BASE_SWC_OPTIONS,
     jsc: {
@@ -238,7 +235,7 @@ function runWasmTransform(input, pluginOptions) {
             wasmPath,
             {
               basePath: "path",
-              ...pluginOptions,
+              ...options,
             },
           ],
         ],
@@ -247,11 +244,12 @@ function runWasmTransform(input, pluginOptions) {
   }).code;
 }
 
-function firstLine(error) {
-  return String(error?.stack || error?.message || error).split("\n")[0];
+function firstLine(error: unknown): string {
+  const err = error as { stack?: string; message?: string } | null;
+  return String(err?.stack || err?.message || error).split("\n")[0];
 }
 
-function formatFirstDiff(expected, actual) {
+function formatFirstDiff(expected: string, actual: string): string {
   const max = Math.min(expected.length, actual.length);
   let index = 0;
   while (index < max && expected[index] === actual[index]) {
