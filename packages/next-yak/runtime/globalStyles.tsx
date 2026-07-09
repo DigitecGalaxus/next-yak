@@ -10,12 +10,7 @@ import type { YakComponent } from "./publicStyledApi.js";
  * to attach a CSS variable to. Declare a CSS custom property instead and toggle
  * it via an attribute/class on the root element.
  */
-export type GlobalStylesInterpolation =
-  | string
-  | number
-  // keyframes`...` resolves to the animation name (a string) at build time
-  | ComponentStyles<{}>
-  | YakComponent<any>;
+export type GlobalStylesInterpolation = string | number | ComponentStyles<{}> | YakComponent<any>;
 
 /**
  * Declares global, unscoped styles that ride the same zero-runtime extraction
