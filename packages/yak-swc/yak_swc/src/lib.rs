@@ -173,6 +173,10 @@ where
   /// True if the module declares global styles, so the side-effect CSS import
   /// is injected even for modules without any named styles
   has_global_styles: bool,
+  /// Set when the current `globalStyles` literal hit a fatal error (e.g. a runtime
+  /// interpolation). The declarations parsed before the error are left half-formed
+  /// (`color: ;`), so the extracted CSS is dropped rather than emitted/injected.
+  global_styles_error: bool,
   /// Function/arrow nesting depth — `0` is the module scope `globalStyles` requires
   function_depth: u32,
 }
@@ -215,6 +219,7 @@ where
       exported_styled_names: Vec::new(),
       inside_global_styles: false,
       has_global_styles: false,
+      global_styles_error: false,
       function_depth: 0,
     }
   }
@@ -525,6 +530,9 @@ ${{() => {var}}};\n",
                 )
                 .emit();
             });
+            // Abort this literal: the CSS parsed so far ends in a dangling
+            // `color: ;`, so it must not reach the extracted stylesheet.
+            self.global_styles_error = true;
             continue;
           }
           // Used for resetting the css state after processing all expressions
@@ -1193,6 +1201,7 @@ where
 
     let was_inside_global_styles = self.inside_global_styles;
     self.inside_global_styles = yak_library_function_name.deref() == "globalStyles";
+    self.global_styles_error = false;
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
     self.inside_global_styles = was_inside_global_styles;
@@ -1210,7 +1219,10 @@ where
     }
     let css_code = to_css(&transform_result.css.declarations);
     let result_span = transform_result.expression.span();
-    if (!css_code.is_empty() || self.current_exported) && is_top_level {
+    // A globalStyles literal that errored produced malformed declarations; keep the
+    // bare `globalStyles()` call as the anchor but emit no extracted CSS for it.
+    if (!css_code.is_empty() || self.current_exported) && is_top_level && !self.global_styles_error
+    {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
         // Don't add invalid CSS rules to the list of all CSS rules
         // Mixin code should always be used in other components so that they target the correct element
