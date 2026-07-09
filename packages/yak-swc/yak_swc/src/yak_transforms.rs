@@ -557,7 +557,10 @@ impl YakTransform for TransformGlobalStyles {
         declarations: declarations.to_vec(),
       },
       // Keep a bare `globalStyles()` no-op call so the extracted-CSS comment has
-      // an expression to anchor to.
+      // an expression to anchor to. Don't drop it: that comment is how the
+      // webpack/Vite loaders extract the CSS (see extractCss), and its source
+      // position determines cascade order. The call itself is erased in prod by
+      // the shared /*#__PURE__*/ annotation.
       expression: Box::new(Expr::Call(CallExpr {
         span: expression.span,
         ctxt: SyntaxContext::empty(),
