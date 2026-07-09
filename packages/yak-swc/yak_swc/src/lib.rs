@@ -304,9 +304,9 @@ where
 
       // Check for user-written :global() selectors in the raw quasi string
       // This checks the original source code, not the transformed CSS.
-      // Inside globalStyles :global() is the documented escape hatch, not deprecated.
-      if !self.suppress_deprecation_warnings && !self.has_user_global && !self.inside_global_styles
-      {
+      // :global() is deprecated the same way in every context (styled, css and
+      // globalStyles) — all of them steer users to native CSS transpilation mode.
+      if !self.suppress_deprecation_warnings && !self.has_user_global {
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
           eprintln!(
