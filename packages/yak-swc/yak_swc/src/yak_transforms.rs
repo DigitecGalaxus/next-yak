@@ -7,7 +7,7 @@ use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{source_map::PURE_SP, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
 
 use crate::naming_convention::{NamingConvention, TranspilationMode};
@@ -128,10 +128,11 @@ impl YakTransform for TransformNestedCss {
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {
-        // Use a special span as this expression might be cloned as part
-        // of a parent expression and therefore needs a unique span to
-        // avoid collisions for the comments
-        span: Span::dummy_with_cmt(),
+        // PURE_SP marks the call as side-effect free directly on the span.
+        // Unlike a comment keyed by BytePos it survives cloning and the
+        // wasm plugin serialization boundary (dummy_with_cmt positions get
+        // orphaned there and leak to the end of the module).
+        span: PURE_SP,
         callee: Callee::Expr(expression.tag.clone()),
         ctxt: SyntaxContext::empty(),
         args: arguments,
