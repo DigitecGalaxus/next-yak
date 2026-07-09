@@ -390,7 +390,7 @@ export default function Layout({ children }) {
 ```
 
 Theme props like `${(props) => props.theme.color}` inside global styles become CSS custom properties
-toggled via an attribute or class on the root element, and a conditionally rendered `<GlobalStyle />`
+toggled via an attribute or class on the root element. And a conditionally rendered `<GlobalStyle />`
 becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
 [Global styles](/docs/features#global-styles) for the patterns.
 
