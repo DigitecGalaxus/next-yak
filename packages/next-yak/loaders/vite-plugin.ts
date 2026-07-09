@@ -61,6 +61,7 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
     },
     minify: userOptions.minify ?? process.env.NODE_ENV === "production",
     prefix: userOptions.prefix,
+    strictCssProp: userOptions.strictCssProp,
     contextPath: userOptions.contextPath,
     swcOptions: deepMerge(defaultSwcOptions!, userOptions.swcOptions ?? {}),
   };
@@ -298,6 +299,7 @@ function transform(
               basePath: rootPath,
               prefix: yakOptions.prefix,
               displayNames: yakOptions.displayNames,
+              strictCssProp: yakOptions.strictCssProp ?? true,
               suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               importMode: {
