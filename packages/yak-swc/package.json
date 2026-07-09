@@ -38,10 +38,14 @@
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
     "format": "cargo fmt --all",
     "test": "cargo test -- --include-ignored",
+    "test:wasm-fixtures": "node scripts/test-wasm-fixtures.mts",
     "test:snapshots": "cd yak_swc && UPDATE=1 cargo test -- --include-ignored"
   },
   "dependencies": {
     "@swc/counter": "catalog:core"
+  },
+  "devDependencies": {
+    "@swc/core": "catalog:core"
   },
   "preferUnplugged": true
 }
