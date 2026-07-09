@@ -448,6 +448,9 @@ body {
   Class selectors for markup you don't control (e.g. a third-party widget's `.maps` class) must never
   be hashed. On Next.js with webpack, wrap them in `:global()` so css-loader keeps them intact:
   `:global(.maps) {/* ... */}`. All other bundlers can be used without `:global()`.
+
+  The same rules for referencing external styles apply here as well. For further documentation visit:
+  [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
 </Callout>
 
 ## Mixins
