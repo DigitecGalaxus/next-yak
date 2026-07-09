@@ -55,8 +55,5 @@ export const globalStyles = (
   _styles: TemplateStringsArray,
   ..._values: Array<GlobalStylesInterpolation>
 ): void => {
-  // During compilation the entire globalStyles template is extracted into a static
-  // stylesheet and this tagged template is replaced by a bare `globalStyles()`
-  // no-op call. At runtime it does nothing.
   return undefined;
 };
