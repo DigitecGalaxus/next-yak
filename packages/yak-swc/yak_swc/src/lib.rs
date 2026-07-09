@@ -109,6 +109,21 @@ impl Default for Config {
   }
 }
 
+/// Emitted when a `globalStyles` literal contains a runtime interpolation
+/// (`${(props) => ...}`). A global rule has no element to attach a value to,
+/// so the fix is a CSS custom property toggled from the root element.
+const GLOBAL_STYLES_DYNAMIC_VALUE_ERROR: &str = "\
+Dynamic values are not supported in global styles because there is no element to attach them to.\n\
+Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
+globalStyles`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
+See https://yak.js.org/docs/features#global-styles";
+
+/// Emitted when `globalStyles` is used anywhere but module scope (inside a
+/// component, function or another css template literal), where the styles would
+/// no longer exist independently of a render.
+const GLOBAL_STYLES_SCOPE_ERROR: &str =
+  "globalStyles must be declared at module scope, not inside a component, function or another css template literal.";
+
 pub struct TransformVisitor<GenericComments>
 where
   // SWC provides different comment types for production and testing
@@ -521,13 +536,7 @@ ${{() => {var}}};\n",
           if self.inside_global_styles {
             HANDLER.with(|handler| {
               handler
-                .struct_span_err(
-                  expr.span(),
-                  "Dynamic values are not supported in global styles because there is no element to attach them to.\n\
-                   Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
-                   globalStyles`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
-                   See https://yak.js.org/docs/features#global-styles",
-                )
+                .struct_span_err(expr.span(), GLOBAL_STYLES_DYNAMIC_VALUE_ERROR)
                 .emit();
             });
             // Abort this literal: the CSS parsed so far ends in a dangling
@@ -1129,10 +1138,7 @@ where
       "globalStyles" => {
         HANDLER.with(|handler| {
           handler
-            .struct_span_err(
-              n.span,
-              "globalStyles must be declared at module scope, not inside a component, function or another css template literal.",
-            )
+            .struct_span_err(n.span, GLOBAL_STYLES_SCOPE_ERROR)
             .emit();
         });
         return;
