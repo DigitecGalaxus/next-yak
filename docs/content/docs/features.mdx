@@ -447,9 +447,9 @@ body {
 <Callout type="info">
   Class selectors for markup you don't control (e.g. a third-party widget's `.maps` class) must never
   be hashed. On native CSS pipelines (Vite, Turbopack, rsbuild) they stay intact automatically. On
-  Next.js with webpack, css-loader scopes them. Enable native CSS transpilation mode
-  (`transpilationMode: 'Css'`) so they pass through unchanged. The `:global(.maps)` wrapper still works
-  as a deprecated fallback, but like every `:global()` selector it is on its way out.
+  Next.js with webpack they are hashed by default, so enable native CSS transpilation mode
+  (`transpilationMode: 'Css'`) to keep them unchanged. The `:global(.maps)` wrapper still works as a
+  deprecated fallback, but like every `:global()` selector it is on its way out.
 
   The same rules for referencing external styles apply here as well. For further documentation visit:
   [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
