@@ -147,6 +147,8 @@ const Wrapper = styled.div`
 
 ### Styling body or html elements
 
+`html` and `body` are not scoped to a component, so wrapping them in a `styled` component was always a workaround. Reach for the [`globalStyle`](/docs/features#globalstyle) API instead, which targets element selectors directly on every bundler without `:global()`:
+
 ```tsx title="Before"
 const GlobalStyles = styled.div`
   :global(html) {
@@ -160,8 +162,10 @@ const GlobalStyles = styled.div`
 `;
 ```
 
-```tsx title="After (with transpilationMode: 'Css')"
-const GlobalStyles = styled.div`
+```tsx title="After"
+import { globalStyle } from "next-yak";
+
+globalStyle`
   html {
     font-size: 16px;
   }
