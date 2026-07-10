@@ -16,6 +16,7 @@ concurrency:
 jobs:
   check-changeset:
     name: Verify changeset present
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
