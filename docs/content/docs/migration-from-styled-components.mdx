@@ -27,7 +27,7 @@ Supported
 - Attrs
 - References to other components
 - Mixins
-- Global styles (`createGlobalStyle` becomes [`globalStyles`](/docs/features#global-styles))
+- Global styles (`createGlobalStyle` becomes [`globalStyle`](/docs/features#globalstyle))
 - If some features are missing, please let us know and open a feature request on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
 
 Missing
@@ -357,17 +357,17 @@ export const mixin = css<{ $primary: boolean }>`
 ### Global styles
 
 `createGlobalStyle` returns a component that you render. In next-yak global styles are a statement.
-[`globalStyles`](/docs/features#global-styles) applies as soon as the file declaring it is imported, so
+[`globalStyle`](/docs/features#globalstyle) applies as soon as the file declaring it is imported, so
 remove the JSX usage and import the file at the position where you used to render `<GlobalStyle />`. For
 app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from
 that page instead:
 
 ```tsx title="globals.tsx"
 import { createGlobalStyle } from "styled-components"; // [!code --]
-import { globalStyles } from "next-yak"; // [!code ++]
+import { globalStyle } from "next-yak"; // [!code ++]
 
 const GlobalStyle = createGlobalStyle` // [!code --]
-globalStyles` // [!code ++]
+globalStyle` // [!code ++]
   body {
     margin: 0;
   }
@@ -393,7 +393,7 @@ export default function Layout({ children }) {
 Theme props like `${(props) => props.theme.color}` inside global styles become CSS custom properties
 toggled via an attribute or class on the root element. And a conditionally rendered `<GlobalStyle />`
 becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
-[Global styles](/docs/features#global-styles) for the patterns.
+[Global styles](/docs/features#globalstyle) for the patterns.
 
 ### Reference external styles
 

@@ -530,7 +530,7 @@ impl YakTransform for TransformStyled {
 }
 
 /// Transform for global styles
-/// e.g. globalStyles`body { margin: 0; }`
+/// e.g. globalStyle`body { margin: 0; }`
 ///
 /// The only transform without a name or scope of its own: the declarations are
 /// emitted verbatim, unscoped and unlayered. It never wraps the rule in a
@@ -546,9 +546,9 @@ impl YakTransform for TransformStyled {
 ///
 /// A user-written class selector that must stay global under css-loader still needs
 /// an explicit `:global(.foo)` (a deprecated, webpack-only escape hatch).
-pub struct TransformGlobalStyles;
+pub struct TransformGlobalStyle;
 
-impl YakTransform for TransformGlobalStyles {
+impl YakTransform for TransformGlobalStyle {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     ParserState::new()
   }
@@ -566,7 +566,7 @@ impl YakTransform for TransformGlobalStyles {
         comment_prefix: Some("YAK Extracted CSS:".into()),
         declarations: declarations.to_vec(),
       },
-      // Keep a bare `globalStyles()` no-op call so the extracted-CSS comment has
+      // Keep a bare `globalStyle()` no-op call so the extracted-CSS comment has
       // an expression to anchor to. Don't drop it: that comment is how the
       // webpack/Vite loaders extract the CSS (see extractCss), and its source
       // position determines cascade order. The call itself is erased in prod by
