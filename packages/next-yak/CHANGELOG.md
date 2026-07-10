@@ -1,5 +1,15 @@
 # next-yak
 
+## 9.5.1
+
+### Patch Changes
+
+- 280f4c9: Add a `strictCssProp` option (default `true`) that fails the build on a `css` prop next-yak can't handle. Turn it off to leave unrecognized `css` props untouched, e.g. when another library on the same element uses its own `css` prop. Invalid `css` props are now left in place rather than silently stripped.
+- Updated dependencies [056b4d9]
+- Updated dependencies [056b4d9]
+- Updated dependencies [280f4c9]
+  - yak-swc@9.5.1
+
 ## 9.5.0
 
 ### Minor Changes
