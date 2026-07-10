@@ -356,11 +356,9 @@ export const mixin = css<{ $primary: boolean }>`
 
 ### Global styles
 
-`createGlobalStyle` returns a component that you render. In next-yak global styles are a statement.
-[`globalStyle`](/docs/features#globalstyle) applies as soon as the file declaring it is imported, so
-remove the JSX usage and import the file at the position where you used to render `<GlobalStyle />`. For
-app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from
-that page instead:
+styled-components `createGlobalStyle` returns a component that you render. In next-yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles are imported.
+So to migrate your global styles, you need to remove the Global Style JSX (e.g. `<GlobalStyle />`) usage and import the file at the position where you used to render `<GlobalStyle />`. For
+app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from that page instead:
 
 ```tsx title="globals.tsx"
 import { createGlobalStyle } from "styled-components"; // [!code --]

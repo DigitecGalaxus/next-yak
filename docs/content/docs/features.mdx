@@ -445,11 +445,20 @@ body {
 </details>
 
 <Callout type="info">
-  Class selectors for markup you don't control (e.g. a third-party widget's `.maps` class) must never
-  be hashed. On native CSS pipelines (Vite, Turbopack, rsbuild) they stay intact automatically. On
-  Next.js with webpack they are hashed by default, so enable native CSS transpilation mode
-  (`transpilationMode: 'Css'`) to keep them unchanged. The `:global(.maps)` wrapper still works as a
-  deprecated fallback, but like every `:global()` selector it is on its way out.
+  When your CSS targets markup you don't control — say a third-party widget that renders
+  `<div class="maps">` — the selector has to keep its literal name to match. If next-yak rewrote
+  `.maps` to `.maps_a4f5e`, it would no longer match the real element and your styles would silently
+  do nothing.
+
+  Vite, Turbopack, and rsbuild keep such classes literal automatically. Next.js with **webpack** is
+  the exception: it defaults to CSS Modules, which rewrites every class name. Two ways to keep `.maps`
+  intact:
+
+  1. **Recommended**: set [`transpilationMode: 'Css'`](/docs/migration-to-native-css). next-yak then
+     emits plain global CSS instead of CSS Modules, so class names are left as-is — same as the
+     native-CSS bundlers.
+  2. **Deprecated**: wrap the selector as `:global(.maps)`. Still works, but `:global()` is being
+     removed; prefer option 1.
 
   The same rules for referencing external styles apply here as well. For further documentation visit:
   [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
