@@ -27,6 +27,7 @@ Supported
 - Attrs
 - References to other components
 - Mixins
+- Global styles (`createGlobalStyle` becomes [`globalStyle`](/docs/features#globalstyle))
 - If some features are missing, please let us know and open a feature request on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
 
 Missing
@@ -35,7 +36,6 @@ Missing
 - Dynamic usage of the css prop
 - `as` prop – You can replace it with a [type-safe alternative](#property-as-does-not-exist)
 - `.withConfig`
-- CreateGlobalStyle - You can just import any global styles in your files directly
 
 ## Just change the import
 
@@ -353,6 +353,45 @@ export const mixin = css<{ $primary: boolean }>`
   }// [!code --]
 `; // [!code --]
 ```
+
+### Global styles
+
+styled-components `createGlobalStyle` returns a component that you render. In next-yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles are imported.
+So to migrate your global styles, you need to remove the Global Style JSX (e.g. `<GlobalStyle />`) usage and import the file at the position where you used to render `<GlobalStyle />`. For
+app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from that page instead:
+
+```tsx title="globals.tsx"
+import { createGlobalStyle } from "styled-components"; // [!code --]
+import { globalStyle } from "next-yak"; // [!code ++]
+
+const GlobalStyle = createGlobalStyle` // [!code --]
+globalStyle` // [!code ++]
+  body {
+    margin: 0;
+  }
+`;
+```
+
+```tsx title="layout.tsx"
+import { GlobalStyle } from "./globals"; // [!code --]
+import "./globals"; // [!code ++]
+
+export default function Layout({ children }) {
+  return (
+    <html>
+      <body>
+        <GlobalStyle /> {/* [!code --] */}
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+Theme props like `${(props) => props.theme.color}` inside global styles become CSS custom properties
+toggled via an attribute or class on the root element. And a conditionally rendered `<GlobalStyle />`
+becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
+[Global styles](/docs/features#globalstyle) for the patterns.
 
 ### Reference external styles
 

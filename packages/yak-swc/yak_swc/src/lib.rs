@@ -43,7 +43,8 @@ use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, T
 
 mod yak_transforms;
 use yak_transforms::{
-  TransformCssMixin, TransformKeyframes, TransformNestedCss, TransformStyled, YakTransform,
+  TransformCssMixin, TransformGlobalStyle, TransformKeyframes, TransformNestedCss, TransformStyled,
+  YakTransform,
 };
 
 /// Static plugin configuration.
@@ -120,6 +121,21 @@ impl Default for Config {
   }
 }
 
+/// Emitted when a `globalStyle` literal contains a runtime interpolation
+/// (`${(props) => ...}`). A global rule has no element to attach a value to,
+/// so the fix is a CSS custom property toggled from the root element.
+const GLOBAL_STYLE_DYNAMIC_VALUE_ERROR: &str = "\
+Dynamic values are not supported in global styles because there is no element to attach them to.\n\
+Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
+globalStyle`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
+See https://yak.js.org/docs/features#globalstyle";
+
+/// Emitted when `globalStyle` is used anywhere but module scope (inside a
+/// component, function or another css template literal), where the styles would
+/// no longer exist independently of a render.
+const GLOBAL_STYLE_SCOPE_ERROR: &str =
+  "globalStyle must be declared at module scope, not inside a component, function or another css template literal.";
+
 pub struct TransformVisitor<GenericComments>
 where
   // SWC provides different comment types for production and testing
@@ -178,6 +194,18 @@ where
   react_refresh_reg: bool,
   /// Names of exported styled components to register with $RefreshReg$
   exported_styled_names: Vec<String>,
+  /// True while processing a `globalStyle` literal — runtime interpolations
+  /// are rejected there as a global rule has no element to attach them to
+  inside_global_style: bool,
+  /// True if the module declares global styles, so the side-effect CSS import
+  /// is injected even for modules without any named styles
+  has_global_style: bool,
+  /// Set when the current `globalStyle` literal hit a fatal error (e.g. a runtime
+  /// interpolation). The declarations parsed before the error are left half-formed
+  /// (`color: ;`), so the extracted CSS is dropped rather than emitted/injected.
+  global_style_error: bool,
+  /// Function/arrow nesting depth — `0` is the module scope `globalStyle` requires
+  function_depth: u32,
   /// Fail loudly on a `css` prop next-yak can't handle instead of leaving it untouched
   strict_css_prop: bool,
 }
@@ -219,6 +247,10 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
+      inside_global_style: false,
+      has_global_style: false,
+      global_style_error: false,
+      function_depth: 0,
       strict_css_prop,
     }
   }
@@ -302,7 +334,9 @@ where
       css_state = Some(new_state);
 
       // Check for user-written :global() selectors in the raw quasi string
-      // This checks the original source code, not the transformed CSS
+      // This checks the original source code, not the transformed CSS.
+      // :global() is deprecated the same way in every context (styled, css and
+      // globalStyle) — all of them steer users to native CSS transpilation mode.
       if !self.suppress_deprecation_warnings && !self.has_user_global {
         if quasi.raw.contains(":global(") {
           self.has_user_global = true;
@@ -515,6 +549,17 @@ ${{() => {var}}};\n",
         // e.g. styled.button`.foo { ${({$x}) => $x && css`color: red`}; }`
         // e.g. styled.button`left: ${({$x}) => $x};`
         else {
+          if self.inside_global_style {
+            HANDLER.with(|handler| {
+              handler
+                .struct_span_err(expr.span(), GLOBAL_STYLE_DYNAMIC_VALUE_ERROR)
+                .emit();
+            });
+            // Abort this literal: the CSS parsed so far ends in a dangling
+            // `color: ;`, so it must not reach the extracted stylesheet.
+            self.global_style_error = true;
+            continue;
+          }
           // Used for resetting the css state after processing all expressions
           let css_state_before = self.current_css_state.clone();
           // store the current css state so we can use it in nested css expressions
@@ -697,7 +742,7 @@ where
         }
       }
 
-      if !self.variable_name_selector_mapping.is_empty() {
+      if !self.variable_name_selector_mapping.is_empty() || self.has_global_style {
         // search for the last import statement as position to insert the css module import
         // it has to be the last import to ensure that the css module is loaded after the other imports
         // and therefore the css is added to the end of the bundle css file
@@ -1112,6 +1157,20 @@ where
           self.import_mode.transpilation_mode(),
         ))
       }
+      // Global styles work only at module scope (not nested in another
+      // css literal and not inside a function/component body)
+      "globalStyle" if is_top_level && self.function_depth == 0 => {
+        self.has_global_style = true;
+        Box::new(TransformGlobalStyle)
+      }
+      "globalStyle" => {
+        HANDLER.with(|handler| {
+          handler
+            .struct_span_err(n.span, GLOBAL_STYLE_SCOPE_ERROR)
+            .emit();
+        });
+        return;
+      }
       // Keyframes transform works only on top level
       "keyframes" if is_top_level => Box::new(TransformKeyframes::with_animation_name(
         self
@@ -1174,8 +1233,12 @@ where
         .insert(current_variable_id.clone(), css_reference_name);
     }
 
+    let was_inside_global_style = self.inside_global_style;
+    self.inside_global_style = yak_library_function_name.deref() == "globalStyle";
+    self.global_style_error = false;
     let (runtime_expressions, runtime_css_variables) =
       self.process_yak_literal(n, css_state.clone());
+    self.inside_global_style = was_inside_global_style;
 
     let transform_result = transform.transform_expression(
       n,
@@ -1190,7 +1253,9 @@ where
     }
     let css_code = to_css(&transform_result.css.declarations);
     let result_span = transform_result.expression.span();
-    if (!css_code.is_empty() || self.current_exported) && is_top_level {
+    // A globalStyle literal that errored produced malformed declarations; keep the
+    // bare `globalStyle()` call as the anchor but emit no extracted CSS for it.
+    if (!css_code.is_empty() || self.current_exported) && is_top_level && !self.global_style_error {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
         // Don't add invalid CSS rules to the list of all CSS rules
         // Mixin code should always be used in other components so that they target the correct element
@@ -1223,6 +1288,20 @@ where
       self.comments.add_leading(result_span.lo, pure_annotation());
     }
     self.expression_replacement = Some(transform_result.expression);
+  }
+
+  /// Track function nesting so `globalStyle` can be restricted to module scope
+  fn visit_mut_function(&mut self, n: &mut Function) {
+    self.function_depth += 1;
+    n.visit_mut_children_with(self);
+    self.function_depth -= 1;
+  }
+
+  /// Track arrow-function nesting so `globalStyle` can be restricted to module scope
+  fn visit_mut_arrow_expr(&mut self, n: &mut ArrowExpr) {
+    self.function_depth += 1;
+    n.visit_mut_children_with(self);
+    self.function_depth -= 1;
   }
 
   /// Report nested atom calls as an error
