@@ -3,15 +3,13 @@ title: Rsbuild
 description: Use next-yak with Rsbuild and React.
 ---
 
-import { Callout } from "fumadocs-ui/components/callout";
-
 # Using next-yak with Rsbuild
 
-Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin from `next-yak/rsbuild`. Rsbuild-based frameworks work too, TanStack Start on Rsbuild is covered by the test suite.
+Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin from `next-yak/rsbuild`. Rsbuild-based frameworks like TanStack Start work too.
 
 ## Install dependencies
 
-Install next-yak alongside Rsbuild and React (if you havent already):
+Install next-yak alongside Rsbuild and React (if you haven't already):
 
 ```bash
 npm i next-yak
@@ -25,7 +23,7 @@ bun add next-yak
 
 ## Configure Rsbuild
 
-Add the `pluginYak` plugin to your `rsbuild.config.ts`. It composes with `pluginReact()` and Rsbuild's built-in SWC (including React Fast Refresh and the React Compiler) because it runs as a `pre` loader, so it stays out of Rsbuild's own `builtin:swc-loader` pass.
+Add the `pluginYak` plugin to your `rsbuild.config.ts`:
 
 ```ts title="rsbuild.config.ts"
 import { defineConfig } from "@rsbuild/core";
@@ -39,7 +37,7 @@ export default defineConfig({
 
 ## Theme context (`yak.context.ts`)
 
-If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root. The Rsbuild plugin aliases `next-yak/context/baseContext` to this file, the same `yak.context.{ts,tsx,js,jsx}` mechanism used by the webpack and Turbopack integrations. To use a custom location, pass the `contextPath` option (`pluginYak({ contextPath: "..." })`).
+If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root — it is picked up automatically. To use a custom location, pass the `contextPath` option (`pluginYak({ contextPath: "..." })`).
 
 ```ts title="yak.context.ts"
 export function getYakThemeContext() {
@@ -78,10 +76,6 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );
 ```
-
-## How it works
-
-The plugin registers the yak transform as an Rspack `pre` loader that runs the compile-time CSS extraction in-loader, the same strategy as the Turbopack integration. Extracted CSS is inlined as `data:text/css;base64,` imports and handled by Rspack's native CSS support (`type: "css/auto"`). Running as a `pre` loader keeps yak-swc composable with Rsbuild's own SWC pass. `@rsbuild/core >=2.0.0` is an optional peer dependency.
 
 ## Migrating from styled-components
 
