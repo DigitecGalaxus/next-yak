@@ -532,11 +532,20 @@ impl YakTransform for TransformStyled {
 /// Transform for global styles
 /// e.g. globalStyles`body { margin: 0; }`
 ///
-/// The only transform without a name or scope: declarations are emitted
-/// verbatim — unscoped, unlayered and with untouched selectors in both
-/// transpilation modes. In `CssModule` mode this relies on css-loader leaving
-/// element/pseudo selectors alone; user class selectors that must stay global
-/// need an explicit `:global(.foo)` there.
+/// The only transform without a name or scope of its own: the declarations are
+/// emitted verbatim, unscoped and unlayered. It never wraps the rule in a
+/// generated class, so user-authored selectors reach the stylesheet exactly as
+/// written in both transpilation modes.
+///
+/// This does not mean the extracted CSS is free of `:global()`. Interpolated yak
+/// references (`${StyledComponent}`, a `keyframes` name) are resolved on the same
+/// shared path `styled`/`css` use, so in `CssModule` mode they arrive already
+/// wrapped as `:global(.hash)` / `global(name)` — the marker that stops css-loader
+/// from hashing the already-final identifier a second time. Native mode emits them
+/// bare. That wrapping comes from interpolation resolution, not from this transform.
+///
+/// A user-written class selector that must stay global under css-loader still needs
+/// an explicit `:global(.foo)` (a deprecated, webpack-only escape hatch).
 pub struct TransformGlobalStyles;
 
 impl YakTransform for TransformGlobalStyles {
