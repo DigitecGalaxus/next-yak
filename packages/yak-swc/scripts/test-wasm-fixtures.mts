@@ -141,20 +141,25 @@ for (const fixtureName of fixtures) {
     const stderrPath = join(fixtureDir, stderr);
     const label = `${fixtureName}/${modeName}`;
 
-    // Diagnostic fixtures: the plugin emits a recoverable error. Natively that
-    // is collected while the transform still produces a "recovered" output.
-    // Through @swc/core the host surfaces the diagnostic differently (it either
-    // throws or leaves the offending code untransformed), so the recovered
-    // output is not reproducible here. The diagnostic itself is covered by
-    // `cargo test`; all we assert is that the plugin doesn't take the host down
-    // in some other way.
+    // Diagnostic fixtures: the plugin emits an error. Natively that is collected
+    // as a recoverable diagnostic while the transform still produces a "recovered"
+    // output, so the recovered output isn't reproducible here. Through @swc/core an
+    // emitted plugin error aborts the transform, so we assert the wasm plugin
+    // surfaces the diagnostic as a throw. This guards the wasm ABI: a regression
+    // that silently drops an error across the boundary (leaving the offending code
+    // untransformed instead of failing) can't be caught by `cargo test`, which only
+    // exercises the native path.
     if (existsSync(stderrPath)) {
+      stats.diagnostics++;
       try {
         runWasmTransform(input, options);
+        failures.push(
+          `${label}: native records a diagnostic (${stderr}) but the wasm transform ` +
+            `succeeded without throwing — the error was dropped across the wasm ABI`,
+        );
       } catch {
         // expected: the host surfaces the diagnostic as a throw
       }
-      stats.diagnostics++;
       continue;
     }
 

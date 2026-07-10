@@ -79,10 +79,21 @@ pub struct Config {
   /// Enable this in development to prevent full-page reloads on CSS-only edits.
   #[serde(default)]
   pub react_refresh_reg: bool,
+  /// Fail the build when a `css` prop has a value next-yak can't handle
+  /// (e.g. a plain string). Enabled by default: next-yak claims the `css` prop,
+  /// so a malformed value is almost always a mistake worth surfacing. Set to
+  /// false to leave such props untouched instead, e.g. when another library on
+  /// the same element uses its own `css` prop.
+  #[serde(default = "Config::strict_css_prop_default")]
+  pub strict_css_prop: bool,
 }
 
 impl Config {
   fn minify_default() -> bool {
+    true
+  }
+
+  fn strict_css_prop_default() -> bool {
     true
   }
 
@@ -105,6 +116,7 @@ impl Default for Config {
       import_mode: Config::import_mode_default(),
       suppress_deprecation_warnings: Default::default(),
       react_refresh_reg: Default::default(),
+      strict_css_prop: Config::strict_css_prop_default(),
     }
   }
 }
@@ -194,6 +206,8 @@ where
   global_style_error: bool,
   /// Function/arrow nesting depth — `0` is the module scope `globalStyle` requires
   function_depth: u32,
+  /// Fail loudly on a `css` prop next-yak can't handle instead of leaving it untouched
+  strict_css_prop: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -209,6 +223,7 @@ where
     import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
     react_refresh_reg: bool,
+    strict_css_prop: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -236,6 +251,7 @@ where
       has_global_style: false,
       global_style_error: false,
       function_depth: 0,
+      strict_css_prop,
     }
   }
 
@@ -1013,14 +1029,12 @@ where
       self.inside_element_with_css_attribute = true;
       n.visit_mut_children_with(self);
       self.inside_element_with_css_attribute = previous_inside_css_attribute;
-      css_prop.transform(
-        n,
-        &self
-          .yak_library_imports
-          .as_mut()
-          .unwrap()
-          .get_yak_utility_ident("mergeCssProp"),
-      );
+      let merge_ident = self
+        .yak_library_imports
+        .as_mut()
+        .unwrap()
+        .get_yak_utility_ident("mergeCssProp");
+      css_prop.transform(n, &merge_ident, self.strict_css_prop);
     }
   }
 
@@ -1424,6 +1438,7 @@ mod tests {
           },
           false,
           false,
+          true,
         ))
       },
       &input,
@@ -1457,6 +1472,7 @@ mod tests {
           },
           false,
           false,
+          true,
         ))
       },
       &input,
@@ -1490,6 +1506,7 @@ mod tests {
           },
           false,
           false,
+          true,
         ))
       },
       &input,
@@ -1523,6 +1540,7 @@ mod tests {
           },
           false,
           false,
+          true,
         ))
       },
       &input,
