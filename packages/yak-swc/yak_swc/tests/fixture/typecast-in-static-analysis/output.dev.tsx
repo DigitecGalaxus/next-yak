@@ -47,4 +47,8 @@ const Page = /*YAK EXPORTED STYLED:Page:input_Page_m7uBBu*//*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Page_m7uBBu"), {
     "displayName": "Page"
 });
-export default Page as typeof Page;
+export default /*YAK EXPORTED STYLED:default:input_Page_m7uBBu*//*YAK Extracted CSS:
+:global(.input_Page_m7uBBu) {
+  display: block;
+}
+*/ Page as typeof Page;
