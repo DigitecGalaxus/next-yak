@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, TSESLint, TSESTree } from "@typescript-eslint/utils";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
@@ -15,13 +15,19 @@ export const styleConditions = createRule({
       description:
         "Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak",
       recommended: true,
-      requiresTypeChecking: true,
+      requiresTypeChecking: false,
     },
     messages: {
       invalidRuntimeReturnValue:
-        "When possible arrow functions in styled/css literals from next-yak should return css literals (css`...`) instead of inline values. CSS literals create a CSS class, which is better for performance.",
+        "Arrow functions in next-yak styled/css literals should return either a css`...` literal (compiled to a CSS class) or a value derived from the component's props (a runtime CSS variable). Returning a constant does neither. If this is a fixed-set condition, move the declaration into the arrow function and return a css`...` literal. Keep the prop, don't hand-roll a CSS variable.",
+      invalidRuntimeReturnValueWithExample:
+        "`{{property}}` will be automatically compiled into a CSS variable because of the runtime condition, e.g. `{{property}}: var(--h45cH)`. For your fixed-set condition return a static css declaration like {{example}} instead.\n\nnext-yak compiles it into a toggleable class name, which produces even better performance optimized JavaScript and HTML.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
+      invalidCssReturnValueMoveProperty:
+        "`{{property}}` is a static property, but the arrow returns a {{cssLiteral}} literal (a toggleable style chunk, not a value) that next-yak can't splice into a property it already wrote. Move the whole declaration inside the css literal like {{example}} instead.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
+      invalidCssReturnValueDropCss:
+        "`{{property}}` wraps the runtime value `{{value}}` in a css`...` literal, which next-yak can't splice into a property it already wrote. Since the value comes from props, drop the css`` and return it directly so it compiles to a CSS variable.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValue:
-        "CSS literals can not be converted into a css variable - try to move the css property also into the arrow function or remove the css``",
+        "The CSS property is outside the arrow function but its value returns a css`...` literal, which next-yak can't combine into a single declaration. Move the whole declaration inside the css literal so it holds the property too, or drop the css`` and return a plain runtime value.",
     },
     schema: [],
   },
@@ -38,28 +44,37 @@ export const styleConditions = createRule({
         if (!node.parent || isStyledOrCssTag(node, importedNames) !== "css") {
           return;
         }
-        const { tag, needle } = findClosestStyledOrCssTag(node.parent, importedNames);
+        const { tag, needle, params } = findClosestStyledOrCssTag(node.parent, importedNames);
         if (!tag) {
           return;
         }
 
-        const index = tag.quasi.expressions.findIndex((expr) => expr === needle);
-        if (index === -1) {
-          return;
-        }
-
-        const codeBefore = tag.quasi.quasis[index].value.raw;
+        const codeBefore = getQuasiBeforeExpression(tag, needle);
         // Guess that if a quasi ends with a colon that it is a declaration e.g.
         // css`color: ${({ color }) => color}`
-        const isDeclaration = codeBefore.trim().endsWith(":");
-        if (!isDeclaration) {
+        if (codeBefore === undefined || !codeBefore.trim().endsWith(":")) {
           return;
         }
 
-        context.report({
-          node,
-          messageId: "invalidCssReturnValue",
+        // Two opposite fixes hide behind this one situation, so detect which one
+        // applies and show a tailored before/after instead of a vague "or":
+        //  - a static value split out from its property -> move the property in
+        //  - a prop-derived value needlessly wrapped in css -> drop the css``
+        const trap = buildCssTrapExample({
+          tag,
+          needle,
+          cssLiteral: node,
+          params,
+          importedNames,
+          sourceCode: context.sourceCode,
         });
+        if (trap?.kind === "move") {
+          context.report({ node, messageId: "invalidCssReturnValueMoveProperty", data: trap.data });
+        } else if (trap?.kind === "drop") {
+          context.report({ node, messageId: "invalidCssReturnValueDropCss", data: trap.data });
+        } else {
+          context.report({ node, messageId: "invalidCssReturnValue" });
+        }
       },
 
       /** All return statements in styled/css literals */
@@ -73,7 +88,7 @@ export const styleConditions = createRule({
 
         // Params are used to detect valid runtime values
         // e.g. css`width: ${({ $size }) => $size}px`
-        const { tag, params } = findClosestStyledOrCssTag(node, importedNames);
+        const { tag, params, needle } = findClosestStyledOrCssTag(node, importedNames);
         if (!tag) {
           return;
         }
@@ -88,10 +103,28 @@ export const styleConditions = createRule({
               : undefined;
 
         if (returnValue && !isNodeAccessingParams(returnValue, params, importedNames)) {
-          context.report({
-            node: returnValue,
-            messageId: "invalidRuntimeReturnValue",
+          // When the offending value is a simple fixed-set condition (ternary or
+          // `&&` with literal values) we can render a concrete before/after so the
+          // reader knows the exact class-toggle rewrite instead of guessing.
+          const example = buildRuntimeExample({
+            tag,
+            needle,
+            returnValue,
+            importedNames,
+            sourceCode: context.sourceCode,
           });
+          if (example) {
+            context.report({
+              node: returnValue,
+              messageId: "invalidRuntimeReturnValueWithExample",
+              data: example,
+            });
+          } else {
+            context.report({
+              node: returnValue,
+              messageId: "invalidRuntimeReturnValue",
+            });
+          }
         }
       },
     };
@@ -137,6 +170,234 @@ function findClosestStyledOrCssTag(
   }
 
   return { tag: undefined, needle, type: undefined, params };
+}
+
+/**
+ * Builds a concrete before/after example for the error message when the offending
+ * value is a simple fixed-set condition (a ternary or `&&` with literal values).
+ * Returns undefined when no clean example can be rendered, so the caller falls back
+ * to the generic message.
+ *
+ * e.g. `z-index: ${({ $kind }) => $kind === "second" ? 4 : 3}` becomes
+ *   before: z-index: ${({ $kind }) => $kind === "second" ? 4 : 3}
+ *   after:  z-index: 3;
+ *           ${({ $kind }) => $kind === "second" && css`z-index: 4;`}
+ */
+function buildRuntimeExample({
+  tag,
+  needle,
+  returnValue,
+  importedNames,
+  sourceCode,
+}: {
+  tag: TSESTree.TaggedTemplateExpression;
+  needle: TSESTree.Node;
+  returnValue: TSESTree.Node;
+  importedNames: ImportedNames;
+  sourceCode: TSESLint.SourceCode;
+}): { property: string; before: string; after: string; example: string } | undefined {
+  if (needle.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
+    return undefined;
+  }
+  const property = getDeclarationProperty(tag, needle);
+  if (!property) {
+    return undefined;
+  }
+  const paramText = needle.params.length > 0 ? sourceCode.getText(needle.params[0]) : "";
+  const cssName = importedNames.css ?? "css";
+  const built = buildAfterExample({ property, paramText, returnValue, cssName, sourceCode });
+  if (!built) {
+    return undefined;
+  }
+  const before = `${property}: \${${sourceCode.getText(needle)}}`;
+  return { property, before, after: built.after, example: built.example };
+}
+
+/**
+ * Builds a tailored before/after for the "css literal used as a declaration value"
+ * situation (`property: ${() => cond && css`value`}`), which has two opposite fixes:
+ *
+ *  - "move": a static value split out from its property -> move the property inside
+ *    the css literal, so it becomes a toggleable class (`${cond && css`property: value;`}`).
+ *  - "drop": a prop-derived value needlessly wrapped in css -> drop the css`` and
+ *    return the value directly, so it compiles to a CSS variable.
+ *
+ * Only handles the simple shapes (`() => css`...`` and `() => cond && css`...``) where
+ * the css literal is the arrow's tail; anything else returns undefined so the caller
+ * falls back to the generic message. Declarations already living inside the css literal
+ * (`css`color: red`` under an outer `color:`) also fall back, to avoid duplicating the
+ * property.
+ */
+function buildCssTrapExample({
+  tag,
+  needle,
+  cssLiteral,
+  params,
+  importedNames,
+  sourceCode,
+}: {
+  tag: TSESTree.TaggedTemplateExpression;
+  needle: TSESTree.Node;
+  cssLiteral: TSESTree.TaggedTemplateExpression;
+  params: TSESTree.Parameter[];
+  importedNames: ImportedNames;
+  sourceCode: TSESLint.SourceCode;
+}):
+  | { kind: "move"; data: { property: string; cssLiteral: string; example: string; before: string; after: string } }
+  | { kind: "drop"; data: { property: string; value: string; before: string; after: string } }
+  | undefined {
+  if (needle.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
+    return undefined;
+  }
+  const property = getDeclarationProperty(tag, needle);
+  if (!property) {
+    return undefined;
+  }
+  // Only the shapes where the css literal is the arrow's tail expression are safe to
+  // reconstruct; a two-branch ternary (`cond ? css`a` : css`b``) would leave the other
+  // branch's trap in place, so bail to the generic message.
+  const body = needle.body;
+  const isDirect = body === cssLiteral;
+  const isAndTail =
+    body.type === AST_NODE_TYPES.LogicalExpression &&
+    body.operator === "&&" &&
+    body.right === cssLiteral;
+  if (!isDirect && !isAndTail) {
+    return undefined;
+  }
+
+  const arrowSrc = sourceCode.getText(needle);
+  const oldCss = sourceCode.getText(cssLiteral);
+  // The exact source between the css`` backticks, preserving any `${...}` interpolations.
+  const innerRaw = sourceCode.getText(cssLiteral.quasi).slice(1, -1);
+  const before = `${property}: \${${arrowSrc}}`;
+
+  // If the css literal already contains a full declaration (`color: red`), the only
+  // clean fix is removing the outer property; leave that to the generic message.
+  if (/^\s*[\w-]+\s*:/.test(innerRaw)) {
+    return undefined;
+  }
+
+  // "drop": the wrapped value reads a prop, so it belongs in a runtime CSS variable.
+  const wrapsProp = cssLiteral.quasi.expressions.some((expr) =>
+    isNodeAccessingParams(expr, params, importedNames),
+  );
+  if (wrapsProp) {
+    const newArrow = arrowSrc.replace(oldCss, () => sourceCode.getText(cssLiteral.quasi));
+    return {
+      kind: "drop",
+      data: { property, value: innerRaw, before, after: `${property}: \${${newArrow}}` },
+    };
+  }
+
+  // "move": a bare static value -> fold the property into the css literal.
+  const cssName = sourceCode.getText(cssLiteral.tag);
+  const example = `${cssName}\`${property}: ${innerRaw.trim()};\``;
+  const newArrow = arrowSrc.replace(oldCss, () => example);
+  return {
+    kind: "move",
+    data: { property, cssLiteral: oldCss, example, before, after: `\${${newArrow}}` },
+  };
+}
+
+/**
+ * Returns the raw text of the template quasi immediately before `needle`'s
+ * interpolation, or undefined when `needle` isn't a top-level expression of the
+ * tag. e.g. for `z-index: ${needle}` it returns `"z-index: "`.
+ */
+function getQuasiBeforeExpression(
+  tag: TSESTree.TaggedTemplateExpression,
+  needle: TSESTree.Node,
+): string | undefined {
+  const index = tag.quasi.expressions.findIndex((expr) => expr === needle);
+  if (index === -1) {
+    return undefined;
+  }
+  return tag.quasi.quasis[index].value.raw;
+}
+
+/**
+ * Reads the CSS property name from the quasi directly before the interpolation.
+ * e.g. the `z-index` in `z-index: ${() => ...}`. Returns undefined if the arrow
+ * function isn't sitting in a declaration position (`property: ${...}`).
+ */
+function getDeclarationProperty(
+  tag: TSESTree.TaggedTemplateExpression,
+  needle: TSESTree.Node,
+): string | undefined {
+  const before = getQuasiBeforeExpression(tag, needle)?.trimEnd();
+  if (before === undefined || !before.endsWith(":")) {
+    return undefined;
+  }
+  const match = before.slice(0, -1).match(/([a-zA-Z-]+)\s*$/);
+  return match ? match[1] : undefined;
+}
+
+/**
+ * Renders a static CSS value for literal-like nodes only (string/number literals
+ * and zero-expression template literals). Returns undefined for anything dynamic,
+ * which signals that no clean example can be built.
+ */
+function renderCssValue(node: TSESTree.Node): string | undefined {
+  if (node.type === AST_NODE_TYPES.Literal) {
+    if (typeof node.value === "string") return node.value;
+    if (typeof node.value === "number") return String(node.value);
+    return undefined;
+  }
+  if (node.type === AST_NODE_TYPES.TemplateLiteral && node.expressions.length === 0) {
+    return node.quasis[0].value.cooked ?? undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Builds the "after" snippet (the class-based toggle) for a ternary or `&&`
+ * expression whose branch values are literals. Also returns `example`: the bare
+ * css`...` literal for the toggled declaration, used inline in the message.
+ */
+function buildAfterExample({
+  property,
+  paramText,
+  returnValue,
+  cssName,
+  sourceCode,
+}: {
+  property: string;
+  paramText: string;
+  returnValue: TSESTree.Node;
+  cssName: string;
+  sourceCode: TSESLint.SourceCode;
+}): { after: string; example: string } | undefined {
+  const head = `(${paramText}) =>`;
+
+  if (returnValue.type === AST_NODE_TYPES.ConditionalExpression) {
+    if (!isValidTestExpression(returnValue.test)) {
+      return undefined;
+    }
+    const consequent = renderCssValue(returnValue.consequent);
+    const alternate = renderCssValue(returnValue.alternate);
+    if (consequent === undefined || alternate === undefined) {
+      return undefined;
+    }
+    const test = sourceCode.getText(returnValue.test);
+    const example = `${cssName}\`${property}: ${consequent};\``;
+    return {
+      after: `${property}: ${alternate};\n  \${${head} ${test} && ${example}}`,
+      example,
+    };
+  }
+
+  if (returnValue.type === AST_NODE_TYPES.LogicalExpression && returnValue.operator === "&&") {
+    const value = renderCssValue(returnValue.right);
+    if (value === undefined) {
+      return undefined;
+    }
+    const test = sourceCode.getText(returnValue.left);
+    const example = `${cssName}\`${property}: ${value};\``;
+    return { after: `\${${head} ${test} && ${example}}`, example };
+  }
+
+  return undefined;
 }
 
 /**
