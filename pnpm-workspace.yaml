@@ -3,6 +3,7 @@ packages:
   - examples/*
   - benchmarks
   - docs
+  - docs-vnext
   - e2e
   - e2e/bundlers/*
 

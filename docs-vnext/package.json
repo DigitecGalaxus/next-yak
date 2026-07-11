@@ -1,0 +1,29 @@
+{
+  "name": "docs-vnext",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "postinstall": "fumadocs-mdx"
+  },
+  "dependencies": {
+    "@base-ui-components/react": "1.0.0-rc.0",
+    "fumadocs-core": "catalog:dev",
+    "fumadocs-mdx": "catalog:dev",
+    "fumadocs-twoslash": "catalog:dev",
+    "next": "catalog:dev",
+    "next-yak": "workspace:*",
+    "react": "catalog:dev",
+    "react-dom": "catalog:dev",
+    "shiki": "catalog:dev",
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
