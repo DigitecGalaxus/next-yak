@@ -124,8 +124,7 @@ ruleTester.run("yak-style-conditions", styleConditions, {
           data: {
             property: "color",
             before: "color: ${({variant}) => variant === 'primary' ? `red`: 'blue'}",
-            after:
-              "color: blue;\n  ${({variant}) => variant === 'primary' && css`color: red;`}",
+            after: "color: blue;\n  ${({variant}) => variant === 'primary' && css`color: red;`}",
             example: "css`color: red;`",
           },
         },
@@ -164,8 +163,7 @@ ruleTester.run("yak-style-conditions", styleConditions, {
           data: {
             property: "z-index",
             before: 'z-index: ${({ $kind }) => $kind === "second" ? 4 : 3}',
-            after:
-              'z-index: 3;\n  ${({ $kind }) => $kind === "second" && css`z-index: 4;`}',
+            after: 'z-index: 3;\n  ${({ $kind }) => $kind === "second" && css`z-index: 4;`}',
             example: "css`z-index: 4;`",
           },
         },
@@ -181,7 +179,7 @@ ruleTester.run("yak-style-conditions", styleConditions, {
             property: "background",
             before: 'background: ${({ $starting }) => $starting ? "#d8b4fe" : "#f6c453"}',
             after:
-              'background: #f6c453;\n  ${({ $starting }) => $starting && css`background: #d8b4fe;`}',
+              "background: #f6c453;\n  ${({ $starting }) => $starting && css`background: #d8b4fe;`}",
             example: "css`background: #d8b4fe;`",
           },
         },
@@ -196,7 +194,7 @@ ruleTester.run("yak-style-conditions", styleConditions, {
           data: {
             property: "color",
             before: 'color: ${({ $on }) => $on && "red"}',
-            after: '${({ $on }) => $on && css`color: red;`}',
+            after: "${({ $on }) => $on && css`color: red;`}",
             example: "css`color: red;`",
           },
         },

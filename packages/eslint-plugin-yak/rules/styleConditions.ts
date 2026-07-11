@@ -243,7 +243,16 @@ function buildCssTrapExample({
   importedNames: ImportedNames;
   sourceCode: TSESLint.SourceCode;
 }):
-  | { kind: "move"; data: { property: string; cssLiteral: string; example: string; before: string; after: string } }
+  | {
+      kind: "move";
+      data: {
+        property: string;
+        cssLiteral: string;
+        example: string;
+        before: string;
+        after: string;
+      };
+    }
   | { kind: "drop"; data: { property: string; value: string; before: string; after: string } }
   | undefined {
   if (needle.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
