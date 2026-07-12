@@ -36,9 +36,10 @@ impl YakFileVisitor {
   }
 
   fn remove_next_yak_imports(&self, module: &mut Module) {
+    let internal_specifier = self.yak_imports().internal_specifier();
     module.body.retain(|item| {
       if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_decl)) = item {
-        return &import_decl.src.value != "next-yak/internal";
+        return import_decl.src.value != internal_specifier.as_str();
       }
       true
     });

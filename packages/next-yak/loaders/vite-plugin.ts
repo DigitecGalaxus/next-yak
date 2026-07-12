@@ -12,7 +12,7 @@ import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
 const require = createRequire(import.meta.url);
 
-type ViteYakPluginOptions = YakConfigOptions & {
+export type ViteYakPluginOptions = YakConfigOptions & {
   /**
    * Base path for resolving CSS virtual module paths.
    * Relative paths are resolved from Vite's project root.
@@ -25,6 +25,24 @@ type ViteYakPluginOptions = YakConfigOptions & {
     Options,
     "filename" | "sourceFileName" | "inputSourceMap" | "sourceMaps" | "sourceRoot"
   >;
+  /**
+   * @internal Support for alternative yak runtime packages (e.g. "@yak/solid").
+   * The yak-swc compiler detects the package from the import source on its own -
+   * this option only controls the vite-plugin side (filtering, context alias, HMR).
+   * Not part of the public next-yak API.
+   */
+  library?: {
+    /** Package name users import from (must be one of the packages known to yak-swc) */
+    name: string;
+    /**
+     * Register components with $RefreshReg$ for React Fast Refresh in dev mode.
+     * Disable for runtimes where another plugin owns HMR (e.g. vite-plugin-solid).
+     * @defaultValue true
+     */
+    reactRefreshReg?: boolean;
+    /** Transform-filter exclusion for the runtime package itself */
+    excludePattern?: RegExp;
+  };
 };
 
 const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
@@ -67,6 +85,12 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
   };
   yakOptions.displayNames =
     userOptions.displayNames ?? yakOptions.displayNames ?? !yakOptions.minify;
+  const library = {
+    name: "next-yak",
+    reactRefreshReg: true,
+    excludePattern: /packages\/next-yak/,
+    ...userOptions.library,
+  };
   let basePath = userOptions.basePath ?? "";
   let hasWarnedAboutBasePath = false;
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
@@ -90,13 +114,13 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
 
       if (Array.isArray(config.resolve.alias)) {
         config.resolve.alias.push({
-          find: "next-yak/context/baseContext",
+          find: `${library.name}/context/baseContext`,
           replacement: context,
         });
       } else {
         config.resolve.alias = {
           ...config.resolve.alias,
-          "next-yak/context/baseContext": context,
+          [`${library.name}/context/baseContext`]: context,
         };
       }
     },
@@ -198,9 +222,9 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
       filter: {
         id: {
           include: sourceFileRegex,
-          exclude: [/packages\/next-yak/],
+          exclude: [library.excludePattern],
         },
-        code: "next-yak",
+        code: library.name,
       },
       async handler(code, id) {
         try {
@@ -217,7 +241,14 @@ export async function viteYak(userOptions: ViteYakPluginOptions = {}): Promise<P
               );
             }
           }
-          const result = await transform(code, filePath, basePath, yakSwcPath, yakOptions, isServe);
+          const result = await transform(
+            code,
+            filePath,
+            basePath,
+            yakSwcPath,
+            yakOptions,
+            isServe && library.reactRefreshReg,
+          );
           debugLog("ts", result.code, id);
 
           return {

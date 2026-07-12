@@ -1,0 +1,1 @@
+{"version":3,"file":"baseContext.js","names":[],"sources":["../../runtime/context/baseContext.ts"],"sourcesContent":["import type { YakTheme } from \"@yak/solid\";\n\nexport function getYakThemeContext() {\n  return {} as YakTheme | undefined;\n}\n"],"mappings":";AAEA,SAAgB,qBAAqB;CACnC,OAAO,CAAC;AACV"}

@@ -1,0 +1,106 @@
+{
+  "name": "@yak/solid",
+  "version": "0.0.0",
+  "description": "SolidJS runtime for yak - styled-components syntax with build-time CSS extraction, targeting Solid 2",
+  "keywords": [
+    "css-in-js",
+    "solid",
+    "solidjs",
+    "styled-components",
+    "typescript",
+    "vite"
+  ],
+  "homepage": "https://yak.js.org/",
+  "bugs": {
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Jan Nicklas"
+  },
+  "maintainers": [
+    {
+      "name": "Luca Schneider"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak.git"
+  },
+  "files": [
+    "dist",
+    "loaders",
+    "runtime",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./internal": {
+      "import": {
+        "types": "./dist/internal.d.ts",
+        "default": "./dist/internal.js"
+      }
+    },
+    "./context": {
+      "import": {
+        "types": "./dist/context/index.d.ts",
+        "default": "./dist/context/index.js"
+      }
+    },
+    "./context/baseContext": {
+      "import": {
+        "types": "./dist/context/baseContext.d.ts",
+        "default": "./dist/context/baseContext.js"
+      }
+    },
+    "./vite": {
+      "import": {
+        "types": "./dist/loaders/vite-plugin.d.ts",
+        "default": "./dist/loaders/vite-plugin.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:types": "tsc -p tsconfig.json && tsc -p runtime/__tests__/tsconfig.json",
+    "prepublishOnly": "pnpm build && pnpm test && pnpm test:types"
+  },
+  "dependencies": {
+    "next-yak": "workspace:*",
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "@solidjs/web": "catalog:solid",
+    "@testing-library/jest-dom": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "jsdom": "catalog:dev",
+    "solid-js": "catalog:solid",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vite-plugin-solid": "catalog:solid",
+    "vitest": "catalog:dev"
+  },
+  "peerDependencies": {
+    "solid-js": ">=2.0.0-beta.0",
+    "vite": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  }
+}

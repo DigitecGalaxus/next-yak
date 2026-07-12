@@ -50,6 +50,7 @@ catalogs:
     "@tanstack/react-router": 1.170.16
     "@tanstack/react-start": 1.168.26
     "@testing-library/dom": 10.4.1
+    "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
     "@types/benchmark": 2.1.5
     "@types/jest": 30.0.0
@@ -101,3 +102,7 @@ catalogs:
     vite: 8.1.1
     vitest: 4.1.9
     wasm-pack: 0.15.0
+  solid:
+    "@solidjs/web": 2.0.0-beta.17
+    solid-js: 2.0.0-beta.17
+    vite-plugin-solid: 3.0.0-next.7

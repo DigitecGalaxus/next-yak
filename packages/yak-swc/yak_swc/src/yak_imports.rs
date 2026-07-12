@@ -1,5 +1,6 @@
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::atoms::Atom;
+use swc_core::common::errors::HANDLER;
 use swc_core::ecma::visit::Fold;
 use swc_core::ecma::visit::VisitMutWith;
 use swc_core::{
@@ -9,6 +10,15 @@ use swc_core::{
 
 use crate::utils::ast_helper::create_member_prop_from_string;
 use crate::utils::native_elements::VALID_ELEMENTS;
+
+/// Packages whose imports are treated as yak imports.
+/// The matched package is remembered per file and the compiled output
+/// imports the runtime from "{package}/internal"
+/// e.g. `import { styled } from "@yak/solid"` -> `import { styled } from "@yak/solid/internal"`
+pub const YAK_PACKAGES: &[&str] = &["next-yak", "@yak/react", "@yak/solid"];
+
+/// Fallback internal specifier used when no yak import was detected
+const DEFAULT_INTERNAL_SPECIFIER: &str = "next-yak/internal";
 
 #[derive(Debug)]
 
@@ -30,6 +40,9 @@ pub struct YakImports {
   /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
   /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
   yak_keyframes_idents: FxHashSet<Id>,
+  /// The internal runtime specifier derived from the detected yak package \
+  /// e.g. "next-yak/internal" or "@yak/solid/internal"
+  internal_specifier: Atom,
 }
 
 /// Scans a JavaScript/TypeScript module for yak library usage and collects import information.
@@ -57,10 +70,15 @@ const UTILITIES: &[&str] = &["unitPostFix", "mergeCssProp"];
 
 impl From<YakImportVisitor> for YakImports {
   fn from(value: YakImportVisitor) -> Self {
+    let internal_specifier = value
+      .detected_library
+      .map(|library| format!("{library}/internal").into())
+      .unwrap_or_else(|| DEFAULT_INTERNAL_SPECIFIER.into());
     YakImports::new(
       value.yak_library_imports,
       value.yak_css_idents,
       value.yak_keyframes_idents,
+      internal_specifier,
     )
   }
 }
@@ -70,6 +88,7 @@ impl YakImports {
     yak_library_imports: FxHashMap<Id, Id>,
     yak_css_idents: FxHashSet<Id>,
     yak_keyframes_idents: FxHashSet<Id>,
+    internal_specifier: Atom,
   ) -> Self {
     Self {
       yak_utilities: FxHashMap::default(),
@@ -77,7 +96,14 @@ impl YakImports {
       yak_library_imports,
       yak_css_idents,
       yak_keyframes_idents,
+      internal_specifier,
     }
+  }
+
+  /// The internal runtime specifier derived from the detected yak package \
+  /// e.g. "next-yak/internal" or "@yak/solid/internal"
+  pub fn internal_specifier(&self) -> &Atom {
+    &self.internal_specifier
   }
 
   pub fn yak_css_idents(&self) -> &FxHashSet<Id> {
@@ -192,7 +218,7 @@ impl YakImports {
           span: DUMMY_SP,
           local: yak_import,
         })],
-        src: Box::new("next-yak/internal".into()),
+        src: Box::new(self.internal_specifier.clone().into()),
         type_only: false,
         with: None,
         phase: ImportPhase::Evaluation,
@@ -213,6 +239,8 @@ struct YakImportVisitor {
   /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
   /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
   pub yak_keyframes_idents: FxHashSet<Id>,
+  /// The yak package this file imports from (see [YAK_PACKAGES])
+  pub detected_library: Option<&'static str>,
 }
 
 impl YakImportVisitor {
@@ -221,20 +249,40 @@ impl YakImportVisitor {
       yak_library_imports: FxHashMap::default(),
       yak_css_idents: FxHashSet::default(),
       yak_keyframes_idents: FxHashSet::default(),
+      detected_library: None,
     }
   }
 }
 
 impl VisitMut for YakImportVisitor {
   /// Visit the import declaration and store the imported names
-  /// That way we know if `styled`, `css` is imported from "next-yak"
+  /// That way we know if `styled`, `css` is imported from a yak package
   /// and we can transpile their usages
   fn visit_mut_import_decl(&mut self, import_decl: &mut ImportDecl) {
-    if import_decl.src.value == "next-yak" {
+    if let Some(&package) = YAK_PACKAGES
+      .iter()
+      .find(|package| import_decl.src.value == **package)
+    {
+      match self.detected_library {
+        Some(library) if library != package => {
+          HANDLER.with(|handler| {
+            handler
+              .struct_span_err(
+                import_decl.span,
+                &format!(
+                  "Mixing yak packages in one file is not supported - found imports from \"{library}\" and \"{package}\"",
+                ),
+              )
+              .emit();
+          });
+          return;
+        }
+        _ => self.detected_library = Some(package),
+      }
       // Compiling will change the way the utils are called
       // Therefore the types are split between the user usage
       // and how the library is called internally
-      import_decl.src.value = "next-yak/internal".into();
+      import_decl.src.value = format!("{package}/internal").into();
       import_decl.src.raw = None;
 
       // Store the local name of the imported function
@@ -401,6 +449,34 @@ mod tests {
     assert!(visitor
       .yak_keyframes_idents
       .contains(&Id::from((atom!("myKeyframes"), SyntaxContext::empty()))));
+  }
+
+  #[test]
+  fn test_yak_import_visitor_solid_package() {
+    let mut visitor = YakImportVisitor::new();
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      r#"
+        import { styled, css } from "@yak/solid";
+        const styles = css`color: red;`;
+      "#,
+      r#"
+        import { styled, css } from "@yak/solid/internal";
+        const styles = css`color: red;`;
+      "#,
+    );
+    let imports: YakImports = visitor.into();
+    assert!(imports.is_using_next_yak());
+    assert_eq!(imports.internal_specifier(), "@yak/solid/internal");
+  }
+
+  #[test]
+  fn test_yak_import_visitor_default_internal_specifier() {
+    let visitor = YakImportVisitor::new();
+    let imports: YakImports = visitor.into();
+    assert_eq!(imports.internal_specifier(), "next-yak/internal");
   }
 
   #[test]

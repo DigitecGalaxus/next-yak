@@ -1,0 +1,25 @@
+{
+  "name": "vite-solid-yak-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:yak": "pnpm run --filter @yak/solid build",
+    "build:swc": "pnpm run --filter yak-swc build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@solidjs/web": "catalog:solid",
+    "@yak/solid": "workspace:*",
+    "solid-js": "catalog:solid"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vite-plugin-solid": "catalog:solid"
+  },
+  "packageManager": "pnpm@11.9.0"
+}

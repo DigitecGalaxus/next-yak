@@ -194,7 +194,8 @@ impl HasCSSProp for JSXOpeningElement {
           if let JSXAttrName::Ident(ident) = &attr.name {
             match ident.sym.as_ref() {
               "css" => css_index = Some(index),
-              "className" | "style" => relevant_props.push(index),
+              // "className" for React runtimes, "class" for Solid
+              "className" | "class" | "style" => relevant_props.push(index),
               _ => {}
             }
           }
