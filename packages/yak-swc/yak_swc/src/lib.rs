@@ -780,9 +780,10 @@ where
     // Add the css module import to the top of the file
     // if any yak imports are used
     if self.yak_library_imports.is_some() {
+      let internal_specifier = self.yak_imports().internal_specifier();
       for item in module.body.iter_mut() {
         if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_declaration)) = item {
-          if import_declaration.src.value == "next-yak/internal" {
+          if import_declaration.src.value == *internal_specifier {
             // Add all stored utility imports
             import_declaration
               .specifiers

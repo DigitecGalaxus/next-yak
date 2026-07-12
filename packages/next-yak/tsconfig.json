@@ -1,13 +1,25 @@
 {
   "compilerOptions": {
     "paths": {
-      "next-yak": ["./runtime/index.ts"],
-      "next-yak/context/baseContext": ["./runtime/context/baseContext.tsx"],
-      "next-yak/context": ["./runtime/context/index.tsx"]
+      "next-yak": [
+        "./runtime/index.ts"
+      ],
+      "next-yak/context/baseContext": [
+        "./runtime/context/baseContext.tsx"
+      ],
+      "next-yak/context": [
+        "./runtime/context/index.tsx"
+      ]
     },
     "target": "ES2019",
-    "lib": ["DOM", "ESNext.Disposable"],
-    "types": ["node", "webpack"],
+    "lib": [
+      "DOM",
+      "ESNext.Disposable"
+    ],
+    "types": [
+      "node",
+      "webpack"
+    ],
     "jsx": "react",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -21,6 +33,15 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["**/node_modules/**/*", "**/__tests__/**/*"],
-  "include": ["runtime/**/*", "loaders/**/*", "withYak/**/*", "isolated-source-eval/**/*"]
+  "exclude": [
+    "**/node_modules/**/*",
+    "**/__tests__/**/*"
+  ],
+  "include": [
+    "runtime/**/*",
+    "loaders/**/*",
+    "withYak/**/*",
+    "isolated-source-eval/**/*",
+    "tsdown.config.ts"
+  ]
 }

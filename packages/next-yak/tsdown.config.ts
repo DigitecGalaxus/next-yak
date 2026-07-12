@@ -124,7 +124,7 @@ export default defineConfig([
     minify: false,
     sourcemap: true,
     clean: false,
-    dts: true,
+    dts: { eager: true },
     target: "es2022",
     outDir: "dist/withYak",
     outExtensions,
@@ -136,7 +136,7 @@ export default defineConfig([
     format: ["esm"],
     sourcemap: true,
     clean: false,
-    dts: true,
+    dts: { eager: true },
     target: "es2022",
     outDir: "dist/isolated-source-eval",
     outExtensions,
@@ -154,7 +154,7 @@ export default defineConfig([
     outExtensions,
     outputOptions: stripJsdoc,
   },
-  // loaders
+  // public react loader (bundles the shared core from yak-internals)
   {
     entry: ["loaders/vite-plugin.ts"],
     format: ["esm"],
@@ -164,21 +164,44 @@ export default defineConfig([
     deps: {
       neverBundle: [
         // all non-relative (package) imports stay external
-        /^[@a-zA-Z]/,
+        /^(?!yak-internals)[@a-zA-Z]/,
         // node built-ins
         /^node:/,
-        // isolated-source-eval must not be bundled (worker path would break)
+        // isolated-source-eval must not be bundled (worker path would break);
+        // both the consumer-local relative shim import and yak-internals'
+        // self-referencing package import stay external
         /\.\.\/isolated-source-eval\//,
+        /^yak-internals\/isolated-source-eval$/,
         // withYak is shipped as its own entry. Keep its types as re-imports
         // in the loader `.d.ts` rather than inlining them
         /\.\.\/withYak\//,
       ],
     },
-    outputOptions: { ...stripJsdoc, codeSplitting: false },
-    dts: true,
+    outputOptions: {
+      ...stripJsdoc,
+      paths: { "yak-internals/isolated-source-eval": "../isolated-source-eval/index.js" },
+    },
+    dts: { eager: true },
     platform: "node",
     target: "es2022",
     outDir: "dist/loaders",
+    outExtensions,
+  },
+  // public cross-file resolver for custom bundler integrations (bundles yak-internals)
+  {
+    entry: ["cross-file-resolver/index.ts"],
+    format: ["esm"],
+    minify: false,
+    sourcemap: true,
+    clean: false,
+    deps: {
+      neverBundle: [/^(?!yak-internals)[@a-zA-Z]/, /^node:/],
+    },
+    outputOptions: stripJsdoc,
+    dts: { eager: true },
+    platform: "node",
+    target: "es2022",
+    outDir: "dist/cross-file-resolver",
     outExtensions,
   },
   // rsbuild plugin (ESM, like the vite plugin). Keeps package imports and
@@ -190,10 +213,10 @@ export default defineConfig([
     sourcemap: true,
     clean: false,
     deps: {
-      neverBundle: [/^[@a-zA-Z]/, /^node:/, /\.\.\/withYak\//],
+      neverBundle: [/^(?!yak-internals)[@a-zA-Z]/, /^node:/, /\.\.\/withYak\//],
     },
     outputOptions: { ...stripJsdoc, codeSplitting: false },
-    dts: true,
+    dts: { eager: true },
     platform: "node",
     target: "es2022",
     outDir: "dist/rsbuild",
@@ -212,18 +235,23 @@ export default defineConfig([
       deps: {
         neverBundle: [
           // all non-relative (package) imports stay external
-          /^[@a-zA-Z]/,
+          /^(?!yak-internals)[@a-zA-Z]/,
           // node built-ins
           /^node:/,
           // isolated-source-eval must not be bundled (worker path would break)
           /\.\.\/isolated-source-eval\//,
+          /^yak-internals\/isolated-source-eval$/,
           // withYak is shipped as its own entry. Keep its types as re-imports
           // in the loader `.d.ts` rather than inlining them
           /\.\.\/withYak\//,
         ],
       },
-      outputOptions: { ...stripJsdoc, codeSplitting: false },
-      dts: true,
+      outputOptions: {
+        ...stripJsdoc,
+        codeSplitting: false,
+        paths: { "yak-internals/isolated-source-eval": "../isolated-source-eval/index.js" },
+      },
+      dts: { eager: true },
       platform: "node",
       target: "es2022",
       outDir: "dist/loaders",

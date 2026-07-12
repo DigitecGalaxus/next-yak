@@ -1,5 +1,5 @@
 import { relative } from "path";
-import type { YakConfigOptions } from "../../withYak/index.js";
+import type { YakConfigOptions } from "../../config.js";
 
 type DebugOptions = Required<YakConfigOptions>["experiments"]["debug"];
 type DebugType = NonNullable<Exclude<DebugOptions, true | undefined>>["types"] extends

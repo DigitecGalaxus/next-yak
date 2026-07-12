@@ -131,11 +131,22 @@
       }
     },
     "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
-    "./loaders/turbopack-loader": "./dist/loaders/turbopack-loader.cjs",
     "./vite": {
       "import": {
         "types": "./dist/loaders/vite-plugin.d.ts",
         "default": "./dist/loaders/vite-plugin.js"
+      }
+    },
+    "./cross-file-resolver": {
+      "import": {
+        "types": "./dist/cross-file-resolver/index.d.ts",
+        "default": "./dist/cross-file-resolver/index.js"
+      }
+    },
+    "./isolated-source-eval": {
+      "import": {
+        "types": "./dist/isolated-source-eval/index.d.ts",
+        "default": "./dist/isolated-source-eval/index.js"
       }
     },
     "./rsbuild": {
@@ -178,7 +189,8 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vitest": "catalog:dev"
+    "vitest": "catalog:dev",
+    "yak-internals": "workspace:*"
   },
   "peerDependencies": {
     "@rsbuild/core": ">=2.0.0",

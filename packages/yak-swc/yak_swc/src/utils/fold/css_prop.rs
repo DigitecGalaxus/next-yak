@@ -5,7 +5,7 @@ use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::fold::css_expr::{
   class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee, is_yak_style_callee,
 };
-use crate::yak_imports::YakImports;
+use crate::yak_imports::{YakImports, YakRuntime};
 use swc_core::{
   common::errors::HANDLER,
   common::{Span, Spanned, SyntaxContext, DUMMY_SP},
@@ -169,7 +169,8 @@ impl CSSProp {
     let Some(class_name_expr) = fold_css_expr(css_expr, yak_imports) else {
       return false;
     };
-    opening_element.attrs[self.index] = class_name_attr(expr_attr_value(class_name_expr));
+    opening_element.attrs[self.index] =
+      class_name_attr(yak_imports.runtime(), expr_attr_value(class_name_expr));
     true
   }
 
@@ -334,7 +335,9 @@ impl HasCSSProp for JSXOpeningElement {
           if let JSXAttrName::Ident(ident) = &attr.name {
             match ident.sym.as_ref() {
               "css" => css_index = Some(index),
-              "className" => relevant_props.push((index, RelevantProp::ClassName)),
+              s if YakRuntime::is_class_attr(s) => {
+                relevant_props.push((index, RelevantProp::ClassName))
+              }
               "style" => relevant_props.push((index, RelevantProp::Style)),
               _ => {}
             }

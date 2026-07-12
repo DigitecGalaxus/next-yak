@@ -11,7 +11,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), viteYak()],
+  plugins: [viteYak(), react()],
   css: {},
   environments: {
     ssr: {

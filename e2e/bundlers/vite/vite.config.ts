@@ -17,7 +17,7 @@ for (const file of readdirSync(__dirname)) {
 const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? { foldStatic: false } : {};
 
 export default defineConfig({
-  plugins: [react(), viteYak(yakOptions)],
+  plugins: [viteYak(yakOptions), react()],
   build: {
     rollupOptions: {
       input: htmlEntries,

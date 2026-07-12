@@ -11,5 +11,5 @@ import { defineConfig } from "vite";
 const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? { foldStatic: false } : {};
 
 export default defineConfig({
-  plugins: [vinext(), viteYak(yakOptions)],
+  plugins: [viteYak(yakOptions), vinext()],
 });

@@ -12,7 +12,7 @@
  * which would cause the evaluator to return stale cached results.
  */
 import { statSync } from "node:fs";
-import type { Evaluator } from "../isolated-source-eval/evaluator.js";
+import type { Evaluator } from "../isolated-source-eval/index.js";
 
 const EVALUATOR_KEY = Symbol.for("next-yak-evaluator");
 const MTIMES_KEY = Symbol.for("next-yak-mtimes");

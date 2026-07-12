@@ -1,0 +1,405 @@
+import { type JscConfig, Options, transform as swcTransform } from "@swc/core";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, relative, resolve } from "node:path";
+import { normalizePath, type Plugin } from "vite";
+import { parseModule } from "../cross-file-resolver/parseModule.js";
+import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
+import { createEvaluator, type Evaluator } from "yak-internals/isolated-source-eval";
+import { resolveYakContext, YakConfigOptions } from "../config.js";
+import { createDebugLogger } from "./lib/debugLogger.js";
+import { extractCss } from "./lib/extractCss.js";
+import { parseExports } from "./lib/parseExports.js";
+import { getSwcParserOptions } from "./lib/swcParserOptions.js";
+const require = createRequire(import.meta.url);
+
+export type ViteYakPluginOptions = YakConfigOptions & {
+  /**
+   * Base path for resolving CSS virtual module paths.
+   * Relative paths are resolved from Vite's project root.
+   * In monorepo setups where source files live outside the Vite project root,
+   * set this to the monorepo root to avoid broken CSS imports.
+   * @defaultValue Vite's resolved `root`
+   */
+  basePath?: string;
+  /**
+   * Overrides for the SWC pass which runs the yak transform.
+   */
+  swcOptions?: SwcOverrides;
+};
+
+/**
+ * Everything of the SWC options which is not owned by the yak transform
+ * (current file being compiled and plugins can't be overridden)
+ */
+type SwcOverrides = Omit<
+  Options,
+  "filename" | "sourceFileName" | "inputSourceMap" | "sourceMaps" | "sourceRoot" | "jsc"
+> & {
+  jsc?: Omit<JscConfig, "experimental"> & {
+    experimental?: Omit<NonNullable<JscConfig["experimental"]>, "plugins">;
+  };
+};
+
+/**
+ * @internal Describes a yak runtime package (e.g. "next-yak", "@yak/solid").
+ * The yak-swc compiler detects the package from the import source on its own.
+ * This only controls the vite-plugin side (filtering, context alias, HMR).
+ * Not part of the public API
+ */
+export type YakViteLibrary = {
+  /** Package name users import from (must be one of the packages known to yak-swc) */
+  name: string;
+  /**
+   * Register components with $RefreshReg$ for React Fast Refresh in dev mode.
+   * Disable for runtimes where another plugin owns HMR (e.g. vite-plugin-solid).
+   */
+  reactRefreshReg: boolean;
+  /** Transform-filter exclusion for the runtime package itself */
+  excludePattern: RegExp;
+  /**
+   * Default for the `foldStatic` option. Off for Solid: folded static
+   * markup becomes part of Solid's innerHTML templates, where tags the
+   * HTML parser relocates (e.g. a div inside a <p>) corrupt the compiled
+   * sibling walk. Users can still opt in explicitly.
+   */
+  foldStatic: boolean;
+};
+
+const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
+  jsc: {
+    transform: {
+      react: {
+        runtime: "preserve",
+      },
+    },
+    target: "es2022",
+    loose: false,
+    minify: {
+      compress: false,
+      mangle: false,
+    },
+    preserveAllComments: true,
+  },
+  minify: false,
+  isModule: true,
+};
+
+/**
+ * @internal Creates the vite plugin function for a yak runtime package.
+ * next-yak and @yak/solid each wrap it with their own library config and
+ * export the result as their public vite plugin.
+ */
+export function createViteYakPlugin(library: YakViteLibrary) {
+  return async function viteYakPlugin(userOptions: ViteYakPluginOptions = {}): Promise<Plugin> {
+    return viteYakImpl(library, userOptions);
+  };
+}
+
+async function viteYakImpl(
+  library: YakViteLibrary,
+  userOptions: ViteYakPluginOptions,
+): Promise<Plugin> {
+  const yakOptions: ViteYakPluginOptions = {
+    experiments: {
+      transpilationMode: "Css",
+      suppressDeprecationWarnings: false,
+      ...userOptions.experiments,
+    },
+    minify: userOptions.minify ?? process.env.NODE_ENV === "production",
+    prefix: userOptions.prefix,
+    foldStatic: userOptions.foldStatic ?? library.foldStatic,
+    strictCssProp: userOptions.strictCssProp,
+    contextPath: userOptions.contextPath,
+    swcOptions: deepMerge(defaultSwcOptions!, userOptions.swcOptions ?? {}),
+  };
+  yakOptions.displayNames =
+    userOptions.displayNames ?? yakOptions.displayNames ?? !yakOptions.minify;
+  let basePath = userOptions.basePath ?? "";
+  let hasWarnedAboutBasePath = false;
+  let debugLog: ReturnType<typeof createDebugLogger> = () => {};
+  let isServe = false;
+  const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
+  const virtualModuleRegex = /^virtual:yak-css:/;
+  const virtualCssModuleRegex = /^\0virtual:yak-css:/;
+  const yakSwcPath = await findYakSwcPlugin();
+  const evaluator: Evaluator = await createEvaluator();
+  return {
+    name: "vite-plugin-yak:css:pre",
+    enforce: "pre",
+    config: (config) => {
+      const context = resolveYakContext(yakOptions.contextPath, config.root ?? process.cwd());
+
+      if (!context) {
+        return;
+      }
+
+      config.resolve ||= {};
+
+      if (Array.isArray(config.resolve.alias)) {
+        config.resolve.alias.push({
+          find: `${library.name}/context/baseContext`,
+          replacement: context,
+        });
+      } else {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          [`${library.name}/context/baseContext`]: context,
+        };
+      }
+    },
+    configResolved(config) {
+      basePath = basePath ? resolve(config.root, basePath) : config.root;
+      debugLog = createDebugLogger(yakOptions.experiments?.debug, basePath);
+      isServe = config.command === "serve";
+    },
+    resolveId: {
+      filter: {
+        id: virtualModuleRegex,
+      },
+      handler(id) {
+        return "\0" + id;
+      },
+    },
+    load: {
+      filter: {
+        id: virtualCssModuleRegex,
+      },
+      async handler(id) {
+        // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
+        // The path is relative to basePath — resolve to absolute for Vite's file APIs
+        const queryStringStart = id.indexOf("?");
+        const queryString = queryStringStart === -1 ? "" : id.slice(queryStringStart);
+        const relativeId = id.slice(17, -4 - queryString.length);
+        const originalId = resolve(basePath, relativeId);
+        this.addWatchFile(originalId);
+
+        const sourceContent = await this.fs.readFile(originalId, {
+          encoding: "utf8",
+        });
+        const code = await transform(sourceContent, originalId, basePath, yakSwcPath, yakOptions);
+        const extractedCss = extractCss(code.code, "Css");
+        debugLog("css", extractedCss, originalId);
+
+        const { resolved } = await resolveCrossFileConstant(
+          {
+            parse: (modulePath) => {
+              return parseModule(
+                {
+                  transpilationMode: "Css",
+                  extractExports: async (modulePath) => {
+                    const sourceContent = await this.fs.readFile(modulePath, {
+                      encoding: "utf8",
+                    });
+
+                    this.addWatchFile(modulePath);
+
+                    return parseExports(sourceContent);
+                  },
+                  getTransformed: async (modulePath) => {
+                    const sourceContent = await this.fs.readFile(modulePath, {
+                      encoding: "utf8",
+                    });
+                    return transform(sourceContent, modulePath, basePath, yakSwcPath, yakOptions);
+                  },
+                  evaluateYakModule: async (modulePath: string) => {
+                    this.addWatchFile(modulePath);
+                    const result = await evaluator.evaluate(modulePath);
+                    if (!result.ok) {
+                      throw new Error(result.error.message);
+                    }
+                    for (const dep of result.dependencies) {
+                      this.addWatchFile(dep);
+                    }
+                    return result.value;
+                  },
+                },
+                modulePath,
+              );
+            },
+            resolve: async (moduleSpecifier: string, context: string) => {
+              let importer = context;
+              const resolved = await this.resolve(moduleSpecifier, importer);
+
+              if (!resolved) {
+                throw new Error(`Could not resolve ${moduleSpecifier} from ${context}`);
+              }
+              return resolved.id;
+            },
+          },
+          originalId + queryString,
+          extractedCss,
+        );
+
+        debugLog("css-resolved", resolved, originalId);
+        return resolved;
+      },
+    },
+
+    configureServer(server) {
+      server.watcher.on("change", (file) => {
+        evaluator.invalidate(file);
+      });
+    },
+
+    transform: {
+      filter: {
+        id: {
+          include: sourceFileRegex,
+          exclude: [library.excludePattern],
+        },
+        code: library.name,
+      },
+      async handler(code, id) {
+        try {
+          const filePath = id.split("?")[0];
+          if (!hasWarnedAboutBasePath) {
+            const relPath = relative(basePath, filePath);
+            if (relPath.startsWith("..")) {
+              hasWarnedAboutBasePath = true;
+              console.warn(
+                `[${library.name}] Source file "${filePath}" is outside the project root "${basePath}".\n` +
+                  `This may cause CSS resolution issues in monorepo setups.\n` +
+                  `Set the "basePath" plugin option to your monorepo root:\n\n` +
+                  `  { basePath: "/absolute/path/to/monorepo/root" }\n`,
+              );
+            }
+          }
+          const result = await transform(
+            code,
+            filePath,
+            basePath,
+            yakSwcPath,
+            yakOptions,
+            isServe && library.reactRefreshReg,
+          );
+          debugLog("ts", result.code, id);
+
+          return {
+            code: result.code,
+            map: result.map,
+          };
+        } catch (error) {
+          this.error(`[YAK Plugin] Error transforming ${id}: ${(error as Error).message}`);
+        }
+      },
+    },
+
+    // Vite's default HMR only updates the JS module when a source file changes.
+    // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
+    // which Vite doesn't know is derived from the source file. Without explicit
+    // invalidation here, the browser keeps stale CSS after edits.
+    hotUpdate({ modules, file, type }) {
+      if (type !== "update" && type !== "create") return;
+      if (!sourceFileRegex.test(file)) return;
+
+      // The SWC plugin generates virtual module paths relative to basePath
+      // (via {{__MODULE_PATH__}}), so we must match that format.
+      const relativePath = normalizePath(relative(basePath, file));
+      const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
+      const mod = this.environment.moduleGraph.getModuleById(virtualId);
+      if (mod) {
+        this.environment.moduleGraph.invalidateModule(mod);
+        return [...modules, mod];
+      }
+    },
+  };
+}
+
+/**
+ * This function finds the path to the yak-swc plugin because it is most of the time a transitive dependency
+ * and the resolver of SWC only resolves the main node_modules directory.
+ * @returns The path to the yak-swc wasm plugin.
+ */
+async function findYakSwcPlugin() {
+  try {
+    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const packageRoot = dirname(packageJsonPath);
+
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+
+    // Resolve the main field which points to the WASM file
+    const wasmPath = resolve(packageRoot, packageJson.main);
+
+    return wasmPath;
+  } catch (e) {
+    throw new Error(`Could not resolve yak-swc plugin: ${e}`);
+  }
+}
+
+function transform(
+  data: string,
+  modulePath: string,
+  rootPath: string,
+  yakSwcPath: string,
+  yakOptions: ViteYakPluginOptions,
+  reactRefreshReg?: boolean,
+) {
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
+  return swcTransform(data, {
+    filename: modulePath,
+    inputSourceMap: undefined,
+    sourceMaps: true,
+    sourceFileName: modulePath,
+    sourceRoot: rootPath,
+    ...yakOptions.swcOptions,
+    jsc: {
+      // Derive the parser from the file name, unless the user configured one
+      parser: getSwcParserOptions(modulePath),
+      ...yakOptions.swcOptions?.jsc,
+      experimental: {
+        // Keep `import data from "./data.json" with { type: "json" }` intact
+        keepImportAttributes: true,
+        ...yakOptions.swcOptions?.jsc?.experimental,
+        plugins: [
+          [
+            yakSwcPath,
+            {
+              minify: yakOptions.minify,
+              basePath: rootPath,
+              prefix: yakOptions.prefix,
+              displayNames: yakOptions.displayNames,
+              foldStatic: yakOptions.foldStatic ?? true,
+              strictCssProp: yakOptions.strictCssProp ?? true,
+              suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
+              ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
+              importMode: {
+                value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
+                transpilation: "Css",
+                encoding: "None",
+              },
+            },
+          ],
+        ],
+      },
+    },
+  });
+}
+
+/**
+ * Deep merge two objects, with source values overriding target values.
+ */
+function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
+  const result = { ...target };
+  for (const key of Object.keys(source) as Array<keyof T>) {
+    const sourceValue = source[key];
+    const targetValue = target[key];
+    if (
+      sourceValue !== undefined &&
+      typeof sourceValue === "object" &&
+      sourceValue !== null &&
+      !Array.isArray(sourceValue) &&
+      typeof targetValue === "object" &&
+      targetValue !== null &&
+      !Array.isArray(targetValue)
+    ) {
+      result[key] = deepMerge(
+        targetValue as Record<string, unknown>,
+        sourceValue as Record<string, unknown>,
+      ) as T[keyof T];
+    } else if (sourceValue !== undefined) {
+      result[key] = sourceValue as T[keyof T];
+    }
+  }
+  return result;
+}
