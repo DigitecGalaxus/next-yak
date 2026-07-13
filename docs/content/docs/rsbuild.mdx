@@ -1,0 +1,82 @@
+---
+title: Rsbuild
+description: Use next-yak with Rsbuild and React.
+---
+
+# Using next-yak with Rsbuild
+
+Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin from `next-yak/rsbuild`. Rsbuild-based frameworks like TanStack Start work too.
+
+## Install dependencies
+
+Install next-yak alongside Rsbuild and React (if you haven't already):
+
+```bash
+npm i next-yak
+# or
+pnpm i next-yak
+# or
+yarn add next-yak
+# or
+bun add next-yak
+```
+
+## Configure Rsbuild
+
+Add the `pluginYak` plugin to your `rsbuild.config.ts`:
+
+```ts title="rsbuild.config.ts"
+import { defineConfig } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginYak } from "next-yak/rsbuild";
+
+export default defineConfig({
+  plugins: [pluginReact(), pluginYak()],
+});
+```
+
+## Theme context (`yak.context.ts`)
+
+If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root — it is picked up automatically. To use a custom location, pass the `contextPath` option (`pluginYak({ contextPath: "..." })`).
+
+```ts title="yak.context.ts"
+export function getYakThemeContext() {
+  if (typeof document !== "undefined") {
+    const cookies = document.cookie.split(";");
+    const highContrastCookie = cookies.find((cookie) => cookie.trim().startsWith("highContrast="));
+
+    const highContrast = highContrastCookie ? highContrastCookie.split("=")[1] === "true" : false;
+
+    return { highContrast };
+  }
+
+  // server / SSR fallback
+  return { highContrast: false };
+}
+
+declare module "next-yak" {
+  export interface YakTheme extends ReturnType<typeof getYakThemeContext> {}
+}
+```
+
+Then wrap your app in `YakThemeProvider` and read the theme from `next-yak/context/baseContext`:
+
+```tsx title="src/main.tsx"
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import { YakThemeProvider } from "next-yak";
+import { getYakThemeContext } from "next-yak/context/baseContext";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <YakThemeProvider theme={getYakThemeContext()}>
+      <App />
+    </YakThemeProvider>
+  </StrictMode>,
+);
+```
+
+## Migrating from styled-components
+
+Migration is mostly about imports, the styled API stays familiar. For details and edge cases, see the [Migration from styled-components](/docs/migration-from-styled-components) guide.
