@@ -293,10 +293,9 @@ impl CSSProp {
     }
   }
 
-  /// Maps JSX attributes or spread elements to PropOrSpread elements.
-  /// This is used to convert JSX attributes to object properties for the merge call.
-  /// Because the order of the properties are already reversed, the attributes are iterated in reverse order.
-  /// This is done to maintain the order of the attributes when they are merged.
+  /// Maps JSX attributes/spreads to object properties for the merge call.
+  /// `removed_attrs` comes in reverse document order (props are removed back-to-front),
+  /// so iterate in reverse to restore the original order.
   fn map_props(props: &[JSXAttrOrSpread]) -> Result<Vec<PropOrSpread>, TransformError> {
     props
       .iter()
