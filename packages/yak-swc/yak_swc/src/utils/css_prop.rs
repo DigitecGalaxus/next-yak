@@ -70,7 +70,11 @@ impl CSSProp {
           _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
         })
         .collect::<Result<Vec<_>, _>>()?;
-      Ok(Self::create_merge_call(&mapped_props, css_expr, &merge_ident))
+      Ok(Self::create_merge_call(
+        &mapped_props,
+        css_expr,
+        &merge_ident,
+      ))
     })();
 
     let merge_call = match merge_call {
