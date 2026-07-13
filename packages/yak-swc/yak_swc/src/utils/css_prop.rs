@@ -44,12 +44,19 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
+  /// A no-op empty css prop (e.g. `css``) is dropped entirely instead.
   pub fn transform(
     &self,
     opening_element: &mut JSXOpeningElement,
     yak_imports: &mut YakImports,
     strict_css_prop: bool,
   ) {
+    // An empty css prop (e.g. `css``) compiles to a bare `css()` and contributes
+    // nothing, so drop the attribute entirely and keep the other props untouched
+    if Self::is_noop_css_prop(&opening_element.attrs[self.index], yak_imports) {
+      opening_element.attrs.remove(self.index);
+      return;
+    }
     if self.try_fold(opening_element, yak_imports) {
       return;
     }
@@ -70,7 +77,11 @@ impl CSSProp {
           _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
         })
         .collect::<Result<Vec<_>, _>>()?;
-      Ok(Self::create_merge_call(&mapped_props, css_expr, &merge_ident))
+      Ok(Self::create_merge_call(
+        &mapped_props,
+        css_expr,
+        &merge_ident,
+      ))
     })();
 
     let merge_call = match merge_call {
@@ -196,8 +207,9 @@ impl CSSProp {
         _ => return None,
       }
     }
-    // css calls without a base class stay on the runtime path
-    let base = base?;
+    // an empty `css()` folds to an empty base `""`, so it can collapse into a
+    // ternary arm instead of falling back to the runtime path
+    let base = base.unwrap_or_else(|| "".into());
     // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : " c") …
     let mut class_name_expr = Self::str_expr(base);
     for (condition, cons_class, alt_class) in segments {
@@ -270,6 +282,27 @@ impl CSSProp {
       Expr::Lit(Lit::Str(class_name)) => Some(class_name.value.clone()),
       _ => None,
     }
+  }
+
+  /// Matches a css prop that compiles to a bare `css()` with no arguments,
+  /// produced by an empty css template such as `css``
+  fn is_noop_css_prop(attr: &JSXAttrOrSpread, yak_imports: &YakImports) -> bool {
+    let JSXAttrOrSpread::JSXAttr(JSXAttr {
+      value:
+        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+          expr: JSXExpr::Expr(expr),
+          ..
+        })),
+      ..
+    }) = attr
+    else {
+      return false;
+    };
+    matches!(
+      unwrap_type_casts(expr),
+      Expr::Call(call)
+        if Self::is_yak_css_callee(&call.callee, yak_imports) && call.args.is_empty()
+    )
   }
 
   fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {

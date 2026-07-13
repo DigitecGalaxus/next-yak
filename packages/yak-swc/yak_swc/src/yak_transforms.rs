@@ -218,16 +218,22 @@ impl YakTransform for TransformCssMixin {
       );
     }
     let comment_prefix = if self.is_within_jsx_attribute {
-      // Add the class name to the arguments, to be created by the CSS loader
-      arguments.push(
-        Expr::Lit(Lit::Str(Str {
-          span: DUMMY_SP,
-          value: self.class_name.as_str().into(),
-          raw: None,
-        }))
-        .into(),
-      );
-      Some("YAK Extracted CSS:".into())
+      // An empty css prop (e.g. `css``) has no class name and no runtime.
+      // Keep the call argument-less so the css prop transform can drop it.
+      if declarations.is_empty() && !has_dynamic_content {
+        None
+      } else {
+        // Add the class name to the arguments, to be created by the CSS loader
+        arguments.push(
+          Expr::Lit(Lit::Str(Str {
+            span: DUMMY_SP,
+            value: self.class_name.as_str().into(),
+            raw: None,
+          }))
+          .into(),
+        );
+        Some("YAK Extracted CSS:".into())
+      }
     } else if self.is_exported {
       Some(format!(
         "YAK EXPORTED MIXIN:{}",

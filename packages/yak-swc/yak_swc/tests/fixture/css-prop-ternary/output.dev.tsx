@@ -51,3 +51,13 @@ const Elem3 = ({ active, width }: {
 }
 */ /*#__PURE__*/ css("input_Elem3_m7uBBu-01"))}/>;
 };
+// folds: an empty arm becomes an empty string instead of a dead class
+const Elem4 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={active ? /*#__PURE__*/ "" : /*YAK Extracted CSS:
+:global(.input_Elem4_m7uBBu-01) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem4_m7uBBu-01"}/>;
+};

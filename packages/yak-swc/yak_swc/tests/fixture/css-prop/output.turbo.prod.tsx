@@ -46,10 +46,8 @@ const Elem6 = ()=><div {...__yak_mergeCssProp({
 }
 */ /*#__PURE__*/ css("ym7uBBu5"))}/>;
 const Elem7 = ()=><div className="no-css"/>;
-const Elem8 = ()=><div {...__yak_mergeCssProp({
-        className: "empty-css"
-    }, /*#__PURE__*/ css("ym7uBBu6"))}/>;
-const Elem9 = ()=><div className={/*#__PURE__*/ "ym7uBBu7"}/>;
+const Elem8 = ()=><div className="empty-css"/>;
+const Elem9 = ()=><div/>;
 const Elem10 = ({ on }: {
     on: boolean;
 })=><div className={/*YAK Extracted CSS:
