@@ -33,3 +33,5 @@ export { atoms } from "./atoms.js";
 export { css } from "./mocks/cssLiteral.js";
 export { keyframes } from "./mocks/keyframes.js";
 export { styled } from "./mocks/styled.js";
+export { globalStyle } from "./mocks/globalStyle.js";
+export type { GlobalStyleInterpolation } from "./mocks/globalStyle.js";

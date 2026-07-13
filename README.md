@@ -9,13 +9,13 @@
 
 **next-yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
 
-Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 with OXC), and **Storybook**. Any Vite-based framework works out of the box, including react-router, TanStack Start, and more.
+Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 with OXC), **Rsbuild** (2+), and **Storybook**. Any Vite-based framework works out of the box, including react-router, TanStack Start, and more.
 
 > **Production-proven:** next-yak is sponsored and used in production by [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, delivering measurable improvements in Core Web Vitals.
 
 ## Features
 
-- **Multi-Framework**: First-class support for Next.js (Webpack & Turbopack), Vite 7+ (react-router, TanStack Start, ...), and Storybook
+- **Multi-Framework**: First-class support for Next.js (Webpack & Turbopack), Vite 7+ (react-router, TanStack Start, ...), Rsbuild 2+, and Storybook
 - **Build-Time CSS**: Extracts CSS at compile time with zero runtime overhead
 - **React Server Components**: Works seamlessly with both Server and Client Components
 - **Cross-File Imports**: Import constants, mixins, and selectors from `.yak` files and other modules, works across all bundlers
@@ -100,6 +100,23 @@ export default defineConfig({
 ```
 
 See the full [Vite setup guide](https://yak.js.org/docs/vite).
+
+### Rsbuild
+
+Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin. It composes with `pluginReact()` and Rsbuild's built-in SWC.
+
+```js
+// rsbuild.config.ts
+import { defineConfig } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginYak } from "next-yak/rsbuild";
+
+export default defineConfig({
+  plugins: [pluginReact(), pluginYak()],
+});
+```
+
+See the full [Rsbuild setup guide](https://yak.js.org/docs/rsbuild).
 
 ### Storybook
 

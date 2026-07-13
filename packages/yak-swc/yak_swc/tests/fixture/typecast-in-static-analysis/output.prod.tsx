@@ -37,4 +37,8 @@ const Page = /*YAK EXPORTED STYLED:Page:ym7uBBu4*//*YAK Extracted CSS:
   display: block;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu4");
-export default Page as typeof Page;
+export default /*YAK EXPORTED STYLED:default:ym7uBBu4*//*YAK Extracted CSS:
+:global(.ym7uBBu4) {
+  display: block;
+}
+*/ Page as typeof Page;

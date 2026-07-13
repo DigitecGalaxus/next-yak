@@ -1,5 +1,13 @@
 # yak-swc
 
+## 9.5.1
+
+### Patch Changes
+
+- 056b4d9: Fix a stray `/*#__PURE__*/` on inlined `css` mixins that could make a bundler tree-shake away an entire export under the wasm plugin
+- 056b4d9: Emit the default-export marker for styled components exported through a TS cast (e.g. `export default Page as typeof Page`) so cross-file default imports resolve correctly
+- 280f4c9: Add a `strictCssProp` option (default `true`) that fails the build on a `css` prop next-yak can't handle. Turn it off to leave unrecognized `css` props untouched, e.g. when another library on the same element uses its own `css` prop. Invalid `css` props are now left in place rather than silently stripped.
+
 ## 9.5.0
 
 ### Minor Changes

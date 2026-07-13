@@ -44,41 +44,64 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
-  pub fn transform(&self, opening_element: &mut JSXOpeningElement, yak_imports: &mut YakImports) {
+  pub fn transform(
+    &self,
+    opening_element: &mut JSXOpeningElement,
+    yak_imports: &mut YakImports,
+    strict_css_prop: bool,
+  ) {
     if self.try_fold(opening_element, yak_imports) {
       return;
     }
     let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
-    let result: Result<_, TransformError> = (|| {
-      let value = opening_element.attrs.remove(self.index);
-
-      let removed_attrs: Vec<_> = self
+    // Build the replacement from borrowed attributes first, without mutating the
+    // element. That way an invalid `css` prop can be left completely untouched
+    // when strict mode is off (it might belong to another library, not next-yak).
+    let merge_call: Result<Box<Expr>, TransformError> = (|| {
+      let css_expr =
+        Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
+      let mapped_props = self
         .relevant_props_indices
         .iter()
-        .rev()
-        .map(|&index| {
-          let adjusted_index = if index > self.index { index - 1 } else { index };
-          opening_element.attrs.remove(adjusted_index)
+        .map(|&index| match &opening_element.attrs[index] {
+          JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
+          JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
+          #[cfg(swc_ast_unknown)]
+          _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
         })
-        .collect();
-      let css_expr = Self::extract_css_expr(&value, opening_element.span)?;
-      let merge_call =
-        Self::create_merge_call(&Self::map_props(&removed_attrs)?, css_expr, &merge_ident);
-      let insert_index = opening_element.attrs.len();
-
-      let spread_attr = JSXAttrOrSpread::SpreadElement(SpreadElement {
-        dot3_token: DUMMY_SP,
-        expr: merge_call,
-      });
-      opening_element.attrs.insert(insert_index, spread_attr);
-      Ok(())
+        .collect::<Result<Vec<_>, _>>()?;
+      Ok(Self::create_merge_call(&mapped_props, css_expr, &merge_ident))
     })();
 
-    if let Err(err) = result {
-      HANDLER.with(|handler| {
-        handler.span_err(err.span(), err.message());
-      });
+    let merge_call = match merge_call {
+      Ok(merge_call) => merge_call,
+      Err(err) => {
+        // Strict mode (default): a `css` prop next-yak can't handle is almost
+        // always a mistake in a next-yak project, so fail loudly. Otherwise leave
+        // the element untouched so unrelated `css` props keep working.
+        if strict_css_prop {
+          HANDLER.with(|handler| {
+            handler.struct_span_err(err.span(), err.message()).emit();
+          });
+        }
+        return;
+      }
+    };
+
+    // Validation succeeded — remove the consumed attributes and insert the spread.
+    opening_element.attrs.remove(self.index);
+    for &index in self.relevant_props_indices.iter().rev() {
+      let adjusted_index = if index > self.index { index - 1 } else { index };
+      opening_element.attrs.remove(adjusted_index);
     }
+    let insert_index = opening_element.attrs.len();
+    opening_element.attrs.insert(
+      insert_index,
+      JSXAttrOrSpread::SpreadElement(SpreadElement {
+        dot3_token: DUMMY_SP,
+        expr: merge_call,
+      }),
+    );
   }
 
   /// Replaces a statically known css prop with a plain className attribute
@@ -291,22 +314,6 @@ impl CSSProp {
       #[cfg(swc_ast_unknown)]
       _ => Err(TransformError::UnsupportedSpreadElement(span)),
     }
-  }
-
-  /// Maps JSX attributes/spreads to object properties for the merge call.
-  /// `removed_attrs` comes in reverse document order (props are removed back-to-front),
-  /// so iterate in reverse to restore the original order.
-  fn map_props(props: &[JSXAttrOrSpread]) -> Result<Vec<PropOrSpread>, TransformError> {
-    props
-      .iter()
-      .rev()
-      .map(|prop| match prop {
-        JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
-        JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
-        #[cfg(swc_ast_unknown)]
-        _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
-      })
-      .collect()
   }
 
   /// Maps a single JSX attribute to a PropOrSpread element.

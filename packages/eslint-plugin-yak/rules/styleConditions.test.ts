@@ -116,11 +116,23 @@ ruleTester.run("yak-style-conditions", styleConditions, {
     },
     {
       // Invalid because it's returning a constant (the value is not from props)
+      // Both branches are literals, so a concrete before/after example is shown.
       code: "import { css, styled } from 'next-yak'; css`color: ${({variant}) => variant === 'primary' ? `red`: 'blue'}`",
-      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+      errors: [
+        {
+          messageId: "invalidRuntimeReturnValueWithExample",
+          data: {
+            property: "color",
+            before: "color: ${({variant}) => variant === 'primary' ? `red`: 'blue'}",
+            after: "color: blue;\n  ${({variant}) => variant === 'primary' && css`color: red;`}",
+            example: "css`color: red;`",
+          },
+        },
+      ],
     },
     {
       // Invalid because it's returning a constant (the value is not from props)
+      // `&& colors.primary` is not a literal, so the generic message is used.
       code: "import { css, styled } from 'next-yak'; css`color: ${({variant}) => variant === 'primary' && colors.primary}`",
       errors: [{ messageId: "invalidRuntimeReturnValue" }],
     },
@@ -140,7 +152,53 @@ ruleTester.run("yak-style-conditions", styleConditions, {
     {
       // Invalid because it's returning a constant (the value is not from props)
       code: "import { css, styled } from 'next-yak'; styled.button`color: ${({variant}) => variant === 'primary' ? `red`: 'blue'}`",
-      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+      errors: [{ messageId: "invalidRuntimeReturnValueWithExample" }],
+    },
+    {
+      // Real-world incident: an enum ternary returning number literals.
+      code: 'import { css, styled } from "next-yak"; styled.span`z-index: ${({ $kind }) => $kind === "second" ? 4 : 3};`',
+      errors: [
+        {
+          messageId: "invalidRuntimeReturnValueWithExample",
+          data: {
+            property: "z-index",
+            before: 'z-index: ${({ $kind }) => $kind === "second" ? 4 : 3}',
+            after: 'z-index: 3;\n  ${({ $kind }) => $kind === "second" && css`z-index: 4;`}',
+            example: "css`z-index: 4;`",
+          },
+        },
+      ],
+    },
+    {
+      // Enum ternary returning string literals — quotes are stripped in the example.
+      code: 'import { css, styled } from "next-yak"; styled.span`background: ${({ $starting }) => $starting ? "#d8b4fe" : "#f6c453"};`',
+      errors: [
+        {
+          messageId: "invalidRuntimeReturnValueWithExample",
+          data: {
+            property: "background",
+            before: 'background: ${({ $starting }) => $starting ? "#d8b4fe" : "#f6c453"}',
+            after:
+              "background: #f6c453;\n  ${({ $starting }) => $starting && css`background: #d8b4fe;`}",
+            example: "css`background: #d8b4fe;`",
+          },
+        },
+      ],
+    },
+    {
+      // `&&` with a literal value renders a single-line example (no default branch).
+      code: 'import { css, styled } from "next-yak"; styled.span`color: ${({ $on }) => $on && "red"};`',
+      errors: [
+        {
+          messageId: "invalidRuntimeReturnValueWithExample",
+          data: {
+            property: "color",
+            before: 'color: ${({ $on }) => $on && "red"}',
+            after: "${({ $on }) => $on && css`color: red;`}",
+            example: "css`color: red;`",
+          },
+        },
+      ],
     },
     {
       // Invalid because it's returning a constant (the value is not from props)
@@ -158,9 +216,57 @@ ruleTester.run("yak-style-conditions", styleConditions, {
       errors: [{ messageId: "invalidRuntimeReturnValue" }],
     },
     {
-      // Invalid because it's returning a css literal for a css declaration
+      // css literal already holds a full declaration under an outer property -> the
+      // fix (remove the outer property) can't be shown cleanly, so fall back to generic.
       code: "import { css, styled } from 'next-yak'; styled.button`color: ${({variant}) => variant === 'primary' && css`color: red`}`",
       errors: [{ messageId: "invalidCssReturnValue" }],
+    },
+    {
+      // css trap, case A: a static value split out from its property -> move it in.
+      code: 'import { css, styled } from "next-yak"; styled.span`color: ${({ $variant }) => $variant === "primary" && css`red`};`',
+      errors: [
+        {
+          messageId: "invalidCssReturnValueMoveProperty",
+          data: {
+            property: "color",
+            cssLiteral: "css`red`",
+            example: "css`color: red;`",
+            before: 'color: ${({ $variant }) => $variant === "primary" && css`red`}',
+            after: '${({ $variant }) => $variant === "primary" && css`color: red;`}',
+          },
+        },
+      ],
+    },
+    {
+      // css trap, case B: a prop-derived value wrapped in css -> drop the css``.
+      code: 'import { css, styled } from "next-yak"; styled.div`width: ${({ $w }) => css`${$w}px`};`',
+      errors: [
+        {
+          messageId: "invalidCssReturnValueDropCss",
+          data: {
+            property: "width",
+            value: "${$w}px",
+            before: "width: ${({ $w }) => css`${$w}px`}",
+            after: "width: ${({ $w }) => `${$w}px`}",
+          },
+        },
+      ],
+    },
+    {
+      // css trap, case A with an aliased css import -> the alias is preserved.
+      code: 'import { css as cssYak, styled } from "next-yak"; styled.span`z-index: ${({ $kind }) => $kind === "second" && cssYak`4`};`',
+      errors: [
+        {
+          messageId: "invalidCssReturnValueMoveProperty",
+          data: {
+            property: "z-index",
+            cssLiteral: "cssYak`4`",
+            example: "cssYak`z-index: 4;`",
+            before: 'z-index: ${({ $kind }) => $kind === "second" && cssYak`4`}',
+            after: '${({ $kind }) => $kind === "second" && cssYak`z-index: 4;`}',
+          },
+        },
+      ],
     },
   ],
 });
