@@ -21,7 +21,7 @@ export const styleConditions = createRule({
       invalidRuntimeReturnValue:
         "Arrow functions in next-yak styled/css literals should return either a css`...` literal (compiled to a CSS class) or a value derived from the component's props (a runtime CSS variable). Returning a constant does neither. If this is a fixed-set condition, move the declaration into the arrow function and return a css`...` literal. Keep the prop, don't hand-roll a CSS variable.",
       invalidRuntimeReturnValueWithExample:
-        "`{{property}}` will be automatically compiled into a CSS variable because of the runtime condition, e.g. `{{property}}: var(--h45cH)`. For your fixed-set condition return a static css declaration like {{example}} instead.\n\nnext-yak compiles it into a toggleable class name, which produces even better performance optimized JavaScript and HTML.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
+        "`{{property}}` will be automatically compiled into a CSS variable because of the runtime condition, e.g. `{{property}}: var(--h45cH)`.\nFor your fixed-set condition return a static css declaration like {{example}} instead\n\nnext-yak compiles the static css declaration into a toggleable class name, resulting in better performance optimized JavaScript and HTML\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValueMoveProperty:
         "`{{property}}` is a static property, but the arrow returns a {{cssLiteral}} literal (a toggleable style chunk, not a value) that next-yak can't splice into a property it already wrote. Move the whole declaration inside the css literal like {{example}} instead.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValueDropCss:
