@@ -509,6 +509,18 @@ function isNodeAccessingParams(
         isNodeAccessingParams(node.left, params, importedNames) ||
         isNodeAccessingParams(node.right, params, importedNames)
       );
+    case AST_NODE_TYPES.CallExpression:
+      // A call is a runtime value if the callee or any argument is prop-derived, e.g. Math.max(6, $baseWidth)
+      return (
+        isNodeAccessingParams(node.callee, params, importedNames) ||
+        node.arguments.some((argument) =>
+          isNodeAccessingParams(
+            argument.type === AST_NODE_TYPES.SpreadElement ? argument.argument : argument,
+            params,
+            importedNames,
+          ),
+        )
+      );
     case AST_NODE_TYPES.UnaryExpression:
       return isNodeAccessingParams(node.argument, params, importedNames);
     default:
