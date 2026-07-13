@@ -7,7 +7,7 @@ use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 use css_in_js_parser::{CssScope, Declaration, ParserState, ScopeType};
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{source_map::PURE_SP, Span, Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{source_map::PURE_SP, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
 
 use crate::naming_convention::{NamingConvention, TranspilationMode};
@@ -128,10 +128,11 @@ impl YakTransform for TransformNestedCss {
         declarations: declarations.to_vec(),
       },
       expression: (Box::new(Expr::Call(CallExpr {
-        // Use a special span as this expression might be cloned as part
-        // of a parent expression and therefore needs a unique span to
-        // avoid collisions for the comments
-        span: Span::dummy_with_cmt(),
+        // PURE_SP marks the call as side-effect free directly on the span.
+        // Unlike a comment keyed by BytePos it survives cloning and the
+        // wasm plugin serialization boundary (dummy_with_cmt positions get
+        // orphaned there and leak to the end of the module).
+        span: PURE_SP,
         callee: Callee::Expr(expression.tag.clone()),
         ctxt: SyntaxContext::empty(),
         args: arguments,
@@ -525,6 +526,59 @@ impl YakTransform for TransformStyled {
       "YAK EXPORTED STYLED:default:{}*//*YAK Extracted CSS:",
       self.class_name.clone()
     ))
+  }
+}
+
+/// Transform for global styles
+/// e.g. globalStyle`body { margin: 0; }`
+///
+/// The only transform without a name or scope of its own: the declarations are
+/// emitted verbatim, unscoped and unlayered. It never wraps the rule in a
+/// generated class, so user-authored selectors reach the stylesheet exactly as
+/// written in both transpilation modes.
+///
+/// This does not mean the extracted CSS is free of `:global()`. Interpolated yak
+/// references (`${StyledComponent}`, a `keyframes` name) are resolved on the same
+/// shared path `styled`/`css` use, so in `CssModule` mode they arrive already
+/// wrapped as `:global(.hash)` / `global(name)` — the marker that stops css-loader
+/// from hashing the already-final identifier a second time. Native mode emits them
+/// bare. That wrapping comes from interpolation resolution, not from this transform.
+///
+/// A user-written class selector that must stay global under css-loader still needs
+/// an explicit `:global(.foo)` (a deprecated, webpack-only escape hatch).
+pub struct TransformGlobalStyle;
+
+impl YakTransform for TransformGlobalStyle {
+  fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
+    ParserState::new()
+  }
+
+  fn transform_expression(
+    &mut self,
+    expression: &mut TaggedTpl,
+    _runtime_expressions: Vec<Expr>,
+    declarations: &[Declaration],
+    _runtime_css_variables: FxHashMap<String, Expr>,
+    _yak_imports: &mut YakImports,
+  ) -> YakTransformResult {
+    YakTransformResult {
+      css: YakCss {
+        comment_prefix: Some("YAK Extracted CSS:".into()),
+        declarations: declarations.to_vec(),
+      },
+      // Keep a bare `globalStyle()` no-op call so the extracted-CSS comment has
+      // an expression to anchor to. Don't drop it: that comment is how the
+      // webpack/Vite loaders extract the CSS (see extractCss), and its source
+      // position determines cascade order. The call itself is erased in prod by
+      // the shared /*#__PURE__*/ annotation.
+      expression: Box::new(Expr::Call(CallExpr {
+        span: expression.span,
+        ctxt: SyntaxContext::empty(),
+        callee: Callee::Expr(expression.tag.clone()),
+        args: vec![],
+        type_args: None,
+      })),
+    }
   }
 }
 

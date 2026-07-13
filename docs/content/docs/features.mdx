@@ -341,6 +341,129 @@ animation: 1s var(--yakVar1) ease-out;
 </Tabs>
 </details>
 
+## Global styles [#globalstyle]
+
+For styles that don't belong to a single component like CSS resets, `@font-face` declarations, `:root` variables or view transitions, you can use the `globalStyle` API. The styles are extracted at build time like all other yak styles and applied as soon as the file declaring them is imported, typically from your root layout or page entry.
+
+```jsx title="globals.tsx"
+import { globalStyle, keyframes } from "next-yak";
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+`;
+
+globalStyle`
+  :root {
+    --spacing: 4px;
+  }
+
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  ::view-transition-new(root) {
+    animation: ${fadeIn} 200ms ease;
+  }
+`;
+```
+
+```jsx title="layout.tsx"
+import "./globals";
+```
+
+Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components `createGlobalStyle` there is no component to mount or unmount.
+
+If you need conditional styling, you can use CSS native functionality for that like `@media`, `@supports`, `:root[data-theme]` or `:has()`.
+
+You can interpolate everything that is known at build time like constants, `keyframes`, static `css` mixins and even references to your styled components:
+
+```jsx title="my-dialog.tsx"
+import { globalStyle, styled } from "next-yak";
+
+export const Dialog = styled.dialog`
+  padding: var(--spacing);
+`;
+
+globalStyle`
+  /* prevent scrolling while the dialog is open */
+  body:has(${Dialog}[open]) {
+    overflow: hidden;
+  }
+`;
+```
+
+Runtime values (`${(props) => ...}`) are not supported inside `globalStyle` as a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
+
+```jsx title="globals.tsx"
+import { globalStyle } from "next-yak";
+
+globalStyle`
+  :root {
+    --sidebar-width: 280px;
+  }
+
+  :root[data-collapsed] {
+    --sidebar-width: 64px;
+  }
+`;
+```
+
+<Callout type="info">
+  `globalStyle` must be declared at module scope — using it inside a component or function is a
+  compile error, because the styles exist independently of any render.
+</Callout>
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+globalStyle`
+  body {
+    margin: 0;
+  }
+`;
+```
+</Tab>
+<Tab value="output javascript">
+```jsx
+globalStyle();
+```
+</Tab>
+<Tab value="output CSS">
+```css
+body {
+  margin: 0;
+}
+```
+</Tab>
+</Tabs>
+</details>
+
+<Callout type="info">
+  When your CSS targets markup you don't control — say a third-party widget that renders
+  `<div class="maps">` — the selector has to keep its literal name to match. If next-yak rewrote
+  `.maps` to `.maps_a4f5e`, it would no longer match the real element and your styles would silently
+  do nothing.
+
+  Vite, Turbopack, and rsbuild keep such classes literal automatically. Next.js with **webpack** is
+  the exception: it defaults to CSS Modules, which rewrites every class name. Two ways to keep `.maps`
+  intact:
+
+  1. **Recommended**: set [`transpilationMode: 'Css'`](/docs/migration-to-native-css). next-yak then
+     emits plain global CSS instead of CSS Modules, so class names are left as-is — same as the
+     native-CSS bundlers.
+  2. **Deprecated**: wrap the selector as `:global(.maps)`. Still works, but `:global()` is being
+     removed; prefer option 1.
+
+  The same rules for referencing external styles apply here as well. For further documentation visit:
+  [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
+</Callout>
+
 ## Mixins
 
 Mixins are declarations of the `css` utility function. You can declare a variable which holds the css declaration and
