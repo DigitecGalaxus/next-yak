@@ -34,6 +34,16 @@ export type YakConfigOptions = {
    * @defaultValue true
    */
   optimizeStaticJsx?: boolean;
+  /**
+   * Fail the build when a `css` prop has a value next-yak can't handle
+   * (e.g. a plain string). next-yak claims the `css` prop, so a malformed
+   * value is almost always a mistake worth surfacing.
+   *
+   * Set to `false` to leave such props untouched instead, e.g. when another
+   * library on the same element uses its own `css` prop.
+   * @defaultValue true
+   */
+  strictCssProp?: boolean;
   experiments?: {
     /**
      * Debug logging for transformed files.
@@ -69,6 +79,7 @@ export function buildYakPluginOptions(yakOptions: YakConfigOptions, basePath: st
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
     optimizeStaticJsx: yakOptions.optimizeStaticJsx ?? true,
+    strictCssProp: yakOptions.strictCssProp ?? true,
     suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
   };
@@ -117,6 +128,7 @@ function addYakTurbopack(
     prefix?: string;
     displayNames: boolean;
     optimizeStaticJsx: boolean;
+    strictCssProp: boolean;
     importMode: {
       value: string;
       transpilation: string;
@@ -173,6 +185,7 @@ function addYakWebpack(
     prefix?: string;
     displayNames: boolean;
     optimizeStaticJsx: boolean;
+    strictCssProp: boolean;
     importMode: {
       value: string;
       transpilation: string;

@@ -74,6 +74,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Validate wasm fixtures
+        run: pnpm --filter yak-swc test:wasm-fixtures
+
       - name: Build
         run: pnpm run build
 

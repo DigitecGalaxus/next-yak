@@ -52,6 +52,44 @@ const myDiv = styled.div`
 // ^ eslint: Nesting selector missing. Did you forget the &?
 ```
 
+## Other linters (oxlint & rslint)
+
+`eslint-plugin-yak` fully supports oxlint and rslint. A good starting configuration for each:
+
+<Tabs items={['oxlint', 'rslint']}>
+<Tab value="oxlint">
+```json title=".oxlintrc.json"
+{
+  "jsPlugins": ["eslint-plugin-yak"],
+  "rules": {
+    "yak/css-nesting-operator": "error",
+    "yak/css-global-deprecated": "warn",
+    "yak/enforce-semicolon": "error",
+    "yak/style-conditions": "warn"
+  }
+}
+```
+</Tab>
+<Tab value="rslint">
+```ts title="rslint.config.ts"
+import { defineConfig } from "@rslint/core";
+import yak from "eslint-plugin-yak";
+
+export default defineConfig([
+  {
+    plugins: { yak },
+    rules: {
+      "yak/css-nesting-operator": "error",
+      "yak/css-global-deprecated": "warn",
+      "yak/enforce-semicolon": "error",
+      "yak/style-conditions": "warn",
+    },
+  },
+]);
+```
+</Tab>
+</Tabs>
+
 ## Rules
 
 ### css-nesting-operator

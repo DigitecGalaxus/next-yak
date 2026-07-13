@@ -11,6 +11,7 @@ Thank you for your interest in contributing to next-yak! This document provides 
 - [Developing `next-yak` TypeScript/JavaScript](#developing-next-yak-typescriptjavascript)
 - [Developing `yak-swc` Rust](#developing-yak-swc-rust)
   - [Running the example app](#running-the-example-app)
+- [Integration & e2e testing](#integration--e2e-testing)
 - [Submitting a pull request](#submitting-a-pull-request)
 - [Common issues](#common-issues)
   - [Rust setup issues](#rust-setup-issues)
@@ -23,16 +24,17 @@ Thank you for your interest in contributing to next-yak! This document provides 
 
 Before you begin
 
-- Install [Node.js](https://nodejs.org/en) v20.x or later
-- Install [pnpm](https://pnpm.io/) v9.7.0 or later
+- Install [Node.js](https://nodejs.org/en) v22.18 or later (the `engines` field requires `>=22.18.0`)
+- Install [pnpm](https://pnpm.io/) v11.9.0 or later, pinned via the `packageManager` field (so `corepack enable` picks the right version)
 - Install [Rust](https://www.rust-lang.org/) toolchain <br />
   **⚠️ Important**<br />
   Do _not_ use brew or other package managers to install Rust, as this can lead to permission issues<br />
   Install Rust from [rust-lang.org](https://www.rust-lang.org/tools/install), following the official instructions for your platform
-- Add the Rust WebAssembly target, execute
+- Add the Rust WebAssembly targets, execute
   ```bash
-  rustup target add wasm32-wasip1
+  rustup target add wasm32-wasip1 wasm32-unknown-unknown
   ```
+  The toolchain and both targets are pinned in `packages/yak-swc/rust-toolchain.toml`, so rustup installs them automatically when building there; the manual command is a fallback.
 
 ### Initial setup
 
@@ -145,7 +147,7 @@ pnpm example
 
 #### Bundler Support
 
-All example and documentation projects have been updated to use Webpack by default, but also support Turbopack:
+The example app supports both Webpack and Turbopack. Webpack is the default for the `dev`/`build:next` scripts, Turbopack runs via the `:turbo` variants:
 
 **Webpack:**
 
@@ -154,15 +156,20 @@ All example and documentation projects have been updated to use Webpack by defau
 
 **Turbopack:**
 
-- `dev:turbo` - Next.js dev server with Turbopack (will fail with next-yak)
-- `build:next:turbo` - Production build with Turbopack (will fail with next-yak)
+- `dev:turbo` - Next.js dev server with Turbopack
+- `build:next:turbo` - Production build with Turbopack
 
 To run the example app:
 
 ```bash
-# Use webpack (only working option currently)
+# Webpack (default)
 pnpm example
+
+# Turbopack
+pnpm --filter=next-yak-example run dev:turbo
 ```
+
+Both bundlers are covered by the e2e suites under `e2e/bundlers/`.
 
 Debugging the SWC plugin in the example app, you can enable debug logging
 
@@ -174,6 +181,19 @@ export default withYak({
   },
 });
 ```
+
+## Integration & e2e testing
+
+After changing Rust code, run `pnpm build:swc` (rebuilds the WASM plugin) and `pnpm build` before any integration test or example run, otherwise you are testing a stale WASM plugin. For quick Rust-only iteration, run `cargo test` inside `packages/yak-swc/yak_swc`.
+
+The Playwright e2e suites run the shared cases against 9 bundler setups (webpack, Turbopack, Vite, Rsbuild, TanStack Start, and more) under `e2e/bundlers/`:
+
+```bash
+pnpm test:e2e        # dev servers
+pnpm test:e2e:build  # production builds
+```
+
+See [`e2e/README.md`](./e2e/README.md) for the suite structure and how to run a single bundler or case.
 
 ## Submitting a pull request
 
@@ -205,7 +225,7 @@ export default withYak({
 ### Rust setup issues
 
 - **Permission problems with Rust**: Make sure to install Rust from [rust-lang.org](https://www.rust-lang.org/tools/install) and not through package managers
-- **Missing wasm32-wasip1 target**: Run `rustup target add wasm32-wasip1`
+- **Missing wasm targets**: Run `rustup target add wasm32-wasip1 wasm32-unknown-unknown` (normally installed automatically via `packages/yak-swc/rust-toolchain.toml`)
 - **Cargo build failures**: Ensure you have the latest stable Rust toolchain with `rustup update stable`
 
 ### Build issues
