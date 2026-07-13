@@ -33,6 +33,7 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
+  pub(crate) mod class_name_fold;
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
