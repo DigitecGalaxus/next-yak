@@ -1,7 +1,7 @@
 import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGRpc3BsYXk6IGZsZXg7CiAgbWluLWhlaWdodDogMjRweDsKfQoueW03dUJCdTEgewogIG1hcmdpbi1yaWdodDogMTJweDsKfS55bTd1QkJ1MiB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1MyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdTQgewogIGNvbG9yOiBibHVlOwp9Ci55bTd1QkJ1NSB7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0ueW03dUJCdTYgewogIGNvbG9yOiBncmF5Owp9Ci55bTd1QkJ1NyB7CiAgY29sb3I6IGJsYWNrOwp9LnltN3VCQnU4IHsKICBjb2xvcjogZ3JlZW47Cn0KLnltN3VCQnU5IHsKICBsaW5lLWhlaWdodDogMTsKfS55bTd1QkJ1QSB7CiAgcGFkZGluZzogMXB4Owp9Ci55bTd1QkJ1QiB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVDIHsKICBwYWRkaW5nOiAxcHg7Cn0KLnltN3VCQnVEIHsKICBwYWRkaW5nOiA4cHg7Cn0ueW03dUJCdUYgewogIHBhZGRpbmc6IDhweDsKfS55bTd1QkJ1SCB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVKIHsKICBwYWRkaW5nOiA4cHg7Cn0ueW03dUJCdUsgewogIGNvbG9yOiBibHVlOwp9Ci55bTd1QkJ1TCB7CiAgY3Vyc29yOiBwb2ludGVyOwp9LnltN3VCQnVNIHsKICBjb2xvcjogYmxhY2s7Cn0KLnltN3VCQnVOIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVQIHsKICB3aWR0aDogdmFyKC0teW03dUJCdVEpOwp9LnltN3VCQnVTIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVVIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVXIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVZIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVaIHsKICBkaXNwbGF5OiBpbmxpbmUtZmxleDsKfQoueW03dUJCdWEgewogIGJhY2tncm91bmQtY29sb3I6ICNkMWQ1ZGI7Cn0KLnltN3VCQnViIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjNmNGY2Owp9Ci55bTd1QkJ1YyB7CiAgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7Cn0KLnltN3VCQnVkIHsKICB3aWR0aDogMTAwJTsKfS55bTd1QkJ1ZiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1aCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1aiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1bCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1biB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1byB7CiAgY29sb3I6IG9yYW5nZTsKfQ==";
+import "data:text/css;base64,LnltN3VCQnUgewogIGRpc3BsYXk6IGZsZXg7CiAgbWluLWhlaWdodDogMjRweDsKfQoueW03dUJCdTEgewogIG1hcmdpbi1yaWdodDogMTJweDsKfS55bTd1QkJ1MiB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1MyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdTQgewogIGNvbG9yOiBibHVlOwp9Ci55bTd1QkJ1NSB7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0ueW03dUJCdTYgewogIGNvbG9yOiBncmF5Owp9Ci55bTd1QkJ1NyB7CiAgY29sb3I6IGJsYWNrOwp9LnltN3VCQnU4IHsKICBjb2xvcjogZ3JlZW47Cn0KLnltN3VCQnU5IHsKICBsaW5lLWhlaWdodDogMTsKfS55bTd1QkJ1QSB7CiAgcGFkZGluZzogMXB4Owp9Ci55bTd1QkJ1QiB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVEIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVGIHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1SCB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdUkgewogIHRvcDogMDsKfS55bTd1QkJ1SyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1TCB7CiAgcGFkZGluZzogMXB4Owp9Ci55bTd1QkJ1TSB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVPIHsKICBwYWRkaW5nOiA4cHg7Cn0ueW03dUJCdVEgewogIHBhZGRpbmc6IDhweDsKfS55bTd1QkJ1UyB7CiAgcGFkZGluZzogOHB4Owp9LnltN3VCQnVUIHsKICBjb2xvcjogYmx1ZTsKfQoueW03dUJCdVUgewogIGN1cnNvcjogcG9pbnRlcjsKfS55bTd1QkJ1ViB7CiAgY29sb3I6IGJsYWNrOwp9Ci55bTd1QkJ1VyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1WSB7CiAgd2lkdGg6IHZhcigtLXltN3VCQnVaKTsKfS55bTd1QkJ1YiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1ZCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1ZiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1aCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1aSB7CiAgZGlzcGxheTogaW5saW5lLWZsZXg7Cn0KLnltN3VCQnVqIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDFkNWRiOwp9Ci55bTd1QkJ1ayB7CiAgYmFja2dyb3VuZC1jb2xvcjogI2YzZjRmNjsKfQoueW03dUJCdWwgewogIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9Ci55bTd1QkJ1bSB7CiAgd2lkdGg6IDEwMCU7Cn0ueW03dUJCdW8gewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdXEgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdXMgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdXUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdXcgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdXggewogIGNvbG9yOiBvcmFuZ2U7Cn0=";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage
 const IconContainer = /*YAK Extracted CSS:
@@ -49,7 +49,8 @@ const Scoped = /*YAK Extracted CSS:
   line-height: 1;
 }
 */ /*#__PURE__*/ __yak.__yak_em("ym7uBBu8", ()=>isCompact && /*#__PURE__*/ css("ym7uBBu9"));
-// the twice-referenced $size attribute is inlined into both conditions
+// the twice-referenced $size attribute is read at two sites, so an impure
+// value would be evaluated twice - it is bound once instead
 const Twice = /*YAK Extracted CSS:
 .ym7uBBuA {
   padding: 1px;
@@ -58,142 +59,178 @@ const Twice = /*YAK Extracted CSS:
   padding: 8px;
 }
 */ /*#__PURE__*/ __yak.__yak_li("ym7uBBuA", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("ym7uBBuB"));
+// folds: one read, inside a callback - an impure value would run once per list
+// element, so a single read is enough to bind it
+const sizes = [
+    1,
+    2,
+    3
+];
+const InCallback = /*YAK Extracted CSS:
+.ym7uBBuD {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuC", ({ $n })=>sizes.some((x)=>x > $n) && /*#__PURE__*/ css("ym7uBBuD"));
+// folds: one read, behind a short circuit - an impure value would not run at
+// all when the left side is falsy
+const ShortCircuit = /*YAK Extracted CSS:
+.ym7uBBuF {
+  color: blue;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuE", ({ $b })=>isCompact && $b && /*#__PURE__*/ css("ym7uBBuF"));
+// folds: the conditions read $a before $b, the attributes pass $b first - the
+// arguments follow the attributes, not the conditions
+const Pair = /*YAK Extracted CSS:
+.ym7uBBuH {
+  color: red;
+}
+.ym7uBBuI {
+  top: 0;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuG", ({ $a })=>$a && /*#__PURE__*/ css("ym7uBBuH"), ({ $b })=>$b && /*#__PURE__*/ css("ym7uBBuI"));
+// folds: a single condition to pin what counts as safe to inline
+const colors = {
+    big: "red"
+} as Record<string, string>;
+const Boxed = /*YAK Extracted CSS:
+.ym7uBBuK {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuJ", ({ $v })=>$v && /*#__PURE__*/ css("ym7uBBuK"));
 // folds: an arrow returning from a block body is a condition like any other
 const BlockBody = /*YAK Extracted CSS:
-.ym7uBBuC {
+.ym7uBBuL {
   padding: 1px;
 }
-.ym7uBBuD {
+.ym7uBBuM {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_aside("ym7uBBuC", ({ $wide })=>{
-    return $wide && /*#__PURE__*/ css("ym7uBBuD");
+*/ /*#__PURE__*/ __yak.__yak_aside("ym7uBBuL", ({ $wide })=>{
+    return $wide && /*#__PURE__*/ css("ym7uBBuM");
 });
 // usages bail: only plain destructuring substitutes - a rename, a default or a
 // rest element all keep the runtime path
-// (the precompute-style-prop-values eslint rule skips these shapes for the
-// same reason, so this pins the contract it relies on)
 const Renamed = /*YAK Extracted CSS:
-.ym7uBBuF {
+.ym7uBBuO {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuE", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("ym7uBBuF"));
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuN", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("ym7uBBuO"));
 const Defaulted = /*YAK Extracted CSS:
-.ym7uBBuH {
+.ym7uBBuQ {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuG", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("ym7uBBuH"));
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuP", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("ym7uBBuQ"));
 const Rested = /*YAK Extracted CSS:
-.ym7uBBuJ {
+.ym7uBBuS {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuI", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("ym7uBBuJ"));
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuR", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("ym7uBBuS"));
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
 const ActionButton = /*YAK Extracted CSS:
-.ym7uBBuK {
+.ym7uBBuT {
   color: blue;
 }
-.ym7uBBuL {
+.ym7uBBuU {
   cursor: pointer;
 }
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuK", ({ disabled })=>!disabled && /*#__PURE__*/ css("ym7uBBuL"));
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuT", ({ disabled })=>!disabled && /*#__PURE__*/ css("ym7uBBuU"));
 // usages bail: the runtime injects the theme which is unknown at build time
 const Themed = /*YAK Extracted CSS:
-.ym7uBBuM {
+.ym7uBBuV {
   color: black;
 }
-.ym7uBBuN {
+.ym7uBBuW {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_strong("ym7uBBuM", ({ theme, $accent })=>theme.highContrast && $accent && /*#__PURE__*/ css("ym7uBBuN"));
+*/ /*#__PURE__*/ __yak.__yak_strong("ym7uBBuV", ({ theme, $accent })=>theme.highContrast && $accent && /*#__PURE__*/ css("ym7uBBuW"));
 // usages bail: the mixin carries a css variable set through the style prop
 const NestedCssVariable = /*YAK Extracted CSS:
-.ym7uBBuP {
-  width: var(--ym7uBBuQ);
+.ym7uBBuY {
+  width: var(--ym7uBBuZ);
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuO", ({ $active, $size })=>$active && /*#__PURE__*/ css("ym7uBBuP", {
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuX", ({ $active, $size })=>$active && /*#__PURE__*/ css("ym7uBBuY", {
         "style": {
-            "--ym7uBBuQ": /*#__PURE__*/ __yak_unitPostFix(()=>$size, "px")
+            "--ym7uBBuZ": /*#__PURE__*/ __yak_unitPostFix(()=>$size, "px")
         }
     }));
 // usages bail: the $prop forwarding semantics depend on the wrapped component
 const DynamicExtended = /*YAK Extracted CSS:
-.ym7uBBuS {
+.ym7uBBub {
   color: red;
 }
-*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBuR", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuS"));
+*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBua", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBub"));
 // usages bail: attrs
 const DynamicAttrs = /*YAK Extracted CSS:
-.ym7uBBuU {
+.ym7uBBud {
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_button.attrs({
     type: "button"
-})("ym7uBBuT", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuU"));
+})("ym7uBBuc", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBud"));
 // usages bail: the runtime passes more than the attributes to the expressions
 const ClassNameBail = /*YAK Extracted CSS:
-.ym7uBBuW {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuV", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuW"));
-// usages bail: React strips key before the component sees props, so the
-// runtime reads undefined - substituting the attribute value would diverge
-const KeyBail = /*YAK Extracted CSS:
-.ym7uBBuY {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuX", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuY"));
-// folds: identifier param with member access - `(p) => p.$x` is the common
-// real-world styled-components style
-const MemberButton = /*YAK Extracted CSS:
-.ym7uBBuZ {
-  display: inline-flex;
-}
-.ym7uBBua {
-  background-color: #d1d5db;
-}
-.ym7uBBub {
-  background-color: #f3f4f6;
-}
-.ym7uBBuc {
-  background-color: transparent;
-}
-.ym7uBBud {
-  width: 100%;
-}
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuZ", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBua"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBub"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBuc"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBud"));
-// usages bail: the whole props object escapes into the function call
-const MemberEscape = /*YAK Extracted CSS:
 .ym7uBBuf {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBue", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuf"));
-// usages bail: theme access through the identifier param
-const MemberTheme = /*YAK Extracted CSS:
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBue", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuf"));
+// usages bail: React strips key before the component sees props, so the
+// runtime reads undefined - substituting the attribute value would diverge
+const KeyBail = /*YAK Extracted CSS:
 .ym7uBBuh {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBug", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuh"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBug", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuh"));
+// folds: identifier param with member access - `(p) => p.$x` is the common
+// real-world styled-components style
+const MemberButton = /*YAK Extracted CSS:
+.ym7uBBui {
+  display: inline-flex;
+}
+.ym7uBBuj {
+  background-color: #d1d5db;
+}
+.ym7uBBuk {
+  background-color: #f3f4f6;
+}
+.ym7uBBul {
+  background-color: transparent;
+}
+.ym7uBBum {
+  width: 100%;
+}
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBui", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBuj"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBuk"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBul"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBum"));
+// usages bail: the whole props object escapes into the function call
+const MemberEscape = /*YAK Extracted CSS:
+.ym7uBBuo {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBun", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuo"));
+// usages bail: theme access through the identifier param
+const MemberTheme = /*YAK Extracted CSS:
+.ym7uBBuq {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBup", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuq"));
 // usages bail: computed member access
 const MemberComputed = /*YAK Extracted CSS:
-.ym7uBBuj {
+.ym7uBBus {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBui", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBuj"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBur", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBus"));
 // usages bail: key access through the identifier param
 const MemberKey = /*YAK Extracted CSS:
-.ym7uBBul {
+.ym7uBBuu {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuk", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBul"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBut", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBuu"));
 // folds: passing key at a call site never blocks folding - only reading it
 // inside a style expression does
 const KeyedRow = /*YAK Extracted CSS:
-.ym7uBBun {
+.ym7uBBuw {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBum", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBun"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuv", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBuw"));
 const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
@@ -213,10 +250,10 @@ const Optimizable = ({ active, size, i: i1 }: {
       runtime class merge
     </span>
     <span className={"ym7uBBu" + (true ? " ym7uBBu1" : "") + /*YAK Extracted CSS:
-.ym7uBBuo {
+.ym7uBBux {
   color: orange;
 }
-*/ /*#__PURE__*/ " ym7uBBuo"}>
+*/ /*#__PURE__*/ " ym7uBBux"}>
       css prop merge
     </span>
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
@@ -225,23 +262,75 @@ const Optimizable = ({ active, size, i: i1 }: {
     <i className={"ym7uBBu6" + (active ? " ym7uBBu7" : "")}>function form</i>
     <em className={"ym7uBBu8" + (isCompact ? " ym7uBBu9" : "")}>outer scope condition</em>
     <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
-    <button disabled={active} className={"ym7uBBuK" + (!active ? " ym7uBBuL" : "")}>kept on the element and inlined</button>
-    <button disabled className={"ym7uBBuK" + (!true ? " ym7uBBuL" : "")}>bare non-$ prop</button>
-    { /* an impure value is inlined into every condition reading it, so the two
-        rolls can disagree - the eslint rule precompute-style-prop-values asks
-        the user to compute it once */ }
-    <li className={((__yak_$size)=>"ym7uBBuA" + (__yak_$size && __yak_$size === "big" ? " ym7uBBuB" : ""))(props.getSize())}>evaluated once per condition</li>
-    { /* the attribute stays on the element AND feeds the condition, so this
-        button can be disabled while it is styled as enabled */ }
-    {((__yak_disabled)=><button disabled={__yak_disabled} className={"ym7uBBuK" + (!__yak_disabled ? " ym7uBBuL" : "")}>evaluated on the element and inlined</button>)(props.isBusy())}
-    <button className={"ym7uBBuZ" + (!(i1 % 4 !== 0) ? " ym7uBBua" : "") + ("primary" === "secondary" ? " ym7uBBub" : "") + ("primary" === "ghost" ? " ym7uBBuc" : "") + (i1 % 3 === 0 ? " ym7uBBud" : "")}>
+    <button disabled={active} className={"ym7uBBuT" + (!active ? " ym7uBBuU" : "")}>kept on the element and inlined</button>
+    <button disabled className={"ym7uBBuT" + (!true ? " ym7uBBuU" : "")}>bare non-$ prop</button>
+    { /* two read sites, so the value is bound once instead of rolled twice -
+        the two conditions could otherwise disagree */ }
+    <li className={((__yak_$size)=>"ym7uBBuA" + (__yak_$size && __yak_$size === "big" ? " ym7uBBuB" : ""))(props.getSize())}>bound: read at two sites</li>
+    { /* the attribute stays on the element AND feeds the condition, so binding
+        it around the element is the only way to evaluate it once - otherwise
+        the button could be disabled while it is styled as enabled */ }
+    {((__yak_disabled)=><button disabled={__yak_disabled} className={"ym7uBBuT" + (!__yak_disabled ? " ym7uBBuU" : "")}>bound: element and condition</button>)(props.isBusy())}
+    { /* one read, but inside a callback: the value would run once per list
+        element */ }
+    <div className={((__yak_$n)=>"ym7uBBuC" + (sizes.some((x)=>x > __yak_$n) ? " ym7uBBuD" : ""))(props.roll())}>bound: read inside a callback</div>
+    { /* one read, but behind a short circuit: the value would not run at all */ }
+    <div className={((__yak_$b)=>"ym7uBBuE" + (isCompact && __yak_$b ? " ym7uBBuF" : ""))(props.roll())}>bound: read behind a short circuit</div>
+    { /* the allowlist is not "does it contain a call" - none of these is one */ }
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(i1++)}>bound: update expression</div>
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(new Date())}>bound: new expression</div>
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.getSize() as number)}>bound: judged under the type cast</div>
+    { /* effect free but identity bearing - two reads would be two elements */ }
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(<i/>)}>bound: jsx element</div>
+    { /* an impure builtin is bound like any other call, and stays in argument
+        position: React's own purity rule flags it here exactly as it flags it
+        in the source */ }
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(Math.random())}>bound: impure builtin</div>
+    { /* inlined: a computed member over pure operands, and a comparison - the
+        most common dynamic prop shapes there are */ }
+    <div className={"ym7uBBuJ" + (colors[size!] ? " ym7uBBuK" : "")}>inlined: computed member</div>
+    <div className={"ym7uBBuJ" + (i1 % 4 !== 0 ? " ym7uBBuK" : "")}>inlined: comparison</div>
+    { /* the conditions read $a first; the arguments follow the attributes */ }
+    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : ""))(props.roll(), props.getSize())}>bound: arguments in attribute order</div>
+    { /* attribute position ran getSize() twice, so binding does too */ }
+    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : ""))(props.getSize(), props.getSize())}>bound: never deduplicated</div>
+    { /* read by no condition: it never leaves attribute position */ }
+    <div id={props.getSize()} className={"ym7uBBuJ" + (active ? " ym7uBBuK" : "")}>inlined: unread attribute stays put</div>
+    { /* an arrow may move, so an event handler never forces the element-wrap */ }
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll())} onClick={()=>props.track()}>bound: handler may move</div>
+    { /* the user className composes around the block, after it - which is where
+        it already ran */ }
+    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()) + " user"}>bound: static className merge</div>
+    <div className={__yak_mergeClassNames(((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()), size)}>bound: runtime className merge</div>
+    <button className={"ym7uBBui" + (!(i1 % 4 !== 0) ? " ym7uBBuj" : "") + ("primary" === "secondary" ? " ym7uBBuk" : "") + ("primary" === "ghost" ? " ym7uBBul" : "") + (i1 % 3 === 0 ? " ym7uBBum" : "")}>
       {i1}
     </button>
-    <li key={i1} className={"ym7uBBum" + (active ? " ym7uBBun" : "")}>
+    <li key={i1} className={"ym7uBBuv" + (active ? " ym7uBBuw" : "")}>
       key at the call site still folds
     </li>
-    <aside className={"ym7uBBuC" + (active ? " ym7uBBuD" : "")}>block body arrow</aside>
+    <aside className={"ym7uBBuL" + (active ? " ym7uBBuM" : "")}>block body arrow</aside>
+    { /* getSize() ran between the two rolls, and may not jump the parameter
+        block, so the whole element is wrapped and captures all three in
+        source order */ }
+    {((__yak_$a, __yak_id, __yak_$b)=><div id={__yak_id} className={"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : "")}>
+      wrapped: nothing may jump the block
+    </div>)(props.roll(), props.getSize(), props.roll())}
+    { /* the user className ran BEFORE the roll, and it composes around the
+        block, which would run it after - so this escalates too */ }
+    {((__yak_className, __yak_$v)=><div className={__yak_mergeClassNames("ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""), __yak_className)}>wrapped: className ran first</div>)(props.getSize(), props.roll())}
+    { /* an unread $prop is dropped before the DOM, so its value never runs at
+        all - a side effect nobody consumes, which React's purity rule already
+        forbids */ }
+    <div className={"ym7uBBuJ" + (active ? " ym7uBBuK" : "")}>elided: unread $prop</div>
+    { /* key and children stay normal JSX on the wrapped element */ }
+    {sizes.map((it)=>((__yak_disabled)=><button key={it} disabled={__yak_disabled} className={"ym7uBBuT" + (!__yak_disabled ? " ym7uBBuU" : "")}>
+        wrapped in a list
+      </button>)(props.isBusy()))}
   </>;
+// folds: await is legal in an async server component and impure, so it is
+// bound - which only works because the value never moves out of argument
+// position: awaiting inside the synthesized closure would not even parse
+const AsyncPage = async ()=><div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(await props.load())}>bound: await stays an argument</div>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
     <Themed $accent>bails: theme access</Themed>
