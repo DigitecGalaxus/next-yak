@@ -174,6 +174,31 @@ ruleTester.run("yak-style-conditions", styleConditions, {
         \`;
       `,
     },
+    {
+      // Single line comments are comments for Yak's CSS parser as well
+      code: `
+        import { styled } from "next-yak";
+        const fallback = "red";
+        const Box = styled.div\`
+          // color: \${() => fallback};
+          color: blue;
+        \`;
+      `,
+    },
+    {
+      // Not reported because a colon inside an at-rule query does not open a
+      // property value. yak-swc rejects dynamic at-rule queries at compile time
+      // with a dedicated error, so this rule stays out of the way.
+      code: `
+        import { styled } from "next-yak";
+        const breakpoint = 600;
+        const Box = styled.div\`
+          @media (min-width: \${() => breakpoint}px) {
+            display: none;
+          }
+        \`;
+      `,
+    },
     // Ignored because it's not next-yak
     {
       code: "import { css } from 'styled-components'; css`color: ${() => color}`",
