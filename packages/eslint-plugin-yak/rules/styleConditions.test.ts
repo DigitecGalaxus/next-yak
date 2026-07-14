@@ -65,6 +65,38 @@ ruleTester.run("yak-style-conditions", styleConditions, {
       code: "import { css, styled } from 'next-yak'; css`width: ${({$digit}) => `${5 * $digit + 'px'}`}`",
     },
     {
+      // Valid because the call result depends on a runtime value from props
+      code: `
+        import { styled } from "next-yak";
+
+        const spacing = { 8: "8px" };
+
+        const Grid = styled.div\`
+          grid-template-columns: repeat(
+            auto-fit,
+            minmax(
+              calc(
+                \${({ $baseWidth }) => Math.max(6, $baseWidth)}ch + 3 * \${spacing[8]}
+              ),
+              1fr
+            )
+          );
+        \`;
+      `,
+    },
+    {
+      // Valid because the called function comes from props
+      code: 'import { styled } from "next-yak"; styled.div`width: ${({ $formatter }) => $formatter(6)};`',
+    },
+    {
+      // Valid because the called method comes from props
+      code: 'import { styled } from "next-yak"; styled.div`width: ${({ $theme }) => $theme.spacing(2)};`',
+    },
+    {
+      // Valid because a spread argument comes from props
+      code: 'import { styled } from "next-yak"; styled.div`width: ${({ $widths }) => Math.max(...$widths)}px;`',
+    },
+    {
       // Valid unary conditional
       code: "import { css, styled } from 'next-yak'; css`${({ $visible = false }) => !$visible ? css`display: block;` : css`display: none;`}`",
     },
@@ -112,6 +144,11 @@ ruleTester.run("yak-style-conditions", styleConditions, {
     {
       // Invalid because it's returning a constant (the value is not from props)
       code: "import { css, styled } from 'next-yak'; css`color: ${() => color}`",
+      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+    },
+    {
+      // Invalid because none of the call's dependencies come from props
+      code: "import { styled } from 'next-yak'; styled.div`width: ${() => Math.max(6, baseWidth)}px;`",
       errors: [{ messageId: "invalidRuntimeReturnValue" }],
     },
     {
