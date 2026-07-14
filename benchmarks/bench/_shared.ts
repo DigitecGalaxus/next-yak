@@ -20,19 +20,6 @@ export type Lib = "next-yak" | "styled-components" | "vanilla";
 
 export const libs = ["next-yak", "styled-components"] as const;
 
-/**
- * Lane set including the hand-written "speed of light" baseline: plain JSX
- * with literal class names and inline-style CSS variables — the output a
- * perfect compiler would produce, with zero library runtime. Benchmarks
- * that have a vanilla variant generate it as a separate source block (the
- * styled template helpers below don't apply to it).
- */
-export const libs3 = ["next-yak", "styled-components", "vanilla"] as const;
-
-/** Component export suffix per lane (PureComponentsYak / ...Styled / ...Vanilla). */
-export const suffixFor = (lib: Lib) =>
-  lib === "next-yak" ? "Yak" : lib === "styled-components" ? "Styled" : "Vanilla";
-
 /** Identifier used as the `styled` import alias inside generated source. */
 export const styledIdentFor = (lib: Lib) => (lib === "next-yak" ? "styledYak" : "styled");
 
