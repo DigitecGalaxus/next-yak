@@ -60,6 +60,14 @@ let Mutable = styled.div`
   color: pink;
 `;
 
+// bails: var redeclaration - both declarations share a single binding
+var Redeclared = styled.div`
+  color: peru;
+`;
+var Redeclared = styled.span`
+  color: plum;
+`;
+
 // folds although the declaration comes after the usage
 const Early = () => <Late>before declaration</Late>;
 const Late = styled.p`
@@ -133,6 +141,7 @@ const NotOptimizable = () => (
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
     <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
     <Mutable>bails</Mutable>
+    <Redeclared>bails: var redeclaration</Redeclared>
     <Memoized>bails: HOC wrapper</Memoized>
     <ReactMemoized>bails: HOC wrapper</ReactMemoized>
     <Conditional>bails: conditional initializer</Conditional></>
