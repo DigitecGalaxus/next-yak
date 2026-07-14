@@ -23,11 +23,7 @@ export class ClassNames implements ClassNameCollector {
     this.value = initial || "";
   }
   add(className: string) {
-    if (!this.value) {
-      this.value = className;
-    } else {
-      this.value += " " + className;
-    }
+    this.value += (this.value && " ") + className;
   }
   has(className: string) {
     return (" " + this.value + " ").includes(" " + className + " ");
