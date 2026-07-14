@@ -129,6 +129,15 @@ const ClassNameBail = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_ClassNameBail_m7uBBu", ({ className })=>className && /*#__PURE__*/ css("input_ClassNameBail__className_m7uBBu")), {
     "displayName": "ClassNameBail"
 });
+// usages bail: React strips key before the component sees props, so the
+// runtime reads undefined - substituting the attribute value would diverge
+const KeyBail = /*YAK Extracted CSS:
+:global(.input_KeyBail___m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_KeyBail_m7uBBu", ({ key })=>key === "active" && /*#__PURE__*/ css("input_KeyBail___m7uBBu")), {
+    "displayName": "KeyBail"
+});
 // folds: identifier param with member access - `(p) => p.$x` is the common
 // real-world styled-components style
 const MemberButton = /*YAK Extracted CSS:
@@ -174,6 +183,23 @@ const MemberComputed = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_MemberComputed_m7uBBu", (p)=>p["$active"] && /*#__PURE__*/ css("input_MemberComputed___m7uBBu")), {
     "displayName": "MemberComputed"
 });
+// usages bail: key access through the identifier param
+const MemberKey = /*YAK Extracted CSS:
+:global(.input_MemberKey___m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_MemberKey_m7uBBu", (p)=>p.key === "active" && /*#__PURE__*/ css("input_MemberKey___m7uBBu")), {
+    "displayName": "MemberKey"
+});
+// folds: passing key at a call site never blocks folding - only reading it
+// inside a style expression does
+const KeyedRow = /*YAK Extracted CSS:
+:global(.input_KeyedRow__p_\$active_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_KeyedRow_m7uBBu", (p)=>p.$active && /*#__PURE__*/ css("input_KeyedRow__p_$active_m7uBBu")), {
+    "displayName": "KeyedRow"
+});
 const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
@@ -210,6 +236,9 @@ const Optimizable = ({ active, size, i: i1 }: {
     <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
       {i1}
     </button>
+    <li key={i1} className={"input_KeyedRow_m7uBBu" + (active ? " input_KeyedRow__p_$active_m7uBBu" : "")}>
+      key at the call site still folds
+    </li>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -225,4 +254,6 @@ const NotOptimizable = ()=><>
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>
+    <KeyBail key="active">bails: destructured key access</KeyBail>
+    <MemberKey key="active">bails: key access</MemberKey>
   </>;
