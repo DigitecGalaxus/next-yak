@@ -3,7 +3,7 @@
 "next-yak": minor
 ---
 
-Fold JSX usages of styled components declared in the same file into plain elements at build time, skipping the runtime wrapper component:
+Add JSX folding: usages of styled components declared in the same file are inlined into plain elements at build time, skipping the runtime wrapper component:
 
 ```tsx
 const Icon = styled.span<{ $active?: boolean }>`
@@ -26,4 +26,4 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 - Usages with spread props, `theme`, dynamic css values (css variables) or `.attrs()` keep the runtime path, as do components not declared as top-level `const`.
 - The optimization can be disabled with the new `optimizeStaticJsx: false` option.
 
-Behavioral notes: a folded usage renders the native element directly, so `child.type === Icon` checks don't match it and toggling between a folded and non-folded usage of the same component remounts instead of updating. Foreign `$props` on fully static folded usages are forwarded instead of stripped.
+Behavioral notes: JSX folding speeds up rendering considerably, but a folded usage is no longer a component. It does not show up in React DevTools or in component stacks, in development too, and `child.type === Icon` checks no longer match it. Foreign `$props` on fully static folded usages are forwarded instead of stripped. The FAQ explains when a usage folds and what that changes.
