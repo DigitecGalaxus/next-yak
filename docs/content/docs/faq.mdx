@@ -128,11 +128,26 @@ See the [Migration to native CSS](/docs/migration-to-native-css) guide for more 
 
 ### My styled components don't show up in React DevTools
 
-When a styled component is declared and used in the same file, next-yak folds the usage into a plain element at build time, so `<Button>` renders as a `<button>` with no wrapper component in between — in development too, so that dev and production behave the same. Components with prop-based style conditions fold as well, not just fully static ones.
+next-yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used:
 
-Usages with spread props, `theme`, `.attrs()` or dynamic css values keep the runtime path and still appear, as do components imported from another file. A `styled(Card)` wrapper folds to `Card` rather than to a DOM element, so `Card` stays in the tree.
+```tsx
+const Button = styled.button`
+  color: red;
+`;
 
-Your styles are unaffected — only the wrapper component is gone, which also means `displayNames` has no effect on folded usages. If you need the components in the tree, disable the optimization:
+const App = () => <Button type="submit">Save</Button>;
+
+// compiles to
+const App = () => (
+  <button type="submit" className="Button_c1d2e3">
+    Save
+  </button>
+);
+```
+
+This skips a component and its rendering work for every element. Your styles are unaffected, but `<Button>` is gone from the React tree, so it no longer appears in React DevTools or in component stacks. It also disappears in development, so that development and production behave the same, and for the same reason `displayNames` has no effect on an inlined usage.
+
+You can turn the optimization off:
 
 <Tabs items={['next.config.ts', 'vite.config.ts']}>
 <Tab value="next.config.ts">
@@ -151,6 +166,36 @@ export default defineConfig({
 ```
 </Tab>
 </Tabs>
+
+There are several cases where next-yak opts out of the optimization to guarantee correctness, and the component keeps its wrapper:
+
+- **The component is declared in another file.** Bundlers hand next-yak one file at a time, so the compiler never sees the declaration of an imported component and cannot know which element and class name it belongs to. This is the most common reason, as shared components usually live in their own file.
+- **The usage spreads props**, e.g. `<Button {...props} />`. A spread can carry a `className` or a `theme` that is only known at runtime.
+- **The component uses `.attrs()`, a `theme` or dynamic css values** (css variables). These need the runtime to compute the props or the styles.
+- **The component is not declared as a top level `const`.** A `let` or a `var` can be reassigned, so it is not safe to assume every usage means the same component.
+
+Styles that depend on props are inlined too, so the optimization is not limited to fully static components:
+
+```tsx
+const Icon = styled.span<{ $active?: boolean }>`
+  ${({ $active }) => $active && css`color: red;`}
+`;
+
+const App = () => <Icon $active={on} />;
+
+// compiles to
+const App = () => <span className={"Icon_a1b2" + (on ? " Icon_c3d4" : "")} />;
+```
+
+A `styled(Card)` usage is inlined to `Card` instead of a DOM element, so `Card` itself stays in the tree.
+
+One edge case is worth knowing about: if the same component is used both inlined and with a wrapper, switching between the two at runtime remounts the subtree instead of updating it, because React sees a different element type.
+
+```tsx
+// <Card /> is inlined to <div>, while <Card {...props} /> keeps the wrapper.
+// Toggling `compact` therefore remounts the card and it loses its state.
+{compact ? <Card /> : <Card {...props} />}
+```
 
 ### My styles are not applied
 
