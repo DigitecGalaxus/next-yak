@@ -13,7 +13,7 @@ export const styleConditions = createRule({
     type: "suggestion",
     docs: {
       description:
-        "Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak",
+        "Warns when arrow functions in next-yak styled/css literals would create unnecessary or invalid CSS variables",
       recommended: true,
       requiresTypeChecking: false,
     },
@@ -49,10 +49,7 @@ export const styleConditions = createRule({
           return;
         }
 
-        const codeBefore = getQuasiBeforeExpression(tag, needle);
-        // Guess that if a quasi ends with a colon that it is a declaration e.g.
-        // css`color: ${({ color }) => color}`
-        if (codeBefore === undefined || !codeBefore.trim().endsWith(":")) {
+        if (!isInsideCssDeclarationValue(tag, needle)) {
           return;
         }
 
@@ -90,6 +87,13 @@ export const styleConditions = createRule({
         // e.g. css`width: ${({ $size }) => $size}px`
         const { tag, params, needle } = findClosestStyledOrCssTag(node, importedNames);
         if (!tag) {
+          return;
+        }
+
+        // Outside a declaration value Yak treats the expression as a runtime class
+        // expression, so returning local or imported css mixins is valid and cannot
+        // accidentally create a CSS variable.
+        if (!isInsideCssDeclarationValue(tag, needle)) {
           return;
         }
 
@@ -325,6 +329,127 @@ function getQuasiBeforeExpression(
   return tag.quasi.quasis[index].value.raw;
 }
 
+type CssParserState = {
+  comment: "none" | "single-line" | "multi-line";
+  isInsideAtRule: boolean;
+  isInsidePropertyValue: boolean;
+  parenDepth: number;
+  quote: '"' | "'" | undefined;
+};
+
+/**
+ * Checks whether an interpolation is inside a CSS declaration value.
+ *
+ * This mirrors the parser state Yak uses to decide whether a dynamic expression
+ * becomes a CSS variable or a runtime class expression. Earlier interpolations
+ * are represented by a neutral identifier so the surrounding CSS syntax can be
+ * followed without resolving JavaScript values.
+ */
+function isInsideCssDeclarationValue(
+  tag: TSESTree.TaggedTemplateExpression,
+  needle: TSESTree.Node,
+): boolean {
+  const expressionIndex = tag.quasi.expressions.findIndex((expression) => expression === needle);
+  if (expressionIndex === -1) {
+    return false;
+  }
+
+  const state: CssParserState = {
+    comment: "none",
+    isInsideAtRule: false,
+    isInsidePropertyValue: false,
+    parenDepth: 0,
+    quote: undefined,
+  };
+
+  for (let index = 0; index <= expressionIndex; index++) {
+    scanCssSegment(tag.quasi.quasis[index].value.raw, state);
+    if (index < expressionIndex) {
+      scanCssSegment("__yak_expression__", state);
+    }
+  }
+
+  return state.comment === "none" && state.isInsidePropertyValue;
+}
+
+function scanCssSegment(segment: string, state: CssParserState): void {
+  for (let index = 0; index < segment.length; index++) {
+    const char = segment[index];
+    const nextChar = segment[index + 1];
+
+    if (state.comment === "multi-line") {
+      if (char === "*" && nextChar === "/") {
+        state.comment = "none";
+        index++;
+      }
+      continue;
+    }
+    if (state.comment === "single-line") {
+      if (char === "\n") {
+        state.comment = "none";
+      }
+      continue;
+    }
+
+    const isEscaped = hasOddNumberOfPrecedingBackslashes(segment, index);
+    if (state.quote) {
+      if (char === state.quote && !isEscaped) {
+        state.quote = undefined;
+      }
+      continue;
+    }
+    if ((char === '"' || char === "'") && !isEscaped) {
+      state.quote = char;
+      continue;
+    }
+
+    if (state.isInsidePropertyValue) {
+      if (char === "(") {
+        state.parenDepth++;
+        continue;
+      }
+      if (char === ")" && state.parenDepth > 0) {
+        state.parenDepth--;
+      }
+      if (state.parenDepth > 0) {
+        continue;
+      }
+    }
+
+    if (char === "/" && nextChar === "*") {
+      state.comment = "multi-line";
+      index++;
+    } else if (char === "/" && nextChar === "/") {
+      state.comment = "single-line";
+      index++;
+    } else if (char === "}") {
+      state.isInsidePropertyValue = false;
+      state.isInsideAtRule = false;
+      state.parenDepth = 0;
+    } else if (char === "{") {
+      state.isInsidePropertyValue = false;
+      state.isInsideAtRule = false;
+      state.parenDepth = 0;
+    } else if (char === ";") {
+      state.isInsidePropertyValue = false;
+      state.isInsideAtRule = false;
+      state.parenDepth = 0;
+    } else if (!state.isInsidePropertyValue && !state.isInsideAtRule && char === ":") {
+      state.isInsidePropertyValue = true;
+    } else if (!state.isInsidePropertyValue && char === "@") {
+      state.isInsideAtRule = true;
+    }
+  }
+}
+
+function hasOddNumberOfPrecedingBackslashes(segment: string, index: number): boolean {
+  let backslashCount = 0;
+  for (let cursor = index - 1; cursor >= 0 && segment[cursor] === "\\"; cursor--) {
+    backslashCount++;
+  }
+  return backslashCount % 2 === 1;
+}
+
 /**
  * Reads the CSS property name from the quasi directly before the interpolation.
  * e.g. the `z-index` in `z-index: ${() => ...}`. Returns undefined if the arrow
@@ -508,6 +633,18 @@ function isNodeAccessingParams(
       return (
         isNodeAccessingParams(node.left, params, importedNames) ||
         isNodeAccessingParams(node.right, params, importedNames)
+      );
+    case AST_NODE_TYPES.CallExpression:
+      // A call is a runtime value if the callee or any argument is prop-derived, e.g. Math.max(6, $baseWidth)
+      return (
+        isNodeAccessingParams(node.callee, params, importedNames) ||
+        node.arguments.some((argument) =>
+          isNodeAccessingParams(
+            argument.type === AST_NODE_TYPES.SpreadElement ? argument.argument : argument,
+            params,
+            importedNames,
+          ),
+        )
       );
     case AST_NODE_TYPES.UnaryExpression:
       return isNodeAccessingParams(node.argument, params, importedNames);
