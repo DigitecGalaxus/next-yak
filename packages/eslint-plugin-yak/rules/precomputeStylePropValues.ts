@@ -19,10 +19,11 @@ const walk = (node: TSESTree.Node, visit: (node: TSESTree.Node) => void) => {
 };
 
 /**
- * Mirrors `is_duplication_safe` in yak-swc: expressions the compiler may inline
- * into several style conditions without changing what the code does
+ * Whether the compiler may inline the expression into several style conditions
+ * without changing what the code does: it has to be free of side effects and
+ * evaluate to the same value during one render
  */
-const isDuplicationSafe = (node: TSESTree.Node): boolean => {
+const isSafeToInline = (node: TSESTree.Node): boolean => {
   switch (node.type) {
     case AST_NODE_TYPES.Literal:
     case AST_NODE_TYPES.Identifier:
@@ -30,19 +31,30 @@ const isDuplicationSafe = (node: TSESTree.Node): boolean => {
     case AST_NODE_TYPES.MemberExpression:
       return (
         (!node.computed || node.property.type === AST_NODE_TYPES.Literal) &&
-        isDuplicationSafe(node.object)
+        isSafeToInline(node.object)
       );
     case AST_NODE_TYPES.UnaryExpression:
-      return node.operator !== "delete" && isDuplicationSafe(node.argument);
+      return node.operator !== "delete" && isSafeToInline(node.argument);
     default:
       return false;
   }
 };
 
 /**
- * Mirrors `fold_target` in yak-swc: only `styled.div`, `styled("div")` and
- * `styled(Component)` are inlined - an `.attrs()` chain has none of these shapes
- * as its tag is a call on a member expression
+ * The runtime passes more than the plain attributes to the style conditions, so
+ * reading one of these keeps every usage of the component on the runtime path
+ */
+const isRuntimeInjectedProp = (name: string) =>
+  name === "theme" ||
+  name === "children" ||
+  name === "className" ||
+  name === "style" ||
+  name === "key";
+
+/**
+ * Only `styled.div`, `styled("div")` and `styled(Component)` are inlined - an
+ * `.attrs()` chain has none of these shapes as its tag is a call on a member
+ * expression
  */
 const foldableTag = (tag: TSESTree.Node, importedNames: ImportedNames) => {
   if (tag.type === AST_NODE_TYPES.MemberExpression) {
@@ -82,7 +94,37 @@ const isClassToggle = (body: TSESTree.Node, importedNames: ImportedNames) => {
   return false;
 };
 
-/** An identifier naming a prop rather than reading it, e.g. `x.$size` or `{ $size: 1 }` */
+/** The single `return <expr>;` a block bodied style condition may hold */
+const singleReturnArgument = (block: TSESTree.BlockStatement) => {
+  const [statement] = block.body;
+  return block.body.length === 1 &&
+    statement?.type === AST_NODE_TYPES.ReturnStatement &&
+    statement.argument
+    ? statement.argument
+    : null;
+};
+
+/**
+ * The params and the condition body of a style interpolation, for the shapes
+ * the compiler inlines: an arrow or a function expression, with an expression
+ * body or a body holding a single return
+ */
+const styleCondition = (node: TSESTree.Expression) => {
+  if (
+    node.type !== AST_NODE_TYPES.ArrowFunctionExpression &&
+    node.type !== AST_NODE_TYPES.FunctionExpression
+  ) {
+    return null;
+  }
+  if (node.async || node.generator) {
+    return "bails" as const;
+  }
+  const body =
+    node.body.type === AST_NODE_TYPES.BlockStatement ? singleReturnArgument(node.body) : node.body;
+  return body ? { params: node.params, body } : ("bails" as const);
+};
+
+/** An identifier naming a prop rather than reading it, e.g. `x.$size` */
 const isNameOnly = (node: TSESTree.Identifier) => {
   const parent = node.parent;
   if (parent?.type === AST_NODE_TYPES.MemberExpression) {
@@ -95,36 +137,51 @@ const isNameOnly = (node: TSESTree.Identifier) => {
 };
 
 /**
- * How often one style condition reads each prop, destructured or through a
- * member. Every read is a separate inline, so a condition reading a prop twice
+ * How often one style condition reads each prop, or `null` if the condition
+ * keeps every usage of the component on the runtime path
+ *
+ * Every read is inlined separately, so a condition reading a prop twice
  * (`$size && $size === "big"`) evaluates its value twice on its own
  */
-const propReadsIn = (arrow: TSESTree.ArrowFunctionExpression) => {
+const propReadsIn = (
+  params: TSESTree.Parameter[],
+  body: TSESTree.Expression,
+): Map<string, number> | null => {
   const reads = new Map<string, number>();
   const count = (name: string) => reads.set(name, (reads.get(name) ?? 0) + 1);
-  const [param] = arrow.params;
-  if (param?.type === AST_NODE_TYPES.ObjectPattern) {
-    /** local binding name to prop name, e.g. `{ $size: size }` */
-    const locals = new Map<string, string>();
+  // e.g. `${() => darkMode && css`...`}` - references the outer scope only
+  if (params.length === 0) {
+    return reads;
+  }
+  if (params.length > 1) {
+    return null;
+  }
+  const [param] = params;
+  if (param.type === AST_NODE_TYPES.ObjectPattern) {
+    const props = new Set<string>();
     for (const property of param.properties) {
+      // only plain destructuring - renames, defaults and rest bail
       if (
-        property.type === AST_NODE_TYPES.Property &&
-        property.key.type === AST_NODE_TYPES.Identifier &&
-        property.value.type === AST_NODE_TYPES.Identifier
+        property.type !== AST_NODE_TYPES.Property ||
+        !property.shorthand ||
+        property.value.type !== AST_NODE_TYPES.Identifier ||
+        property.key.type !== AST_NODE_TYPES.Identifier ||
+        isRuntimeInjectedProp(property.key.name)
       ) {
-        locals.set(property.value.name, property.key.name);
+        return null;
       }
+      props.add(property.key.name);
     }
-    walk(arrow.body, (node) => {
-      if (node.type === AST_NODE_TYPES.Identifier && !isNameOnly(node)) {
-        const prop = locals.get(node.name);
-        if (prop) {
-          count(prop);
-        }
+    walk(body, (node) => {
+      if (node.type === AST_NODE_TYPES.Identifier && !isNameOnly(node) && props.has(node.name)) {
+        count(node.name);
       }
     });
-  } else if (param?.type === AST_NODE_TYPES.Identifier) {
-    walk(arrow.body, (node) => {
+    return reads;
+  }
+  if (param.type === AST_NODE_TYPES.Identifier) {
+    let bails = false;
+    walk(body, (node) => {
       if (
         node.type === AST_NODE_TYPES.MemberExpression &&
         !node.computed &&
@@ -132,11 +189,15 @@ const propReadsIn = (arrow: TSESTree.ArrowFunctionExpression) => {
         node.object.name === param.name &&
         node.property.type === AST_NODE_TYPES.Identifier
       ) {
+        if (isRuntimeInjectedProp(node.property.name)) {
+          bails = true;
+        }
         count(node.property.name);
       }
     });
+    return bails ? null : reads;
   }
-  return reads;
+  return null;
 };
 
 /** A spread or a theme prop keeps the usage on the runtime path */
@@ -196,16 +257,22 @@ export const precomputeStylePropValues = createRule({
         }
         const reads = new Map<string, number>();
         for (const expression of node.init.quasi.expressions) {
-          // a non arrow interpolation is a build time constant and does not
+          const condition = styleCondition(expression);
+          // a non function interpolation is a build time constant and does not
           // stop the component from being inlined
-          if (expression.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
+          if (condition === null) {
             continue;
           }
-          if (!isClassToggle(expression.body, importedNames)) {
+          if (condition === "bails" || !isClassToggle(condition.body, importedNames)) {
             components.set(node.id.name, null);
             return;
           }
-          for (const [name, count] of propReadsIn(expression)) {
+          const conditionReads = propReadsIn(condition.params, condition.body);
+          if (!conditionReads) {
+            components.set(node.id.name, null);
+            return;
+          }
+          for (const [name, count] of conditionReads) {
             reads.set(name, (reads.get(name) ?? 0) + count);
           }
         }
@@ -239,12 +306,12 @@ export const precomputeStylePropValues = createRule({
             if (conditions === 0) {
               continue;
             }
-            // a $prop is dropped from the element, so a single condition just
-            // moves it - every other prop is evaluated on the element as well
+            // a $prop is dropped from the element, so a single read just moves
+            // it - every other prop is evaluated on the element as well
             const onElement = !prop.startsWith("$");
             const count = conditions + (onElement ? 1 : 0);
             const value = attribute.value.expression;
-            if (count < 2 || isDuplicationSafe(value)) {
+            if (count < 2 || isSafeToInline(value)) {
               continue;
             }
             context.report({

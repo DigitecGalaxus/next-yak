@@ -58,112 +58,142 @@ const Twice = /*YAK Extracted CSS:
   padding: 8px;
 }
 */ /*#__PURE__*/ __yak.__yak_li("ym7uBBuA", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("ym7uBBuB"));
+// folds: an arrow returning from a block body is a condition like any other
+const BlockBody = /*YAK Extracted CSS:
+:global(.ym7uBBuC) {
+  padding: 1px;
+}
+:global(.ym7uBBuD) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ __yak.__yak_aside("ym7uBBuC", ({ $wide })=>{
+    return $wide && /*#__PURE__*/ css("ym7uBBuD");
+});
+// usages bail: only plain destructuring substitutes - a rename, a default or a
+// rest element all keep the runtime path
+// (the precompute-style-prop-values eslint rule skips these shapes for the
+// same reason, so this pins the contract it relies on)
+const Renamed = /*YAK Extracted CSS:
+:global(.ym7uBBuF) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuE", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("ym7uBBuF"));
+const Defaulted = /*YAK Extracted CSS:
+:global(.ym7uBBuH) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuG", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("ym7uBBuH"));
+const Rested = /*YAK Extracted CSS:
+:global(.ym7uBBuJ) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuI", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("ym7uBBuJ"));
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
 const ActionButton = /*YAK Extracted CSS:
-:global(.ym7uBBuC) {
+:global(.ym7uBBuK) {
   color: blue;
 }
-:global(.ym7uBBuD) {
+:global(.ym7uBBuL) {
   cursor: pointer;
 }
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuC", ({ disabled })=>!disabled && /*#__PURE__*/ css("ym7uBBuD"));
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuK", ({ disabled })=>!disabled && /*#__PURE__*/ css("ym7uBBuL"));
 // usages bail: the runtime injects the theme which is unknown at build time
 const Themed = /*YAK Extracted CSS:
-:global(.ym7uBBuE) {
+:global(.ym7uBBuM) {
   color: black;
 }
-:global(.ym7uBBuF) {
+:global(.ym7uBBuN) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_strong("ym7uBBuE", ({ theme, $accent })=>theme.highContrast && $accent && /*#__PURE__*/ css("ym7uBBuF"));
+*/ /*#__PURE__*/ __yak.__yak_strong("ym7uBBuM", ({ theme, $accent })=>theme.highContrast && $accent && /*#__PURE__*/ css("ym7uBBuN"));
 // usages bail: the mixin carries a css variable set through the style prop
 const NestedCssVariable = /*YAK Extracted CSS:
-:global(.ym7uBBuH) {
-  width: var(--ym7uBBuI);
+:global(.ym7uBBuP) {
+  width: var(--ym7uBBuQ);
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuG", ({ $active, $size })=>$active && /*#__PURE__*/ css("ym7uBBuH", {
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuO", ({ $active, $size })=>$active && /*#__PURE__*/ css("ym7uBBuP", {
         "style": {
-            "--ym7uBBuI": /*#__PURE__*/ __yak_unitPostFix(()=>$size, "px")
+            "--ym7uBBuQ": /*#__PURE__*/ __yak_unitPostFix(()=>$size, "px")
         }
     }));
 // usages bail: the $prop forwarding semantics depend on the wrapped component
 const DynamicExtended = /*YAK Extracted CSS:
-:global(.ym7uBBuK) {
+:global(.ym7uBBuS) {
   color: red;
 }
-*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBuJ", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuK"));
+*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBuR", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuS"));
 // usages bail: attrs
 const DynamicAttrs = /*YAK Extracted CSS:
-:global(.ym7uBBuM) {
+:global(.ym7uBBuU) {
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_button.attrs({
     type: "button"
-})("ym7uBBuL", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuM"));
+})("ym7uBBuT", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuU"));
 // usages bail: the runtime passes more than the attributes to the expressions
 const ClassNameBail = /*YAK Extracted CSS:
-:global(.ym7uBBuO) {
+:global(.ym7uBBuW) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuN", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuO"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuV", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuW"));
 // usages bail: React strips key before the component sees props, so the
 // runtime reads undefined - substituting the attribute value would diverge
 const KeyBail = /*YAK Extracted CSS:
-:global(.ym7uBBuQ) {
+:global(.ym7uBBuY) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuP", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuQ"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuX", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuY"));
 // folds: identifier param with member access - `(p) => p.$x` is the common
 // real-world styled-components style
 const MemberButton = /*YAK Extracted CSS:
-:global(.ym7uBBuR) {
+:global(.ym7uBBuZ) {
   display: inline-flex;
 }
-:global(.ym7uBBuS) {
+:global(.ym7uBBua) {
   background-color: #d1d5db;
 }
-:global(.ym7uBBuT) {
+:global(.ym7uBBub) {
   background-color: #f3f4f6;
 }
-:global(.ym7uBBuU) {
+:global(.ym7uBBuc) {
   background-color: transparent;
 }
-:global(.ym7uBBuV) {
+:global(.ym7uBBud) {
   width: 100%;
 }
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuR", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBuS"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBuT"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBuU"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBuV"));
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBuZ", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBua"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBub"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBuc"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBud"));
 // usages bail: the whole props object escapes into the function call
 const MemberEscape = /*YAK Extracted CSS:
-:global(.ym7uBBuX) {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuW", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuX"));
-// usages bail: theme access through the identifier param
-const MemberTheme = /*YAK Extracted CSS:
-:global(.ym7uBBuZ) {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuY", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuZ"));
-// usages bail: computed member access
-const MemberComputed = /*YAK Extracted CSS:
-:global(.ym7uBBub) {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBua", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBub"));
-// usages bail: key access through the identifier param
-const MemberKey = /*YAK Extracted CSS:
-:global(.ym7uBBud) {
-  color: red;
-}
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuc", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBud"));
-// folds: passing key at a call site never blocks folding - only reading it
-// inside a style expression does
-const KeyedRow = /*YAK Extracted CSS:
 :global(.ym7uBBuf) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBue", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBuf"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBue", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuf"));
+// usages bail: theme access through the identifier param
+const MemberTheme = /*YAK Extracted CSS:
+:global(.ym7uBBuh) {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBug", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuh"));
+// usages bail: computed member access
+const MemberComputed = /*YAK Extracted CSS:
+:global(.ym7uBBuj) {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBui", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBuj"));
+// usages bail: key access through the identifier param
+const MemberKey = /*YAK Extracted CSS:
+:global(.ym7uBBul) {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuk", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBul"));
+// folds: passing key at a call site never blocks folding - only reading it
+// inside a style expression does
+const KeyedRow = /*YAK Extracted CSS:
+:global(.ym7uBBun) {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBum", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBun"));
 const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
@@ -183,10 +213,10 @@ const Optimizable = ({ active, size, i: i1 }: {
       runtime class merge
     </span>
     <span className={"ym7uBBu" + (true ? " ym7uBBu1" : "") + /*YAK Extracted CSS:
-:global(.ym7uBBug) {
+:global(.ym7uBBuo) {
   color: orange;
 }
-*/ /*#__PURE__*/ " ym7uBBug"}>
+*/ /*#__PURE__*/ " ym7uBBuo"}>
       css prop merge
     </span>
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
@@ -195,21 +225,22 @@ const Optimizable = ({ active, size, i: i1 }: {
     <i className={"ym7uBBu6" + (active ? " ym7uBBu7" : "")}>function form</i>
     <em className={"ym7uBBu8" + (isCompact ? " ym7uBBu9" : "")}>outer scope condition</em>
     <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
-    <button disabled={active} className={"ym7uBBuC" + (!active ? " ym7uBBuD" : "")}>kept on the element and inlined</button>
-    <button disabled className={"ym7uBBuC" + (!true ? " ym7uBBuD" : "")}>bare non-$ prop</button>
+    <button disabled={active} className={"ym7uBBuK" + (!active ? " ym7uBBuL" : "")}>kept on the element and inlined</button>
+    <button disabled className={"ym7uBBuK" + (!true ? " ym7uBBuL" : "")}>bare non-$ prop</button>
     { /* an impure value is inlined into every condition reading it, so the two
         rolls can disagree - the eslint rule precompute-style-prop-values asks
         the user to compute it once */ }
     <li className={"ym7uBBuA" + (props.getSize() && props.getSize() === "big" ? " ym7uBBuB" : "")}>evaluated once per condition</li>
     { /* the attribute stays on the element AND feeds the condition, so this
         button can be disabled while it is styled as enabled */ }
-    <button disabled={props.isBusy()} className={"ym7uBBuC" + (!props.isBusy() ? " ym7uBBuD" : "")}>evaluated on the element and inlined</button>
-    <button className={"ym7uBBuR" + (!(i1 % 4 !== 0) ? " ym7uBBuS" : "") + ("primary" === "secondary" ? " ym7uBBuT" : "") + ("primary" === "ghost" ? " ym7uBBuU" : "") + (i1 % 3 === 0 ? " ym7uBBuV" : "")}>
+    <button disabled={props.isBusy()} className={"ym7uBBuK" + (!props.isBusy() ? " ym7uBBuL" : "")}>evaluated on the element and inlined</button>
+    <button className={"ym7uBBuZ" + (!(i1 % 4 !== 0) ? " ym7uBBua" : "") + ("primary" === "secondary" ? " ym7uBBub" : "") + ("primary" === "ghost" ? " ym7uBBuc" : "") + (i1 % 3 === 0 ? " ym7uBBud" : "")}>
       {i1}
     </button>
-    <li key={i1} className={"ym7uBBue" + (active ? " ym7uBBuf" : "")}>
+    <li key={i1} className={"ym7uBBum" + (active ? " ym7uBBun" : "")}>
       key at the call site still folds
     </li>
+    <aside className={"ym7uBBuC" + (active ? " ym7uBBuD" : "")}>block body arrow</aside>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -223,4 +254,7 @@ const NotOptimizable = ()=><>
     <MemberComputed $active>bails: computed member access</MemberComputed>
     <KeyBail key="active">bails: destructured key access</KeyBail>
     <MemberKey key="active">bails: key access</MemberKey>
+    <Renamed $size="big">bails: renamed destructuring</Renamed>
+    <Defaulted>bails: default value destructuring</Defaulted>
+    <Rested $size="big">bails: rest element destructuring</Rested>
   </>;

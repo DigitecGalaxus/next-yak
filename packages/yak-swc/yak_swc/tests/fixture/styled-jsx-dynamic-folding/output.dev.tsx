@@ -68,6 +68,44 @@ const Twice = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_Twice_m7uBBu", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("input_Twice___m7uBBu")), {
     "displayName": "Twice"
 });
+// folds: an arrow returning from a block body is a condition like any other
+const BlockBody = /*YAK Extracted CSS:
+:global(.input_BlockBody_m7uBBu) {
+  padding: 1px;
+}
+:global(.input_BlockBody__\$wide_m7uBBu) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_aside("input_BlockBody_m7uBBu", ({ $wide })=>{
+    return $wide && /*#__PURE__*/ css("input_BlockBody__$wide_m7uBBu");
+}), {
+    "displayName": "BlockBody"
+});
+// usages bail: only plain destructuring substitutes - a rename, a default or a
+// rest element all keep the runtime path
+// (the precompute-style-prop-values eslint rule skips these shapes for the
+// same reason, so this pins the contract it relies on)
+const Renamed = /*YAK Extracted CSS:
+:global(.input_Renamed___m7uBBu) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Renamed_m7uBBu", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("input_Renamed___m7uBBu")), {
+    "displayName": "Renamed"
+});
+const Defaulted = /*YAK Extracted CSS:
+:global(.input_Defaulted___m7uBBu) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Defaulted_m7uBBu", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("input_Defaulted___m7uBBu")), {
+    "displayName": "Defaulted"
+});
+const Rested = /*YAK Extracted CSS:
+:global(.input_Rested___m7uBBu) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Rested_m7uBBu", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("input_Rested___m7uBBu")), {
+    "displayName": "Rested"
+});
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
 const ActionButton = /*YAK Extracted CSS:
@@ -246,6 +284,7 @@ const Optimizable = ({ active, size, i: i1 }: {
     <li key={i1} className={"input_KeyedRow_m7uBBu" + (active ? " input_KeyedRow__p_$active_m7uBBu" : "")}>
       key at the call site still folds
     </li>
+    <aside className={"input_BlockBody_m7uBBu" + (active ? " input_BlockBody__$wide_m7uBBu" : "")}>block body arrow</aside>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -259,4 +298,7 @@ const NotOptimizable = ()=><>
     <MemberComputed $active>bails: computed member access</MemberComputed>
     <KeyBail key="active">bails: destructured key access</KeyBail>
     <MemberKey key="active">bails: key access</MemberKey>
+    <Renamed $size="big">bails: renamed destructuring</Renamed>
+    <Defaulted>bails: default value destructuring</Defaulted>
+    <Rested $size="big">bails: rest element destructuring</Rested>
   </>;

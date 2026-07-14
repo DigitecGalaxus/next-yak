@@ -45,6 +45,28 @@ const Twice = styled.li<{ $size?: string }>`
   ${({ $size }) => $size && $size === "big" && css`padding: 8px;`}
 `;
 
+// folds: an arrow returning from a block body is a condition like any other
+const BlockBody = styled.aside<{ $wide?: boolean }>`
+  padding: 1px;
+  ${({ $wide }) => {
+    return $wide && css`padding: 8px;`;
+  }}
+`;
+
+// usages bail: only plain destructuring substitutes - a rename, a default or a
+// rest element all keep the runtime path
+// (the precompute-style-prop-values eslint rule skips these shapes for the
+// same reason, so this pins the contract it relies on)
+const Renamed = styled.mark<{ $size?: string }>`
+  ${({ $size: size }) => size && size === "big" && css`padding: 8px;`}
+`;
+const Defaulted = styled.mark<{ $size?: string }>`
+  ${({ $size = "big" }) => $size === "big" && css`padding: 8px;`}
+`;
+const Rested = styled.mark<{ $size?: string }>`
+  ${({ $size, ...rest }) => $size && rest && css`padding: 8px;`}
+`;
+
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
 const ActionButton = styled.button<{ disabled?: boolean }>`
@@ -172,6 +194,7 @@ const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: 
     <KeyedRow key={i} $active={active}>
       key at the call site still folds
     </KeyedRow>
+    <BlockBody $wide={active}>block body arrow</BlockBody>
   </>
 );
 
@@ -188,5 +211,8 @@ const NotOptimizable = () => (
     <MemberComputed $active>bails: computed member access</MemberComputed>
     <KeyBail key="active">bails: destructured key access</KeyBail>
     <MemberKey key="active">bails: key access</MemberKey>
+    <Renamed $size="big">bails: renamed destructuring</Renamed>
+    <Defaulted>bails: default value destructuring</Defaulted>
+    <Rested $size="big">bails: rest element destructuring</Rested>
   </>
 );

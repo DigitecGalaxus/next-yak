@@ -1,7 +1,7 @@
 import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9BY3Rpb25CdXR0b25fbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfQouaW5wdXRfQWN0aW9uQnV0dG9uX19fbTd1QkJ1IHsKICBjdXJzb3I6IHBvaW50ZXI7Cn0uaW5wdXRfVGhlbWVkX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9Ci5pbnB1dF9UaGVtZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX1wkYWN0aXZlX203dUJCdSB7CiAgd2lkdGg6IHZhcigtLWlucHV0X05lc3RlZENzc1ZhcmlhYmxlX193aWR0aF9tN3VCQnUpOwp9LmlucHV0X0R5bmFtaWNFeHRlbmRlZF9fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0R5bmFtaWNBdHRyc19fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0NsYXNzTmFtZUJhaWxfX2NsYXNzTmFtZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5QmFpbF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJCdXR0b25fbTd1QkJ1IHsKICBkaXNwbGF5OiBpbmxpbmUtZmxleDsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDFkNWRiOwp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDEgewogIGJhY2tncm91bmQtY29sb3I6ICNmM2Y0ZjY7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdS0wMiB7CiAgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fcF9cJGZ1bGxXaWR0aF9tN3VCQnUgewogIHdpZHRoOiAxMDAlOwp9LmlucHV0X01lbWJlckVzY2FwZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJUaGVtZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJDb21wdXRlZF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJLZXlfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5ZWRSb3dfX3BfXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfQ==";
+import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9CbG9ja0JvZHlfbTd1QkJ1IHsKICBwYWRkaW5nOiAxcHg7Cn0KLmlucHV0X0Jsb2NrQm9keV9fXCR3aWRlX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X1JlbmFtZWRfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9EZWZhdWx0ZWRfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9SZXN0ZWRfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9BY3Rpb25CdXR0b25fbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfQouaW5wdXRfQWN0aW9uQnV0dG9uX19fbTd1QkJ1IHsKICBjdXJzb3I6IHBvaW50ZXI7Cn0uaW5wdXRfVGhlbWVkX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9Ci5pbnB1dF9UaGVtZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX1wkYWN0aXZlX203dUJCdSB7CiAgd2lkdGg6IHZhcigtLWlucHV0X05lc3RlZENzc1ZhcmlhYmxlX193aWR0aF9tN3VCQnUpOwp9LmlucHV0X0R5bmFtaWNFeHRlbmRlZF9fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0R5bmFtaWNBdHRyc19fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0NsYXNzTmFtZUJhaWxfX2NsYXNzTmFtZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5QmFpbF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJCdXR0b25fbTd1QkJ1IHsKICBkaXNwbGF5OiBpbmxpbmUtZmxleDsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDFkNWRiOwp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDEgewogIGJhY2tncm91bmQtY29sb3I6ICNmM2Y0ZjY7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdS0wMiB7CiAgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fcF9cJGZ1bGxXaWR0aF9tN3VCQnUgewogIHdpZHRoOiAxMDAlOwp9LmlucHV0X01lbWJlckVzY2FwZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJUaGVtZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJDb21wdXRlZF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJLZXlfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5ZWRSb3dfX3BfXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfQ==";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage
 const IconContainer = /*YAK Extracted CSS:
@@ -67,6 +67,44 @@ const Twice = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_Twice_m7uBBu", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("input_Twice___m7uBBu")), {
     "displayName": "Twice"
+});
+// folds: an arrow returning from a block body is a condition like any other
+const BlockBody = /*YAK Extracted CSS:
+.input_BlockBody_m7uBBu {
+  padding: 1px;
+}
+.input_BlockBody__\$wide_m7uBBu {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_aside("input_BlockBody_m7uBBu", ({ $wide })=>{
+    return $wide && /*#__PURE__*/ css("input_BlockBody__$wide_m7uBBu");
+}), {
+    "displayName": "BlockBody"
+});
+// usages bail: only plain destructuring substitutes - a rename, a default or a
+// rest element all keep the runtime path
+// (the precompute-style-prop-values eslint rule skips these shapes for the
+// same reason, so this pins the contract it relies on)
+const Renamed = /*YAK Extracted CSS:
+.input_Renamed___m7uBBu {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Renamed_m7uBBu", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("input_Renamed___m7uBBu")), {
+    "displayName": "Renamed"
+});
+const Defaulted = /*YAK Extracted CSS:
+.input_Defaulted___m7uBBu {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Defaulted_m7uBBu", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("input_Defaulted___m7uBBu")), {
+    "displayName": "Defaulted"
+});
+const Rested = /*YAK Extracted CSS:
+.input_Rested___m7uBBu {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Rested_m7uBBu", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("input_Rested___m7uBBu")), {
+    "displayName": "Rested"
 });
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
@@ -246,6 +284,7 @@ const Optimizable = ({ active, size, i: i1 }: {
     <li key={i1} className={"input_KeyedRow_m7uBBu" + (active ? " input_KeyedRow__p_$active_m7uBBu" : "")}>
       key at the call site still folds
     </li>
+    <aside className={"input_BlockBody_m7uBBu" + (active ? " input_BlockBody__$wide_m7uBBu" : "")}>block body arrow</aside>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -259,4 +298,7 @@ const NotOptimizable = ()=><>
     <MemberComputed $active>bails: computed member access</MemberComputed>
     <KeyBail key="active">bails: destructured key access</KeyBail>
     <MemberKey key="active">bails: key access</MemberKey>
+    <Renamed $size="big">bails: renamed destructuring</Renamed>
+    <Defaulted>bails: default value destructuring</Defaulted>
+    <Rested $size="big">bails: rest element destructuring</Rested>
   </>;

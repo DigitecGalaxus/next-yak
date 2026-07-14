@@ -561,14 +561,11 @@ fn inline_expression(
           .unwrap_or_else(|| Cow::Owned(undefined_expr()));
         replacements.insert(key.to_id(), value);
       }
-      let mut substitution = SubstituteProps {
+      // every remaining reference is a plain prop read - the keys which could
+      // not be substituted bailed above
+      condition.visit_mut_with(&mut SubstituteProps {
         replacements: &replacements,
-        failed: false,
-      };
-      condition.visit_mut_with(&mut substitution);
-      if substitution.failed {
-        return None;
-      }
+      });
     }
     // e.g. `${(p) => p.$active && css`...`}` - plain member reads on the
     // props parameter substitute like destructured props; any other use of
@@ -641,7 +638,6 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
 /// pure, which the `precompute-style-prop-values` eslint rule points out.
 struct SubstituteProps<'a> {
   replacements: &'a FxHashMap<Id, Cow<'a, Expr>>,
-  failed: bool,
 }
 
 impl SubstituteProps<'_> {

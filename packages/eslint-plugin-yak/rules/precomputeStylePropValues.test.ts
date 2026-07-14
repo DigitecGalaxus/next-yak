@@ -78,6 +78,34 @@ ruleTester.run("yak-precompute-style-prop-values", precomputeStylePropValues, {
       // a dynamic styled(Component) keeps the runtime path
       code: `${imports} const Base = () => null; const W = styled(Base)\`\${(p) => p.$a && css\`color: red;\`}\${(p) => p.$a && css\`top: 0;\`}\`; const App = () => <W $a={Math.random()} />;`,
     },
+    {
+      // reading the injected theme keeps every usage on the runtime path
+      code: `${imports} const Th = styled.div\`\${({ theme, $size }) => theme.dark && $size > 2 && $size < 10 && css\`color: red;\`}\`; const App = (props) => <Th $size={props.compute()} />;`,
+    },
+    {
+      // the member form of a theme read bails the same way
+      code: `${imports} const Th = styled.div\`\${(p) => p.theme.dark && p.$size > 2 && p.$size < 10 && css\`color: red;\`}\`; const App = (props) => <Th $size={props.compute()} />;`,
+    },
+    {
+      // a renamed destructuring is not plain and keeps the runtime path
+      code: `${imports} const Rn = styled.div\`\${({ $size: size }) => size > 2 && size < 10 && css\`color: red;\`}\`; const App = (props) => <Rn $size={props.compute()} />;`,
+    },
+    {
+      // a default value destructuring keeps the runtime path
+      code: `${imports} const Df = styled.div\`\${({ $size = 4 }) => $size > 2 && $size < 10 && css\`color: red;\`}\`; const App = (props) => <Df $size={props.compute()} />;`,
+    },
+    {
+      // a rest element destructuring keeps the runtime path
+      code: `${imports} const Rs = styled.div\`\${({ $size, ...rest }) => $size > 2 && $size < 10 && css\`color: red;\`}\`; const App = (props) => <Rs $size={props.compute()} />;`,
+    },
+    {
+      // an async condition is not inlined
+      code: `${imports} const As = styled.div\`\${async ({ $a }) => $a && $a && css\`color: red;\`}\`; const App = (props) => <As $a={props.compute()} />;`,
+    },
+    {
+      // a multi statement body is not inlined
+      code: `${imports} const Mb = styled.div\`\${({ $a }) => { const x = $a; return x && $a && css\`color: red;\`; }}\`; const App = (props) => <Mb $a={props.compute()} />;`,
+    },
   ],
   invalid: [
     {
@@ -108,6 +136,16 @@ ruleTester.run("yak-precompute-style-prop-values", precomputeStylePropValues, {
     {
       // the member form of a condition reading the prop twice
       code: `${imports} const M = styled.li\`\${(p) => p.$size && p.$size === "big" && css\`padding: 8px;\`}\`; const App = (props) => <M $size={props.getSize()} />;`,
+      errors: [{ messageId: "precompute" }],
+    },
+    {
+      // a function expression is a style condition like an arrow
+      code: `${imports} const Fe = styled.i\`\${function ({ $size }) { return $size > 2 && $size < 10 && css\`color: red;\`; }}\`; const App = (props) => <Fe $size={props.compute()} />;`,
+      errors: [{ messageId: "precompute" }],
+    },
+    {
+      // an arrow returning from a block body is a style condition too
+      code: `${imports} const Bb = styled.i\`\${({ $size }) => { return $size > 2 && $size < 10 && css\`color: red;\`; }}\`; const App = (props) => <Bb $size={props.compute()} />;`,
       errors: [{ messageId: "precompute" }],
     },
   ],

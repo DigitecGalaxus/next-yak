@@ -73,8 +73,13 @@ const App = () => {
 The rule only reports values that next-yak may evaluate more than once, which means all of the following:
 
 - The styled component is declared in the same file as the usage. Imported components are never inlined, as the compiler sees one file at a time.
-- It is declared as a top level `const`, is not an `.attrs()` chain, and every interpolation is a class condition. A value compiled into a css variable keeps every usage on the runtime path.
+- It is declared as a top level `const` and is not an `.attrs()` chain.
+- Every interpolation is a class condition. A value compiled into a css variable keeps every usage on the runtime path.
+- The conditions destructure their props plainly. A rename, a default value or a rest element is not substituted, so those keep the runtime path too.
+- No condition reads `theme`, `children`, `className`, `style` or `key`. The runtime passes those separately, so reading one keeps the runtime path.
 - The usage has no spread and no `theme` prop.
 - The prop is read by a style condition, and the value is not a literal, an identifier or a member expression.
 
 Pure values like `Math.max(4, s)` are reported too. Evaluating them twice is harmless, but precomputing keeps the generated code smaller, so the fix is worth applying either way.
+
+The rule matches these shapes syntactically and is a best effort mirror of the compiler. It errs towards staying quiet rather than reporting a value that would never be inlined.
