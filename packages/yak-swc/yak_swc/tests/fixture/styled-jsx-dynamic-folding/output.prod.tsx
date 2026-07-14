@@ -49,7 +49,7 @@ const Scoped = /*YAK Extracted CSS:
   line-height: 1;
 }
 */ /*#__PURE__*/ __yak.__yak_em("ym7uBBu8", ()=>isCompact && /*#__PURE__*/ css("ym7uBBu9"));
-// usages fold only when the twice-referenced $size attribute is safe to duplicate
+// the twice-referenced $size attribute is inlined into both conditions
 const Twice = /*YAK Extracted CSS:
 :global(.ym7uBBuA) {
   padding: 1px;
@@ -197,6 +197,13 @@ const Optimizable = ({ active, size, i: i1 }: {
     <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
     <button disabled={active} className={"ym7uBBuC" + (!active ? " ym7uBBuD" : "")}>kept on the element and inlined</button>
     <button disabled className={"ym7uBBuC" + (!true ? " ym7uBBuD" : "")}>bare non-$ prop</button>
+    { /* an impure value is inlined into every condition reading it, so the two
+        rolls can disagree - the eslint rule precompute-style-prop-values asks
+        the user to compute it once */ }
+    <li className={"ym7uBBuA" + (props.getSize() && props.getSize() === "big" ? " ym7uBBuB" : "")}>evaluated once per condition</li>
+    { /* the attribute stays on the element AND feeds the condition, so this
+        button can be disabled while it is styled as enabled */ }
+    <button disabled={props.isBusy()} className={"ym7uBBuC" + (!props.isBusy() ? " ym7uBBuD" : "")}>evaluated on the element and inlined</button>
     <button className={"ym7uBBuR" + (!(i1 % 4 !== 0) ? " ym7uBBuS" : "") + ("primary" === "secondary" ? " ym7uBBuT" : "") + ("primary" === "ghost" ? " ym7uBBuU" : "") + (i1 % 3 === 0 ? " ym7uBBuV" : "")}>
       {i1}
     </button>
@@ -206,15 +213,11 @@ const Optimizable = ({ active, size, i: i1 }: {
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
-    <Twice $size={props.getSize()}>bails: unsafe to duplicate</Twice>
     <Themed $accent>bails: theme access</Themed>
     <NestedCssVariable $active $size={12}>bails: nested css variable</NestedCssVariable>
     <DynamicExtended $active>bails: dynamic wrapped component</DynamicExtended>
     <DynamicAttrs $active>bails: dynamic attrs</DynamicAttrs>
     <ClassNameBail className="user">bails: className access</ClassNameBail>
-    <ActionButton disabled={props.isBusy()}>
-      bails: the kept attribute would evaluate a second time in the className
-    </ActionButton>
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>

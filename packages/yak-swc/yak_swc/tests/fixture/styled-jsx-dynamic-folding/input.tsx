@@ -39,7 +39,7 @@ const Scoped = styled.em`
   ${() => isCompact && css`line-height: 1;`}
 `;
 
-// usages fold only when the twice-referenced $size attribute is safe to duplicate
+// the twice-referenced $size attribute is inlined into both conditions
 const Twice = styled.li<{ $size?: string }>`
   padding: 1px;
   ${({ $size }) => $size && $size === "big" && css`padding: 8px;`}
@@ -159,6 +159,13 @@ const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: 
     <Twice $size={size}>safe to duplicate</Twice>
     <ActionButton disabled={active}>kept on the element and inlined</ActionButton>
     <ActionButton disabled>bare non-$ prop</ActionButton>
+    {/* an impure value is inlined into every condition reading it, so the two
+        rolls can disagree - the eslint rule precompute-style-prop-values asks
+        the user to compute it once */}
+    <Twice $size={props.getSize()}>evaluated once per condition</Twice>
+    {/* the attribute stays on the element AND feeds the condition, so this
+        button can be disabled while it is styled as enabled */}
+    <ActionButton disabled={props.isBusy()}>evaluated on the element and inlined</ActionButton>
     <MemberButton $active={i % 4 !== 0} $fullWidth={i % 3 === 0} $variant="primary">
       {i}
     </MemberButton>
@@ -171,15 +178,11 @@ const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: 
 const NotOptimizable = () => (
   <>
     <IconContainer {...props}>bails: spread</IconContainer>
-    <Twice $size={props.getSize()}>bails: unsafe to duplicate</Twice>
     <Themed $accent>bails: theme access</Themed>
     <NestedCssVariable $active $size={12}>bails: nested css variable</NestedCssVariable>
     <DynamicExtended $active>bails: dynamic wrapped component</DynamicExtended>
     <DynamicAttrs $active>bails: dynamic attrs</DynamicAttrs>
     <ClassNameBail className="user">bails: className access</ClassNameBail>
-    <ActionButton disabled={props.isBusy()}>
-      bails: the kept attribute would evaluate a second time in the className
-    </ActionButton>
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>

@@ -502,13 +502,13 @@ fn inline_runtime_expressions(
 ///
 /// The props parameter must be a plain object destructuring or an identifier
 /// read through plain members (`(p) => p.$active`) - `theme` and props like
-/// `children` which are not plain attributes bail. A `$`-prop expression
-/// referenced once is inlined as-is: the `$` attribute is dropped from the
-/// folded element, so it is still evaluated exactly once, only its
-/// evaluation position may move relative to the other attributes which is
-/// fine as a render must not rely on attribute evaluation order. Referenced
-/// more than once - or kept on the element as a non-$ attribute - the
-/// expression is duplicated and must be safe to duplicate
+/// `children` which are not plain attributes bail.
+///
+/// The attribute expression is inlined once per read, so a prop read by two
+/// conditions - or twice by one condition - is evaluated once per read, and a
+/// non-$ prop is evaluated on the element as well since it is kept there. Prop
+/// expressions therefore have to be pure; the `precompute-style-prop-values`
+/// eslint rule reports the values which are not obviously safe to inline.
 fn inline_expression(
   expression: &Expr,
   attr_values: &FxHashMap<Atom, Cow<Expr>>,
@@ -563,7 +563,6 @@ fn inline_expression(
       }
       let mut substitution = SubstituteProps {
         replacements: &replacements,
-        substituted: FxHashSet::default(),
         failed: false,
       };
       condition.visit_mut_with(&mut substitution);
@@ -578,7 +577,6 @@ fn inline_expression(
       let mut substitution = SubstituteMemberProps {
         param: param.to_id(),
         attr_values,
-        substituted: FxHashSet::default(),
         failed: false,
       };
       condition.visit_mut_with(&mut substitution);
@@ -635,38 +633,23 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
   values
 }
 
-/// Records one substitution of `key` and applies the duplication rule shared
-/// by both substitution visitors: a repeated reference - or any reference to
-/// a non-$ attribute, which is kept on the element and therefore already
-/// referenced once - duplicates the attribute expression which is only
-/// allowed for expressions that are safe to duplicate
-/// Returns false if the substitution must bail
-fn may_substitute<K: Eq + std::hash::Hash>(
-  substituted: &mut FxHashSet<K>,
-  key: K,
-  name: &Atom,
-  replacement: &Expr,
-) -> bool {
-  let first = substituted.insert(key);
-  (first && name.starts_with('$')) || is_duplication_safe(replacement)
-}
-
 /// Replaces the destructured prop references with the attribute values
+///
+/// An attribute expression is inlined into every style expression which reads
+/// it, and a prop which is not a `$`-prop is evaluated on the element as well,
+/// so a prop value may be evaluated more than once. Prop expressions must be
+/// pure, which the `precompute-style-prop-values` eslint rule points out.
 struct SubstituteProps<'a> {
   replacements: &'a FxHashMap<Id, Cow<'a, Expr>>,
-  /// keys substituted at least once - see [may_substitute]
-  substituted: FxHashSet<Id>,
   failed: bool,
 }
 
 impl SubstituteProps<'_> {
-  fn replacement_for(&mut self, ident: &Ident) -> Option<Expr> {
-    let id = ident.to_id();
-    let replacement = self.replacements.get(&id)?;
-    if !may_substitute(&mut self.substituted, id, &ident.sym, replacement) {
-      self.failed = true;
-    }
-    Some(Expr::clone(replacement))
+  fn replacement_for(&self, ident: &Ident) -> Option<Expr> {
+    self
+      .replacements
+      .get(&ident.to_id())
+      .map(|replacement| Expr::clone(replacement))
   }
 }
 
@@ -703,8 +686,6 @@ impl VisitMut for SubstituteProps<'_> {
 struct SubstituteMemberProps<'a> {
   param: Id,
   attr_values: &'a FxHashMap<Atom, Cow<'a, Expr>>,
-  /// prop names substituted at least once - see [may_substitute]
-  substituted: FxHashSet<Atom>,
   failed: bool,
 }
 
@@ -720,20 +701,10 @@ impl VisitMut for SubstituteMemberProps<'_> {
             return;
           }
           // an absent attribute is undefined as spreads bail
-          let replacement = match self.attr_values.get(&name.sym) {
+          *expr = match self.attr_values.get(&name.sym) {
             Some(value) => Expr::clone(value),
             None => undefined_expr(),
           };
-          if !may_substitute(
-            &mut self.substituted,
-            name.sym.clone(),
-            &name.sym,
-            &replacement,
-          ) {
-            self.failed = true;
-            return;
-          }
-          *expr = replacement;
           return;
         }
       }
@@ -752,27 +723,6 @@ impl VisitMut for SubstituteMemberProps<'_> {
       return;
     }
     prop.visit_mut_children_with(self);
-  }
-}
-
-/// Whether inlining the expression more than once is safe: it must have no
-/// side effects and always evaluate to the same value during one render
-fn is_duplication_safe(expr: &Expr) -> bool {
-  match expr {
-    Expr::Lit(_) | Expr::Ident(_) => true,
-    Expr::Member(member) => {
-      let safe_prop = match &member.prop {
-        MemberProp::Ident(_) => true,
-        MemberProp::Computed(computed) => matches!(&*computed.expr, Expr::Lit(_)),
-        MemberProp::PrivateName(_) => false,
-        #[cfg(swc_ast_unknown)]
-        _ => false,
-      };
-      safe_prop && is_duplication_safe(&member.obj)
-    }
-    // delete is excluded - it mutates its operand
-    Expr::Unary(unary) => unary.op != UnaryOp::Delete && is_duplication_safe(&unary.arg),
-    _ => false,
   }
 }
 

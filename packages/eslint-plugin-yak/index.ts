@@ -2,6 +2,7 @@ import pkg from "./package.json" with { type: "json" };
 import { cssNestingOperator } from "./rules/cssNestingOperator.js";
 import { cssGlobalDeprecated } from "./rules/cssGlobalDeprecated.js";
 import { enforceSemicolons } from "./rules/enforceSemicolon.js";
+import { precomputeStylePropValues } from "./rules/precomputeStylePropValues.js";
 import { styleConditions } from "./rules/styleConditions.js";
 
 const plugin = {
@@ -14,6 +15,7 @@ const plugin = {
     "css-global-deprecated": cssGlobalDeprecated,
     "enforce-semicolon": enforceSemicolons,
     "style-conditions": styleConditions,
+    "precompute-style-prop-values": precomputeStylePropValues,
   },
   processors: {},
 };
@@ -28,6 +30,7 @@ const configs = {
       [`${pkg.name}/css-global-deprecated`]: "warn",
       [`${pkg.name}/enforce-semicolon`]: "error",
       [`${pkg.name}/style-conditions`]: "warn",
+      [`${pkg.name}/precompute-style-prop-values`]: "warn",
     },
   },
 };

@@ -57,7 +57,7 @@ const Scoped = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_em("input_Scoped_m7uBBu", ()=>isCompact && /*#__PURE__*/ css("input_Scoped__isCompact_m7uBBu")), {
     "displayName": "Scoped"
 });
-// usages fold only when the twice-referenced $size attribute is safe to duplicate
+// the twice-referenced $size attribute is inlined into both conditions
 const Twice = /*YAK Extracted CSS:
 .input_Twice_m7uBBu {
   padding: 1px;
@@ -233,6 +233,13 @@ const Optimizable = ({ active, size, i: i1 }: {
     <li className={"input_Twice_m7uBBu" + (size && size === "big" ? " input_Twice___m7uBBu" : "")}>safe to duplicate</li>
     <button disabled={active} className={"input_ActionButton_m7uBBu" + (!active ? " input_ActionButton___m7uBBu" : "")}>kept on the element and inlined</button>
     <button disabled className={"input_ActionButton_m7uBBu" + (!true ? " input_ActionButton___m7uBBu" : "")}>bare non-$ prop</button>
+    { /* an impure value is inlined into every condition reading it, so the two
+        rolls can disagree - the eslint rule precompute-style-prop-values asks
+        the user to compute it once */ }
+    <li className={"input_Twice_m7uBBu" + (props.getSize() && props.getSize() === "big" ? " input_Twice___m7uBBu" : "")}>evaluated once per condition</li>
+    { /* the attribute stays on the element AND feeds the condition, so this
+        button can be disabled while it is styled as enabled */ }
+    <button disabled={props.isBusy()} className={"input_ActionButton_m7uBBu" + (!props.isBusy() ? " input_ActionButton___m7uBBu" : "")}>evaluated on the element and inlined</button>
     <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
       {i1}
     </button>
@@ -242,15 +249,11 @@ const Optimizable = ({ active, size, i: i1 }: {
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
-    <Twice $size={props.getSize()}>bails: unsafe to duplicate</Twice>
     <Themed $accent>bails: theme access</Themed>
     <NestedCssVariable $active $size={12}>bails: nested css variable</NestedCssVariable>
     <DynamicExtended $active>bails: dynamic wrapped component</DynamicExtended>
     <DynamicAttrs $active>bails: dynamic attrs</DynamicAttrs>
     <ClassNameBail className="user">bails: className access</ClassNameBail>
-    <ActionButton disabled={props.isBusy()}>
-      bails: the kept attribute would evaluate a second time in the className
-    </ActionButton>
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>

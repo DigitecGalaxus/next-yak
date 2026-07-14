@@ -65,7 +65,8 @@ const myDiv = styled.div`
     "yak/css-nesting-operator": "error",
     "yak/css-global-deprecated": "warn",
     "yak/enforce-semicolon": "error",
-    "yak/style-conditions": "warn"
+    "yak/style-conditions": "warn",
+    "yak/precompute-style-prop-values": "warn"
   }
 }
 ```
@@ -83,6 +84,7 @@ export default defineConfig([
       "yak/css-global-deprecated": "warn",
       "yak/enforce-semicolon": "error",
       "yak/style-conditions": "warn",
+      "yak/precompute-style-prop-values": "warn",
     },
   },
 ]);
@@ -291,3 +293,32 @@ In this example:
   - Values from external APIs
 
 The yak/style-conditions rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.
+
+### precompute-style-prop-values
+
+Warns when a prop value is evaluated more than once because next-yak inlines the component into the place where it is used.
+
+Example:
+
+```tsx title="example.tsx"
+const Sticker = styled.div<{ $tilt: number }>`
+  ${(p) => p.$tilt > 5 && css`transform: rotate(3deg);`}
+  ${(p) => p.$tilt > 8 && css`box-shadow: 0 0 8px black;`}
+`;
+
+const App = () => <Sticker $tilt={Math.random() * 10} />; // [!code --]
+const App = () => { // [!code ++]
+  const tilt = Math.random() * 10; // [!code ++]
+  return <Sticker $tilt={tilt} />; // [!code ++]
+}; // [!code ++]
+```
+
+#### Reason why
+
+next-yak inlines a styled component into its usage at build time and copies the value of a prop into every style condition that reads it. Each condition above rolls its own number, so the sticker can get the shadow without the rotation, even though a tilt above 8 is always above 5. That is a combination the component could never render on its own.
+
+A prop that reaches the DOM is kept on the element as well, so `<Button disabled={Math.random() > 0.5} />` rolls once for the attribute and once for the condition, and the button can end up disabled while it is styled as enabled.
+
+Passing a precomputed variable fixes both: an identifier is only read, never evaluated again, so the component is still inlined. Pure values such as `Math.max(4, s)` are reported too, because precomputing them keeps the generated code smaller.
+
+See the [rule documentation](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/precompute-style-prop-values.md) for the exact conditions under which the rule reports.

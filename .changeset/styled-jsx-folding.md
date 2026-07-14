@@ -27,3 +27,5 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 - The optimization can be disabled with the new `optimizeStaticJsx: false` option.
 
 Behavioral notes: JSX folding speeds up rendering considerably, but a folded usage is no longer a component. It does not show up in React DevTools or in component stacks, in development too, and `child.type === Icon` checks no longer match it. Foreign `$props` on fully static folded usages are forwarded instead of stripped. The FAQ explains when a usage folds and what that changes.
+
+Prop expressions on folded usages must be pure: the value is inlined into every style condition that reads it, and a prop that reaches the DOM is evaluated on the element as well, so `<Button disabled={Math.random() > 0.5} />` can render a button that is disabled while it is styled as enabled. The new `precompute-style-prop-values` rule in `eslint-plugin-yak` reports the values this applies to.
