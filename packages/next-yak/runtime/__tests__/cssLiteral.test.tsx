@@ -1,6 +1,6 @@
 // @ts-nocheck These are runtime tests and the external API isn't the runtime (after compile) API
 import type { YakTheme } from "../context";
-import { css } from "../cssLiteral";
+import { css, ClassNames } from "../cssLiteral";
 
 describe("cssLiteral css function", () => {
   describe("static CSS class names", () => {
@@ -474,5 +474,27 @@ describe("cssLiteral css function", () => {
       expect(style["--dynamic1"]).toBe("dynamic1");
       expect(style["--dynamic2"]).toBe("dynamic2");
     });
+  });
+});
+
+describe("ClassNames collector", () => {
+  it("deletes a multi-token string added as one entry", () => {
+    const classNames = new ClassNames("mx-auto");
+    classNames.add("flex items-center gap-4");
+    classNames.delete("flex items-center gap-4");
+    classNames.add("grid gap-1");
+    expect(classNames.value).toBe("mx-auto grid gap-1");
+  });
+
+  it("still deletes single tokens", () => {
+    const classNames = new ClassNames("a b c");
+    classNames.delete("b");
+    expect(classNames.value).toBe("a c");
+  });
+
+  it("leaves a partially-present group untouched (Set-like: only removes what was added as a group)", () => {
+    const classNames = new ClassNames("mx-auto flex items-center");
+    classNames.delete("flex items-center gap-4");
+    expect(classNames.value).toBe("mx-auto flex items-center");
   });
 });

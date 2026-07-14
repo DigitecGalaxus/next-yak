@@ -29,9 +29,10 @@ export class ClassNames implements ClassNameCollector {
   }
   delete(className: string) {
     if (this.has(className)) {
+      const remove = new Set(className.split(" "));
       this.value = this.value
         .split(" ")
-        .filter((existing) => existing !== className)
+        .filter((existing) => !remove.has(existing))
         .join(" ");
     }
   }
