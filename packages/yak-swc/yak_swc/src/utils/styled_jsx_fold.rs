@@ -5,8 +5,8 @@ use swc_core::{
   atoms::{Atom, Wtf8Atom},
   common::{SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr, Callee, Decl,
-    Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr, JSXAttrName,
+    ArrowExpr, AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr,
+    Callee, Decl, Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr, JSXAttrName,
     JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementName, JSXExpr, JSXExprContainer,
     KeyValueProp, Lit, MemberProp, Module, ModuleDecl, ModuleItem, Number, ObjectPatProp, Pat,
     Prop, PropName, Stmt, UnaryExpr, UnaryOp, VarDecl, VarDeclKind,
@@ -19,6 +19,7 @@ use crate::utils::class_name_fold::{
   str_lit, with_leading_space, ConditionSegment,
 };
 use crate::utils::native_elements::VALID_ELEMENTS;
+use crate::utils::purity::{is_dup_pure, is_reorder_pure};
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 
@@ -297,7 +298,7 @@ impl VisitMut for FoldVisitor<'_> {
       closing.name = JSXElementName::Ident(tag);
     }
     match class_name_fold {
-      ClassNameFold::Append(value) => n.opening.attrs.push(class_name_attr(value)),
+      ClassNameFold::Insert(index, value) => n.opening.attrs.insert(index, class_name_attr(value)),
       ClassNameFold::Replace(index, value) => {
         let JSXAttrOrSpread::JSXAttr(attr) = &mut n.opening.attrs[index] else {
           // fold_attrs only records indices of plain JSXAttr entries
@@ -327,10 +328,39 @@ fn is_transient_prop(attr: &JSXAttrOrSpread) -> bool {
 
 /// How the static class name is added to the folded element
 enum ClassNameFold {
-  /// No className attribute - append className="yX"
-  Append(JSXAttrValue),
+  /// No className attribute - insert `className="yX"` at this index
+  ///
+  /// The index is the end of the attribute list unless the className carries a
+  /// parameter block, which has to evaluate where the props it binds used to
+  Insert(usize, JSXAttrValue),
   /// Merge the static class into the existing className attribute value
   Replace(usize, JSXAttrValue),
+}
+
+/// One prop value which stays bound as a parameter because inlining it at every
+/// read site would change how often it runs
+struct Binding {
+  /// the prop this stands in for, e.g. `$tilt`
+  name: Atom,
+  param: Ident,
+  /// the attribute's source position - bindings are ordered by it, so the
+  /// arguments evaluate in the order attribute position evaluated them
+  attr_index: usize,
+  value: Box<Expr>,
+}
+
+/// The complete case analysis - every foldable usage is exactly one of these
+#[derive(Debug, PartialEq, Eq)]
+enum FoldShape {
+  /// every consumed value could be put back where it is read: today's output
+  Inline,
+  /// the values which stay bound are all `$`-props, which only the className
+  /// has to see, and nothing observable sits between them
+  ClassNameIife,
+  /// a bound value also has to reach the element, or the parameter block would
+  /// have to jump an observable evaluation: the element itself is wrapped, and
+  /// captures everything in source order
+  ElementWrap,
 }
 
 /// The class name(s) a folded usage contributes
@@ -349,6 +379,143 @@ impl YakClassName {
       YakClassName::Dynamic(expr) => expr,
     }
   }
+}
+
+/// Where the folded className sits among the attributes, which is where its
+/// parameter block evaluates
+///
+/// A merge keeps the user's className where it is. Otherwise the className goes
+/// where the first bound prop was, so the parameter block evaluates exactly
+/// where that prop's value used to - appending it would run every argument
+/// after all the other attributes instead.
+fn class_name_slot(
+  attrs: &[JSXAttrOrSpread],
+  bindings: &[Binding],
+  class_name_index: Option<usize>,
+) -> usize {
+  class_name_index
+    .or_else(|| bindings.first().map(|binding| binding.attr_index))
+    .unwrap_or(attrs.len())
+}
+
+/// Decides the output shape of one usage
+///
+/// Pure data in, pure data out, so every row of the case analysis is a unit
+/// test rather than a fixture run.
+///
+/// The parameter block evaluates at the className slot, so it moves across
+/// every attribute between the slot and the props it binds. That is only exact
+/// if nothing observable sits in the way. `$`-props never do: an unread one is
+/// dropped and never evaluates at all, a value that could be put back where it
+/// is read is pure by definition, and a bound one *is* what is moving.
+fn select_shape(
+  attrs: &[JSXAttrOrSpread],
+  bindings: &[Binding],
+  class_name_index: Option<usize>,
+) -> FoldShape {
+  let (Some(first), Some(last)) = (bindings.first(), bindings.last()) else {
+    return FoldShape::Inline;
+  };
+  // a non-$ prop stays on the element, so its value has to reach both the
+  // element and the className - only wrapping the element binds it once
+  if bindings
+    .iter()
+    .any(|binding| !binding.name.starts_with('$'))
+  {
+    return FoldShape::ElementWrap;
+  }
+  let slot = class_name_slot(attrs, bindings, class_name_index);
+  let span = first.attr_index.min(slot)..=last.attr_index.max(slot);
+  for (index, attr) in attrs.iter().enumerate() {
+    if !span.contains(&index) || Some(index) == class_name_index {
+      continue;
+    }
+    let JSXAttrOrSpread::JSXAttr(attr) = attr else {
+      continue;
+    };
+    let JSXAttrName::Ident(name) = &attr.name else {
+      continue;
+    };
+    if name.sym.starts_with('$') {
+      continue;
+    }
+    if !attr_value_is_reorder_pure(attr.value.as_ref()) {
+      return FoldShape::ElementWrap;
+    }
+  }
+  // the user's className expression composes around the parameter block, so it
+  // evaluates after it - which only matches source order if every bound prop
+  // came first
+  if let Some(class_name_index) = class_name_index {
+    let user_class_name = attrs.get(class_name_index).and_then(|attr| match attr {
+      JSXAttrOrSpread::JSXAttr(attr) => attr.value.as_ref(),
+      JSXAttrOrSpread::SpreadElement(_) => None,
+      #[cfg(swc_ast_unknown)]
+      _ => None,
+    });
+    if !attr_value_is_reorder_pure(user_class_name)
+      && bindings
+        .iter()
+        .any(|binding| binding.attr_index > class_name_index)
+    {
+      return FoldShape::ElementWrap;
+    }
+  }
+  FoldShape::ClassNameIife
+}
+
+/// Whether evaluating an attribute value somewhere else in the sequence is
+/// unobservable - a bare attribute is the literal `true`
+fn attr_value_is_reorder_pure(value: Option<&JSXAttrValue>) -> bool {
+  match value {
+    None | Some(JSXAttrValue::Str(_)) => true,
+    Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+      expr: JSXExpr::Expr(expr),
+      ..
+    })) => is_reorder_pure(expr),
+    Some(JSXAttrValue::JSXExprContainer(_)) => true,
+    Some(JSXAttrValue::JSXElement(element)) => is_reorder_pure(&Expr::JSXElement(element.clone())),
+    Some(JSXAttrValue::JSXFragment(fragment)) => {
+      is_reorder_pure(&Expr::JSXFragment(fragment.clone()))
+    }
+    #[cfg(swc_ast_unknown)]
+    Some(_) => false,
+  }
+}
+
+/// `((<params>) => <class name>)(<values>)`
+///
+/// Binds each value once, in attribute source order, and substitutes the
+/// parameter wherever the prop is read - which is exactly what attribute
+/// position guaranteed before the fold inlined the component.
+fn bind_params(class_name: Box<Expr>, bindings: Vec<Binding>) -> Box<Expr> {
+  let params = bindings
+    .iter()
+    .map(|binding| Pat::Ident(binding.param.clone().into()))
+    .collect();
+  let args = bindings
+    .into_iter()
+    .map(|binding| ExprOrSpread {
+      spread: None,
+      expr: binding.value,
+    })
+    .collect();
+  Box::new(Expr::Call(CallExpr {
+    span: DUMMY_SP,
+    ctxt: SyntaxContext::empty(),
+    callee: Callee::Expr(Box::new(Expr::Arrow(ArrowExpr {
+      span: DUMMY_SP,
+      ctxt: SyntaxContext::empty(),
+      params,
+      body: Box::new(BlockStmtOrExpr::Expr(class_name)),
+      is_async: false,
+      is_generator: false,
+      type_params: None,
+      return_type: None,
+    }))),
+    args,
+    type_args: None,
+  }))
 }
 
 impl FoldVisitor<'_> {
@@ -392,21 +559,35 @@ impl FoldVisitor<'_> {
         _ => return None,
       }
     }
+    let class_name_index = class_name_attr.map(|(index, _)| index);
+    // the className carries the parameter block, so it can no longer just be
+    // appended - it has to sit where the props it binds used to
+    let mut slot = attrs.len();
     let yak_class = if component.runtime_expressions.is_empty() {
       YakClassName::Static(component.class_name.clone())
     } else {
-      YakClassName::Dynamic(inline_runtime_expressions(
-        component,
-        attrs,
-        self.yak_imports,
-      )?)
+      let (class_name_expr, bindings) =
+        inline_runtime_expressions(component, attrs, self.yak_imports)?;
+      match select_shape(attrs, &bindings, class_name_index) {
+        FoldShape::Inline => YakClassName::Dynamic(class_name_expr),
+        FoldShape::ClassNameIife => {
+          slot = class_name_slot(attrs, &bindings, class_name_index);
+          YakClassName::Dynamic(bind_params(class_name_expr, bindings))
+        }
+        // TODO(element-wrap): only the parent of the element can wrap a call
+        // around it, so this keeps the runtime path until that hook exists
+        FoldShape::ElementWrap => return None,
+      }
     };
+    // every bail has to happen before this: merging registers the
+    // `__yak_mergeClassNames` import, and a usage which bails afterwards would
+    // leave the specifier behind with nothing referencing it
     let Some((index, attr)) = class_name_attr else {
       let value = match yak_class {
         YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(class_name, DUMMY_SP)),
         YakClassName::Dynamic(expr) => expr_attr_value(expr),
       };
-      return Some(ClassNameFold::Append(value));
+      return Some(ClassNameFold::Insert(slot, value));
     };
     let value = self.merge_class_name(attr.value.as_ref()?, yak_class)?;
     Some(ClassNameFold::Replace(index, value))
@@ -478,18 +659,23 @@ impl FoldVisitor<'_> {
 /// Inlines the class-toggling expressions of a dynamic component at a JSX
 /// usage into a single className expression
 /// e.g. `"yX" + (on ? " yY" : "")` for `<Box $active={on}>`
-fn inline_runtime_expressions(
+fn inline_runtime_expressions<'a>(
   component: &FoldableComponent,
-  attrs: &[JSXAttrOrSpread],
+  attrs: &'a [JSXAttrOrSpread],
   yak_imports: &YakImports,
-) -> Option<Box<Expr>> {
-  let attr_values = attr_value_map(attrs);
+) -> Option<(Box<Expr>, Vec<Binding>)> {
+  // every prop read becomes a parameter first, so "was this prop read" is
+  // exact by construction rather than a second analysis which could disagree
+  let mut binder = ParamBinder::default();
   let mut class_name_expr = str_expr(component.class_name.clone());
   for expression in &component.runtime_expressions {
-    let segment = inline_expression(expression, &attr_values, yak_imports)?;
+    let segment = inline_expression(expression, &mut binder, yak_imports)?;
     class_name_expr = append_condition_segment(class_name_expr, segment);
   }
-  Some(class_name_expr)
+  let attr_values: FxHashMap<Atom, Cow<'a, Expr>> = attr_value_map(attrs);
+  let (bakeable, bindings) = binder.split(attrs, &attr_values);
+  class_name_expr.visit_mut_with(&mut BakeParams { values: &bakeable });
+  Some((class_name_expr, bindings))
 }
 
 /// Inlines one class-toggling expression by substituting its prop reads
@@ -504,14 +690,13 @@ fn inline_runtime_expressions(
 /// read through plain members (`(p) => p.$active`) - `theme` and props like
 /// `children` which are not plain attributes bail.
 ///
-/// The attribute expression is inlined once per read, so a prop read by two
-/// conditions - or twice by one condition - is evaluated once per read, and a
-/// non-$ prop is evaluated on the element as well since it is kept there. Prop
-/// expressions therefore have to be pure; the `precompute-style-prop-values`
-/// eslint rule reports the values which are not obviously safe to inline.
+/// Every read is replaced by the prop's [ParamBinder] parameter rather than by
+/// the attribute value directly. [BakeParams] then puts the value back wherever
+/// inlining it cannot be observed; whatever is left keeps its parameter and is
+/// bound once at the usage site.
 fn inline_expression(
   expression: &Expr,
-  attr_values: &FxHashMap<Atom, Cow<Expr>>,
+  binder: &mut ParamBinder,
   yak_imports: &YakImports,
 ) -> Option<ConditionSegment> {
   let (params, body): (Vec<&Pat>, &Expr) = match expression {
@@ -540,7 +725,7 @@ fn inline_expression(
     // e.g. `${() => darkMode && css`...`}` - references the outer scope only
     [] => {}
     [Pat::Object(param)] => {
-      let mut replacements = FxHashMap::default();
+      let mut props = FxHashMap::default();
       for prop in &param.props {
         // only plain destructuring - renames, defaults and rest bail
         let ObjectPatProp::Assign(AssignPatProp {
@@ -554,17 +739,13 @@ fn inline_expression(
         if is_runtime_injected_prop(&key.sym) {
           return None;
         }
-        // an absent attribute is undefined as spreads bail
-        let value = attr_values
-          .get(&key.sym)
-          .cloned()
-          .unwrap_or_else(|| Cow::Owned(undefined_expr()));
-        replacements.insert(key.to_id(), value);
+        props.insert(key.to_id(), key.sym.clone());
       }
       // every remaining reference is a plain prop read - the keys which could
       // not be substituted bailed above
       condition.visit_mut_with(&mut SubstituteProps {
-        replacements: &replacements,
+        props: &props,
+        binder,
       });
     }
     // e.g. `${(p) => p.$active && css`...`}` - plain member reads on the
@@ -573,7 +754,7 @@ fn inline_expression(
     [Pat::Ident(param)] => {
       let mut substitution = SubstituteMemberProps {
         param: param.to_id(),
-        attr_values,
+        binder,
         failed: false,
       };
       condition.visit_mut_with(&mut substitution);
@@ -630,43 +811,136 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
   values
 }
 
-/// Replaces the destructured prop references with the attribute values
+/// Hands out one parameter per prop name while the conditions are substituted
 ///
-/// An attribute expression is inlined into every style expression which reads
-/// it, and a prop which is not a `$`-prop is evaluated on the element as well,
-/// so a prop value may be evaluated more than once. Prop expressions must be
-/// pure, which the `precompute-style-prop-values` eslint rule points out.
+/// Binding during the substitution itself, rather than counting reads in a
+/// separate pass, is deliberate: a separate pass would have to replicate every
+/// rule about what actually substitutes - runtime injected props, computed
+/// access, the whole-props escape - and the two copies would drift.
+///
+/// One parameter per prop *name*, so a prop read by two conditions, or twice by
+/// one condition, is still bound exactly once.
+#[derive(Default)]
+struct ParamBinder {
+  /// prop name -> the parameter standing in for every read of it
+  bound: FxHashMap<Atom, Ident>,
+}
+
+impl ParamBinder {
+  /// The parameter standing in for `name`, created on first read
+  ///
+  /// Carries the same `__yak_` prefix as the other synthesized bindings, and
+  /// for the same reason: the parameter shares a scope with the attribute
+  /// values baked in around it, so a bare `$tilt` would capture the user's own
+  /// `$tilt` in `<Row $tilt={f()} $b={$tilt} />`.
+  fn param_for(&mut self, name: &Atom) -> Ident {
+    self
+      .bound
+      .entry(name.clone())
+      .or_insert_with(|| {
+        let sanitized: String = name
+          .chars()
+          .map(|char| {
+            if char.is_alphanumeric() || char == '$' {
+              char
+            } else {
+              '_'
+            }
+          })
+          .collect();
+        Ident::from(format!("__yak_{sanitized}"))
+      })
+      .clone()
+  }
+
+  /// Splits the props the conditions read into the values which may be put back
+  /// where they are read, and the ones which have to stay bound
+  ///
+  /// The gate is dup-purity, not "is it read twice": a single read is enough to
+  /// change the count, because that read can sit inside a callback or behind a
+  /// short circuit.
+  fn split<'a>(
+    &self,
+    attrs: &'a [JSXAttrOrSpread],
+    attr_values: &FxHashMap<Atom, Cow<'a, Expr>>,
+  ) -> (FxHashMap<Id, Cow<'a, Expr>>, Vec<Binding>) {
+    let mut bakeable = FxHashMap::default();
+    let mut bindings = Vec::new();
+    // walking the attributes rather than the bound props gives source order for
+    // free, and lets a repeated attribute bind its last value like React reads it
+    for (index, name) in attr_names(attrs) {
+      let (Some(param), Some(value)) = (self.bound.get(&name), attr_values.get(&name)) else {
+        continue;
+      };
+      if is_dup_pure(value) {
+        bakeable.insert(param.to_id(), value.clone());
+      } else {
+        bindings.retain(|binding: &Binding| binding.name != name);
+        bindings.push(Binding {
+          name,
+          param: param.clone(),
+          attr_index: index,
+          value: Box::new(Expr::clone(value)),
+        });
+      }
+    }
+    // a prop the usage never passes is `undefined`, which always inlines
+    for (name, param) in &self.bound {
+      if !attr_values.contains_key(name) {
+        bakeable.insert(param.to_id(), Cow::Owned(undefined_expr()));
+      }
+    }
+    bindings.sort_by_key(|binding| binding.attr_index);
+    (bakeable, bindings)
+  }
+}
+
+/// The name and source position of every named attribute, in source order
+fn attr_names(attrs: &[JSXAttrOrSpread]) -> impl Iterator<Item = (usize, Atom)> + '_ {
+  attrs.iter().enumerate().filter_map(|(index, attr)| {
+    let JSXAttrOrSpread::JSXAttr(JSXAttr {
+      name: JSXAttrName::Ident(name),
+      ..
+    }) = attr
+    else {
+      return None;
+    };
+    Some((index, name.sym.clone()))
+  })
+}
+
+/// Replaces the destructured prop references with the prop's parameter
 struct SubstituteProps<'a> {
-  replacements: &'a FxHashMap<Id, Cow<'a, Expr>>,
+  /// the local binding introduced by the destructuring -> prop name
+  props: &'a FxHashMap<Id, Atom>,
+  binder: &'a mut ParamBinder,
 }
 
 impl SubstituteProps<'_> {
-  fn replacement_for(&self, ident: &Ident) -> Option<Expr> {
-    self
-      .replacements
-      .get(&ident.to_id())
-      .map(|replacement| Expr::clone(replacement))
+  fn param_for(&mut self, ident: &Ident) -> Option<Ident> {
+    let name = self.props.get(&ident.to_id())?.clone();
+    Some(self.binder.param_for(&name))
   }
 }
 
 impl VisitMut for SubstituteProps<'_> {
   fn visit_mut_expr(&mut self, expr: &mut Expr) {
     if let Expr::Ident(ident) = expr {
-      if let Some(replacement) = self.replacement_for(ident) {
-        *expr = replacement;
+      if let Some(param) = self.param_for(ident) {
+        *expr = Expr::Ident(param);
         return;
       }
     }
     expr.visit_mut_children_with(self);
   }
 
-  // expand a shorthand `{ $active }` to `{ $active: value }`
+  // expand a shorthand `{ $active }` to `{ $active: <param> }`
   fn visit_mut_prop(&mut self, prop: &mut Prop) {
     if let Prop::Shorthand(ident) = prop {
-      if let Some(replacement) = self.replacement_for(ident) {
+      if let Some(param) = self.param_for(ident) {
         *prop = Prop::KeyValue(KeyValueProp {
           key: PropName::Ident(IdentName::new(ident.sym.clone(), ident.span)),
-          value: Box::new(replacement),
+          value: Box::new(Expr::Ident(param)),
         });
         return;
       }
@@ -675,13 +949,13 @@ impl VisitMut for SubstituteProps<'_> {
   }
 }
 
-/// Replaces plain `p.prop` member reads on the props parameter with the
-/// attribute values - the identifier param counterpart of [SubstituteProps]
+/// Replaces plain `p.prop` member reads on the props parameter with the prop's
+/// parameter - the identifier param counterpart of [SubstituteProps]
 /// Any other use of the parameter escapes the whole props object (forwarding
 /// it with `calculate(p)`, spreads, computed access) and bails
 struct SubstituteMemberProps<'a> {
   param: Id,
-  attr_values: &'a FxHashMap<Atom, Cow<'a, Expr>>,
+  binder: &'a mut ParamBinder,
   failed: bool,
 }
 
@@ -696,11 +970,7 @@ impl VisitMut for SubstituteMemberProps<'_> {
             self.failed = true;
             return;
           }
-          // an absent attribute is undefined as spreads bail
-          *expr = match self.attr_values.get(&name.sym) {
-            Some(value) => Expr::clone(value),
-            None => undefined_expr(),
-          };
+          *expr = Expr::Ident(self.binder.param_for(&name.sym));
           return;
         }
       }
@@ -719,6 +989,26 @@ impl VisitMut for SubstituteMemberProps<'_> {
       return;
     }
     prop.visit_mut_children_with(self);
+  }
+}
+
+/// Puts an attribute value back where its parameter is read, dropping the
+/// parameter
+///
+/// A parameter which survives this is bound once at the usage site instead.
+struct BakeParams<'a> {
+  values: &'a FxHashMap<Id, Cow<'a, Expr>>,
+}
+
+impl VisitMut for BakeParams<'_> {
+  fn visit_mut_expr(&mut self, expr: &mut Expr) {
+    if let Expr::Ident(ident) = expr {
+      if let Some(value) = self.values.get(&ident.to_id()) {
+        *expr = Expr::clone(value);
+        return;
+      }
+    }
+    expr.visit_mut_children_with(self);
   }
 }
 
@@ -773,6 +1063,10 @@ fn merged_class_names(yak_class_name: &Wtf8Atom, user_class_name: &Wtf8Atom) -> 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use swc_core::common::sync::Lrc;
+  use swc_core::common::{FileName, SourceMap};
+  use swc_core::ecma::ast::EsVersion;
+  use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax, TsSyntax};
 
   fn call(callee: Expr, args: Vec<Expr>) -> Expr {
     Expr::Call(CallExpr {
@@ -841,6 +1135,143 @@ mod tests {
     assert_eq!(
       StyledJsxFold::fold_target(&call(member("styled.div", "attrs"), vec![])),
       None
+    );
+  }
+
+  /// The attributes of a parsed `<Row … />`
+  fn attrs_of(source: &str) -> Vec<JSXAttrOrSpread> {
+    let cm: Lrc<SourceMap> = Default::default();
+    let fm = cm.new_source_file(Lrc::new(FileName::Anon), source.to_string());
+    let lexer = Lexer::new(
+      Syntax::Typescript(TsSyntax {
+        tsx: true,
+        ..Default::default()
+      }),
+      EsVersion::latest(),
+      StringInput::from(&*fm),
+      None,
+    );
+    let expr = Parser::new_from(lexer)
+      .parse_expr()
+      .unwrap_or_else(|err| panic!("failed to parse `{source}`: {err:?}"));
+    match *expr {
+      Expr::JSXElement(element) => element.opening.attrs,
+      _ => panic!("`{source}` is not a JSX element"),
+    }
+  }
+
+  /// The shape a usage takes, given which of its props the style conditions
+  /// read and could not put back - which is what the [ParamBinder] and
+  /// [ParamBinder::split] establish at fold time
+  fn shape_of(source: &str, bound: &[&str]) -> FoldShape {
+    let attrs = attrs_of(source);
+    let class_name_index = attr_names(&attrs)
+      .find(|(_, name)| name == "className")
+      .map(|(index, _)| index);
+    let bindings: Vec<Binding> = attr_names(&attrs)
+      .filter(|(_, name)| bound.contains(&name.as_ref()))
+      .map(|(index, name)| Binding {
+        param: Ident::from(format!("__yak_{name}")),
+        name,
+        attr_index: index,
+        // select_shape decides on positions and prop names; the value it binds
+        // has already been judged impure by then
+        value: Box::new(Expr::Ident(Ident::from("bound_value"))),
+      })
+      .collect();
+    select_shape(&attrs, &bindings, class_name_index)
+  }
+
+  #[test]
+  fn nothing_bound_stays_on_todays_output() {
+    assert_eq!(shape_of("<Row $a={size} />", &[]), FoldShape::Inline);
+    assert_eq!(shape_of("<Row />", &[]), FoldShape::Inline);
+  }
+
+  #[test]
+  fn bound_transient_props_only_need_the_class_name() {
+    assert_eq!(
+      shape_of("<Row $a={f()} />", &["$a"]),
+      FoldShape::ClassNameIife
+    );
+    assert_eq!(
+      shape_of("<Row $a={f()} $b={g()} />", &["$a", "$b"]),
+      FoldShape::ClassNameIife
+    );
+    // an impure attribute outside the span the block moves across keeps its
+    // order either way
+    assert_eq!(
+      shape_of("<Row id={g()} $a={f()} />", &["$a"]),
+      FoldShape::ClassNameIife
+    );
+    assert_eq!(
+      shape_of("<Row $a={f()} id={g()} />", &["$a"]),
+      FoldShape::ClassNameIife
+    );
+  }
+
+  #[test]
+  fn a_bound_prop_kept_on_the_element_wraps_it() {
+    // the value has to reach the DOM attribute and the className, and only one
+    // binding around both can do that
+    assert_eq!(
+      shape_of("<Button disabled={f()} />", &["disabled"]),
+      FoldShape::ElementWrap
+    );
+  }
+
+  #[test]
+  fn an_evaluation_the_block_cannot_jump_wraps_the_element() {
+    // g() ran before h() in attribute position; binding f() and h() together
+    // would run it after
+    assert_eq!(
+      shape_of("<Row $a={f()} id={g()} $b={h()} />", &["$a", "$b"]),
+      FoldShape::ElementWrap
+    );
+    // a reorder-pure obstacle is not one - this is what keeps event handlers,
+    // and style objects, on the cheap shape
+    assert_eq!(
+      shape_of(
+        "<Row $a={f()} onClick={() => t()} $b={h()} />",
+        &["$a", "$b"]
+      ),
+      FoldShape::ClassNameIife
+    );
+    assert_eq!(
+      shape_of(
+        "<Row $a={f()} style={{ top: 0 }} $b={h()} />",
+        &["$a", "$b"]
+      ),
+      FoldShape::ClassNameIife
+    );
+    // an unread $prop is dropped and never evaluates, so it is never in the way
+    assert_eq!(
+      shape_of("<Row $a={f()} $unread={g()} $b={h()} />", &["$a", "$b"]),
+      FoldShape::ClassNameIife
+    );
+  }
+
+  #[test]
+  fn a_user_class_name_composes_around_the_parameter_block() {
+    // a string merges at compile time and evaluates nothing
+    assert_eq!(
+      shape_of(r#"<Row $a={f()} className="user" />"#, &["$a"]),
+      FoldShape::ClassNameIife
+    );
+    // cn(x) composes after the block, which is where it already ran
+    assert_eq!(
+      shape_of("<Row $a={f()} className={cn(x)} />", &["$a"]),
+      FoldShape::ClassNameIife
+    );
+    // …but here it ran *before* f(), and composing would run it after
+    assert_eq!(
+      shape_of("<Row className={cn(x)} $a={f()} />", &["$a"]),
+      FoldShape::ElementWrap
+    );
+    // a className which evaluates nothing has no order to keep
+    assert_eq!(
+      shape_of("<Row className={cx} $a={f()} />", &["$a"]),
+      FoldShape::ClassNameIife
     );
   }
 }

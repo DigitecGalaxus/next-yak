@@ -274,10 +274,10 @@ const Optimizable = ({ active, size, i: i1 }: {
     { /* an impure value is inlined into every condition reading it, so the two
         rolls can disagree - the eslint rule precompute-style-prop-values asks
         the user to compute it once */ }
-    <li className={"input_Twice_m7uBBu" + (props.getSize() && props.getSize() === "big" ? " input_Twice___m7uBBu" : "")}>evaluated once per condition</li>
+    <li className={((__yak_$size)=>"input_Twice_m7uBBu" + (__yak_$size && __yak_$size === "big" ? " input_Twice___m7uBBu" : ""))(props.getSize())}>evaluated once per condition</li>
     { /* the attribute stays on the element AND feeds the condition, so this
         button can be disabled while it is styled as enabled */ }
-    <button disabled={props.isBusy()} className={"input_ActionButton_m7uBBu" + (!props.isBusy() ? " input_ActionButton___m7uBBu" : "")}>evaluated on the element and inlined</button>
+    <ActionButton disabled={props.isBusy()}>evaluated on the element and inlined</ActionButton>
     <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
       {i1}
     </button>

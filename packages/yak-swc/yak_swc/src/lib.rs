@@ -41,6 +41,7 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod native_elements;
+  pub(crate) mod purity;
   pub(crate) mod styled_jsx_fold;
 }
 pub mod naming_convention;
