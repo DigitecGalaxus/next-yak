@@ -1,7 +1,22 @@
 /** @jsxImportSource next-yak */
 import { css } from "next-yak";
+import { useState } from "react";
+
+// Spreads its props (onClick, data-testid, children) onto a css-prop element —
+// these must survive the mergeCssProp transform, not get dropped.
+function SpreadButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      css={css`
+        padding: 8px;
+      `}
+      {...props}
+    />
+  );
+}
 
 export default function App({ dummyBool = true }) {
+  const [count, setCount] = useState(0);
   return (
     <>
       <div
@@ -40,6 +55,12 @@ export default function App({ dummyBool = true }) {
           Nested child
         </span>
       </div>
+      <SpreadButton
+        data-testid="spread-button"
+        onClick={() => setCount((c) => c + 1)}
+      >
+        clicks: {count}
+      </SpreadButton>
     </>
   );
 }

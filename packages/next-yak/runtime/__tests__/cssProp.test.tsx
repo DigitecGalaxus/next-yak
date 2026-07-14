@@ -4,6 +4,21 @@ import { mergeCssProp } from "../internals/mergeCssProp";
 import { css } from "../cssLiteral";
 import { atoms } from "../atoms";
 
+it("forwards foreign props alongside the merged className", async () => {
+  const onClick = () => {};
+  const result = mergeCssProp(
+    { onClick, "aria-label": "Save", disabled: true, className: "btn" },
+    css("yakCss1"),
+  );
+  // toEqual (not toMatchObject) also pins that no stray keys leak, e.g. an empty style
+  expect(result).toEqual({
+    onClick,
+    "aria-label": "Save",
+    disabled: true,
+    className: "btn yakCss1",
+  });
+});
+
 it("merge properties when className is set", async () => {
   expect(
     mergeCssProp(
