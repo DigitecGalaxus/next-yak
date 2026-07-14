@@ -6,10 +6,11 @@ use swc_core::{
   common::{SyntaxContext, DUMMY_SP},
   ecma::ast::{
     ArrowExpr, AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr,
-    Callee, Decl, Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, JSXAttr, JSXAttrName,
-    JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementName, JSXExpr, JSXExprContainer,
-    KeyValueProp, Lit, MemberProp, Module, ModuleDecl, ModuleItem, Number, ObjectPatProp, Pat,
-    Prop, PropName, Stmt, UnaryExpr, UnaryOp, VarDecl, VarDeclKind,
+    Callee, Decl, Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, Invalid, JSXAttr,
+    JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementChild, JSXElementName,
+    JSXEmptyExpr, JSXExpr, JSXExprContainer, KeyValueProp, Lit, MemberProp, Module, ModuleDecl,
+    ModuleItem, Number, ObjectPatProp, Pat, Prop, PropName, Stmt, UnaryExpr, UnaryOp, VarDecl,
+    VarDeclKind,
   },
   ecma::visit::{VisitMut, VisitMutWith},
 };
@@ -269,24 +270,29 @@ struct FoldVisitor<'a> {
   yak_imports: &'a mut YakImports,
 }
 
-impl VisitMut for FoldVisitor<'_> {
-  fn visit_mut_jsx_element(&mut self, n: &mut JSXElement) {
-    n.visit_mut_children_with(self);
+impl FoldVisitor<'_> {
+  /// Folds a usage in place and returns the values its parent has to bind
+  /// around the element, which is empty for every shape but the element-wrap
+  ///
+  /// The element cannot wrap itself: only whoever owns the node can put a call
+  /// expression where a JSX element was, and each position needs a different
+  /// container. Hence the split between this and the three visitor hooks.
+  fn try_fold(&mut self, n: &mut JSXElement) -> Vec<Binding> {
     let JSXElementName::Ident(ident) = &n.opening.name else {
-      return;
+      return Vec::new();
     };
     // to_id() carries the scope context so a shadowed local with the same
     // name never matches
     let Some(component) = self.components.get(&ident.to_id()) else {
-      return;
+      return Vec::new();
     };
     // native elements can't take type arguments and the wrapper's type
     // parameters don't match the wrapped component's
     if n.opening.type_args.is_some() {
-      return;
+      return Vec::new();
     }
-    let Some(class_name_fold) = self.fold_attrs(&n.opening.attrs, component) else {
-      return;
+    let Some(plan) = self.fold_attrs(&n.opening.attrs, component) else {
+      return Vec::new();
     };
     let tag = match &component.target {
       FoldTarget::Native(tag) => Ident::new(tag.clone(), ident.span, SyntaxContext::empty()),
@@ -297,7 +303,17 @@ impl VisitMut for FoldVisitor<'_> {
     if let Some(closing) = &mut n.closing {
       closing.name = JSXElementName::Ident(tag);
     }
-    match class_name_fold {
+    // the attributes which keep a bound value read its parameter instead - the
+    // parent evaluates it once, before the element is built. This runs before
+    // the className is placed, while the attribute indices still hold.
+    for binding in &plan.bindings {
+      if let Some(JSXAttrOrSpread::JSXAttr(attr)) = n.opening.attrs.get_mut(binding.attr_index) {
+        attr.value = Some(expr_attr_value(Box::new(Expr::Ident(
+          binding.param.clone(),
+        ))));
+      }
+    }
+    match plan.class_name {
       ClassNameFold::Insert(index, value) => n.opening.attrs.insert(index, class_name_attr(value)),
       ClassNameFold::Replace(index, value) => {
         let JSXAttrOrSpread::JSXAttr(attr) = &mut n.opening.attrs[index] else {
@@ -312,6 +328,72 @@ impl VisitMut for FoldVisitor<'_> {
     if !component.runtime_expressions.is_empty() {
       n.opening.attrs.retain(|attr| !is_transient_prop(attr));
     }
+    plan.bindings
+  }
+}
+
+impl VisitMut for FoldVisitor<'_> {
+  /// `<Card $a={f()}/>` in expression position, e.g. an arrow body
+  fn visit_mut_expr(&mut self, expr: &mut Expr) {
+    expr.visit_mut_children_with(self);
+    let bindings = match expr {
+      Expr::JSXElement(element) => self.try_fold(element),
+      _ => return,
+    };
+    if bindings.is_empty() {
+      return;
+    }
+    let element = std::mem::replace(expr, Expr::Invalid(Invalid { span: DUMMY_SP }));
+    *expr = *bind_params(Box::new(element), bindings);
+  }
+
+  /// `<li><Card $a={f()}/></li>` and the same inside a fragment - both are a
+  /// JSXElementChild, which cannot hold a call expression, so the wrapped
+  /// element moves into braces
+  fn visit_mut_jsx_element_child(&mut self, child: &mut JSXElementChild) {
+    child.visit_mut_children_with(self);
+    let bindings = match child {
+      JSXElementChild::JSXElement(element) => self.try_fold(element),
+      _ => return,
+    };
+    if bindings.is_empty() {
+      return;
+    }
+    let JSXElementChild::JSXElement(element) = std::mem::replace(
+      child,
+      JSXElementChild::JSXExprContainer(JSXExprContainer {
+        span: DUMMY_SP,
+        expr: JSXExpr::JSXEmptyExpr(JSXEmptyExpr { span: DUMMY_SP }),
+      }),
+    ) else {
+      unreachable!("the child was matched as a JSX element");
+    };
+    *child = JSXElementChild::JSXExprContainer(JSXExprContainer {
+      span: DUMMY_SP,
+      expr: JSXExpr::Expr(bind_params(Box::new(Expr::JSXElement(element)), bindings)),
+    });
+  }
+
+  /// `<Foo icon=<Card $a={f()}/>/>` - the unbraced attribute value form
+  fn visit_mut_jsx_attr_value(&mut self, value: &mut JSXAttrValue) {
+    value.visit_mut_children_with(self);
+    let bindings = match value {
+      JSXAttrValue::JSXElement(element) => self.try_fold(element),
+      _ => return,
+    };
+    if bindings.is_empty() {
+      return;
+    }
+    let JSXAttrValue::JSXElement(element) = std::mem::replace(
+      value,
+      JSXAttrValue::JSXExprContainer(JSXExprContainer {
+        span: DUMMY_SP,
+        expr: JSXExpr::JSXEmptyExpr(JSXEmptyExpr { span: DUMMY_SP }),
+      }),
+    ) else {
+      unreachable!("the value was matched as a JSX element");
+    };
+    *value = expr_attr_value(bind_params(Box::new(Expr::JSXElement(element)), bindings));
   }
 }
 
@@ -335,6 +417,14 @@ enum ClassNameFold {
   Insert(usize, JSXAttrValue),
   /// Merge the static class into the existing className attribute value
   Replace(usize, JSXAttrValue),
+}
+
+/// What the visitor has to do to a foldable usage
+struct FoldPlan {
+  class_name: ClassNameFold,
+  /// the values the parent binds around the element, in attribute source
+  /// order - empty unless the usage takes the element-wrap
+  bindings: Vec<Binding>,
 }
 
 /// One prop value which stays bound as a parameter because inlining it at every
@@ -530,7 +620,7 @@ impl FoldVisitor<'_> {
     &mut self,
     attrs: &[JSXAttrOrSpread],
     component: &FoldableComponent,
-  ) -> Option<ClassNameFold> {
+  ) -> Option<FoldPlan> {
     let mut class_name_attr: Option<(usize, &JSXAttr)> = None;
     for (index, attr) in attrs.iter().enumerate() {
       match attr {
@@ -563,34 +653,56 @@ impl FoldVisitor<'_> {
     // the className carries the parameter block, so it can no longer just be
     // appended - it has to sit where the props it binds used to
     let mut slot = attrs.len();
+    let mut capture = Vec::new();
+    let mut user_class_name = class_name_attr.and_then(|(_, attr)| attr.value.clone());
     let yak_class = if component.runtime_expressions.is_empty() {
       YakClassName::Static(component.class_name.clone())
     } else {
-      let (class_name_expr, bindings) =
-        inline_runtime_expressions(component, attrs, self.yak_imports)?;
+      let attr_values = attr_value_map(attrs);
+      let mut binder = ParamBinder::default();
+      let mut class_name_expr =
+        inline_runtime_expressions(component, &mut binder, self.yak_imports)?;
+      let (bakeable, bindings) = binder.split(attrs, &attr_values);
+      class_name_expr.visit_mut_with(&mut BakeParams { values: &bakeable });
       match select_shape(attrs, &bindings, class_name_index) {
         FoldShape::Inline => YakClassName::Dynamic(class_name_expr),
         FoldShape::ClassNameIife => {
           slot = class_name_slot(attrs, &bindings, class_name_index);
           YakClassName::Dynamic(bind_params(class_name_expr, bindings))
         }
-        // TODO(element-wrap): only the parent of the element can wrap a call
-        // around it, so this keeps the runtime path until that hook exists
-        FoldShape::ElementWrap => return None,
+        FoldShape::ElementWrap => {
+          let read: FxHashSet<Atom> = binder.bound.keys().cloned().collect();
+          capture = full_capture(attrs, &mut binder, &attr_values, &read);
+          // the user's className is bound like any other value, so it composes
+          // around the parameter block instead of evaluating inside it
+          if let Some(binding) = capture.iter().find(|binding| binding.name == "className") {
+            user_class_name = Some(expr_attr_value(Box::new(Expr::Ident(
+              binding.param.clone(),
+            ))));
+          }
+          // the parameters stay in the class name: the wrap binds them
+          YakClassName::Dynamic(class_name_expr)
+        }
       }
     };
     // every bail has to happen before this: merging registers the
-    // `__yak_mergeClassNames` import, and a usage which bails afterwards would
+    // `__yak_mergeClassNames` import, and a usage which bailed afterwards would
     // leave the specifier behind with nothing referencing it
-    let Some((index, attr)) = class_name_attr else {
+    let Some(index) = class_name_index else {
       let value = match yak_class {
         YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(class_name, DUMMY_SP)),
         YakClassName::Dynamic(expr) => expr_attr_value(expr),
       };
-      return Some(ClassNameFold::Insert(slot, value));
+      return Some(FoldPlan {
+        class_name: ClassNameFold::Insert(slot, value),
+        bindings: capture,
+      });
     };
-    let value = self.merge_class_name(attr.value.as_ref()?, yak_class)?;
-    Some(ClassNameFold::Replace(index, value))
+    let value = self.merge_class_name(&user_class_name?, yak_class)?;
+    Some(FoldPlan {
+      class_name: ClassNameFold::Replace(index, value),
+      bindings: capture,
+    })
   }
 
   /// Merges the folded yak class name with an existing className value
@@ -659,23 +771,64 @@ impl FoldVisitor<'_> {
 /// Inlines the class-toggling expressions of a dynamic component at a JSX
 /// usage into a single className expression
 /// e.g. `"yX" + (on ? " yY" : "")` for `<Box $active={on}>`
-fn inline_runtime_expressions<'a>(
+fn inline_runtime_expressions(
   component: &FoldableComponent,
-  attrs: &'a [JSXAttrOrSpread],
+  binder: &mut ParamBinder,
   yak_imports: &YakImports,
-) -> Option<(Box<Expr>, Vec<Binding>)> {
+) -> Option<Box<Expr>> {
   // every prop read becomes a parameter first, so "was this prop read" is
   // exact by construction rather than a second analysis which could disagree
-  let mut binder = ParamBinder::default();
   let mut class_name_expr = str_expr(component.class_name.clone());
   for expression in &component.runtime_expressions {
-    let segment = inline_expression(expression, &mut binder, yak_imports)?;
+    let segment = inline_expression(expression, binder, yak_imports)?;
     class_name_expr = append_condition_segment(class_name_expr, segment);
   }
-  let attr_values: FxHashMap<Atom, Cow<'a, Expr>> = attr_value_map(attrs);
-  let (bakeable, bindings) = binder.split(attrs, &attr_values);
-  class_name_expr.visit_mut_with(&mut BakeParams { values: &bakeable });
-  Some((class_name_expr, bindings))
+  Some(class_name_expr)
+}
+
+/// Every attribute value the element-wrap binds: everything the usage evaluates
+/// which cannot move
+///
+/// Capturing all of them, rather than only the props the conditions read, is
+/// what makes the element-wrap exact by construction. The arguments then
+/// evaluate in attribute source order and the element itself only reads
+/// parameters, so nothing can jump anything: without it
+/// `<Button id={g()} disabled={f()}/>` would run `f` before `g`.
+fn full_capture<'a>(
+  attrs: &'a [JSXAttrOrSpread],
+  binder: &mut ParamBinder,
+  attr_values: &FxHashMap<Atom, Cow<'a, Expr>>,
+  read: &FxHashSet<Atom>,
+) -> Vec<Binding> {
+  let mut bindings: Vec<Binding> = Vec::new();
+  for (attr_index, name) in attr_names(attrs) {
+    let Some(value) = attr_values.get(&name) else {
+      continue;
+    };
+    let is_read = read.contains(&name);
+    // an unread $prop is dropped before the DOM, so it never evaluates at all
+    if !is_read && name.starts_with('$') {
+      continue;
+    }
+    // a value which may move stays where it is, and a value the conditions
+    // read has already been put back wherever that was safe
+    if if is_read {
+      is_dup_pure(value)
+    } else {
+      is_reorder_pure(value)
+    } {
+      continue;
+    }
+    // a repeated attribute binds its last value, like React reads it
+    bindings.retain(|binding| binding.name != name);
+    bindings.push(Binding {
+      param: binder.param_for(&name),
+      name,
+      attr_index,
+      value: Box::new(Expr::clone(value)),
+    });
+  }
+  bindings
 }
 
 /// Inlines one class-toggling expression by substituting its prop reads

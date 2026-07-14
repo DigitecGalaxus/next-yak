@@ -277,7 +277,7 @@ const Optimizable = ({ active, size, i: i1 }: {
     <li className={((__yak_$size)=>"input_Twice_m7uBBu" + (__yak_$size && __yak_$size === "big" ? " input_Twice___m7uBBu" : ""))(props.getSize())}>evaluated once per condition</li>
     { /* the attribute stays on the element AND feeds the condition, so this
         button can be disabled while it is styled as enabled */ }
-    <ActionButton disabled={props.isBusy()}>evaluated on the element and inlined</ActionButton>
+    {((__yak_disabled)=><button disabled={__yak_disabled} className={"input_ActionButton_m7uBBu" + (!__yak_disabled ? " input_ActionButton___m7uBBu" : "")}>evaluated on the element and inlined</button>)(props.isBusy())}
     <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
       {i1}
     </button>
