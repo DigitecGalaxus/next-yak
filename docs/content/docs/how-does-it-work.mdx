@@ -265,7 +265,10 @@ Here is a simplified version of what `__yak.__yak_button` does:
 function __yak_button(className, ...dynamicParts) {
   // returns a React component
   return (props) => {
-    const classNames = new Set([className]);
+    // ClassNames is next-yak's collector, backed by a plain string — the
+    // incoming className is its initial value and is not split or normalized
+    const classNames = new ClassNames(props.className);
+    classNames.add(className);
     const style = {};
 
     for (const part of dynamicParts) {
@@ -273,7 +276,7 @@ function __yak_button(className, ...dynamicParts) {
         // conditional css block, e.g.:
         // (props) => props.$primary && css("Button_primary")
         // css("Button_primary") returns a function that
-        // adds "Button_primary" to the classNames set
+        // adds "Button_primary" to the collector
         const result = part(props);
         if (result) result(props, classNames, style);
       } else if (part?.style) {
@@ -285,12 +288,16 @@ function __yak_button(className, ...dynamicParts) {
       }
     }
 
-    return <button className={[...classNames].join(" ")} style={style} />;
+    return <button className={classNames.value || undefined} style={style} />;
   };
 }
 ```
 
-When the component is rendered, the runtime passes the received props through all the dynamic functions, collects the resulting class names into a `Set` and CSS variable values into a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
+When the component is rendered, the runtime passes the received props through all the dynamic functions, appends the resulting class names to the collector string and CSS variable values to a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
+
+The collector is a string rather than a `Set` because building a set and joining it back into a string dominated render cost. It still exposes a Set-like `add`/`has`/`delete` surface for the runtime functions it is handed to, e.g. the `atoms()` callback. next-yak does not promise to deduplicate class names — a class appearing twice in the attribute is rendering-neutral, since CSS applies it once no matter how often it is listed.
+
+Fully static components — no `attrs` and no dynamic functions to run — skip all of this: the runtime only merges the class names and strips the `$` props, without a theme lookup or a style object.
 
 ## Context
 
