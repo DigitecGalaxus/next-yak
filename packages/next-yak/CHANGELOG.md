@@ -1,5 +1,16 @@
 # next-yak
 
+## 9.6.0
+
+### Minor Changes
+
+- 00e5021: Add `globalStyle` to write global styles that are extracted at build time and apply once the file is imported
+
+### Patch Changes
+
+- Updated dependencies [00e5021]
+  - yak-swc@9.6.0
+
 ## 9.5.1
 
 ### Patch Changes
