@@ -178,7 +178,11 @@ Styles that depend on props are inlined too, so the optimization is not limited 
 
 ```tsx
 const Icon = styled.span<{ $active?: boolean }>`
-  ${({ $active }) => $active && css`color: red;`}
+  ${({ $active }) =>
+    $active &&
+    css`
+      color: red;
+    `}
 `;
 
 const App = () => <Icon $active={on} />;
@@ -194,7 +198,9 @@ One edge case is worth knowing about: if the same component is used both inlined
 ```tsx
 // <Card /> is inlined to <div>, while <Card {...props} /> keeps the wrapper.
 // Toggling `compact` therefore remounts the card and it loses its state.
-{compact ? <Card /> : <Card {...props} />}
+{
+  compact ? <Card /> : <Card {...props} />;
+}
 ```
 
 ### My styles are not applied
