@@ -8,9 +8,14 @@ export const yakComponentSymbol = Symbol("yak");
  *
  * Replaces the previous `new Set(className.split(" "))` →
  * `Array.from(set).join(" ")` round-trip, which dominated render cost.
- * The hot path (`add`) is a plain string append with a containment check;
+ * The hot path (`add`) is a plain string append and does not deduplicate, so
+ * the collector is a multiset: the same class can appear twice, e.g. when
+ * `atoms()` repeats a utility or the incoming className already carries it.
+ * That is rendering neutral - CSS applies a class once however often it is
+ * listed - and it matches what the compile time class name folds emit.
  * `has`/`delete` keep the Set-like contract for advanced runtime functions
- * (e.g. atoms removing classes) on the rare path.
+ * (e.g. atoms removing classes) on the rare path; `delete` removes every
+ * occurrence.
  */
 export class ClassNames implements ClassNameCollector {
   value: string;
@@ -18,11 +23,7 @@ export class ClassNames implements ClassNameCollector {
     this.value = initial || "";
   }
   add(className: string) {
-    if (!this.value) {
-      this.value = className;
-    } else if (!this.has(className)) {
-      this.value += " " + className;
-    }
+    this.value += (this.value && " ") + className;
   }
   has(className: string) {
     return (" " + this.value + " ").includes(" " + className + " ");
