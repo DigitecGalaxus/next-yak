@@ -201,42 +201,6 @@ One edge case is worth knowing about: if the same component is used both inlined
 const List = () => <div>{compact ? <Card /> : <Card {...props} />}</div>;
 ```
 
-### My prop expression runs twice, or not at all
-
-next-yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used. This causes one edge case for props: each style condition gets its own copy of the prop values it reads, so an expression is evaluated once per condition:
-
-```tsx
-const Sticker = styled.div<{ $tilt: number }>`
-  ${(p) =>
-    p.$tilt > 5 &&
-    css`
-      transform: rotate(3deg);
-    `}
-  ${(p) =>
-    p.$tilt > 8 &&
-    css`
-      box-shadow: 0 0 8px black;
-    `}
-`;
-
-const App = () => <Sticker $tilt={Math.random() * 10} />;
-```
-
-Each condition rolls its own number, so the sticker can get the shadow without the rotation, even though a tilt above 8 is always above 5. Compute the value once and pass the result:
-
-```tsx
-const App = () => {
-  const tilt = Math.random() * 10;
-  return <Sticker $tilt={tilt} />;
-};
-```
-
-Props that reach the DOM are inlined the same way, and they are also kept on the element, so `<Button disabled={Math.random() > 0.5} />` rolls once for the attribute and once for every condition that reads it. The button can end up disabled while it is styled as enabled. The fix is the same: compute the value once and pass the result.
-
-A `$prop` is different in one way. It never reaches the DOM, so one that no style condition reads is removed from the element without being computed at all.
-
-Keep prop expressions pure, meaning no side effects and the same value every time, and none of this is observable. The `eslint-plugin-yak` rule `precompute-style-prop-values` points out the values that need it.
-
 ### My styles are not applied
 
 If your styles are not applied, the first thing you should check is the transformed output of your component.

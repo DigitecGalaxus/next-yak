@@ -926,6 +926,11 @@ fn inline_expression(
 /// `key` is listed for the opposite reason: React strips it before the
 /// component sees props, so the runtime path reads `undefined` while a
 /// substituted fold would see the attribute value - reading it must bail
+///
+/// `ref` is deliberately absent even though it looks like the same case: on
+/// React 18 it was, but React 19 - which is the minimum next-yak supports -
+/// passes `ref` as an ordinary prop, so the runtime and the fold read the same
+/// value. Listing it would only cost folds.
 fn is_runtime_injected_prop(name: &Atom) -> bool {
   matches!(
     name.as_ref(),
