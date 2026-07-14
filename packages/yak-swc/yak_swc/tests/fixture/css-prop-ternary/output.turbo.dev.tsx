@@ -1,5 +1,5 @@
 import { css, __yak_unitPostFix, __yak_mergeCssProp } from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW1fbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtMl9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X0VsZW0yX19iaWdfbTd1QkJ1IHsKICBmb250LXNpemU6IDIwcHg7Cn0uaW5wdXRfRWxlbTJfbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtM19tN3VCQnUgewogIHdpZHRoOiB2YXIoLS1pbnB1dF9FbGVtM19fd2lkdGhfbTd1QkJ1KTsKfS5pbnB1dF9FbGVtM19tN3VCQnUtMDEgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X0VsZW00X203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0=";
+import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW1fbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtMl9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X0VsZW0yX19iaWdfbTd1QkJ1IHsKICBmb250LXNpemU6IDIwcHg7Cn0uaW5wdXRfRWxlbTJfbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtM19tN3VCQnUgewogIHdpZHRoOiB2YXIoLS1pbnB1dF9FbGVtM19fd2lkdGhfbTd1QkJ1KTsKfS5pbnB1dF9FbGVtM19tN3VCQnUtMDEgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X0VsZW00X203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfRWxlbTZfX25vdF9hY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfQ==";
 // folds: both arms are fully static
 const Elem = ({ active }: {
     active: boolean;
@@ -60,4 +60,22 @@ const Elem4 = ({ active }: {
   color: blue;
 }
 */ /*#__PURE__*/ "input_Elem4_m7uBBu-01"}/>;
+};
+// folds: a nested empty mixin contributes nothing instead of keeping the
+// whole css prop on the runtime path - the outer class is still minted as
+// the template carries dynamic content
+const Elem5 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={/*#__PURE__*/ "input_Elem5_m7uBBu" + (active ? "" : "")}/>;
+};
+// folds: a nested empty ternary arm becomes an empty string
+const Elem6 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={/*YAK Extracted CSS:
+.input_Elem6__not_active_m7uBBu {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem6_m7uBBu" + (active ? "" : " input_Elem6__not_active_m7uBBu")}/>;
 };

@@ -179,7 +179,18 @@ pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Op
   let Expr::Call(call) = unwrap_type_casts(expr) else {
     return None;
   };
-  if !is_yak_css_callee(&call.callee, yak_imports) || call.args.len() != 1 {
+  if !is_yak_css_callee(&call.callee, yak_imports) {
+    return None;
+  }
+  // an argument-less css() carries neither a class name nor runtime content,
+  // so it contributes an empty class name - a nested empty `css``` compiles
+  // to this shape and folds instead of falling back to the runtime path
+  // (note the reverse does not hold: a top level mixin also compiles to a
+  // bare css(), its css is inlined into the consumer)
+  if call.args.is_empty() {
+    return Some("".into());
+  }
+  if call.args.len() != 1 {
     return None;
   }
   let arg = &call.args[0];
@@ -203,6 +214,10 @@ pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bo
 }
 
 pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
+  // an empty class name (from an empty `css``) contributes nothing
+  if class_name.is_empty() {
+    return "".into();
+  }
   format!(" {}", class_name.to_string_lossy()).into()
 }
 
