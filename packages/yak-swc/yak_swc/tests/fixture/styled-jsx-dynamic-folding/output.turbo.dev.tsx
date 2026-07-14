@@ -1,7 +1,7 @@
 import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9BY3Rpb25CdXR0b25fbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfQouaW5wdXRfQWN0aW9uQnV0dG9uX19fbTd1QkJ1IHsKICBjdXJzb3I6IHBvaW50ZXI7Cn0uaW5wdXRfVGhlbWVkX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9Ci5pbnB1dF9UaGVtZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX1wkYWN0aXZlX203dUJCdSB7CiAgd2lkdGg6IHZhcigtLWlucHV0X05lc3RlZENzc1ZhcmlhYmxlX193aWR0aF9tN3VCQnUpOwp9LmlucHV0X0R5bmFtaWNFeHRlbmRlZF9fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0R5bmFtaWNBdHRyc19fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0NsYXNzTmFtZUJhaWxfX2NsYXNzTmFtZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQnV0dG9uX203dUJCdSB7CiAgZGlzcGxheTogaW5saW5lLWZsZXg7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdSB7CiAgYmFja2dyb3VuZC1jb2xvcjogI2QxZDVkYjsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1LTAxIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjNmNGY2Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDIgewogIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX3BfXCRmdWxsV2lkdGhfbTd1QkJ1IHsKICB3aWR0aDogMTAwJTsKfS5pbnB1dF9NZW1iZXJFc2NhcGVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyVGhlbWVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQ29tcHV0ZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfT3B0aW1pemFibGVfbTd1QkJ1IHsKICBjb2xvcjogb3JhbmdlOwp9";
+import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9BY3Rpb25CdXR0b25fbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfQouaW5wdXRfQWN0aW9uQnV0dG9uX19fbTd1QkJ1IHsKICBjdXJzb3I6IHBvaW50ZXI7Cn0uaW5wdXRfVGhlbWVkX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9Ci5pbnB1dF9UaGVtZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX1wkYWN0aXZlX203dUJCdSB7CiAgd2lkdGg6IHZhcigtLWlucHV0X05lc3RlZENzc1ZhcmlhYmxlX193aWR0aF9tN3VCQnUpOwp9LmlucHV0X0R5bmFtaWNFeHRlbmRlZF9fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0R5bmFtaWNBdHRyc19fXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0NsYXNzTmFtZUJhaWxfX2NsYXNzTmFtZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5QmFpbF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJCdXR0b25fbTd1QkJ1IHsKICBkaXNwbGF5OiBpbmxpbmUtZmxleDsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDFkNWRiOwp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDEgewogIGJhY2tncm91bmQtY29sb3I6ICNmM2Y0ZjY7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdS0wMiB7CiAgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fcF9cJGZ1bGxXaWR0aF9tN3VCQnUgewogIHdpZHRoOiAxMDAlOwp9LmlucHV0X01lbWJlckVzY2FwZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJUaGVtZV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJDb21wdXRlZF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9NZW1iZXJLZXlfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfS2V5ZWRSb3dfX3BfXCRhY3RpdmVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfQ==";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage
 const IconContainer = /*YAK Extracted CSS:
@@ -129,6 +129,15 @@ const ClassNameBail = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_ClassNameBail_m7uBBu", ({ className })=>className && /*#__PURE__*/ css("input_ClassNameBail__className_m7uBBu")), {
     "displayName": "ClassNameBail"
 });
+// usages bail: React strips key before the component sees props, so the
+// runtime reads undefined - substituting the attribute value would diverge
+const KeyBail = /*YAK Extracted CSS:
+.input_KeyBail___m7uBBu {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_KeyBail_m7uBBu", ({ key })=>key === "active" && /*#__PURE__*/ css("input_KeyBail___m7uBBu")), {
+    "displayName": "KeyBail"
+});
 // folds: identifier param with member access - `(p) => p.$x` is the common
 // real-world styled-components style
 const MemberButton = /*YAK Extracted CSS:
@@ -174,6 +183,23 @@ const MemberComputed = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_MemberComputed_m7uBBu", (p)=>p["$active"] && /*#__PURE__*/ css("input_MemberComputed___m7uBBu")), {
     "displayName": "MemberComputed"
 });
+// usages bail: key access through the identifier param
+const MemberKey = /*YAK Extracted CSS:
+.input_MemberKey___m7uBBu {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_MemberKey_m7uBBu", (p)=>p.key === "active" && /*#__PURE__*/ css("input_MemberKey___m7uBBu")), {
+    "displayName": "MemberKey"
+});
+// folds: passing key at a call site never blocks folding - only reading it
+// inside a style expression does
+const KeyedRow = /*YAK Extracted CSS:
+.input_KeyedRow__p_\$active_m7uBBu {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_KeyedRow_m7uBBu", (p)=>p.$active && /*#__PURE__*/ css("input_KeyedRow__p_$active_m7uBBu")), {
+    "displayName": "KeyedRow"
+});
 const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
@@ -210,6 +236,9 @@ const Optimizable = ({ active, size, i: i1 }: {
     <button className={"input_MemberButton_m7uBBu" + (!(i1 % 4 !== 0) ? " input_MemberButton___m7uBBu" : "") + ("primary" === "secondary" ? " input_MemberButton___m7uBBu-01" : "") + ("primary" === "ghost" ? " input_MemberButton___m7uBBu-02" : "") + (i1 % 3 === 0 ? " input_MemberButton__p_$fullWidth_m7uBBu" : "")}>
       {i1}
     </button>
+    <li key={i1} className={"input_KeyedRow_m7uBBu" + (active ? " input_KeyedRow__p_$active_m7uBBu" : "")}>
+      key at the call site still folds
+    </li>
   </>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
@@ -225,4 +254,6 @@ const NotOptimizable = ()=><>
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>
+    <KeyBail key="active">bails: destructured key access</KeyBail>
+    <MemberKey key="active">bails: key access</MemberKey>
   </>;

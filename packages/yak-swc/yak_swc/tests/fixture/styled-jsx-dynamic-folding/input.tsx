@@ -82,6 +82,12 @@ const ClassNameBail = styled.div`
   ${({ className }) => className && css`color: red;`}
 `;
 
+// usages bail: React strips key before the component sees props, so the
+// runtime reads undefined - substituting the attribute value would diverge
+const KeyBail = styled.li`
+  ${({ key }) => key === "active" && css`color: red;`}
+`;
+
 // folds: identifier param with member access - `(p) => p.$x` is the common
 // real-world styled-components style
 const MemberButton = styled.button<{
@@ -109,6 +115,17 @@ const MemberTheme = styled.div<{ $accent?: boolean }>`
 // usages bail: computed member access
 const MemberComputed = styled.div<{ $active?: boolean }>`
   ${(p) => p["$active"] && css`color: red;`}
+`;
+
+// usages bail: key access through the identifier param
+const MemberKey = styled.li`
+  ${(p) => p.key === "active" && css`color: red;`}
+`;
+
+// folds: passing key at a call site never blocks folding - only reading it
+// inside a style expression does
+const KeyedRow = styled.li<{ $active?: boolean }>`
+  ${(p) => p.$active && css`color: red;`}
 `;
 
 const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: number }) => (
@@ -145,6 +162,9 @@ const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: 
     <MemberButton $active={i % 4 !== 0} $fullWidth={i % 3 === 0} $variant="primary">
       {i}
     </MemberButton>
+    <KeyedRow key={i} $active={active}>
+      key at the call site still folds
+    </KeyedRow>
   </>
 );
 
@@ -163,5 +183,7 @@ const NotOptimizable = () => (
     <MemberEscape $active>bails: whole props object escapes</MemberEscape>
     <MemberTheme $accent>bails: theme access</MemberTheme>
     <MemberComputed $active>bails: computed member access</MemberComputed>
+    <KeyBail key="active">bails: destructured key access</KeyBail>
+    <MemberKey key="active">bails: key access</MemberKey>
   </>
 );

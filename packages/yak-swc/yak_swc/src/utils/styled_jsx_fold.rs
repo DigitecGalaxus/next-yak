@@ -593,8 +593,15 @@ fn inline_expression(
 
 /// The runtime passes more than the plain attributes to the class-toggling
 /// expressions - these props can not be substituted from the JSX attributes
+///
+/// `key` is listed for the opposite reason: React strips it before the
+/// component sees props, so the runtime path reads `undefined` while a
+/// substituted fold would see the attribute value - reading it must bail
 fn is_runtime_injected_prop(name: &Atom) -> bool {
-  matches!(name.as_ref(), "theme" | "children" | "className" | "style")
+  matches!(
+    name.as_ref(),
+    "theme" | "children" | "className" | "style" | "key"
+  )
 }
 
 /// Maps the attribute names to their value expressions for substitution
