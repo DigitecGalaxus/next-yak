@@ -254,7 +254,7 @@ Despite being called "zero-runtime", next-yak does ship a small runtime. What "z
 
 The runtime is essentially a type-safe `classnames` utility. It takes the generated class name strings and the component's props, evaluates the dynamic functions (conditionals, CSS variable values), and returns:
 
-- The final `className` string (merging base classes and conditional classes)
+- The final `className` string (merging any incoming `className`, base classes and conditional classes)
 - An optional `style` object (setting CSS variable values from props)
 
 Since it has no side effects, it works in both server and client components.
@@ -286,7 +286,7 @@ function __yak_button(className, ...dynamicParts) {
       }
     }
 
-    return <button className={classNames.value || undefined} style={style} />;
+    return <button className={classNames.value} style={style} />;
   };
 }
 ```
