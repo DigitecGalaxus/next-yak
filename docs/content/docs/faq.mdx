@@ -203,7 +203,7 @@ const List = () => <div>{compact ? <Card /> : <Card {...props} />}</div>;
 
 ### My `$prop` expression runs twice, or not at all
 
-`$props` exist to feed the style conditions of your component. When a usage is inlined, each of those conditions gets its own copy of the `$prop` values it reads, so an expression is evaluated once per condition:
+next-yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used. This causes one edge case for `$props`: each style condition gets its own copy of the `$prop` values it reads, so an expression is evaluated once per condition:
 
 ```tsx
 const Sticker = styled.div<{ $tilt: number }>`
