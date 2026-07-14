@@ -197,6 +197,8 @@ styled.div`
 
 Warns if runtime performance could be improved by using css literals.
 
+The rule checks arrow functions used as CSS declaration values, where next-yak creates runtime CSS variables. Arrow functions outside declarations are runtime class expressions and may return local or imported css mixins.
+
 Example:
 
 ```tsx title="example.tsx"
@@ -234,6 +236,18 @@ styled.button`
       `; // [!code ++]
     }
   }};
+`;
+```
+
+Extracted css literals can also be reused as conditional classes:
+
+```tsx title="example.tsx"
+const activeStyles = css`
+  opacity: 1;
+`;
+
+styled.button`
+  ${({$active}) => $active && activeStyles}
 `;
 ```
 

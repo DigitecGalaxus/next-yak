@@ -33,6 +33,61 @@ ruleTester.run("yak-style-conditions", styleConditions, {
       code: "import { css, styled } from 'next-yak'; styled.button`${({variant}) => variant === 'primary' && css`color: red`}`",
     },
     {
+      // Valid because an extracted css literal returned outside a declaration becomes a class
+      code: `
+        import { css, styled } from "next-yak";
+
+        const activeStyles = css\`
+          opacity: 1;
+        \`;
+
+        const Button = styled.button\`
+          \${({ $isSelected }) => $isSelected && activeStyles}
+        \`;
+      `,
+    },
+    {
+      // Valid because both extracted css literal branches become toggleable classes
+      code: `
+        import { css, styled } from "next-yak";
+
+        const slideUp = css\`
+          transform: translateY(0);
+        \`;
+        const slideDown = css\`
+          transform: translateY(100%);
+        \`;
+
+        const Sheet = styled.div\`
+          \${({ $show }) => ($show ? slideUp : slideDown)}
+        \`;
+      `,
+    },
+    {
+      // Valid because imported mixins are runtime class expressions outside declarations
+      code: `
+        import { styled } from "next-yak";
+        import { activeStyles } from "./styles";
+
+        const Button = styled.button\`
+          \${({ $isSelected }) => $isSelected && activeStyles}
+        \`;
+      `,
+    },
+    {
+      // Valid because pseudo-class colons do not turn nested class expressions into values
+      code: `
+        import { css, styled } from "next-yak";
+
+        const hoverStyles = css\`color: red;\`;
+        const Button = styled.button\`
+          &:hover {
+            \${() => hoverStyles}
+          }
+        \`;
+      `,
+    },
+    {
       // Valid because it's returning a runtime value
       code: "import { css, styled } from 'next-yak'; styled.button`${({variant, primary}) => variant === 'primary' && css`color: ${primary}`}`",
     },
@@ -100,6 +155,25 @@ ruleTester.run("yak-style-conditions", styleConditions, {
       // Valid unary conditional
       code: "import { css, styled } from 'next-yak'; css`${({ $visible = false }) => !$visible ? css`display: block;` : css`display: none;`}`",
     },
+    {
+      // Valid runtime value nested inside a CSS function and custom-property fallback
+      code: `
+        import { styled } from "next-yak";
+        const Box = styled.div\`
+          margin: 4px var(--foo, \${({ $foo }) => $foo});
+        \`;
+      `,
+    },
+    {
+      // Expressions in CSS comments are ignored by Yak's CSS parser
+      code: `
+        import { styled } from "next-yak";
+        const fallback = "red";
+        const Box = styled.div\`
+          /* color: \${() => fallback}; */
+        \`;
+      `,
+    },
     // Ignored because it's not next-yak
     {
       code: "import { css } from 'styled-components'; css`color: ${() => color}`",
@@ -141,6 +215,73 @@ ruleTester.run("yak-style-conditions", styleConditions, {
     },
   ],
   invalid: [
+    {
+      // Static member references inside declarations would create accidental CSS variables
+      code: `
+        import { styled } from "next-yak";
+
+        const radioButtonColors = {
+          RADIO_BORDER_ERROR: "red",
+          RADIO_BORDER: "gray",
+        };
+
+        const Input = styled.input\`
+          border-color: \${({ $hasError, $isDisabled }) =>
+            $hasError && !$isDisabled
+              ? radioButtonColors.RADIO_BORDER_ERROR
+              : radioButtonColors.RADIO_BORDER};
+        \`;
+      `,
+      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+    },
+    {
+      // Nested CSS functions must still be recognised as declaration values
+      code: `
+        import { styled } from "next-yak";
+
+        const fallbackMargin = "4px";
+        const Box = styled.div\`
+          margin: 4px var(--foo, \${({ $foo }) => fallbackMargin});
+        \`;
+      `,
+      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+    },
+    {
+      // Parentheses in calc() must not hide a static declaration value
+      code: `
+        import { styled } from "next-yak";
+
+        const baseWidth = 6;
+        const Box = styled.div\`
+          width: calc(\${() => baseWidth} * 1px);
+        \`;
+      `,
+      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+    },
+    {
+      // Quoted declaration values remain property values across interpolations
+      code: `
+        import { styled } from "next-yak";
+
+        const label = "static";
+        const Box = styled.div\`
+          &::before {
+            content: "prefix \${() => label}";
+          }
+        \`;
+      `,
+      errors: [{ messageId: "invalidRuntimeReturnValue" }],
+    },
+    {
+      // A css literal nested in a CSS function is still invalid as a declaration value
+      code: `
+        import { css, styled } from "next-yak";
+        const Box = styled.div\`
+          margin: var(--foo, \${({ $foo }) => css\`4px\`});
+        \`;
+      `,
+      errors: [{ messageId: "invalidCssReturnValue" }],
+    },
     {
       // Invalid because it's returning a constant (the value is not from props)
       code: "import { css, styled } from 'next-yak'; css`color: ${() => color}`",
