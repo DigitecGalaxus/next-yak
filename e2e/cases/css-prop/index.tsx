@@ -55,10 +55,7 @@ export default function App({ dummyBool = true }) {
           Nested child
         </span>
       </div>
-      <SpreadButton
-        data-testid="spread-button"
-        onClick={() => setCount((c) => c + 1)}
-      >
+      <SpreadButton data-testid="spread-button" onClick={() => setCount((c) => c + 1)}>
         clicks: {count}
       </SpreadButton>
     </>
