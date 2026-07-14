@@ -38,6 +38,8 @@ pub(crate) fn is_dup_pure(expr: &Expr) -> bool {
       OptChainBase::Member(member) => is_dup_pure_member(member),
       // `a?.()` still calls
       OptChainBase::Call(_) => false,
+      #[cfg(swc_ast_unknown)]
+      _ => false,
     },
     // `delete a.b` mutates
     Expr::Unary(unary) => unary.op != UnaryOp::Delete && is_dup_pure(&unary.arg),
@@ -61,6 +63,8 @@ fn is_dup_pure_member(member: &MemberExpr) -> bool {
     MemberProp::Ident(_) => true,
     MemberProp::Computed(computed) => is_dup_pure(&computed.expr),
     MemberProp::PrivateName(_) => false,
+    #[cfg(swc_ast_unknown)]
+    _ => false,
   };
   prop_is_pure && is_dup_pure(&member.obj)
 }
@@ -87,6 +91,8 @@ pub(crate) fn is_reorder_pure(expr: &Expr) -> bool {
       // `{...x}` reads x's getters
       PropOrSpread::Spread(_) => false,
       PropOrSpread::Prop(prop) => is_reorder_pure_prop(prop),
+      #[cfg(swc_ast_unknown)]
+      _ => false,
     }),
     // `jsx()` allocates an element, it does not render it - but the attribute
     // values and children are evaluated at creation
@@ -108,6 +114,8 @@ fn is_reorder_pure_prop(prop: &Prop) -> bool {
     Prop::Method(method) => is_reorder_pure_prop_name(&method.key),
     // `{ x = 1 }` is only valid as a destructuring pattern, not as a value
     Prop::Assign(_) => false,
+    #[cfg(swc_ast_unknown)]
+    _ => false,
   }
 }
 
@@ -116,6 +124,8 @@ fn is_reorder_pure_prop_name(name: &PropName) -> bool {
     PropName::Ident(_) | PropName::Str(_) | PropName::Num(_) | PropName::BigInt(_) => true,
     // `{ [k()]: v }` calls k
     PropName::Computed(computed) => is_reorder_pure(&computed.expr),
+    #[cfg(swc_ast_unknown)]
+    _ => false,
   }
 }
 
@@ -128,17 +138,26 @@ fn is_reorder_pure_jsx_element(element: &JSXElement) -> bool {
       None => true,
       Some(value) => is_reorder_pure_jsx_attr_value(value),
     },
+    #[cfg(swc_ast_unknown)]
+    _ => false,
   });
   attrs_are_pure && element.children.iter().all(is_reorder_pure_jsx_child)
+}
+
+/// A `{…}` container, which an empty `{}` makes trivially pure
+fn is_reorder_pure_jsx_expr(expr: &JSXExpr) -> bool {
+  match expr {
+    JSXExpr::JSXEmptyExpr(_) => true,
+    JSXExpr::Expr(expr) => is_reorder_pure(expr),
+    #[cfg(swc_ast_unknown)]
+    _ => false,
+  }
 }
 
 fn is_reorder_pure_jsx_attr_value(value: &JSXAttrValue) -> bool {
   match value {
     JSXAttrValue::Str(_) => true,
-    JSXAttrValue::JSXExprContainer(container) => match &container.expr {
-      JSXExpr::JSXEmptyExpr(_) => true,
-      JSXExpr::Expr(expr) => is_reorder_pure(expr),
-    },
+    JSXAttrValue::JSXExprContainer(container) => is_reorder_pure_jsx_expr(&container.expr),
     JSXAttrValue::JSXElement(element) => is_reorder_pure_jsx_element(element),
     JSXAttrValue::JSXFragment(fragment) => fragment.children.iter().all(is_reorder_pure_jsx_child),
     #[cfg(swc_ast_unknown)]
@@ -149,10 +168,7 @@ fn is_reorder_pure_jsx_attr_value(value: &JSXAttrValue) -> bool {
 fn is_reorder_pure_jsx_child(child: &JSXElementChild) -> bool {
   match child {
     JSXElementChild::JSXText(_) => true,
-    JSXElementChild::JSXExprContainer(container) => match &container.expr {
-      JSXExpr::JSXEmptyExpr(_) => true,
-      JSXExpr::Expr(expr) => is_reorder_pure(expr),
-    },
+    JSXElementChild::JSXExprContainer(container) => is_reorder_pure_jsx_expr(&container.expr),
     JSXElementChild::JSXElement(element) => is_reorder_pure_jsx_element(element),
     JSXElementChild::JSXFragment(fragment) => {
       fragment.children.iter().all(is_reorder_pure_jsx_child)
