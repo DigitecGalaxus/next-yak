@@ -26,4 +26,4 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 - Usages with spread props, `theme`, dynamic css values (css variables) or `.attrs()` keep the runtime path, as do components not declared as top-level `const`.
 - The optimization can be disabled with the new `optimizeStaticJsx: false` option.
 
-Behavioral notes: a folded usage renders the native element directly, so `child.type === Icon` checks don't match it and toggling between a folded and non-folded usage of the same component remounts instead of updating. Foreign `$props` on fully static folded usages are forwarded instead of stripped.
+Behavioral notes: a folded usage renders the native element directly, so `child.type === Icon` checks don't match it and toggling between a folded and non-folded usage of the same component remounts instead of updating. Foreign `$props` on fully static folded usages are forwarded instead of stripped. Folded usages also no longer appear as components in React DevTools or component stacks, in development too; set `optimizeStaticJsx: false` to disable the optimization entirely.
