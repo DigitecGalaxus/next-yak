@@ -96,6 +96,21 @@ let Mutable = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Mutable_m7uBBu"), {
     "displayName": "Mutable"
 });
+// bails: var redeclaration - both declarations share a single binding
+var Redeclared = /*YAK Extracted CSS:
+:global(.input_Redeclared_m7uBBu) {
+  color: peru;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Redeclared_m7uBBu"), {
+    "displayName": "Redeclared"
+});
+var Redeclared = /*YAK Extracted CSS:
+:global(.input_Redeclared_m7uBBu-01) {
+  color: plum;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Redeclared_m7uBBu-01"), {
+    "displayName": "Redeclared"
+});
 // folds although the declaration comes after the usage
 const Early = ()=><p className="input_Late_m7uBBu">before declaration</p>;
 const Late = /*YAK Extracted CSS:
@@ -189,6 +204,7 @@ const NotOptimizable = ()=><>
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
     <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
     <Mutable>bails</Mutable>
+    <Redeclared>bails: var redeclaration</Redeclared>
     <Memoized>bails: HOC wrapper</Memoized>
     <ReactMemoized>bails: HOC wrapper</ReactMemoized>
     <Conditional>bails: conditional initializer</Conditional></>;
