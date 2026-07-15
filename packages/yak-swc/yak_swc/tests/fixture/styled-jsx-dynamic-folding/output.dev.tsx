@@ -204,6 +204,20 @@ const DynamicAttrs = /*YAK Extracted CSS:
 })("input_DynamicAttrs_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_DynamicAttrs__$active_m7uBBu")), {
     "displayName": "DynamicAttrs"
 });
+// usages bail: a namespaced attribute is keyed by its plain name everywhere
+// below, so it would evaluate on the element without ever counting as an
+// obstacle the parameter block may not jump - `<use xlink:href>` is the
+// sprite pattern, and svg/use/image are all foldable elements
+const Sprite = /*YAK Extracted CSS:
+:global(.input_Sprite__\$active_m7uBBu) {
+  color: red;
+}
+:global(.input_Sprite__\$muted_m7uBBu) {
+  opacity: 0.5;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_use("input_Sprite_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_Sprite__$active_m7uBBu"), ({ $muted })=>$muted && /*#__PURE__*/ css("input_Sprite__$muted_m7uBBu")), {
+    "displayName": "Sprite"
+});
 // usages bail: the runtime passes more than the attributes to the expressions
 const ClassNameBail = /*YAK Extracted CSS:
 :global(.input_ClassNameBail__className_m7uBBu) {
@@ -398,4 +412,14 @@ const NotOptimizable = ()=><>
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    { /* spriteFor() would jump both rolls: the namespaced name is the only
+        difference from the wrapped `id={...}` case above */ }
+    <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>
+      bails: namespaced attribute
+    </Sprite>
+    { /* only the last of a repeated attribute is bound, so the first getSize()
+        would be left on the element or dropped with the $prop */ }
+    <ActionButton disabled={props.isBusy()} disabled={props.roll()}>
+      bails: repeated attribute
+    </ActionButton>
   </>;

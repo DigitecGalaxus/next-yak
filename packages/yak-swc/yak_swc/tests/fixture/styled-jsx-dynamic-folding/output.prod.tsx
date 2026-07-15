@@ -168,69 +168,81 @@ const DynamicAttrs = /*YAK Extracted CSS:
 */ /*#__PURE__*/ __yak.__yak_button.attrs({
     type: "button"
 })("ym7uBBuc", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBud"));
-// usages bail: the runtime passes more than the attributes to the expressions
-const ClassNameBail = /*YAK Extracted CSS:
+// usages bail: a namespaced attribute is keyed by its plain name everywhere
+// below, so it would evaluate on the element without ever counting as an
+// obstacle the parameter block may not jump - `<use xlink:href>` is the
+// sprite pattern, and svg/use/image are all foldable elements
+const Sprite = /*YAK Extracted CSS:
 :global(.ym7uBBuf) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBue", ({ className })=>className && /*#__PURE__*/ css("ym7uBBuf"));
+:global(.ym7uBBug) {
+  opacity: 0.5;
+}
+*/ /*#__PURE__*/ __yak.__yak_use("ym7uBBue", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBuf"), ({ $muted })=>$muted && /*#__PURE__*/ css("ym7uBBug"));
+// usages bail: the runtime passes more than the attributes to the expressions
+const ClassNameBail = /*YAK Extracted CSS:
+:global(.ym7uBBui) {
+  color: red;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuh", ({ className })=>className && /*#__PURE__*/ css("ym7uBBui"));
 // usages bail: React strips key before the component sees props, so the
 // runtime reads undefined - substituting the attribute value would diverge
 const KeyBail = /*YAK Extracted CSS:
-:global(.ym7uBBuh) {
+:global(.ym7uBBuk) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBug", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuh"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuj", ({ key })=>key === "active" && /*#__PURE__*/ css("ym7uBBuk"));
 // folds: identifier param with member access - `(p) => p.$x` is the common
 // real-world styled-components style
 const MemberButton = /*YAK Extracted CSS:
-:global(.ym7uBBui) {
+:global(.ym7uBBul) {
   display: inline-flex;
 }
-:global(.ym7uBBuj) {
+:global(.ym7uBBum) {
   background-color: #d1d5db;
 }
-:global(.ym7uBBuk) {
+:global(.ym7uBBun) {
   background-color: #f3f4f6;
 }
-:global(.ym7uBBul) {
+:global(.ym7uBBuo) {
   background-color: transparent;
 }
-:global(.ym7uBBum) {
+:global(.ym7uBBup) {
   width: 100%;
 }
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBui", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBuj"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBuk"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBul"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBum"));
+*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBul", (p)=>!p.$active && /*#__PURE__*/ css("ym7uBBum"), (p)=>p.$variant === "secondary" && /*#__PURE__*/ css("ym7uBBun"), (p)=>p.$variant === "ghost" && /*#__PURE__*/ css("ym7uBBuo"), (p)=>p.$fullWidth && /*#__PURE__*/ css("ym7uBBup"));
 // usages bail: the whole props object escapes into the function call
 const MemberEscape = /*YAK Extracted CSS:
-:global(.ym7uBBuo) {
+:global(.ym7uBBur) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBun", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBuo"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuq", (p)=>props.calculate(p) && /*#__PURE__*/ css("ym7uBBur"));
 // usages bail: theme access through the identifier param
 const MemberTheme = /*YAK Extracted CSS:
-:global(.ym7uBBuq) {
+:global(.ym7uBBut) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBup", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBuq"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBus", (p)=>p.theme.highContrast && p.$accent && /*#__PURE__*/ css("ym7uBBut"));
 // usages bail: computed member access
 const MemberComputed = /*YAK Extracted CSS:
-:global(.ym7uBBus) {
+:global(.ym7uBBuv) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBur", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBus"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuu", (p)=>p["$active"] && /*#__PURE__*/ css("ym7uBBuv"));
 // usages bail: key access through the identifier param
 const MemberKey = /*YAK Extracted CSS:
-:global(.ym7uBBuu) {
+:global(.ym7uBBux) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBut", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBuu"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuw", (p)=>p.key === "active" && /*#__PURE__*/ css("ym7uBBux"));
 // folds: passing key at a call site never blocks folding - only reading it
 // inside a style expression does
 const KeyedRow = /*YAK Extracted CSS:
-:global(.ym7uBBuw) {
+:global(.ym7uBBuz) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuv", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBuw"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuy", (p)=>p.$active && /*#__PURE__*/ css("ym7uBBuz"));
 const Optimizable = ({ active, size, i: i1 }: {
     active?: boolean;
     size?: string;
@@ -250,10 +262,10 @@ const Optimizable = ({ active, size, i: i1 }: {
       runtime class merge
     </span>
     <span className={"ym7uBBu" + (true ? " ym7uBBu1" : "") + /*YAK Extracted CSS:
-:global(.ym7uBBux) {
+:global(.ym7uBBu-) {
   color: orange;
 }
-*/ /*#__PURE__*/ " ym7uBBux"}>
+*/ /*#__PURE__*/ " ym7uBBu-"}>
       css prop merge
     </span>
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
@@ -302,10 +314,10 @@ const Optimizable = ({ active, size, i: i1 }: {
         it already ran */ }
     <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()) + " user"}>bound: static className merge</div>
     <div className={__yak_mergeClassNames(((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()), size)}>bound: runtime className merge</div>
-    <button className={"ym7uBBui" + (!(i1 % 4 !== 0) ? " ym7uBBuj" : "") + ("primary" === "secondary" ? " ym7uBBuk" : "") + ("primary" === "ghost" ? " ym7uBBul" : "") + (i1 % 3 === 0 ? " ym7uBBum" : "")}>
+    <button className={"ym7uBBul" + (!(i1 % 4 !== 0) ? " ym7uBBum" : "") + ("primary" === "secondary" ? " ym7uBBun" : "") + ("primary" === "ghost" ? " ym7uBBuo" : "") + (i1 % 3 === 0 ? " ym7uBBup" : "")}>
       {i1}
     </button>
-    <li key={i1} className={"ym7uBBuv" + (active ? " ym7uBBuw" : "")}>
+    <li key={i1} className={"ym7uBBuy" + (active ? " ym7uBBuz" : "")}>
       key at the call site still folds
     </li>
     <aside className={"ym7uBBuL" + (active ? " ym7uBBuM" : "")}>block body arrow</aside>
@@ -346,4 +358,14 @@ const NotOptimizable = ()=><>
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    { /* spriteFor() would jump both rolls: the namespaced name is the only
+        difference from the wrapped `id={...}` case above */ }
+    <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>
+      bails: namespaced attribute
+    </Sprite>
+    { /* only the last of a repeated attribute is bound, so the first getSize()
+        would be left on the element or dropped with the $prop */ }
+    <ActionButton disabled={props.isBusy()} disabled={props.roll()}>
+      bails: repeated attribute
+    </ActionButton>
   </>;

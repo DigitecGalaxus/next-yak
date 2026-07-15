@@ -124,6 +124,15 @@ const DynamicAttrs = styled.button.attrs({ type: "button" })<{ $active?: boolean
   ${({ $active }) => $active && css`color: red;`}
 `;
 
+// usages bail: a namespaced attribute is keyed by its plain name everywhere
+// below, so it would evaluate on the element without ever counting as an
+// obstacle the parameter block may not jump - `<use xlink:href>` is the
+// sprite pattern, and svg/use/image are all foldable elements
+const Sprite = styled.use<{ $active?: boolean; $muted?: boolean }>`
+  ${({ $active }) => $active && css`color: red;`}
+  ${({ $muted }) => $muted && css`opacity: 0.5;`}
+`;
+
 // usages bail: the runtime passes more than the attributes to the expressions
 const ClassNameBail = styled.div`
   ${({ className }) => className && css`color: red;`}
@@ -294,5 +303,15 @@ const NotOptimizable = () => (
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    {/* spriteFor() would jump both rolls: the namespaced name is the only
+        difference from the wrapped `id={...}` case above */}
+    <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>
+      bails: namespaced attribute
+    </Sprite>
+    {/* only the last of a repeated attribute is bound, so the first getSize()
+        would be left on the element or dropped with the $prop */}
+    <ActionButton disabled={props.isBusy()} disabled={props.roll()}>
+      bails: repeated attribute
+    </ActionButton>
   </>
 );

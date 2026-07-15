@@ -622,26 +622,32 @@ impl FoldVisitor<'_> {
     component: &FoldableComponent,
   ) -> Option<FoldPlan> {
     let mut class_name_attr: Option<(usize, &JSXAttr)> = None;
+    let mut seen: FxHashSet<&Atom> = FxHashSet::default();
     for (index, attr) in attrs.iter().enumerate() {
       match attr {
         // a spread may carry a className or other props only known at runtime
         JSXAttrOrSpread::SpreadElement(_) => return None,
         JSXAttrOrSpread::JSXAttr(attr) => {
+          // everything below keys attributes by their plain name, so a
+          // namespaced one (`xlink:href`) would be invisible to the ordering
+          // analysis while still evaluating on the element - it would never
+          // count as something the parameter block may not jump
           let JSXAttrName::Ident(name) = &attr.name else {
-            continue;
+            return None;
           };
+          // only the last of a repeated attribute is bound, so the earlier
+          // expression would be left on the element and reordered, or dropped
+          // with the $prop and never evaluated
+          if !seen.insert(&name.sym) {
+            return None;
+          }
           match name.sym.as_ref() {
             // the runtime deletes the injected theme prop before the DOM
             "theme" => return None,
             // a css prop is folded before this pass runs - if it is still
             // present it is invalid and reported by the runtime path
             "css" => return None,
-            "className" => {
-              if class_name_attr.is_some() {
-                return None;
-              }
-              class_name_attr = Some((index, attr));
-            }
+            "className" => class_name_attr = Some((index, attr)),
             _ => {}
           }
         }
@@ -982,6 +988,9 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
 struct ParamBinder {
   /// prop name -> the parameter standing in for every read of it
   bound: FxHashMap<Atom, Ident>,
+  /// the parameter names handed out so far - deriving the name from the prop
+  /// is lossy, so two props can arrive at one name
+  used: FxHashSet<Atom>,
 }
 
 impl ParamBinder {
@@ -992,23 +1001,31 @@ impl ParamBinder {
   /// values baked in around it, so a bare `$tilt` would capture the user's own
   /// `$tilt` in `<Row $tilt={f()} $b={$tilt} />`.
   fn param_for(&mut self, name: &Atom) -> Ident {
-    self
-      .bound
-      .entry(name.clone())
-      .or_insert_with(|| {
-        let sanitized: String = name
-          .chars()
-          .map(|char| {
-            if char.is_alphanumeric() || char == '$' {
-              char
-            } else {
-              '_'
-            }
-          })
-          .collect();
-        Ident::from(format!("__yak_{sanitized}"))
+    if let Some(param) = self.bound.get(name) {
+      return param.clone();
+    }
+    // an attribute name is not always an identifier: `data-x` has to become
+    // `data_x` to be one, which `data_x` itself already is. A duplicate
+    // parameter is a SyntaxError, so disambiguate rather than emit one.
+    let sanitized: String = name
+      .chars()
+      .map(|char| {
+        if char.is_alphanumeric() || char == '$' {
+          char
+        } else {
+          '_'
+        }
       })
-      .clone()
+      .collect();
+    let mut candidate: Atom = format!("__yak_{sanitized}").into();
+    let mut suffix = 2;
+    while !self.used.insert(candidate.clone()) {
+      candidate = format!("__yak_{sanitized}{suffix}").into();
+      suffix += 1;
+    }
+    let param = Ident::from(candidate.as_str());
+    self.bound.insert(name.clone(), param.clone());
+    param
   }
 
   /// Splits the props the conditions read into the values which may be put back
@@ -1338,6 +1355,19 @@ mod tests {
       })
       .collect();
     select_shape(&attrs, &bindings, class_name_index)
+  }
+
+  #[test]
+  fn a_parameter_name_is_never_handed_out_twice() {
+    let mut binder = ParamBinder::default();
+    // `data-x` has to be sanitized to be an identifier, and `data_x` already
+    // is one - so both want `__yak_data_x`, and two parameters of one name are
+    // a SyntaxError rather than a divergence
+    let dashed = binder.param_for(&"data-x".into());
+    let underscored = binder.param_for(&"data_x".into());
+    assert_ne!(dashed.sym, underscored.sym);
+    // …while one prop keeps one parameter however often it is read
+    assert_eq!(binder.param_for(&"data-x".into()).sym, dashed.sym);
   }
 
   #[test]
