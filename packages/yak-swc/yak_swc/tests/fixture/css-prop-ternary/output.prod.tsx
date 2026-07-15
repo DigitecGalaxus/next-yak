@@ -61,3 +61,21 @@ const Elem4 = ({ active }: {
 }
 */ /*#__PURE__*/ "ym7uBBu9"}/>;
 };
+// folds: a nested empty mixin contributes nothing instead of keeping the
+// whole css prop on the runtime path - the outer class is still minted as
+// the template carries dynamic content
+const Elem5 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={/*#__PURE__*/ "ym7uBBuA" + (active ? "" : "")}/>;
+};
+// folds: a nested empty ternary arm becomes an empty string
+const Elem6 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={/*YAK Extracted CSS:
+:global(.ym7uBBuE) {
+  color: blue;
+}
+*/ /*#__PURE__*/ "ym7uBBuC" + (active ? "" : " ym7uBBuE")}/>;
+};
