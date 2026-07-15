@@ -20,7 +20,7 @@ use crate::utils::class_name_fold::{
   str_lit, with_leading_space, ConditionSegment,
 };
 use crate::utils::native_elements::VALID_ELEMENTS;
-use crate::utils::purity::{is_dup_pure, is_reorder_pure};
+use crate::utils::purity::{purity, Purity};
 use crate::variable_visitor::ScopedVariableReference;
 use crate::yak_imports::YakImports;
 
@@ -500,6 +500,7 @@ fn class_name_slot(
 /// is read is pure by definition, and a bound one *is* what is moving.
 fn select_shape(
   attrs: &[JSXAttrOrSpread],
+  attr_values: &FxHashMap<Atom, PropValue>,
   bindings: &[Binding],
   class_name_index: Option<usize>,
 ) -> FoldShape {
@@ -516,20 +517,14 @@ fn select_shape(
   }
   let slot = class_name_slot(attrs, bindings, class_name_index);
   let span = first.attr_index.min(slot)..=last.attr_index.max(slot);
-  for (index, attr) in attrs.iter().enumerate() {
+  for (index, name) in attr_names(attrs) {
     if !span.contains(&index) || Some(index) == class_name_index {
       continue;
     }
-    let JSXAttrOrSpread::JSXAttr(attr) = attr else {
-      continue;
-    };
-    let JSXAttrName::Ident(name) = &attr.name else {
-      continue;
-    };
-    if name.sym.starts_with('$') {
+    if name.starts_with('$') {
       continue;
     }
-    if !attr_value_is_reorder_pure(attr.value.as_ref()) {
+    if attr_purity(attr_values, &name) < Purity::Reorder {
       return FoldShape::ElementWrap;
     }
   }
@@ -537,13 +532,7 @@ fn select_shape(
   // evaluates after it - which only matches source order if every bound prop
   // came first
   if let Some(class_name_index) = class_name_index {
-    let user_class_name = attrs.get(class_name_index).and_then(|attr| match attr {
-      JSXAttrOrSpread::JSXAttr(attr) => attr.value.as_ref(),
-      JSXAttrOrSpread::SpreadElement(_) => None,
-      #[cfg(swc_ast_unknown)]
-      _ => None,
-    });
-    if !attr_value_is_reorder_pure(user_class_name)
+    if attr_purity(attr_values, &"className".into()) < Purity::Reorder
       && bindings
         .iter()
         .any(|binding| binding.attr_index > class_name_index)
@@ -552,25 +541,6 @@ fn select_shape(
     }
   }
   FoldShape::ClassNameIife
-}
-
-/// Whether evaluating an attribute value somewhere else in the sequence is
-/// unobservable - a bare attribute is the literal `true`
-fn attr_value_is_reorder_pure(value: Option<&JSXAttrValue>) -> bool {
-  match value {
-    None | Some(JSXAttrValue::Str(_)) => true,
-    Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
-      expr: JSXExpr::Expr(expr),
-      ..
-    })) => is_reorder_pure(expr),
-    Some(JSXAttrValue::JSXExprContainer(_)) => true,
-    Some(JSXAttrValue::JSXElement(element)) => is_reorder_pure(&Expr::JSXElement(element.clone())),
-    Some(JSXAttrValue::JSXFragment(fragment)) => {
-      is_reorder_pure(&Expr::JSXFragment(fragment.clone()))
-    }
-    #[cfg(swc_ast_unknown)]
-    Some(_) => false,
-  }
 }
 
 /// `((<params>) => <class name>)(<values>)`
@@ -670,7 +640,7 @@ impl FoldVisitor<'_> {
         inline_runtime_expressions(component, &mut binder, self.yak_imports)?;
       let (bakeable, bindings) = binder.split(attrs, &attr_values);
       class_name_expr.visit_mut_with(&mut BakeParams { values: &bakeable });
-      match select_shape(attrs, &bindings, class_name_index) {
+      match select_shape(attrs, &attr_values, &bindings, class_name_index) {
         FoldShape::Inline => YakClassName::Dynamic(class_name_expr),
         FoldShape::ClassNameIife => {
           slot = class_name_slot(attrs, &bindings, class_name_index);
@@ -803,12 +773,12 @@ fn inline_runtime_expressions(
 fn full_capture<'a>(
   attrs: &'a [JSXAttrOrSpread],
   binder: &mut ParamBinder,
-  attr_values: &FxHashMap<Atom, Cow<'a, Expr>>,
+  attr_values: &FxHashMap<Atom, PropValue<'a>>,
   read: &FxHashSet<Atom>,
 ) -> Vec<Binding> {
   let mut bindings: Vec<Binding> = Vec::new();
   for (attr_index, name) in attr_names(attrs) {
-    let Some(value) = attr_values.get(&name) else {
+    let Some(prop_value) = attr_values.get(&name) else {
       continue;
     };
     let is_read = read.contains(&name);
@@ -818,11 +788,12 @@ fn full_capture<'a>(
     }
     // a value which may move stays where it is, and a value the conditions
     // read has already been put back wherever that was safe
-    if if is_read {
-      is_dup_pure(value)
+    let free = if is_read {
+      Purity::Dup
     } else {
-      is_reorder_pure(value)
-    } {
+      Purity::Reorder
+    };
+    if prop_value.purity >= free {
       continue;
     }
     // a repeated attribute binds its last value, like React reads it
@@ -831,7 +802,7 @@ fn full_capture<'a>(
       param: binder.param_for(&name),
       name,
       attr_index,
-      value: Box::new(Expr::clone(value)),
+      value: Box::new(Expr::clone(&prop_value.value)),
     });
   }
   bindings
@@ -944,10 +915,18 @@ fn is_runtime_injected_prop(name: &Atom) -> bool {
   )
 }
 
+/// An attribute's value expression and how freely the fold may treat it
+struct PropValue<'a> {
+  value: Cow<'a, Expr>,
+  /// judged once when the map is built - no later step re-walks the value to
+  /// ask the same question
+  purity: Purity,
+}
+
 /// Maps the attribute names to their value expressions for substitution
 /// A bare attribute (`<Box $active>`) counts as `true`
 /// Values are borrowed where possible and only cloned when substituted
-fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
+fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, PropValue<'_>> {
   let mut values = FxHashMap::default();
   for attr in attrs {
     let JSXAttrOrSpread::JSXAttr(attr) = attr else {
@@ -970,9 +949,25 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, Cow<'_, Expr>> {
       Some(JSXAttrValue::JSXFragment(fragment)) => Cow::Owned(Expr::JSXFragment(fragment.clone())),
       _ => continue,
     };
-    values.insert(name.sym.clone(), value);
+    values.insert(
+      name.sym.clone(),
+      PropValue {
+        purity: purity(&value),
+        value,
+      },
+    );
   }
   values
+}
+
+/// The judged purity of a named attribute's value
+///
+/// An attribute the map skipped (an empty `className={}` container) evaluates
+/// nothing, so it counts as freely movable
+fn attr_purity(attr_values: &FxHashMap<Atom, PropValue>, name: &Atom) -> Purity {
+  attr_values
+    .get(name)
+    .map_or(Purity::Dup, |prop_value| prop_value.purity)
 }
 
 /// Hands out one parameter per prop name while the conditions are substituted
@@ -1037,25 +1032,25 @@ impl ParamBinder {
   fn split<'a>(
     &self,
     attrs: &'a [JSXAttrOrSpread],
-    attr_values: &FxHashMap<Atom, Cow<'a, Expr>>,
+    attr_values: &FxHashMap<Atom, PropValue<'a>>,
   ) -> (FxHashMap<Id, Cow<'a, Expr>>, Vec<Binding>) {
     let mut bakeable = FxHashMap::default();
     let mut bindings = Vec::new();
     // walking the attributes rather than the bound props gives source order for
     // free, and lets a repeated attribute bind its last value like React reads it
     for (index, name) in attr_names(attrs) {
-      let (Some(param), Some(value)) = (self.bound.get(&name), attr_values.get(&name)) else {
+      let (Some(param), Some(prop_value)) = (self.bound.get(&name), attr_values.get(&name)) else {
         continue;
       };
-      if is_dup_pure(value) {
-        bakeable.insert(param.to_id(), value.clone());
+      if prop_value.purity == Purity::Dup {
+        bakeable.insert(param.to_id(), prop_value.value.clone());
       } else {
         bindings.retain(|binding: &Binding| binding.name != name);
         bindings.push(Binding {
           name,
           param: param.clone(),
           attr_index: index,
-          value: Box::new(Expr::clone(value)),
+          value: Box::new(Expr::clone(&prop_value.value)),
         });
       }
     }
@@ -1340,6 +1335,7 @@ mod tests {
   /// [ParamBinder::split] establish at fold time
   fn shape_of(source: &str, bound: &[&str]) -> FoldShape {
     let attrs = attrs_of(source);
+    let attr_values = attr_value_map(&attrs);
     let class_name_index = attr_names(&attrs)
       .find(|(_, name)| name == "className")
       .map(|(index, _)| index);
@@ -1354,7 +1350,7 @@ mod tests {
         value: Box::new(Expr::Ident(Ident::from("bound_value"))),
       })
       .collect();
-    select_shape(&attrs, &bindings, class_name_index)
+    select_shape(&attrs, &attr_values, &bindings, class_name_index)
   }
 
   #[test]

@@ -1,22 +1,29 @@
-//! Purity predicates for the styled component JSX fold
+//! Purity of prop value expressions for the styled component JSX fold
 //!
 //! Folding moves an attribute expression out of attribute position - where JS
 //! evaluates it exactly once, in source order - and into arbitrary expression
 //! position inside the style conditions. Two different questions decide what
-//! the fold may do with a value, and they need two different answers:
+//! the fold may do with a value:
 //!
-//! - [`is_dup_pure`] - may the value be inlined at every read site? A read site
-//!   can sit inside a callback (`list.some(x => x > $n)` evaluates it once per
-//!   element) or behind a short circuit (`flag && $b` evaluates it never), so
-//!   this asks for effect-freedom *and* identity-freedom: 0..N evaluations have
-//!   to be indistinguishable from one.
-//! - [`is_reorder_pure`] - may the value move relative to the other attribute
-//!   evaluations while still being evaluated exactly once? Identity and
-//!   allocation are unobservable here, so this is a strict superset.
+//! - may it be inlined at every read site? A read site can sit inside a
+//!   callback (`list.some(x => x > $n)` evaluates it once per element) or
+//!   behind a short circuit (`flag && $b` evaluates it never), so this asks
+//!   for effect-freedom *and* identity-freedom: 0..N evaluations have to be
+//!   indistinguishable from one. That is [`Purity::Dup`].
+//! - may it move relative to the other attribute evaluations while still
+//!   being evaluated exactly once? Identity and allocation are unobservable
+//!   here, so strictly more qualifies: arrows, `[]`/`{}` literals and JSX.
+//!   That is [`Purity::Reorder`].
 //!
-//! Both are allowlists: an unrecognised expression is impure. The asymmetry is
-//! deliberate - a wrong answer towards "pure" is silent, a wrong answer towards
-//! "impure" only costs an IIFE parameter.
+//! "May duplicate" implies "may move", so the two answers are one ordered
+//! level rather than two predicates. Both questions are asked about every
+//! attribute value of a usage: [`purity`] answers them in a single walk and
+//! the caller stores the level - a value is never traversed twice to ask the
+//! other question.
+//!
+//! The levels are an allowlist: an unrecognised expression is
+//! [`Purity::Impure`]. The asymmetry is deliberate - a wrong answer towards
+//! pure is silent, a wrong answer towards impure only costs an IIFE parameter.
 //!
 //! Every value is judged under [`unwrap_type_casts`], so `f() as number` is
 //! judged on `f()` and `(x)` on `x`.
@@ -24,164 +31,231 @@
 use crate::utils::ast_helper::unwrap_type_casts;
 use swc_core::ecma::ast::*;
 
-/// Whether the value may be evaluated 0..N times instead of exactly once
+/// How freely the fold may treat a value's evaluation - each level includes
+/// everything the levels below it allow
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Purity {
+  /// observable effects (calls, `new`, `i++`, assignments, `await`): evaluated
+  /// exactly once, exactly where attribute position evaluated it
+  Impure,
+  /// effect-free but identity-bearing (arrows, `[]`/`{}` literals, JSX): may
+  /// evaluate at a different point in the attribute sequence, still exactly
+  /// once - two evaluations would be two different objects
+  Reorder,
+  /// effect- and identity-free: may evaluate 0..N times anywhere
+  Dup,
+}
+
+/// Judges how freely the fold may treat one value, in a single walk
 ///
-/// Member reads are admitted even though a getter could observe the extra
-/// reads. Gating them would turn `$c={colors[status]}` - one of the most
-/// common prop shapes there is - into an IIFE, and an effectful getter during
-/// render already violates React's own purity rule.
-pub(crate) fn is_dup_pure(expr: &Expr) -> bool {
+/// Member reads are admitted as [`Purity::Dup`] even though a getter could
+/// observe the extra reads. Gating them would turn `$c={colors[status]}` - one
+/// of the most common prop shapes there is - into an IIFE, and an effectful
+/// getter during render already violates React's own purity rule.
+pub(crate) fn purity(expr: &Expr) -> Purity {
   match unwrap_type_casts(expr) {
-    Expr::Lit(_) | Expr::Ident(_) => true,
-    Expr::Member(member) => is_dup_pure_member(member),
+    Expr::Lit(_) | Expr::Ident(_) => Purity::Dup,
+    Expr::Member(member) => member_purity(member),
     Expr::OptChain(opt_chain) => match &*opt_chain.base {
-      OptChainBase::Member(member) => is_dup_pure_member(member),
+      OptChainBase::Member(member) => member_purity(member),
       // `a?.()` still calls
-      OptChainBase::Call(_) => false,
+      OptChainBase::Call(_) => Purity::Impure,
       #[cfg(swc_ast_unknown)]
-      _ => false,
+      _ => Purity::Impure,
     },
     // `delete a.b` mutates
-    Expr::Unary(unary) => unary.op != UnaryOp::Delete && is_dup_pure(&unary.arg),
+    Expr::Unary(unary) if unary.op == UnaryOp::Delete => Purity::Impure,
+    Expr::Unary(unary) => operand(purity(&unary.arg)),
     // covers the logical operators too - swc models `&&`/`||`/`??` as BinaryOp
-    Expr::Bin(bin) => is_dup_pure(&bin.left) && is_dup_pure(&bin.right),
-    Expr::Cond(cond) => {
-      is_dup_pure(&cond.test) && is_dup_pure(&cond.cons) && is_dup_pure(&cond.alt)
-    }
+    Expr::Bin(bin) => operand(purity(&bin.left).min(purity(&bin.right))),
+    // a ternary between two identity-bearing branches (`on ? {…} : {…}`) could
+    // soundly be Reorder - branches are never coerced - but stays strict until
+    // the shape shows up in real code
+    Expr::Cond(cond) => operand(
+      purity(&cond.test)
+        .min(purity(&cond.cons))
+        .min(purity(&cond.alt)),
+    ),
     // an untagged template only concatenates - the result is a string, so two
     // evaluations are indistinguishable. A tagged template calls its tag.
-    Expr::Tpl(tpl) => tpl.exprs.iter().all(|expr| is_dup_pure(expr)),
-    // everything else: calls, `new`, `i++`, assignments, `await`, tagged
-    // templates, and the identity-bearing literals (two evaluations of
-    // `{}`, `[]` or `<Icon/>` are two different objects)
-    _ => false,
-  }
-}
-
-fn is_dup_pure_member(member: &MemberExpr) -> bool {
-  let prop_is_pure = match &member.prop {
-    MemberProp::Ident(_) => true,
-    MemberProp::Computed(computed) => is_dup_pure(&computed.expr),
-    MemberProp::PrivateName(_) => false,
-    #[cfg(swc_ast_unknown)]
-    _ => false,
-  };
-  prop_is_pure && is_dup_pure(&member.obj)
-}
-
-/// Whether the value may be evaluated at a different point in the attribute
-/// sequence, still exactly once
-///
-/// Only used to decide the output *shape*: a value that is not reorder-pure and
-/// sits between two captured values forces the element-wrap, which captures
-/// everything in source order and is exact by construction.
-pub(crate) fn is_reorder_pure(expr: &Expr) -> bool {
-  match unwrap_type_casts(expr) {
-    // creating a closure is unobservable - the body runs when it is called, not
-    // where the expression sits. Without this arm every `onClick={() => …}`,
+    Expr::Tpl(tpl) => operand(
+      tpl
+        .exprs
+        .iter()
+        .map(|expr| purity(expr))
+        .min()
+        .unwrap_or(Purity::Dup),
+    ),
+    // creating a closure is unobservable - the body runs when it is called,
+    // not where the expression sits. Without this arm every `onClick={() => …}`,
     // which is to say nearly every interactive element, would force the
     // element-wrap.
-    Expr::Arrow(_) | Expr::Fn(_) => true,
+    Expr::Arrow(_) | Expr::Fn(_) => Purity::Reorder,
     // allocating is unobservable, but the element *values* are evaluated here
-    Expr::Array(array) => array.elems.iter().flatten().all(|elem| {
-      // `[...xs]` reads xs' iterator and its getters
-      elem.spread.is_none() && is_reorder_pure(&elem.expr)
-    }),
-    Expr::Object(object) => object.props.iter().all(|prop| match prop {
-      // `{...x}` reads x's getters
-      PropOrSpread::Spread(_) => false,
-      PropOrSpread::Prop(prop) => is_reorder_pure_prop(prop),
-      #[cfg(swc_ast_unknown)]
-      _ => false,
-    }),
+    Expr::Array(array) => allocation(
+      array
+        .elems
+        .iter()
+        .flatten()
+        .map(|elem| {
+          // `[...xs]` reads xs' iterator and its getters
+          if elem.spread.is_some() {
+            Purity::Impure
+          } else {
+            purity(&elem.expr)
+          }
+        })
+        .min()
+        .unwrap_or(Purity::Dup),
+    ),
+    Expr::Object(object) => allocation(
+      object
+        .props
+        .iter()
+        .map(|prop| match prop {
+          // `{...x}` reads x's getters
+          PropOrSpread::Spread(_) => Purity::Impure,
+          PropOrSpread::Prop(prop) => prop_purity(prop),
+          #[cfg(swc_ast_unknown)]
+          _ => Purity::Impure,
+        })
+        .min()
+        .unwrap_or(Purity::Dup),
+    ),
     // `jsx()` allocates an element, it does not render it - but the attribute
     // values and children are evaluated at creation
-    Expr::JSXElement(element) => is_reorder_pure_jsx_element(element),
-    Expr::JSXFragment(fragment) => fragment.children.iter().all(is_reorder_pure_jsx_child),
-    other => is_dup_pure(other),
+    Expr::JSXElement(element) => jsx_element_purity(element),
+    Expr::JSXFragment(fragment) => jsx_children_purity(&fragment.children),
+    // everything else: calls, `new`, `i++`, assignments, `await`, tagged
+    // templates
+    _ => Purity::Impure,
   }
 }
 
-fn is_reorder_pure_prop(prop: &Prop) -> bool {
+/// The context of an operand the surrounding expression consumes: `+` and the
+/// comparisons coerce via `toString`/`valueOf`, which an identity-bearing
+/// operand may override with user code - so only full dup-purity passes
+/// through, everything else degrades to impure
+fn operand(purity: Purity) -> Purity {
+  if purity == Purity::Dup {
+    Purity::Dup
+  } else {
+    Purity::Impure
+  }
+}
+
+/// The context of a value an allocation holds: the allocation itself caps the
+/// result at [`Purity::Reorder`] (two evaluations are two objects), and a
+/// value below that makes the whole literal impure
+fn allocation(contents: Purity) -> Purity {
+  if contents >= Purity::Reorder {
+    Purity::Reorder
+  } else {
+    Purity::Impure
+  }
+}
+
+fn member_purity(member: &MemberExpr) -> Purity {
+  let prop = match &member.prop {
+    MemberProp::Ident(_) => Purity::Dup,
+    // a computed key is coerced to a property key where the read sits
+    MemberProp::Computed(computed) => purity(&computed.expr),
+    MemberProp::PrivateName(_) => Purity::Impure,
+    #[cfg(swc_ast_unknown)]
+    _ => Purity::Impure,
+  };
+  operand(prop.min(purity(&member.obj)))
+}
+
+fn prop_purity(prop: &Prop) -> Purity {
   match prop {
-    Prop::Shorthand(_) => true,
-    Prop::KeyValue(key_value) => {
-      is_reorder_pure_prop_name(&key_value.key) && is_reorder_pure(&key_value.value)
-    }
+    Prop::Shorthand(_) => Purity::Dup,
+    Prop::KeyValue(key_value) => prop_name_purity(&key_value.key).min(purity(&key_value.value)),
     // defining an accessor or a method does not run it
-    Prop::Getter(getter) => is_reorder_pure_prop_name(&getter.key),
-    Prop::Setter(setter) => is_reorder_pure_prop_name(&setter.key),
-    Prop::Method(method) => is_reorder_pure_prop_name(&method.key),
+    Prop::Getter(getter) => prop_name_purity(&getter.key),
+    Prop::Setter(setter) => prop_name_purity(&setter.key),
+    Prop::Method(method) => prop_name_purity(&method.key),
     // `{ x = 1 }` is only valid as a destructuring pattern, not as a value
-    Prop::Assign(_) => false,
+    Prop::Assign(_) => Purity::Impure,
     #[cfg(swc_ast_unknown)]
-    _ => false,
+    _ => Purity::Impure,
   }
 }
 
-fn is_reorder_pure_prop_name(name: &PropName) -> bool {
+fn prop_name_purity(name: &PropName) -> Purity {
   match name {
-    PropName::Ident(_) | PropName::Str(_) | PropName::Num(_) | PropName::BigInt(_) => true,
+    PropName::Ident(_) | PropName::Str(_) | PropName::Num(_) | PropName::BigInt(_) => Purity::Dup,
     // `{ [k()]: v }` calls k
-    PropName::Computed(computed) => is_reorder_pure(&computed.expr),
+    PropName::Computed(computed) => purity(&computed.expr),
     #[cfg(swc_ast_unknown)]
-    _ => false,
+    _ => Purity::Impure,
   }
 }
 
-fn is_reorder_pure_jsx_element(element: &JSXElement) -> bool {
-  let attrs_are_pure = element.opening.attrs.iter().all(|attr| match attr {
-    // `<Icon {...props}/>` reads props' getters
-    JSXAttrOrSpread::SpreadElement(_) => false,
-    JSXAttrOrSpread::JSXAttr(attr) => match &attr.value {
-      // a bare `<Icon active/>` is the literal `true`
-      None => true,
-      Some(value) => is_reorder_pure_jsx_attr_value(value),
-    },
-    #[cfg(swc_ast_unknown)]
-    _ => false,
-  });
-  attrs_are_pure && element.children.iter().all(is_reorder_pure_jsx_child)
+fn jsx_element_purity(element: &JSXElement) -> Purity {
+  let attrs = element
+    .opening
+    .attrs
+    .iter()
+    .map(|attr| match attr {
+      // `<Icon {...props}/>` reads props' getters
+      JSXAttrOrSpread::SpreadElement(_) => Purity::Impure,
+      JSXAttrOrSpread::JSXAttr(attr) => match &attr.value {
+        // a bare `<Icon active/>` is the literal `true`
+        None => Purity::Dup,
+        Some(value) => jsx_attr_value_purity(value),
+      },
+      #[cfg(swc_ast_unknown)]
+      _ => Purity::Impure,
+    })
+    .min()
+    .unwrap_or(Purity::Dup);
+  allocation(attrs.min(jsx_children_purity(&element.children)))
 }
 
 /// A `{…}` container, which an empty `{}` makes trivially pure
-fn is_reorder_pure_jsx_expr(expr: &JSXExpr) -> bool {
+fn jsx_expr_purity(expr: &JSXExpr) -> Purity {
   match expr {
-    JSXExpr::JSXEmptyExpr(_) => true,
-    JSXExpr::Expr(expr) => is_reorder_pure(expr),
+    JSXExpr::JSXEmptyExpr(_) => Purity::Dup,
+    JSXExpr::Expr(expr) => purity(expr),
     #[cfg(swc_ast_unknown)]
-    _ => false,
+    _ => Purity::Impure,
   }
 }
 
-fn is_reorder_pure_jsx_attr_value(value: &JSXAttrValue) -> bool {
+fn jsx_attr_value_purity(value: &JSXAttrValue) -> Purity {
   match value {
-    JSXAttrValue::Str(_) => true,
-    JSXAttrValue::JSXExprContainer(container) => is_reorder_pure_jsx_expr(&container.expr),
-    JSXAttrValue::JSXElement(element) => is_reorder_pure_jsx_element(element),
-    JSXAttrValue::JSXFragment(fragment) => fragment.children.iter().all(is_reorder_pure_jsx_child),
+    JSXAttrValue::Str(_) => Purity::Dup,
+    JSXAttrValue::JSXExprContainer(container) => jsx_expr_purity(&container.expr),
+    JSXAttrValue::JSXElement(element) => jsx_element_purity(element),
+    JSXAttrValue::JSXFragment(fragment) => jsx_children_purity(&fragment.children),
     #[cfg(swc_ast_unknown)]
-    _ => false,
+    _ => Purity::Impure,
   }
 }
 
-fn is_reorder_pure_jsx_child(child: &JSXElementChild) -> bool {
-  match child {
-    JSXElementChild::JSXText(_) => true,
-    JSXElementChild::JSXExprContainer(container) => is_reorder_pure_jsx_expr(&container.expr),
-    JSXElementChild::JSXElement(element) => is_reorder_pure_jsx_element(element),
-    JSXElementChild::JSXFragment(fragment) => {
-      fragment.children.iter().all(is_reorder_pure_jsx_child)
-    }
-    // `<div>{...children}</div>` reads the source's iterator
-    JSXElementChild::JSXSpreadChild(_) => false,
-    #[cfg(swc_ast_unknown)]
-    _ => false,
-  }
+fn jsx_children_purity(children: &[JSXElementChild]) -> Purity {
+  allocation(
+    children
+      .iter()
+      .map(|child| match child {
+        JSXElementChild::JSXText(_) => Purity::Dup,
+        JSXElementChild::JSXExprContainer(container) => jsx_expr_purity(&container.expr),
+        JSXElementChild::JSXElement(element) => jsx_element_purity(element),
+        JSXElementChild::JSXFragment(fragment) => jsx_children_purity(&fragment.children),
+        // `<div>{...children}</div>` reads the source's iterator
+        JSXElementChild::JSXSpreadChild(_) => Purity::Impure,
+        #[cfg(swc_ast_unknown)]
+        _ => Purity::Impure,
+      })
+      .min()
+      .unwrap_or(Purity::Dup),
+  )
 }
 
 #[cfg(test)]
 mod tests {
+  use super::Purity::*;
   use super::*;
   use swc_core::common::sync::Lrc;
   use swc_core::common::{FileName, SourceMap};
@@ -200,140 +274,136 @@ mod tests {
       .unwrap_or_else(|err| panic!("failed to parse `{source}`: {err:?}"))
   }
 
-  fn ts(source: &str) -> Box<Expr> {
-    parse_expr(Syntax::Typescript(TsSyntax::default()), source)
+  fn ts(source: &str) -> Purity {
+    purity(&parse_expr(Syntax::Typescript(TsSyntax::default()), source))
   }
 
-  fn tsx(source: &str) -> Box<Expr> {
-    parse_expr(
+  fn tsx(source: &str) -> Purity {
+    purity(&parse_expr(
       Syntax::Typescript(TsSyntax {
         tsx: true,
         ..Default::default()
       }),
       source,
-    )
-  }
-
-  fn dup_pure(source: &str) -> bool {
-    is_dup_pure(&ts(source))
-  }
-
-  fn reorder_pure(source: &str) -> bool {
-    is_reorder_pure(&ts(source))
+    ))
   }
 
   #[test]
-  fn dup_pure_admits_the_common_prop_shapes() {
-    assert!(dup_pure("3"));
-    assert!(dup_pure(r#""big""#));
-    assert!(dup_pure("size"));
-    assert!(dup_pure("p.tilt"));
-    assert!(dup_pure("p.a.b.c"));
-    assert!(dup_pure("p?.x"));
+  fn dup_implies_reorder() {
+    // the whole design leans on the subset relation being the enum order
+    assert!(Dup > Reorder);
+    assert!(Reorder > Impure);
+  }
+
+  #[test]
+  fn the_common_prop_shapes_may_duplicate() {
+    assert_eq!(ts("3"), Dup);
+    assert_eq!(ts(r#""big""#), Dup);
+    assert_eq!(ts("size"), Dup);
+    assert_eq!(ts("p.tilt"), Dup);
+    assert_eq!(ts("p.a.b.c"), Dup);
+    assert_eq!(ts("p?.x"), Dup);
     // computed access with a pure key - gating this would IIFE a dominant shape
-    assert!(dup_pure("colors[status]"));
-    assert!(dup_pure("!open"));
-    assert!(dup_pure("-count"));
-    assert!(dup_pure("typeof x"));
+    assert_eq!(ts("colors[status]"), Dup);
+    assert_eq!(ts("!open"), Dup);
+    assert_eq!(ts("-count"), Dup);
+    assert_eq!(ts("typeof x"), Dup);
     // the shape the deleted eslint rule wrongly called impure
-    assert!(dup_pure("i % 4 !== 0"));
-    assert!(dup_pure("a && b"));
-    assert!(dup_pure("a ?? b"));
-    assert!(dup_pure("on ? 1 : 2"));
-    assert!(dup_pure("`${a}-${b}`"));
+    assert_eq!(ts("i % 4 !== 0"), Dup);
+    assert_eq!(ts("a && b"), Dup);
+    assert_eq!(ts("a ?? b"), Dup);
+    assert_eq!(ts("on ? 1 : 2"), Dup);
+    assert_eq!(ts("`${a}-${b}`"), Dup);
   }
 
   #[test]
-  fn dup_pure_rejects_effects_and_identity() {
-    // effects
-    assert!(!dup_pure("f()"));
-    assert!(!dup_pure("p.getSize()"));
-    assert!(!dup_pure("new Date()"));
-    assert!(!dup_pure("i++"));
-    assert!(!dup_pure("(y = 1)"));
-    assert!(!dup_pure("tag`x`"));
-    assert!(!dup_pure("a?.()"));
-    assert!(!dup_pure("delete a.b"));
-    // identity: two evaluations are two different objects
-    assert!(!dup_pure("[1, 2]"));
-    assert!(!dup_pure("({ a: 1 })"));
-    assert!(!dup_pure("() => 1"));
+  fn effects_are_impure() {
+    assert_eq!(ts("f()"), Impure);
+    assert_eq!(ts("p.getSize()"), Impure);
+    assert_eq!(ts("new Date()"), Impure);
+    assert_eq!(ts("i++"), Impure);
+    assert_eq!(ts("(y = 1)"), Impure);
+    assert_eq!(ts("tag`x`"), Impure);
+    assert_eq!(ts("a?.()"), Impure);
+    assert_eq!(ts("delete a.b"), Impure);
   }
 
   #[test]
-  fn dup_pure_recurses_into_operands() {
-    assert!(!dup_pure("f() > 5"));
-    assert!(!dup_pure("a || f()"));
-    assert!(!dup_pure("on ? a : f()"));
-    assert!(!dup_pure("`${f()}`"));
-    assert!(!dup_pure("p.x[f()]"));
-    assert!(!dup_pure("f().x"));
-    assert!(!dup_pure("!f()"));
+  fn identity_bearing_values_may_move_but_not_duplicate() {
+    // two evaluations are two different objects
+    assert_eq!(ts("[1, 2]"), Reorder);
+    assert_eq!(ts("({ a: 1 })"), Reorder);
+    // without this every interactive element would take the element-wrap
+    assert_eq!(ts("() => setOpen(true)"), Reorder);
+    assert_eq!(ts("function () { return f(); }"), Reorder);
+    assert_eq!(ts("[1, x]"), Reorder);
+    assert_eq!(ts("({ top: 0, left: x })"), Reorder);
+    // defining an accessor or a method does not run it
+    assert_eq!(ts("({ get x() { return f(); } })"), Reorder);
+    assert_eq!(ts("({ m() { return f(); } })"), Reorder);
+  }
+
+  #[test]
+  fn operands_degrade_identity_to_impure() {
+    // `+`/comparison coercion could run a user `toString`, so an
+    // identity-bearing operand never rides through an operator
+    assert_eq!(ts("x + [1]"), Impure);
+    assert_eq!(ts("!{}"), Impure);
+    assert_eq!(ts("`${[x]}`"), Impure);
+    assert_eq!(ts("on ? { a: 1 } : x"), Impure);
+  }
+
+  #[test]
+  fn purity_recurses_into_operands() {
+    assert_eq!(ts("f() > 5"), Impure);
+    assert_eq!(ts("a || f()"), Impure);
+    assert_eq!(ts("on ? a : f()"), Impure);
+    assert_eq!(ts("`${f()}`"), Impure);
+    assert_eq!(ts("p.x[f()]"), Impure);
+    assert_eq!(ts("f().x"), Impure);
+    assert_eq!(ts("!f()"), Impure);
   }
 
   #[test]
   fn purity_is_judged_under_type_casts_and_parens() {
     // pins that the allowlist never sees the wrapper
-    assert!(!dup_pure("f() as number"));
-    assert!(!dup_pure("(f())"));
-    assert!(!dup_pure("f()!"));
-    assert!(!dup_pure("<number>f()"));
-    assert!(dup_pure("x as number"));
-    assert!(dup_pure("(x)"));
-    assert!(dup_pure("x!"));
+    assert_eq!(ts("f() as number"), Impure);
+    assert_eq!(ts("(f())"), Impure);
+    assert_eq!(ts("f()!"), Impure);
+    assert_eq!(ts("<number>f()"), Impure);
+    assert_eq!(ts("x as number"), Dup);
+    assert_eq!(ts("(x)"), Dup);
+    assert_eq!(ts("x!"), Dup);
   }
 
   #[test]
-  fn reorder_pure_admits_what_dup_pure_does() {
-    assert!(reorder_pure("size"));
-    assert!(reorder_pure("colors[status]"));
-    assert!(reorder_pure("i % 4 !== 0"));
-    // and rejects the same effects
-    assert!(!reorder_pure("f()"));
-    assert!(!reorder_pure("i++"));
-  }
-
-  #[test]
-  fn reorder_pure_admits_allocation_without_observation() {
-    // without this every interactive element would take the element-wrap
-    assert!(reorder_pure("() => setOpen(true)"));
-    assert!(reorder_pure("function () { return f(); }"));
-    assert!(reorder_pure("[1, x]"));
-    assert!(reorder_pure("({ top: 0, left: x })"));
-    assert!(reorder_pure("({ get x() { return f(); } })"));
-    assert!(reorder_pure("({ m() { return f(); } })"));
-  }
-
-  #[test]
-  fn reorder_pure_rejects_evaluation_hidden_in_a_literal() {
-    assert!(!reorder_pure("[f()]"));
-    assert!(!reorder_pure("({ a: f() })"));
+  fn evaluation_hidden_in_a_literal_is_impure() {
+    assert_eq!(ts("[f()]"), Impure);
+    assert_eq!(ts("({ a: f() })"), Impure);
     // a computed key is evaluated where the literal sits
-    assert!(!reorder_pure("({ [k()]: 1 })"));
+    assert_eq!(ts("({ [k()]: 1 })"), Impure);
     // a spread reads the source's getters
-    assert!(!reorder_pure("[...xs]"));
-    assert!(!reorder_pure("({ ...props })"));
+    assert_eq!(ts("[...xs]"), Impure);
+    assert_eq!(ts("({ ...props })"), Impure);
   }
 
   #[test]
-  fn reorder_pure_looks_inside_jsx() {
-    assert!(is_reorder_pure(&tsx("<Icon />")));
-    assert!(is_reorder_pure(&tsx("<Icon size={2}>text</Icon>")));
-    assert!(is_reorder_pure(&tsx("<Icon active />")));
-    assert!(is_reorder_pure(&tsx("<><Icon /></>")));
+  fn jsx_is_identity_bearing_and_judged_inside() {
+    assert_eq!(tsx("<Icon />"), Reorder);
+    assert_eq!(tsx("<Icon size={2}>text</Icon>"), Reorder);
+    assert_eq!(tsx("<Icon active />"), Reorder);
+    assert_eq!(tsx("<><Icon /></>"), Reorder);
     // an attribute value is evaluated when the element is created
-    assert!(!is_reorder_pure(&tsx("<Icon size={f()} />")));
-    assert!(!is_reorder_pure(&tsx("<Icon>{f()}</Icon>")));
-    assert!(!is_reorder_pure(&tsx("<Icon {...props} />")));
-    assert!(!is_reorder_pure(&tsx("<><Icon size={f()} /></>")));
-    // a JSX element is still identity-bearing, so it is never dup-pure
-    assert!(!is_dup_pure(&tsx("<Icon />")));
+    assert_eq!(tsx("<Icon size={f()} />"), Impure);
+    assert_eq!(tsx("<Icon>{f()}</Icon>"), Impure);
+    assert_eq!(tsx("<Icon {...props} />"), Impure);
+    assert_eq!(tsx("<><Icon size={f()} /></>"), Impure);
   }
 
   #[test]
   fn jsx_is_judged_the_same_from_the_es_parser() {
-    // the predicates see an Expr, never a Syntax - this pins that the JSX arms
-    // are not accidentally coupled to the TS parser the fixtures use
+    // purity() sees an Expr, never a Syntax - this pins that the JSX arms are
+    // not accidentally coupled to the TS parser the fixtures use
     let expr = parse_expr(
       Syntax::Es(EsSyntax {
         jsx: true,
@@ -341,6 +411,6 @@ mod tests {
       }),
       "<Icon size={f()} />",
     );
-    assert!(!is_reorder_pure(&expr));
+    assert_eq!(purity(&expr), Impure);
   }
 }
