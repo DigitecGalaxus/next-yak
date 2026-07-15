@@ -243,6 +243,24 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
       errors: [{ messageId: "lonelyExpression" }],
     },
     {
+      // Mixin after a CSS escape
+      code: [
+        'import { styled } from "next-yak";',
+        "styled.div`",
+        '  content: "\\x";',
+        "  ${foo}",
+        "`",
+      ].join("\n"),
+      output: [
+        'import { styled } from "next-yak";',
+        "styled.div`",
+        '  content: "\\x";',
+        "  ${foo};",
+        "`",
+      ].join("\n"),
+      errors: [{ messageId: "lonelyExpression" }],
+    },
+    {
       // Mixin with arrow function expression before
       code: [
         'import { css, styled } from "next-yak";',

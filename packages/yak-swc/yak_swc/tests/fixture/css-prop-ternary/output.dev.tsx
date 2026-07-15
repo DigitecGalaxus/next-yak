@@ -55,7 +55,7 @@ const Elem3 = ({ active, width }: {
 const Elem4 = ({ active }: {
     active: boolean;
 })=>{
-    return <div className={active ? /*#__PURE__*/ "" : /*YAK Extracted CSS:
+    return <div className={active ? "" : /*YAK Extracted CSS:
 :global(.input_Elem4_m7uBBu-01) {
   color: blue;
 }

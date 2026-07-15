@@ -8,7 +8,7 @@ use crate::utils::ast_helper::unwrap_type_casts;
 use crate::yak_imports::YakImports;
 use swc_core::{
   atoms::Wtf8Atom,
-  common::{Span, DUMMY_SP},
+  common::{Span, Spanned, DUMMY_SP},
   ecma::ast::{
     ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, IdentName,
     JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXExpr, JSXExprContainer, Lit, Str,
@@ -25,8 +25,8 @@ pub(crate) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box
   match unwrap_type_casts(expr) {
     Expr::Call(call) => fold_css_call(call, yak_imports),
     Expr::Cond(cond) => {
-      let cons = fold_css_expr(&cond.cons, yak_imports)?;
-      let alt = fold_css_expr(&cond.alt, yak_imports)?;
+      let cons = fold_css_branch(&cond.cons, yak_imports)?;
+      let alt = fold_css_branch(&cond.alt, yak_imports)?;
       Some(Box::new(Expr::Cond(CondExpr {
         span: cond.span,
         test: cond.test.clone(),
@@ -34,7 +34,43 @@ pub(crate) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box
         alt,
       })))
     }
+    // `cond && css("x")` folds to `cond ? "x" : ""`. There is no base class to
+    // concatenate onto, so the class name carries no leading space.
+    Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => {
+      let class_name = pure_static_css_class(&bin.right, yak_imports)?;
+      // keep the span of the css call so the /*YAK Extracted CSS:*/ comment
+      // (parsed by extractCss.ts) stays attached
+      let css_call_span = unwrap_type_casts(&bin.right).span();
+      Some(Box::new(Expr::Cond(CondExpr {
+        span: css_call_span,
+        test: bin.left.clone(),
+        cons: str_expr(class_name),
+        alt: str_expr("".into()),
+      })))
+    }
     _ => None,
+  }
+}
+
+/// Folds one branch of a css prop ternary: either a foldable css expression or
+/// a falsy value, which applies no styles and therefore yields no class name
+fn fold_css_branch(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
+  if is_falsy_css_value(expr) {
+    return Some(str_expr("".into()));
+  }
+  fold_css_expr(expr, yak_imports)
+}
+
+/// Matches the falsy css prop values `false`, `null` and `undefined`
+/// e.g. `css={on ? css`...` : undefined}`
+fn is_falsy_css_value(expr: &Expr) -> bool {
+  match unwrap_type_casts(expr) {
+    Expr::Lit(Lit::Null(_)) => true,
+    Expr::Lit(Lit::Bool(bool_lit)) => !bool_lit.value,
+    // a local binding named `undefined` would shadow the global, but the css
+    // prop type only admits the real `undefined` here
+    Expr::Ident(ident) => ident.sym == "undefined",
+    _ => false,
   }
 }
 

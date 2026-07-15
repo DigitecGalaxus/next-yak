@@ -129,6 +129,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
     }
     /* } */
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled, css } from "next-yak";
   const x = styled.div\`
@@ -152,6 +153,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
       \`
   }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled, css } from "next-yak";
   const x = styled.div\`
@@ -174,6 +176,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
      > span { }
    }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -188,6 +191,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
    ::after { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -200,6 +204,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
    :not(:active, :selected):focus-visible { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -212,6 +217,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
    :hover :active { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -225,6 +231,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
    &:hover,
    :active { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -238,6 +245,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
     > :is { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -250,6 +258,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
     > * { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -262,6 +271,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
     :dir(rtl) { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
@@ -274,10 +284,52 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   const x = styled.div\`
     :hover { }
   \``,
+      output: null,
       errors: getErrorWithSuggestionsCode({
         code: `import { styled } from "next-yak";
   const x = styled.div\`
     &:hover { }
+  \``,
+      }),
+    },
+    // Bare pseudo-selectors can intentionally mean descendants in native CSS nesting.
+    // Keep the potentially behavior-changing `&` insertion as an opt-in suggestion.
+    {
+      code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    :first-child { }
+  \``,
+      output: null,
+      errors: getErrorWithSuggestionsCode({
+        code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    &:first-child { }
+  \``,
+      }),
+    },
+    {
+      code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    :has(img) { }
+  \``,
+      output: null,
+      errors: getErrorWithSuggestionsCode({
+        code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    &:has(img) { }
+  \``,
+      }),
+    },
+    {
+      code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    ::backdrop { }
+  \``,
+      output: null,
+      errors: getErrorWithSuggestionsCode({
+        code: `import { styled } from "next-yak";
+  const x = styled.div\`
+    &::backdrop { }
   \``,
       }),
     },

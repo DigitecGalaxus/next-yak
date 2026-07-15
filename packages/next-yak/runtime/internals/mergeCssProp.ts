@@ -18,7 +18,7 @@ export const mergeCssProp = (
     className?: string;
     style?: Record<string, string>;
   } & Record<string, unknown>,
-  cssProp: RuntimeStyleProcessor<unknown>,
+  cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
 ) => {
   const existingClassName = relevantProps.className;
   const classNames = existingClassName ? new Set(existingClassName.split(" ")) : new Set<string>();
@@ -26,7 +26,13 @@ export const mergeCssProp = (
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
 
-  cssProp({}, classNames, style);
+  // A falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on`
+  // false. The swc plugin folds the statically known cases, so this covers the
+  // shapes that stay on the runtime path (a mixin reference or a css template
+  // carrying runtime values).
+  if (cssProp) {
+    cssProp({}, classNames, style);
+  }
 
   const result: { className?: string; style?: Record<string, string> } = {};
 

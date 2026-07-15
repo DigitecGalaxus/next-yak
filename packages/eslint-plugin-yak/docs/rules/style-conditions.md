@@ -1,6 +1,6 @@
 # yak/style-conditions
 
-📝 Enforces that arrow functions only return runtime values or css literals in styled/css literals from next-yak.
+📝 Warns when arrow functions in next-yak styled/css literals would create unnecessary or invalid CSS variables.
 
 <!-- end auto-generated rule header -->
 
@@ -56,7 +56,7 @@ The yak/style-conditions rule in our linting tools can help identify unnecessary
 
 ## Rule details
 
-This rule triggers a warning if an arrow function doesn't return a css literal or a runtime value.
+This rule triggers a warning when an arrow function inside a CSS declaration returns a static value that would create an unnecessary CSS variable. Arrow functions outside declarations are runtime class expressions, so they may return local or imported css mixins.
 
 The following patterns are considered errors:
 
@@ -89,6 +89,14 @@ styled.button`
 
 styled.button`
   color: ${color};
+`;
+
+const activeStyles = css`
+  opacity: 1;
+`;
+
+styled.button`
+  ${({$active}) => $active && activeStyles}
 `;
 
 styled.button`
