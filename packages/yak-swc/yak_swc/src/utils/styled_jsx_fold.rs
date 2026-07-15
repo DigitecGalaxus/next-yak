@@ -441,6 +441,11 @@ struct Binding {
 }
 
 /// The complete case analysis - every foldable usage is exactly one of these
+///
+/// The ladder looks like [`Purity`] but grades a different thing: a purity
+/// level is one value in isolation, a shape is the decision for the whole
+/// usage - [`select_shape`] derives it from all the values' purities *plus*
+/// their attribute positions, so a level never maps to a shape directly
 #[derive(Debug, PartialEq, Eq)]
 enum FoldShape {
   /// every consumed value could be put back where it is read: today's output

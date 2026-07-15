@@ -2,31 +2,8 @@
 //!
 //! Folding moves an attribute expression out of attribute position - where JS
 //! evaluates it exactly once, in source order - and into arbitrary expression
-//! position inside the style conditions. Two different questions decide what
-//! the fold may do with a value:
-//!
-//! - may it be inlined at every read site? A read site can sit inside a
-//!   callback (`list.some(x => x > $n)` evaluates it once per element) or
-//!   behind a short circuit (`flag && $b` evaluates it never), so this asks
-//!   for effect-freedom *and* identity-freedom: 0..N evaluations have to be
-//!   indistinguishable from one. That is [`Purity::Dup`].
-//! - may it move relative to the other attribute evaluations while still
-//!   being evaluated exactly once? Identity and allocation are unobservable
-//!   here, so strictly more qualifies: arrows, `[]`/`{}` literals and JSX.
-//!   That is [`Purity::Reorder`].
-//!
-//! "May duplicate" implies "may move", so the two answers are one ordered
-//! level rather than two predicates. Both questions are asked about every
-//! attribute value of a usage: [`purity`] answers them in a single walk and
-//! the caller stores the level - a value is never traversed twice to ask the
-//! other question.
-//!
-//! The levels are an allowlist: an unrecognised expression is
-//! [`Purity::Impure`]. The asymmetry is deliberate - a wrong answer towards
-//! pure is silent, a wrong answer towards impure only costs an IIFE parameter.
-//!
-//! Every value is judged under [`unwrap_type_casts`], so `f() as number` is
-//! judged on `f()` and `(x)` on `x`.
+//! position inside the style conditions. [`Purity`] grades how much of that
+//! movement a value tolerates.
 
 use crate::utils::ast_helper::unwrap_type_casts;
 use swc_core::ecma::ast::*;
@@ -42,11 +19,20 @@ pub(crate) enum Purity {
   /// evaluate at a different point in the attribute sequence, still exactly
   /// once - two evaluations would be two different objects
   Reorder,
-  /// effect- and identity-free: may evaluate 0..N times anywhere
+  /// effect- and identity-free: may evaluate 0..N times anywhere - a read
+  /// site can sit inside a callback (`list.some(x => x > $n)` reads once per
+  /// element) or behind a short circuit (`flag && $b` reads never)
   Dup,
 }
 
 /// Judges how freely the fold may treat one value, in a single walk
+///
+/// The levels are an allowlist: an unrecognised expression is
+/// [`Purity::Impure`]. The asymmetry is deliberate - a wrong answer towards
+/// pure is silent, a wrong answer towards impure only costs an IIFE parameter.
+///
+/// Every value is judged under [`unwrap_type_casts`], so `f() as number` is
+/// judged on `f()` and `(x)` on `x`.
 ///
 /// Member reads are admitted as [`Purity::Dup`] even though a getter could
 /// observe the extra reads. Gating them would turn `$c={colors[status]}` - one
