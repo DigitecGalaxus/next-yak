@@ -1,5 +1,7 @@
 use crate::utils::ast_helper::unwrap_type_casts;
-use crate::utils::class_name_fold::{class_name_attr, expr_attr_value, fold_css_expr};
+use crate::utils::class_name_fold::{
+  class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee,
+};
 use crate::yak_imports::YakImports;
 use swc_core::{
   common::errors::HANDLER,
@@ -52,12 +54,19 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
+  /// A no-op empty css prop (e.g. `css``) is dropped entirely instead.
   pub fn transform(
     &self,
     opening_element: &mut JSXOpeningElement,
     yak_imports: &mut YakImports,
     strict_css_prop: bool,
   ) {
+    // An empty css prop (e.g. `css``) compiles to a bare `css()` and contributes
+    // nothing, so drop the attribute entirely and keep the other props untouched
+    if Self::is_noop_css_prop(&opening_element.attrs[self.index], yak_imports) {
+      opening_element.attrs.remove(self.index);
+      return;
+    }
     if self.try_fold(opening_element, yak_imports) {
       return;
     }
@@ -156,6 +165,27 @@ impl CSSProp {
     };
     opening_element.attrs[self.index] = class_name_attr(expr_attr_value(class_name_expr));
     true
+  }
+
+  /// Matches a css prop that compiles to a bare `css()` with no arguments,
+  /// produced by an empty css template such as `css``
+  fn is_noop_css_prop(attr: &JSXAttrOrSpread, yak_imports: &YakImports) -> bool {
+    let JSXAttrOrSpread::JSXAttr(JSXAttr {
+      value:
+        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+          expr: JSXExpr::Expr(expr),
+          ..
+        })),
+      ..
+    }) = attr
+    else {
+      return false;
+    };
+    matches!(
+      unwrap_type_casts(expr),
+      Expr::Call(call)
+        if is_yak_css_callee(&call.callee, yak_imports) && call.args.is_empty()
+    )
   }
 
   /// Finds a reference to styles declared elsewhere (`css={mixin}`,

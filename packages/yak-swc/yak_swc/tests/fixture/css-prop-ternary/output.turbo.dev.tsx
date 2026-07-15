@@ -1,5 +1,5 @@
 import { css, __yak_unitPostFix, __yak_mergeCssProp } from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW1fbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtMl9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X0VsZW0yX19iaWdfbTd1QkJ1IHsKICBmb250LXNpemU6IDIwcHg7Cn0uaW5wdXRfRWxlbTJfbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtM19tN3VCQnUgewogIHdpZHRoOiB2YXIoLS1pbnB1dF9FbGVtM19fd2lkdGhfbTd1QkJ1KTsKfS5pbnB1dF9FbGVtM19tN3VCQnUtMDEgewogIGNvbG9yOiBibHVlOwp9";
+import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW1fbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtMl9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X0VsZW0yX19iaWdfbTd1QkJ1IHsKICBmb250LXNpemU6IDIwcHg7Cn0uaW5wdXRfRWxlbTJfbTd1QkJ1LTAxIHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtM19tN3VCQnUgewogIHdpZHRoOiB2YXIoLS1pbnB1dF9FbGVtM19fd2lkdGhfbTd1QkJ1KTsKfS5pbnB1dF9FbGVtM19tN3VCQnUtMDEgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X0VsZW00X203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0=";
 // folds: both arms are fully static
 const Elem = ({ active }: {
     active: boolean;
@@ -50,4 +50,14 @@ const Elem3 = ({ active, width }: {
   color: blue;
 }
 */ /*#__PURE__*/ css("input_Elem3_m7uBBu-01"))}/>;
+};
+// folds: an empty arm becomes an empty string instead of a dead class
+const Elem4 = ({ active }: {
+    active: boolean;
+})=>{
+    return <div className={active ? "" : /*YAK Extracted CSS:
+.input_Elem4_m7uBBu-01 {
+  color: blue;
+}
+*/ /*#__PURE__*/ "input_Elem4_m7uBBu-01"}/>;
 };

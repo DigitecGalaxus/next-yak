@@ -99,8 +99,9 @@ fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>>
       _ => return None,
     }
   }
-  // css calls without a base class stay on the runtime path
-  let base = base?;
+  // an empty `css()` folds to an empty base `""`, so it can collapse into a
+  // ternary arm instead of falling back to the runtime path
+  let base = base.unwrap_or_else(|| "".into());
   // "base" + (cond1 ? " a" : "") + (cond2 ? " b" : " c") …
   let mut class_name_expr = str_expr(base);
   for segment in segments {
@@ -191,7 +192,7 @@ pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Op
   }
 }
 
-fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
+pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
   match callee {
     Callee::Expr(expr) => match unwrap_type_casts(expr) {
       Expr::Ident(ident) => yak_imports.yak_css_idents().contains(&ident.to_id()),
