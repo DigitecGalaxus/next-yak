@@ -27,3 +27,5 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 - The optimization can be disabled with the new `optimizeStaticJsx: false` option.
 
 Behavioral notes: JSX folding speeds up rendering considerably, but a folded usage is no longer a component. It does not show up in React DevTools or in component stacks, in development too, and `child.type === Icon` checks no longer match it. Foreign `$props` on fully static folded usages are forwarded instead of stripped. The FAQ explains when a usage folds and what that changes.
+
+A folded usage evaluates every prop expression the same number of times, and in the same order, as the unfolded JSX did: a value the fold cannot inline for free is bound once at the usage site and the conditions read the binding. Two exceptions are worth knowing, and both only show up in code React's own purity rule already forbids: a `$prop` no style condition reads is dropped without being evaluated, and a getter on a member read (`$a={obj.x}`) can still fire once per condition.

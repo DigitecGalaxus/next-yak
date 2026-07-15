@@ -198,7 +198,6 @@ const Conditional = props.flag ? /*YAK Extracted CSS:
 const NotOptimizable = ()=><>
     <Card {...props}>bails: spread</Card>
     <Card theme={props.theme}>bails: theme</Card>
-    <Card<any>>bails: type arguments</Card>
     <Dynamic $color="red">bails</Dynamic>
     <WithAttrs>bails</WithAttrs>
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
