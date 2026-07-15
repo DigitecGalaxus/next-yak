@@ -190,26 +190,25 @@ The [css prop](/docs/features#css-prop) is resolved at compile time as well. The
 
 <SideBySide>
 <div>
+
 ```tsx title="input"
 import { css } from "next-yak";
 
 const Elem = () => (
-
-<div
-  css={css`
-    color: red;
-  `}
-/>
+  <div
+    css={css`
+      color: red;
+    `}
+  />
 );
+```
 
-````
 </div>
 <div>
+
 ```tsx title="output"
-const Elem = () => (
-  <div className="input_Elem_m7uBBu" />
-);
-````
+const Elem = () => <div className="input_Elem_m7uBBu" />;
+```
 
 </div>
 </SideBySide>
@@ -218,29 +217,29 @@ Conditional styles stay conditional, the condition just toggles class names inst
 
 <SideBySide>
 <div>
+
 ```tsx title="input"
 const Elem = ({ on }) => (
   <div
     css={
       on
-        ? css`color: red;`
-        : css`color: blue;`
+        ? css`
+            color: red;
+          `
+        : css`
+            color: blue;
+          `
     }
   />
 );
+```
 
-````
 </div>
 <div>
+
 ```tsx title="output"
-const Elem = ({ on }) => (
-  <div
-    className={on
-      ? "input_Elem_m7uBBu"
-      : "input_Elem_m7uBBu-01"}
-  />
-);
-````
+const Elem = ({ on }) => <div className={on ? "input_Elem_m7uBBu" : "input_Elem_m7uBBu-01"} />;
+```
 
 </div>
 </SideBySide>
@@ -305,39 +304,34 @@ Additionally, the comment is marked with `/*#__PURE__*/` so that the minifier kn
 
 #### Fold static JSX usages
 
-Every styled component is a wrapper component: React renders an extra component on every render just to compute a class name. When a styled component is declared and used in the same file, the plugin already knows what the wrapper would render and folds the usage directly into the DOM element:
+A styled component is itself a React component: when it renders it computes its class name, merges it with the received props and renders the actual DOM element. That is one extra component in the render tree for every usage. When a styled component is declared and used in the same file, the plugin already knows what it will render and folds the usage directly into the DOM element:
 
 <SideBySide>
 <div>
+
 ```tsx title="input"
 import { styled } from "next-yak";
 
-const Card = styled.div`  color: red;`;
+const Card = styled.div`
+  color: red;
+`;
 
-const Page = () => (
+const Page = () => <Card>Hello</Card>;
+```
 
-<Card>Hello</Card>
-);
-
-````
 </div>
 <div>
-```tsx title="output"
-const Card = __yak.__yak_div(
-  "input_Card_m7uBBu"
-);
 
-const Page = () => (
-  <div className="input_Card_m7uBBu">
-    Hello
-  </div>
-);
-````
+```tsx title="output"
+const Card = __yak.__yak_div("input_Card_m7uBBu");
+
+const Page = () => <div className="input_Card_m7uBBu">Hello</div>;
+```
 
 </div>
 </SideBySide>
 
-The wrapper component disappears from the render tree for this usage. The declaration itself stays untouched so exports, selectors like `${Card}` and non foldable usages keep working. If nothing uses the declaration anymore, the minifier removes it as dead code.
+React now renders one component less for this usage. The declaration itself stays untouched so exports, selectors like `${Card}` and non foldable usages keep working. If nothing uses the declaration anymore, the minifier removes it as dead code.
 
 Attributes on the usage stay on the element. A `className` is merged statically when possible, otherwise with the small `__yak_mergeClassNames` runtime helper:
 
@@ -355,38 +349,33 @@ Folding is not limited to fully static components. `styled(Component)` usages fo
 
 <SideBySide>
 <div>
+
 ```tsx title="input"
-const Icon = styled.span<{
-  $big?: boolean;
-}>`
+const Icon = styled.span<{ $big?: boolean }>`
   min-height: 24px;
   ${({ $big }) =>
-    $big && css`margin-right: 12px;`}
+    $big &&
+    css`
+      margin-right: 12px;
+    `}
 `;
 
-const Nav = ({ active }) => (
+const Nav = ({ active }) => <Icon $big={active} />;
+```
 
-<Icon $big={active} />
-);
-
-````
 </div>
 <div>
+
 ```tsx title="output"
 const Nav = ({ active }) => (
-  <span
-    className={"input_Icon_m7uBBu" +
-      (active
-        ? " input_Icon__$big_m7uBBu"
-        : "")}
-  />
+  <span className={"input_Icon_m7uBBu" + (active ? " input_Icon__$big_m7uBBu" : "")} />
 );
-````
+```
 
 </div>
 </SideBySide>
 
-Folding only happens when the plugin can prove that the folded element behaves exactly like the wrapper component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the wrapper component at runtime, exactly as if folding did not exist.
+Folding only happens when the plugin can prove that the folded element behaves exactly like the styled component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the styled component at runtime, exactly as if folding did not exist.
 
 <Callout type="warn">
   Only top level `const` declarations can be folded. A styled component declared with `let` or `var`
