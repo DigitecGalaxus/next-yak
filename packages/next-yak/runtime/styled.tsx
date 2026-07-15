@@ -71,6 +71,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     | string;
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
+  const staticAttrs = staticAttrsOf(mergedAttrsFn);
 
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
@@ -98,6 +99,36 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         if (!("$__runtimeStylesProcessed" in props)) {
           const classNames = new ClassNames((props as { className?: string }).className);
           runtimeStyleProcessor(props, classNames, undefined as unknown as React.CSSProperties);
+          filteredProps.className = classNames.value || undefined;
+        }
+        const Target = targetComponent as React.ElementType;
+        return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
+      }
+
+      // the same fast path, one step weaker: a constant `.attrs({...})` cannot
+      // read the theme and contributes the same props on every render, so only
+      // the attrs *function* form needs the theme and the per-render merge
+      if (staticAttrs && !runtimeStyleProcessor.$dynamic) {
+        const source = (
+          "$__attrs" in props
+            ? props
+            : combineProps(
+                {
+                  ...(props as { className?: string; style?: React.CSSProperties }),
+                  // mark the props as processed
+                  $__attrs: true,
+                },
+                staticAttrs,
+              )
+        ) as { className?: string; style?: React.CSSProperties };
+        // `source` aliases `props` when the attrs already ran, so the class
+        // names are written to the fresh, filtered object instead
+        const filteredProps = removeNonDomProperties(source) as {
+          className?: string;
+        };
+        if (!("$__runtimeStylesProcessed" in source)) {
+          const classNames = new ClassNames(source.className);
+          runtimeStyleProcessor(source, classNames, undefined as unknown as React.CSSProperties);
           filteredProps.className = classNames.value || undefined;
         }
         const Target = targetComponent as React.ElementType;
@@ -289,8 +320,31 @@ const buildRuntimeAttrsProcessor = <
     };
   }
 
+  if (ownAttrsFn && typeof attrs !== "function") {
+    return tagStaticAttrs(ownAttrsFn, attrs as object);
+  }
+
   return ownAttrsFn || parentAttrsFn;
 };
+
+/**
+ * A constant `.attrs({...})` is wrapped into `() => attrs`, which makes it
+ * indistinguishable from `.attrs(props => ...)` at render time — so the object
+ * it will always return is recorded on the processor, which allows the
+ * component to take a fast path (see the `staticAttrs` branch in `Yak`).
+ *
+ * Only components whose own attrs are constant are tagged; a
+ * `styled(StyledWithAttrs).attrs({...})` chain merges the levels per render,
+ * which keeps a mutation of an attrs object observable.
+ */
+const staticAttrsSymbol = Symbol("yak.staticAttrs");
+
+const tagStaticAttrs = <F extends Function>(fn: F, value: object): F =>
+  Object.assign(fn, { [staticAttrsSymbol]: value });
+
+/** The constant object an attrs processor always returns, if it has one */
+const staticAttrsOf = (fn?: Function): object | undefined =>
+  fn ? (fn as unknown as Record<symbol, object>)[staticAttrsSymbol] : undefined;
 
 /**
  * Merges the runtime style function of the current component with the runtime style function of the parent component
