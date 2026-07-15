@@ -4,6 +4,7 @@ description: This is for the curious minds who want to know how `next-yak` works
 ---
 
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 import { SideBySide } from "../../components/sideBySide";
 
 ## Playground
@@ -33,6 +34,7 @@ See: [yak-swc](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak
 The SWC plugin takes in the source code and transforms the tagged template literals into `next-yak` runtime function
 calls with the imported styles (from the final css module output) as arguments. It also transforms the dynamic parts of the
 tagged template literals into function calls with the properties as argument and adds it as css value to the style object.
+On top of that it resolves the `css` prop and folds static JSX usages of styled components directly into DOM elements.
 
 #### Change import
 
@@ -182,6 +184,68 @@ const Button = __yak.__yak_button(
 </div>
 </SideBySide>
 
+#### Transform the css prop
+
+The [css prop](/docs/features#css-prop) is resolved at compile time as well. The styles are extracted like all other styles and the prop itself is replaced with a plain `className` attribute:
+
+<SideBySide>
+<div>
+```tsx title="input"
+import { css } from "next-yak";
+
+const Elem = () => (
+  <div
+    css={css`
+      color: red;
+    `}
+  />
+);
+
+````
+</div>
+<div>
+```tsx title="output"
+const Elem = () => (
+  <div className="input_Elem_m7uBBu" />
+);
+````
+
+</div>
+</SideBySide>
+
+Conditional styles stay conditional, the condition just toggles class names instead of css blocks:
+
+<SideBySide>
+<div>
+```tsx title="input"
+const Elem = ({ on }) => (
+  <div
+    css={
+      on
+        ? css`color: red;`
+        : css`color: blue;`
+    }
+  />
+);
+
+````
+</div>
+<div>
+```tsx title="output"
+const Elem = ({ on }) => (
+  <div
+    className={on
+      ? "input_Elem_m7uBBu"
+      : "input_Elem_m7uBBu-01"}
+  />
+);
+````
+
+</div>
+</SideBySide>
+
+Only if the element has an existing `className` attribute or spread attributes the class names have to be merged at render time. In that case the plugin wraps the attributes with the small `__yak_mergeCssProp` runtime helper.
+
 #### Transform CSS
 
 The next step is to extract the CSS to a comment in the source code. This is useful because the transformation should happen
@@ -238,6 +302,95 @@ const Button = styled.button`
 The comment gets marked with `/*YAK Extracted CSS:` so that the loader can easily find it and extract the CSS.
 Additionally, the comment is marked with `/*#__PURE__*/` so that the minifier knows that behind the runtime function call there is no side effect and can move it around.
 
+#### Fold static JSX usages
+
+Every styled component is a wrapper component: React renders an extra component on every render just to compute a class name. When a styled component is declared and used in the same file, the plugin already knows what the wrapper would render and folds the usage directly into the DOM element:
+
+<SideBySide>
+<div>
+```tsx title="input"
+import { styled } from "next-yak";
+
+const Card = styled.div`
+  color: red;
+`;
+
+const Page = () => (
+  <Card>Hello</Card>
+);
+
+````
+</div>
+<div>
+```tsx title="output"
+const Card = __yak.__yak_div(
+  "input_Card_m7uBBu"
+);
+
+const Page = () => (
+  <div className="input_Card_m7uBBu">
+    Hello
+  </div>
+);
+````
+
+</div>
+</SideBySide>
+
+The wrapper component disappears from the render tree for this usage. The declaration itself stays untouched so exports, selectors like `${Card}` and non foldable usages keep working. If nothing uses the declaration anymore, the minifier removes it as dead code.
+
+Attributes on the usage stay on the element. A `className` is merged statically when possible, otherwise with the small `__yak_mergeClassNames` runtime helper:
+
+```tsx
+<Card className="user" />
+// becomes
+<div className="input_Card_m7uBBu user" />
+
+<Card className={active && "active"} />
+// becomes
+<div className={__yak_mergeClassNames("input_Card_m7uBBu", active && "active")} />
+```
+
+Folding is not limited to fully static components. `styled(Component)` usages fold into the wrapped component and conditional css blocks fold by inlining the condition into the `className` expression:
+
+<SideBySide>
+<div>
+```tsx title="input"
+const Icon = styled.span<{
+  $big?: boolean;
+}>`
+  min-height: 24px;
+  ${({ $big }) =>
+    $big && css`margin-right: 12px;`}
+`;
+
+const Nav = ({ active }) => (
+  <Icon $big={active} />
+);
+
+````
+</div>
+<div>
+```tsx title="output"
+const Nav = ({ active }) => (
+  <span
+    className={"input_Icon_m7uBBu" +
+      (active
+        ? " input_Icon__$big_m7uBBu"
+        : "")}
+  />
+);
+````
+
+</div>
+</SideBySide>
+
+Folding only happens when the plugin can prove that the folded element behaves exactly like the wrapper component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the wrapper component like before.
+
+<Callout type="warn">
+Only top level `const` declarations can be folded. A styled component declared with `let` or `var` can be reassigned at any time, so the plugin can not prove that a usage still references the same component. Those usages always keep the runtime path.
+</Callout>
+
 ### The bundler loaders/plugins
 
 Each bundler has a dedicated loader or plugin that takes the SWC plugin output, resolves cross-module dependencies, and delivers the final CSS through the bundler's native CSS pipeline.
@@ -251,6 +404,8 @@ Each bundler has a dedicated loader or plugin that takes the SWC plugin output, 
 See: [styled.tsx](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/styled.tsx)
 
 Despite being called "zero-runtime", next-yak does ship a small runtime. What "zero-runtime" means here is that there is no code that manipulates the DOM or CSSOM. No `<style>` or `<link>` elements are injected at runtime.
+
+Folded JSX usages from the compile time step skip this runtime completely, they are plain DOM elements. The runtime only handles the usages that could not be folded.
 
 The runtime is essentially a type-safe `classnames` utility. It takes the generated class name strings and the component's props, evaluates the dynamic functions (conditionals, CSS variable values), and returns:
 
