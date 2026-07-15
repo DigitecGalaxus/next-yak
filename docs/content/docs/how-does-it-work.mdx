@@ -386,7 +386,7 @@ const Nav = ({ active }) => (
 </div>
 </SideBySide>
 
-Folding only happens when the plugin can prove that the folded element behaves exactly like the wrapper component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the wrapper component like before.
+Folding only happens when the plugin can prove that the folded element behaves exactly like the wrapper component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the wrapper component at runtime, exactly as if folding did not exist.
 
 <Callout type="warn">
   Only top level `const` declarations can be folded. A styled component declared with `let` or `var`
