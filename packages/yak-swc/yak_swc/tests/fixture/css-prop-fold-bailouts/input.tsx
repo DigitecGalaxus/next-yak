@@ -3,10 +3,6 @@
 // the bail-out that keeps it on the runtime path
 import { css } from "next-yak";
 
-const mixin = css`
-  color: red;
-`;
-
 // folds: a top level `&&` becomes `on ? "class" : ""`
 // the fold has to keep the /*YAK Extracted CSS:*/ comment the loader parses,
 // otherwise the component ships unstyled
@@ -67,13 +63,5 @@ const LogicalAndDynamic = ({ on, color }: { on: boolean; color: string }) => (
   />
 );
 
-// bails: the `&&` right hand side is an Expr::Ident, not a css() call
-const LogicalAndMixin = ({ on }: { on: boolean }) => <div css={on && mixin} />;
-
-// bails: a mixin reference is an Expr::Ident, not a css() call
-// this pins a known gap rather than the fold: the css prop does not inline a
-// mixin the way a template consumer `${mixin}` does, so `color: red` never
-// ships and this renders unstyled
-// (teaching the fold Expr::Ident would not change it - a mixin compiles to an
-// argument-less css(), which has no base class to fold)
-const MixinIdentifier = () => <div css={mixin} />;
+// mixin references (`css={mixin}`, `css={on && mixin}`) are rejected with a
+// compile error - see the css-prop-style-reference fixture

@@ -1,0 +1,36 @@
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+    ,-[input.js:16:1]
+ 15 | // errors: a same-file mixin reference
+ 16 | const Direct = () => <div css={mixin} />;
+    :                                ^^^^^
+    `----
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+    ,-[input.js:19:1]
+ 18 | // errors: an imported mixin reference compiles identically
+ 19 | const Imported = () => <div css={ellipsis} />;
+    :                                  ^^^^^^^^
+    `----
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+    ,-[input.js:22:1]
+ 21 | // errors: a member reference
+ 22 | const Member = () => <div css={tokens.padding} />;
+    :                                ^^^^^^^^^^^^^^
+    `----
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+    ,-[input.js:25:1]
+ 24 | // errors: the `&&` right hand side is a reference
+ 25 | const LogicalAnd = ({ on }: { on: boolean }) => <div css={on && mixin} />;
+    :                                                                 ^^^^^
+    `----
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+    ,-[input.js:32:1]
+ 31 |       compact
+ 32 |         ? mixin
+    :           ^^^^^
+ 33 |         : css`
+    `----

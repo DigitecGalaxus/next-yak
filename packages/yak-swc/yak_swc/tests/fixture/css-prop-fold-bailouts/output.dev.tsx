@@ -3,7 +3,6 @@
 // the bail-out that keeps it on the runtime path
 import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-const mixin = /*#__PURE__*/ css();
 // folds: a top level `&&` becomes `on ? "class" : ""`
 // the fold has to keep the /*YAK Extracted CSS:*/ comment the loader parses,
 // otherwise the component ships unstyled
@@ -51,15 +50,5 @@ const LogicalAndDynamic = ({ on, color }: {
         "style": {
             "--input_LogicalAndDynamic__color_m7uBBu": ()=>color
         }
-    }, "input_LogicalAndDynamic_m7uBBu"))}/>;
-// bails: the `&&` right hand side is an Expr::Ident, not a css() call
-const LogicalAndMixin = ({ on }: {
-    on: boolean;
-})=><div {...__yak_mergeCssProp({}, on && mixin)}/>;
-// bails: a mixin reference is an Expr::Ident, not a css() call
-// this pins a known gap rather than the fold: the css prop does not inline a
-// mixin the way a template consumer `${mixin}` does, so `color: red` never
-// ships and this renders unstyled
-// (teaching the fold Expr::Ident would not change it - a mixin compiles to an
-// argument-less css(), which has no base class to fold)
-const MixinIdentifier = ()=><div {...__yak_mergeCssProp({}, mixin)}/>;
+    }, "input_LogicalAndDynamic_m7uBBu"))}/>; // mixin references (`css={mixin}`, `css={on && mixin}`) are rejected with a
+ // compile error - see the css-prop-style-reference fixture
