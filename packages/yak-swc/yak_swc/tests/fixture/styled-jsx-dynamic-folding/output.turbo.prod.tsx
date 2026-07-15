@@ -28,7 +28,8 @@ const Many = /*YAK Extracted CSS:
   font-weight: bold;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBu2", ({ $variant })=>$variant === "primary" ? /*#__PURE__*/ css("ym7uBBu3") : /*#__PURE__*/ css("ym7uBBu4"), ({ $bold })=>$bold && /*#__PURE__*/ css("ym7uBBu5"));
-// folds: function expression form with a block body
+// bails: function expressions bind this/arguments, which inlining would
+// rebind to the enclosing component
 const Fn = /*YAK Extracted CSS:
 .ym7uBBu6 {
   color: gray;
@@ -271,7 +272,7 @@ const Optimizable = ({ active, size, i: i1 }: {
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
       two inlined expressions
     </p>
-    <i className={"ym7uBBu6" + (active ? " ym7uBBu7" : "")}>function form</i>
+    <Fn $on={active}>function form</Fn>
     <em className={"ym7uBBu8" + (isCompact ? " ym7uBBu9" : "")}>outer scope condition</em>
     <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
     <button disabled={active} className={"ym7uBBuT" + (!active ? " ym7uBBuU" : "")}>kept on the element and inlined</button>

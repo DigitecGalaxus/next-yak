@@ -24,7 +24,8 @@ const Many = styled.p<{ $variant?: string; $bold?: boolean }>`
   ${({ $bold }) => $bold && css`font-weight: bold;`}
 `;
 
-// folds: function expression form with a block body
+// bails: function expressions bind this/arguments, which inlining would
+// rebind to the enclosing component
 const Fn = styled.i<{ $on?: boolean }>`
   color: gray;
   ${function ({ $on }) {

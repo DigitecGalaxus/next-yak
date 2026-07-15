@@ -32,7 +32,8 @@ const Many = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Many_m7uBBu", ({ $variant })=>$variant === "primary" ? /*#__PURE__*/ css("input_Many___m7uBBu") : /*#__PURE__*/ css("input_Many___m7uBBu-01"), ({ $bold })=>$bold && /*#__PURE__*/ css("input_Many__$bold_m7uBBu")), {
     "displayName": "Many"
 });
-// folds: function expression form with a block body
+// bails: function expressions bind this/arguments, which inlining would
+// rebind to the enclosing component
 const Fn = /*YAK Extracted CSS:
 .input_Fn_m7uBBu {
   color: gray;
@@ -325,7 +326,7 @@ const Optimizable = ({ active, size, i: i1 }: {
     <p className={"input_Many_m7uBBu" + ("primary" === "primary" ? " input_Many___m7uBBu" : " input_Many___m7uBBu-01") + (true ? " input_Many__$bold_m7uBBu" : "")}>
       two inlined expressions
     </p>
-    <i className={"input_Fn_m7uBBu" + (active ? " input_Fn__$on_m7uBBu" : "")}>function form</i>
+    <Fn $on={active}>function form</Fn>
     <em className={"input_Scoped_m7uBBu" + (isCompact ? " input_Scoped__isCompact_m7uBBu" : "")}>outer scope condition</em>
     <li className={"input_Twice_m7uBBu" + (size && size === "big" ? " input_Twice___m7uBBu" : "")}>safe to duplicate</li>
     <button disabled={active} className={"input_ActionButton_m7uBBu" + (!active ? " input_ActionButton___m7uBBu" : "")}>kept on the element and inlined</button>
