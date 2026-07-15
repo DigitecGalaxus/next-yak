@@ -71,6 +71,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     | string;
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
+  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.$staticAttrs;
 
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
@@ -84,20 +85,34 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       parentRuntimeStylesFn,
     );
     const Yak: React.FunctionComponent = (props) => {
-      // fast path for fully static components (no attrs, no dynamic styles —
-      // the most common case): contribute the chain's class names and strip
-      // $-props; skips theme lookup, prop spreading and style cloning
-      // entirely (this is NOT against the rule of hooks — the condition is
-      // constant for the lifetime of the component)
-      if (!mergedAttrsFn && !runtimeStyleProcessor.$dynamic) {
-        const filteredProps = removeNonDomProperties(props) as {
+      // fast path for components that contribute the same thing on every
+      // render — no attrs at all, or a constant `.attrs({...})` which cannot
+      // read the theme — and no dynamic styles. Contributes the chain's class
+      // names and strips $-props; skips theme lookup, prop spreading and style
+      // cloning entirely (this is NOT against the rule of hooks — the condition
+      // is constant for the lifetime of the component)
+      if ((!mergedAttrsFn || staticAttrs) && !runtimeStyleProcessor.$dynamic) {
+        // props that already went through a yak wrapper keep their processed
+        // className, and `source` then aliases `props` — so the class names are
+        // written to the fresh, filtered object rather than back into props
+        const source = (
+          staticAttrs && !("$__attrs" in props)
+            ? combineProps(
+                {
+                  ...(props as { className?: string; style?: React.CSSProperties }),
+                  // mark the props as processed
+                  $__attrs: true,
+                },
+                staticAttrs,
+              )
+            : props
+        ) as { className?: string; style?: React.CSSProperties };
+        const filteredProps = removeNonDomProperties(source) as {
           className?: string;
         };
-        // props that already went through a yak wrapper (passed through a
-        // custom component boundary) keep their processed className
-        if (!("$__runtimeStylesProcessed" in props)) {
-          const classNames = new ClassNames((props as { className?: string }).className);
-          runtimeStyleProcessor(props, classNames, undefined as unknown as React.CSSProperties);
+        if (!("$__runtimeStylesProcessed" in source)) {
+          const classNames = new ClassNames(source.className);
+          runtimeStyleProcessor(source, classNames, undefined as unknown as React.CSSProperties);
           filteredProps.className = classNames.value || undefined;
         }
         const Target = targetComponent as React.ElementType;
@@ -289,8 +304,27 @@ const buildRuntimeAttrsProcessor = <
     };
   }
 
+  // A constant `.attrs({...})` is wrapped into `() => attrs`, which makes it
+  // indistinguishable from `.attrs(props => ...)` at render time — so record the
+  // object it will always return, the way the style processor records $dynamic.
+  // Only the wrapper closure is tagged, never a user-supplied attrs function.
+  //
+  // A `styled(StyledWithAttrs).attrs({...})` chain merges its levels per render
+  // and is not tagged, which keeps a mutation of an attrs object observable.
+  if (ownAttrsFn && typeof attrs !== "function") {
+    return Object.assign(ownAttrsFn, { $staticAttrs: attrs } as StaticAttrsCarrier);
+  }
+
   return ownAttrsFn || parentAttrsFn;
 };
+
+/**
+ * The constant object a `.attrs({...})` processor always returns.
+ *
+ * Kept local to this module — like the `yakComponentSymbol` tuple, it is an
+ * implementation detail and must not reach the public `AttrsFunction` type.
+ */
+type StaticAttrsCarrier = { $staticAttrs?: object };
 
 /**
  * Merges the runtime style function of the current component with the runtime style function of the parent component
