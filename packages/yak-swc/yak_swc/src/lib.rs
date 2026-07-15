@@ -1351,7 +1351,7 @@ where
     }
     // Expressions with a PURE span already carry the annotation on the node
     // itself; adding a comment at BytePos::PURE would collide across nodes.
-    if !result_span.is_pure() {
+    if transform_result.add_pure_annotation && !result_span.is_pure() {
       self.comments.add_leading(result_span.lo, pure_annotation());
     }
     self.expression_replacement = Some(transform_result.expression);

@@ -91,5 +91,5 @@ function getQuasiValue(quasi: TSESTree.TemplateElement | undefined) {
   if (!quasi) {
     return "";
   }
-  return quasi.value.cooked;
+  return quasi.value.cooked ?? quasi.value.raw;
 }

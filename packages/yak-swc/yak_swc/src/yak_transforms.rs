@@ -24,6 +24,7 @@ pub struct YakCss {
 pub struct YakTransformResult {
   pub expression: Box<Expr>,
   pub css: YakCss,
+  pub add_pure_annotation: bool,
 }
 
 pub trait YakTransform {
@@ -133,6 +134,7 @@ impl YakTransform for TransformNestedCss {
         comment_prefix: None,
         declarations: declarations.to_vec(),
       },
+      add_pure_annotation: true,
       expression: (Box::new(Expr::Call(CallExpr {
         // PURE_SP marks the call as side-effect free directly on the span.
         // Unlike a comment keyed by BytePos it survives cloning and the
@@ -223,17 +225,25 @@ impl YakTransform for TransformCssMixin {
         .into(),
       );
     }
+    let is_empty_css_prop =
+      self.is_within_jsx_attribute && declarations.is_empty() && !has_dynamic_content;
     let comment_prefix = if self.is_within_jsx_attribute {
-      // Add the class name to the arguments, to be created by the CSS loader
-      arguments.push(
-        Expr::Lit(Lit::Str(Str {
-          span: DUMMY_SP,
-          value: self.class_name.as_str().into(),
-          raw: None,
-        }))
-        .into(),
-      );
-      Some("YAK Extracted CSS:".into())
+      // An empty css prop (e.g. `css``) has no class name and no runtime.
+      // Keep the call argument-less so the css prop transform can drop it.
+      if is_empty_css_prop {
+        None
+      } else {
+        // Add the class name to the arguments, to be created by the CSS loader
+        arguments.push(
+          Expr::Lit(Lit::Str(Str {
+            span: DUMMY_SP,
+            value: self.class_name.as_str().into(),
+            raw: None,
+          }))
+          .into(),
+        );
+        Some("YAK Extracted CSS:".into())
+      }
     } else if self.is_exported {
       Some(format!(
         "YAK EXPORTED MIXIN:{}",
@@ -260,6 +270,7 @@ impl YakTransform for TransformCssMixin {
           declaration
         }),
       },
+      add_pure_annotation: !is_empty_css_prop,
       expression: (Box::new(Expr::Call(CallExpr {
         span: expression.span,
         ctxt: SyntaxContext::empty(),
@@ -517,6 +528,7 @@ impl YakTransform for TransformStyled {
         comment_prefix: Some(comment_prefix),
         declarations: declarations.to_vec(),
       },
+      add_pure_annotation: true,
       expression: result_expr,
     }
   }
@@ -576,6 +588,7 @@ impl YakTransform for TransformGlobalStyle {
         comment_prefix: Some("YAK Extracted CSS:".into()),
         declarations: declarations.to_vec(),
       },
+      add_pure_annotation: true,
       // Keep a bare `globalStyle()` no-op call so the extracted-CSS comment has
       // an expression to anchor to. Don't drop it: that comment is how the
       // webpack/Vite loaders extract the CSS (see extractCss), and its source
@@ -658,6 +671,7 @@ impl YakTransform for TransformKeyframes {
         comment_prefix: Some("YAK Extracted CSS:".into()),
         declarations: declarations.to_vec(),
       },
+      add_pure_annotation: true,
       expression: (Box::new(Expr::Call(CallExpr {
         span: expression.span,
         ctxt: SyntaxContext::empty(),

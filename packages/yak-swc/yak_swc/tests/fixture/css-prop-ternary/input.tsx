@@ -55,3 +55,18 @@ const Elem3 = ({ active, width }: { active: boolean; width: number }) => {
     />
   );
 };
+
+// folds: an empty arm becomes an empty string instead of a dead class
+const Elem4 = ({ active }: { active: boolean }) => {
+  return (
+    <div
+      css={
+        active
+          ? css``
+          : css`
+              color: blue;
+            `
+      }
+    />
+  );
+};
