@@ -32,19 +32,6 @@ const Many = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Many_m7uBBu", ({ $variant })=>$variant === "primary" ? /*#__PURE__*/ css("input_Many___m7uBBu") : /*#__PURE__*/ css("input_Many___m7uBBu-01"), ({ $bold })=>$bold && /*#__PURE__*/ css("input_Many__$bold_m7uBBu")), {
     "displayName": "Many"
 });
-// folds: function expression form with a block body
-const Fn = /*YAK Extracted CSS:
-:global(.input_Fn_m7uBBu) {
-  color: gray;
-}
-:global(.input_Fn__\$on_m7uBBu) {
-  color: black;
-}
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_i("input_Fn_m7uBBu", function({ $on }) {
-    return $on && /*#__PURE__*/ css("input_Fn__$on_m7uBBu");
-}), {
-    "displayName": "Fn"
-});
 // folds: zero-arg expressions reference the outer scope like the css prop
 const isCompact = true;
 const Scoped = /*YAK Extracted CSS:
@@ -150,6 +137,20 @@ const Rested = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Rested_m7uBBu", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("input_Rested___m7uBBu")), {
     "displayName": "Rested"
+});
+// usages bail: a function expression binds this/arguments, which inlining
+// would rebind to the enclosing component
+const Fn = /*YAK Extracted CSS:
+:global(.input_Fn_m7uBBu) {
+  color: gray;
+}
+:global(.input_Fn__\$on_m7uBBu) {
+  color: black;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_i("input_Fn_m7uBBu", function({ $on }) {
+    return $on && /*#__PURE__*/ css("input_Fn__$on_m7uBBu");
+}), {
+    "displayName": "Fn"
 });
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
@@ -325,7 +326,6 @@ const Optimizable = ({ active, size, i: i1 }: {
     <p className={"input_Many_m7uBBu" + ("primary" === "primary" ? " input_Many___m7uBBu" : " input_Many___m7uBBu-01") + (true ? " input_Many__$bold_m7uBBu" : "")}>
       two inlined expressions
     </p>
-    <i className={"input_Fn_m7uBBu" + (active ? " input_Fn__$on_m7uBBu" : "")}>function form</i>
     <em className={"input_Scoped_m7uBBu" + (isCompact ? " input_Scoped__isCompact_m7uBBu" : "")}>outer scope condition</em>
     <li className={"input_Twice_m7uBBu" + (size && size === "big" ? " input_Twice___m7uBBu" : "")}>safe to duplicate</li>
     <button disabled={active} className={"input_ActionButton_m7uBBu" + (!active ? " input_ActionButton___m7uBBu" : "")}>kept on the element and inlined</button>
@@ -412,6 +412,7 @@ const NotOptimizable = ()=><>
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    <Fn $on>bails: function expression condition</Fn>
     { /* spriteFor() would jump both rolls: the namespaced name is the only
         difference from the wrapped `id={...}` case above */ }
     <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>

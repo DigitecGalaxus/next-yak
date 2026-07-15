@@ -1,7 +1,7 @@
 import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9JbkNhbGxiYWNrX19fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X1Nob3J0Q2lyY3VpdF9fX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfUGFpcl9fXCRhX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfUGFpcl9fXCRiX203dUJCdSB7CiAgdG9wOiAwOwp9LmlucHV0X0JveGVkX19cJHZfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0Jsb2NrQm9keV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfQmxvY2tCb2R5X19cJHdpZGVfbTd1QkJ1IHsKICBwYWRkaW5nOiA4cHg7Cn0uaW5wdXRfUmVuYW1lZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X0RlZmF1bHRlZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X1Jlc3RlZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X0FjdGlvbkJ1dHRvbl9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9Ci5pbnB1dF9BY3Rpb25CdXR0b25fX19tN3VCQnUgewogIGN1cnNvcjogcG9pbnRlcjsKfS5pbnB1dF9UaGVtZWRfbTd1QkJ1IHsKICBjb2xvcjogYmxhY2s7Cn0KLmlucHV0X1RoZW1lZF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9OZXN0ZWRDc3NWYXJpYWJsZV9fXCRhY3RpdmVfbTd1QkJ1IHsKICB3aWR0aDogdmFyKC0taW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX3dpZHRoX203dUJCdSk7Cn0uaW5wdXRfRHluYW1pY0V4dGVuZGVkX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfRHluYW1pY0F0dHJzX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfU3ByaXRlX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X1Nwcml0ZV9fXCRtdXRlZF9tN3VCQnUgewogIG9wYWNpdHk6IDAuNTsKfS5pbnB1dF9DbGFzc05hbWVCYWlsX19jbGFzc05hbWVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0tleUJhaWxfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQnV0dG9uX203dUJCdSB7CiAgZGlzcGxheTogaW5saW5lLWZsZXg7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdSB7CiAgYmFja2dyb3VuZC1jb2xvcjogI2QxZDVkYjsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1LTAxIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjNmNGY2Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDIgewogIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX3BfXCRmdWxsV2lkdGhfbTd1QkJ1IHsKICB3aWR0aDogMTAwJTsKfS5pbnB1dF9NZW1iZXJFc2NhcGVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyVGhlbWVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQ29tcHV0ZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyS2V5X19fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0tleWVkUm93X19wX1wkYWN0aXZlX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9PcHRpbWl6YWJsZV9tN3VCQnUgewogIGNvbG9yOiBvcmFuZ2U7Cn0=";
+import "data:text/css;base64,LmlucHV0X0ljb25Db250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIG1pbi1oZWlnaHQ6IDI0cHg7Cn0KLmlucHV0X0ljb25Db250YWluZXJfX1wkaGFzQ2hpbGRyZW5fbTd1QkJ1IHsKICBtYXJnaW4tcmlnaHQ6IDEycHg7Cn0uaW5wdXRfTWFueV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfTWFueV9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfTWFueV9fX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0KLmlucHV0X01hbnlfX1wkYm9sZF9tN3VCQnUgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9LmlucHV0X1Njb3BlZF9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKfQouaW5wdXRfU2NvcGVkX19pc0NvbXBhY3RfbTd1QkJ1IHsKICBsaW5lLWhlaWdodDogMTsKfS5pbnB1dF9Ud2ljZV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfVHdpY2VfX19tN3VCQnUgewogIHBhZGRpbmc6IDhweDsKfS5pbnB1dF9JbkNhbGxiYWNrX19fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X1Nob3J0Q2lyY3VpdF9fX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfUGFpcl9fXCRhX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfUGFpcl9fXCRiX203dUJCdSB7CiAgdG9wOiAwOwp9LmlucHV0X0JveGVkX19cJHZfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0Jsb2NrQm9keV9tN3VCQnUgewogIHBhZGRpbmc6IDFweDsKfQouaW5wdXRfQmxvY2tCb2R5X19cJHdpZGVfbTd1QkJ1IHsKICBwYWRkaW5nOiA4cHg7Cn0uaW5wdXRfUmVuYW1lZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X0RlZmF1bHRlZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X1Jlc3RlZF9fX203dUJCdSB7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X0ZuX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0KLmlucHV0X0ZuX19cJG9uX203dUJCdSB7CiAgY29sb3I6IGJsYWNrOwp9LmlucHV0X0FjdGlvbkJ1dHRvbl9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9Ci5pbnB1dF9BY3Rpb25CdXR0b25fX19tN3VCQnUgewogIGN1cnNvcjogcG9pbnRlcjsKfS5pbnB1dF9UaGVtZWRfbTd1QkJ1IHsKICBjb2xvcjogYmxhY2s7Cn0KLmlucHV0X1RoZW1lZF9fX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9OZXN0ZWRDc3NWYXJpYWJsZV9fXCRhY3RpdmVfbTd1QkJ1IHsKICB3aWR0aDogdmFyKC0taW5wdXRfTmVzdGVkQ3NzVmFyaWFibGVfX3dpZHRoX203dUJCdSk7Cn0uaW5wdXRfRHluYW1pY0V4dGVuZGVkX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfRHluYW1pY0F0dHJzX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfU3ByaXRlX19cJGFjdGl2ZV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0KLmlucHV0X1Nwcml0ZV9fXCRtdXRlZF9tN3VCQnUgewogIG9wYWNpdHk6IDAuNTsKfS5pbnB1dF9DbGFzc05hbWVCYWlsX19jbGFzc05hbWVfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0tleUJhaWxfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQnV0dG9uX203dUJCdSB7CiAgZGlzcGxheTogaW5saW5lLWZsZXg7Cn0KLmlucHV0X01lbWJlckJ1dHRvbl9fX203dUJCdSB7CiAgYmFja2dyb3VuZC1jb2xvcjogI2QxZDVkYjsKfQouaW5wdXRfTWVtYmVyQnV0dG9uX19fbTd1QkJ1LTAxIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjNmNGY2Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX19tN3VCQnUtMDIgewogIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9Ci5pbnB1dF9NZW1iZXJCdXR0b25fX3BfXCRmdWxsV2lkdGhfbTd1QkJ1IHsKICB3aWR0aDogMTAwJTsKfS5pbnB1dF9NZW1iZXJFc2NhcGVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyVGhlbWVfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyQ29tcHV0ZWRfX19tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfTWVtYmVyS2V5X19fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0tleWVkUm93X19wX1wkYWN0aXZlX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9PcHRpbWl6YWJsZV9tN3VCQnUgewogIGNvbG9yOiBvcmFuZ2U7Cn0=";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage
 const IconContainer = /*YAK Extracted CSS:
@@ -31,19 +31,6 @@ const Many = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Many_m7uBBu", ({ $variant })=>$variant === "primary" ? /*#__PURE__*/ css("input_Many___m7uBBu") : /*#__PURE__*/ css("input_Many___m7uBBu-01"), ({ $bold })=>$bold && /*#__PURE__*/ css("input_Many__$bold_m7uBBu")), {
     "displayName": "Many"
-});
-// folds: function expression form with a block body
-const Fn = /*YAK Extracted CSS:
-.input_Fn_m7uBBu {
-  color: gray;
-}
-.input_Fn__\$on_m7uBBu {
-  color: black;
-}
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_i("input_Fn_m7uBBu", function({ $on }) {
-    return $on && /*#__PURE__*/ css("input_Fn__$on_m7uBBu");
-}), {
-    "displayName": "Fn"
 });
 // folds: zero-arg expressions reference the outer scope like the css prop
 const isCompact = true;
@@ -150,6 +137,20 @@ const Rested = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_mark("input_Rested_m7uBBu", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("input_Rested___m7uBBu")), {
     "displayName": "Rested"
+});
+// usages bail: a function expression binds this/arguments, which inlining
+// would rebind to the enclosing component
+const Fn = /*YAK Extracted CSS:
+.input_Fn_m7uBBu {
+  color: gray;
+}
+.input_Fn__\$on_m7uBBu {
+  color: black;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_i("input_Fn_m7uBBu", function({ $on }) {
+    return $on && /*#__PURE__*/ css("input_Fn__$on_m7uBBu");
+}), {
+    "displayName": "Fn"
 });
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
@@ -325,7 +326,6 @@ const Optimizable = ({ active, size, i: i1 }: {
     <p className={"input_Many_m7uBBu" + ("primary" === "primary" ? " input_Many___m7uBBu" : " input_Many___m7uBBu-01") + (true ? " input_Many__$bold_m7uBBu" : "")}>
       two inlined expressions
     </p>
-    <i className={"input_Fn_m7uBBu" + (active ? " input_Fn__$on_m7uBBu" : "")}>function form</i>
     <em className={"input_Scoped_m7uBBu" + (isCompact ? " input_Scoped__isCompact_m7uBBu" : "")}>outer scope condition</em>
     <li className={"input_Twice_m7uBBu" + (size && size === "big" ? " input_Twice___m7uBBu" : "")}>safe to duplicate</li>
     <button disabled={active} className={"input_ActionButton_m7uBBu" + (!active ? " input_ActionButton___m7uBBu" : "")}>kept on the element and inlined</button>
@@ -412,6 +412,7 @@ const NotOptimizable = ()=><>
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    <Fn $on>bails: function expression condition</Fn>
     { /* spriteFor() would jump both rolls: the namespaced name is the only
         difference from the wrapped `id={...}` case above */ }
     <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>

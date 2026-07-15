@@ -24,14 +24,6 @@ const Many = styled.p<{ $variant?: string; $bold?: boolean }>`
   ${({ $bold }) => $bold && css`font-weight: bold;`}
 `;
 
-// folds: function expression form with a block body
-const Fn = styled.i<{ $on?: boolean }>`
-  color: gray;
-  ${function ({ $on }) {
-    return $on && css`color: black;`;
-  }}
-`;
-
 // folds: zero-arg expressions reference the outer scope like the css prop
 const isCompact = true;
 const Scoped = styled.em`
@@ -90,6 +82,15 @@ const Defaulted = styled.mark<{ $size?: string }>`
 `;
 const Rested = styled.mark<{ $size?: string }>`
   ${({ $size, ...rest }) => $size && rest && css`padding: 8px;`}
+`;
+
+// usages bail: a function expression binds this/arguments, which inlining
+// would rebind to the enclosing component
+const Fn = styled.i<{ $on?: boolean }>`
+  color: gray;
+  ${function ({ $on }) {
+    return $on && css`color: black;`;
+  }}
 `;
 
 // folds: non-$ props toggle classes AND stay on the element - the attribute
@@ -210,7 +211,6 @@ const Optimizable = ({ active, size, i }: { active?: boolean; size?: string, i: 
     <Many $variant="primary" $bold>
       two inlined expressions
     </Many>
-    <Fn $on={active}>function form</Fn>
     <Scoped>outer scope condition</Scoped>
     <Twice $size={size}>safe to duplicate</Twice>
     <ActionButton disabled={active}>kept on the element and inlined</ActionButton>
@@ -303,6 +303,7 @@ const NotOptimizable = () => (
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    <Fn $on>bails: function expression condition</Fn>
     {/* spriteFor() would jump both rolls: the namespaced name is the only
         difference from the wrapped `id={...}` case above */}
     <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>

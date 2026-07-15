@@ -28,37 +28,26 @@ const Many = /*YAK Extracted CSS:
   font-weight: bold;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBu2", ({ $variant })=>$variant === "primary" ? /*#__PURE__*/ css("ym7uBBu3") : /*#__PURE__*/ css("ym7uBBu4"), ({ $bold })=>$bold && /*#__PURE__*/ css("ym7uBBu5"));
-// folds: function expression form with a block body
-const Fn = /*YAK Extracted CSS:
-:global(.ym7uBBu6) {
-  color: gray;
-}
-:global(.ym7uBBu7) {
-  color: black;
-}
-*/ /*#__PURE__*/ __yak.__yak_i("ym7uBBu6", function({ $on }) {
-    return $on && /*#__PURE__*/ css("ym7uBBu7");
-});
 // folds: zero-arg expressions reference the outer scope like the css prop
 const isCompact = true;
 const Scoped = /*YAK Extracted CSS:
-:global(.ym7uBBu8) {
+:global(.ym7uBBu6) {
   color: green;
 }
-:global(.ym7uBBu9) {
+:global(.ym7uBBu7) {
   line-height: 1;
 }
-*/ /*#__PURE__*/ __yak.__yak_em("ym7uBBu8", ()=>isCompact && /*#__PURE__*/ css("ym7uBBu9"));
+*/ /*#__PURE__*/ __yak.__yak_em("ym7uBBu6", ()=>isCompact && /*#__PURE__*/ css("ym7uBBu7"));
 // the twice-referenced $size attribute is read at two sites, so an impure
 // value would be evaluated twice - it is bound once instead
 const Twice = /*YAK Extracted CSS:
-:global(.ym7uBBuA) {
+:global(.ym7uBBu8) {
   padding: 1px;
 }
-:global(.ym7uBBuB) {
+:global(.ym7uBBu9) {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBuA", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("ym7uBBuB"));
+*/ /*#__PURE__*/ __yak.__yak_li("ym7uBBu8", ({ $size })=>$size && $size === "big" && /*#__PURE__*/ css("ym7uBBu9"));
 // folds: one read, inside a callback - an impure value would run once per list
 // element, so a single read is enough to bind it
 const sizes = [
@@ -67,64 +56,76 @@ const sizes = [
     3
 ];
 const InCallback = /*YAK Extracted CSS:
-:global(.ym7uBBuD) {
+:global(.ym7uBBuB) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuC", ({ $n })=>sizes.some((x)=>x > $n) && /*#__PURE__*/ css("ym7uBBuD"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuA", ({ $n })=>sizes.some((x)=>x > $n) && /*#__PURE__*/ css("ym7uBBuB"));
 // folds: one read, behind a short circuit - an impure value would not run at
 // all when the left side is falsy
 const ShortCircuit = /*YAK Extracted CSS:
-:global(.ym7uBBuF) {
+:global(.ym7uBBuD) {
   color: blue;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuE", ({ $b })=>isCompact && $b && /*#__PURE__*/ css("ym7uBBuF"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuC", ({ $b })=>isCompact && $b && /*#__PURE__*/ css("ym7uBBuD"));
 // folds: the conditions read $a before $b, the attributes pass $b first - the
 // arguments follow the attributes, not the conditions
 const Pair = /*YAK Extracted CSS:
-:global(.ym7uBBuH) {
+:global(.ym7uBBuF) {
   color: red;
 }
-:global(.ym7uBBuI) {
+:global(.ym7uBBuG) {
   top: 0;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuG", ({ $a })=>$a && /*#__PURE__*/ css("ym7uBBuH"), ({ $b })=>$b && /*#__PURE__*/ css("ym7uBBuI"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuE", ({ $a })=>$a && /*#__PURE__*/ css("ym7uBBuF"), ({ $b })=>$b && /*#__PURE__*/ css("ym7uBBuG"));
 // folds: a single condition to pin what counts as safe to inline
 const colors = {
     big: "red"
 } as Record<string, string>;
 const Boxed = /*YAK Extracted CSS:
-:global(.ym7uBBuK) {
+:global(.ym7uBBuI) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuJ", ({ $v })=>$v && /*#__PURE__*/ css("ym7uBBuK"));
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuH", ({ $v })=>$v && /*#__PURE__*/ css("ym7uBBuI"));
 // folds: an arrow returning from a block body is a condition like any other
 const BlockBody = /*YAK Extracted CSS:
-:global(.ym7uBBuL) {
+:global(.ym7uBBuJ) {
   padding: 1px;
 }
-:global(.ym7uBBuM) {
+:global(.ym7uBBuK) {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_aside("ym7uBBuL", ({ $wide })=>{
-    return $wide && /*#__PURE__*/ css("ym7uBBuM");
+*/ /*#__PURE__*/ __yak.__yak_aside("ym7uBBuJ", ({ $wide })=>{
+    return $wide && /*#__PURE__*/ css("ym7uBBuK");
 });
 // usages bail: only plain destructuring substitutes - a rename, a default or a
 // rest element all keep the runtime path
 const Renamed = /*YAK Extracted CSS:
+:global(.ym7uBBuM) {
+  padding: 8px;
+}
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuL", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("ym7uBBuM"));
+const Defaulted = /*YAK Extracted CSS:
 :global(.ym7uBBuO) {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuN", ({ $size: size })=>size && size === "big" && /*#__PURE__*/ css("ym7uBBuO"));
-const Defaulted = /*YAK Extracted CSS:
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuN", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("ym7uBBuO"));
+const Rested = /*YAK Extracted CSS:
 :global(.ym7uBBuQ) {
   padding: 8px;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuP", ({ $size = "big" })=>$size === "big" && /*#__PURE__*/ css("ym7uBBuQ"));
-const Rested = /*YAK Extracted CSS:
-:global(.ym7uBBuS) {
-  padding: 8px;
+*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuP", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("ym7uBBuQ"));
+// usages bail: a function expression binds this/arguments, which inlining
+// would rebind to the enclosing component
+const Fn = /*YAK Extracted CSS:
+:global(.ym7uBBuR) {
+  color: gray;
 }
-*/ /*#__PURE__*/ __yak.__yak_mark("ym7uBBuR", ({ $size, ...rest })=>$size && rest && /*#__PURE__*/ css("ym7uBBuS"));
+:global(.ym7uBBuS) {
+  color: black;
+}
+*/ /*#__PURE__*/ __yak.__yak_i("ym7uBBuR", function({ $on }) {
+    return $on && /*#__PURE__*/ css("ym7uBBuS");
+});
 // folds: non-$ props toggle classes AND stay on the element - the attribute
 // value ends up in the DOM attribute and the className condition
 const ActionButton = /*YAK Extracted CSS:
@@ -271,69 +272,68 @@ const Optimizable = ({ active, size, i: i1 }: {
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
       two inlined expressions
     </p>
-    <i className={"ym7uBBu6" + (active ? " ym7uBBu7" : "")}>function form</i>
-    <em className={"ym7uBBu8" + (isCompact ? " ym7uBBu9" : "")}>outer scope condition</em>
-    <li className={"ym7uBBuA" + (size && size === "big" ? " ym7uBBuB" : "")}>safe to duplicate</li>
+    <em className={"ym7uBBu6" + (isCompact ? " ym7uBBu7" : "")}>outer scope condition</em>
+    <li className={"ym7uBBu8" + (size && size === "big" ? " ym7uBBu9" : "")}>safe to duplicate</li>
     <button disabled={active} className={"ym7uBBuT" + (!active ? " ym7uBBuU" : "")}>kept on the element and inlined</button>
     <button disabled className={"ym7uBBuT" + (!true ? " ym7uBBuU" : "")}>bare non-$ prop</button>
     { /* two read sites, so the value is bound once instead of rolled twice -
         the two conditions could otherwise disagree */ }
-    <li className={((__yak_$size)=>"ym7uBBuA" + (__yak_$size && __yak_$size === "big" ? " ym7uBBuB" : ""))(props.getSize())}>bound: read at two sites</li>
+    <li className={((__yak_$size)=>"ym7uBBu8" + (__yak_$size && __yak_$size === "big" ? " ym7uBBu9" : ""))(props.getSize())}>bound: read at two sites</li>
     { /* the attribute stays on the element AND feeds the condition, so binding
         it around the element is the only way to evaluate it once - otherwise
         the button could be disabled while it is styled as enabled */ }
     {((__yak_disabled)=><button disabled={__yak_disabled} className={"ym7uBBuT" + (!__yak_disabled ? " ym7uBBuU" : "")}>bound: element and condition</button>)(props.isBusy())}
     { /* one read, but inside a callback: the value would run once per list
         element */ }
-    <div className={((__yak_$n)=>"ym7uBBuC" + (sizes.some((x)=>x > __yak_$n) ? " ym7uBBuD" : ""))(props.roll())}>bound: read inside a callback</div>
+    <div className={((__yak_$n)=>"ym7uBBuA" + (sizes.some((x)=>x > __yak_$n) ? " ym7uBBuB" : ""))(props.roll())}>bound: read inside a callback</div>
     { /* one read, but behind a short circuit: the value would not run at all */ }
-    <div className={((__yak_$b)=>"ym7uBBuE" + (isCompact && __yak_$b ? " ym7uBBuF" : ""))(props.roll())}>bound: read behind a short circuit</div>
+    <div className={((__yak_$b)=>"ym7uBBuC" + (isCompact && __yak_$b ? " ym7uBBuD" : ""))(props.roll())}>bound: read behind a short circuit</div>
     { /* the allowlist is not "does it contain a call" - none of these is one */ }
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(i1++)}>bound: update expression</div>
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(new Date())}>bound: new expression</div>
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.getSize() as number)}>bound: judged under the type cast</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(i1++)}>bound: update expression</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(new Date())}>bound: new expression</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(props.getSize() as number)}>bound: judged under the type cast</div>
     { /* effect free but identity bearing - two reads would be two elements */ }
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(<i/>)}>bound: jsx element</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(<i/>)}>bound: jsx element</div>
     { /* an impure builtin is bound like any other call, and stays in argument
         position: React's own purity rule flags it here exactly as it flags it
         in the source */ }
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(Math.random())}>bound: impure builtin</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(Math.random())}>bound: impure builtin</div>
     { /* inlined: a computed member over pure operands, and a comparison - the
         most common dynamic prop shapes there are */ }
-    <div className={"ym7uBBuJ" + (colors[size!] ? " ym7uBBuK" : "")}>inlined: computed member</div>
-    <div className={"ym7uBBuJ" + (i1 % 4 !== 0 ? " ym7uBBuK" : "")}>inlined: comparison</div>
+    <div className={"ym7uBBuH" + (colors[size!] ? " ym7uBBuI" : "")}>inlined: computed member</div>
+    <div className={"ym7uBBuH" + (i1 % 4 !== 0 ? " ym7uBBuI" : "")}>inlined: comparison</div>
     { /* the conditions read $a first; the arguments follow the attributes */ }
-    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : ""))(props.roll(), props.getSize())}>bound: arguments in attribute order</div>
+    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuE" + (__yak_$a ? " ym7uBBuF" : "") + (__yak_$b ? " ym7uBBuG" : ""))(props.roll(), props.getSize())}>bound: arguments in attribute order</div>
     { /* attribute position ran getSize() twice, so binding does too */ }
-    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : ""))(props.getSize(), props.getSize())}>bound: never deduplicated</div>
+    <div className={((__yak_$b, __yak_$a)=>"ym7uBBuE" + (__yak_$a ? " ym7uBBuF" : "") + (__yak_$b ? " ym7uBBuG" : ""))(props.getSize(), props.getSize())}>bound: never deduplicated</div>
     { /* read by no condition: it never leaves attribute position */ }
-    <div id={props.getSize()} className={"ym7uBBuJ" + (active ? " ym7uBBuK" : "")}>inlined: unread attribute stays put</div>
+    <div id={props.getSize()} className={"ym7uBBuH" + (active ? " ym7uBBuI" : "")}>inlined: unread attribute stays put</div>
     { /* an arrow may move, so an event handler never forces the element-wrap */ }
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll())} onClick={()=>props.track()}>bound: handler may move</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(props.roll())} onClick={()=>props.track()}>bound: handler may move</div>
     { /* the user className composes around the block, after it - which is where
         it already ran */ }
-    <div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()) + " user"}>bound: static className merge</div>
-    <div className={__yak_mergeClassNames(((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(props.roll()), size)}>bound: runtime className merge</div>
+    <div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(props.roll()) + " user"}>bound: static className merge</div>
+    <div className={__yak_mergeClassNames(((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(props.roll()), size)}>bound: runtime className merge</div>
     <button className={"ym7uBBul" + (!(i1 % 4 !== 0) ? " ym7uBBum" : "") + ("primary" === "secondary" ? " ym7uBBun" : "") + ("primary" === "ghost" ? " ym7uBBuo" : "") + (i1 % 3 === 0 ? " ym7uBBup" : "")}>
       {i1}
     </button>
     <li key={i1} className={"ym7uBBuy" + (active ? " ym7uBBuz" : "")}>
       key at the call site still folds
     </li>
-    <aside className={"ym7uBBuL" + (active ? " ym7uBBuM" : "")}>block body arrow</aside>
+    <aside className={"ym7uBBuJ" + (active ? " ym7uBBuK" : "")}>block body arrow</aside>
     { /* getSize() ran between the two rolls, and may not jump the parameter
         block, so the whole element is wrapped and captures all three in
         source order */ }
-    {((__yak_$a, __yak_id, __yak_$b)=><div id={__yak_id} className={"ym7uBBuG" + (__yak_$a ? " ym7uBBuH" : "") + (__yak_$b ? " ym7uBBuI" : "")}>
+    {((__yak_$a, __yak_id, __yak_$b)=><div id={__yak_id} className={"ym7uBBuE" + (__yak_$a ? " ym7uBBuF" : "") + (__yak_$b ? " ym7uBBuG" : "")}>
       wrapped: nothing may jump the block
     </div>)(props.roll(), props.getSize(), props.roll())}
     { /* the user className ran BEFORE the roll, and it composes around the
         block, which would run it after - so this escalates too */ }
-    {((__yak_className, __yak_$v)=><div className={__yak_mergeClassNames("ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""), __yak_className)}>wrapped: className ran first</div>)(props.getSize(), props.roll())}
+    {((__yak_className, __yak_$v)=><div className={__yak_mergeClassNames("ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""), __yak_className)}>wrapped: className ran first</div>)(props.getSize(), props.roll())}
     { /* an unread $prop is dropped before the DOM, so its value never runs at
         all - a side effect nobody consumes, which React's purity rule already
         forbids */ }
-    <div className={"ym7uBBuJ" + (active ? " ym7uBBuK" : "")}>elided: unread $prop</div>
+    <div className={"ym7uBBuH" + (active ? " ym7uBBuI" : "")}>elided: unread $prop</div>
     { /* key and children stay normal JSX on the wrapped element */ }
     {sizes.map((it)=>((__yak_disabled)=><button key={it} disabled={__yak_disabled} className={"ym7uBBuT" + (!__yak_disabled ? " ym7uBBuU" : "")}>
         wrapped in a list
@@ -342,7 +342,7 @@ const Optimizable = ({ active, size, i: i1 }: {
 // folds: await is legal in an async server component and impure, so it is
 // bound - which only works because the value never moves out of argument
 // position: awaiting inside the synthesized closure would not even parse
-const AsyncPage = async ()=><div className={((__yak_$v)=>"ym7uBBuJ" + (__yak_$v ? " ym7uBBuK" : ""))(await props.load())}>bound: await stays an argument</div>;
+const AsyncPage = async ()=><div className={((__yak_$v)=>"ym7uBBuH" + (__yak_$v ? " ym7uBBuI" : ""))(await props.load())}>bound: await stays an argument</div>;
 const NotOptimizable = ()=><>
     <IconContainer {...props}>bails: spread</IconContainer>
     <Themed $accent>bails: theme access</Themed>
@@ -358,6 +358,7 @@ const NotOptimizable = ()=><>
     <Renamed $size="big">bails: renamed destructuring</Renamed>
     <Defaulted>bails: default value destructuring</Defaulted>
     <Rested $size="big">bails: rest element destructuring</Rested>
+    <Fn $on>bails: function expression condition</Fn>
     { /* spriteFor() would jump both rolls: the namespaced name is the only
         difference from the wrapped `id={...}` case above */ }
     <Sprite $active={props.roll()} xlink:href={props.getSize()} $muted={props.roll()}>

@@ -104,9 +104,10 @@ impl StyledJsxFold {
   ///   these shapes exclude .attrs(...) chains
   /// - `class_name` is the static class name the compiled call carries as
   ///   its first argument
-  /// - `runtime_expressions` must all be class-toggling arrows/functions
-  ///   over props - anything else (e.g. an unresolved mixin reference) keeps
-  ///   the runtime path
+  /// - `runtime_expressions` must all be class-toggling arrows over props -
+  ///   anything else keeps the runtime path. Function expressions bail too:
+  ///   they bind `this`/`arguments`, which inlining would silently rebind to
+  ///   the enclosing component
   pub fn try_register(
     &mut self,
     declaration: Option<&ScopedVariableReference>,
@@ -125,7 +126,7 @@ impl StyledJsxFold {
     };
     if !runtime_expressions
       .iter()
-      .all(|expr| matches!(expr, Expr::Arrow(_) | Expr::Fn(_)))
+      .all(|expr| matches!(expr, Expr::Arrow(_)))
     {
       return;
     }
@@ -839,15 +840,6 @@ fn inline_expression(
       };
       (arrow.params.iter().collect(), body)
     }
-    Expr::Fn(function) if !function.function.is_async && !function.function.is_generator => (
-      function
-        .function
-        .params
-        .iter()
-        .map(|param| &param.pat)
-        .collect(),
-      single_return_expr(function.function.body.as_ref()?)?,
-    ),
     _ => return None,
   };
   let (mut condition, cons_class, alt_class) = fold_condition_body(body, yak_imports)?;
