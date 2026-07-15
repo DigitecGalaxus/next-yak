@@ -1,10 +1,11 @@
+use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::class_name_fold::{class_name_attr, expr_attr_value, fold_css_expr};
 use crate::yak_imports::YakImports;
 use swc_core::{
   common::errors::HANDLER,
-  common::{Span, SyntaxContext, DUMMY_SP},
+  common::{Span, Spanned, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    BinaryOp, CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop,
     PropName, PropOrSpread, SpreadElement,
   },
@@ -67,6 +68,9 @@ impl CSSProp {
     let merge_call: Result<Box<Expr>, TransformError> = (|| {
       let css_expr =
         Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
+      if let Some(span) = Self::find_style_reference(&css_expr) {
+        return Err(TransformError::StyleReference(span));
+      }
       let mapped_props = self
         .relevant_props
         .iter()
@@ -152,6 +156,35 @@ impl CSSProp {
     };
     opening_element.attrs[self.index] = class_name_attr(expr_attr_value(class_name_expr));
     true
+  }
+
+  /// Finds a reference to styles declared elsewhere (`css={mixin}`,
+  /// `css={styles.padding}`) in a css value position - at the top level or in
+  /// the value arms of ternaries and logical expressions
+  ///
+  /// The css prop only compiles styles in place: a mixin declaration compiles
+  /// to an argument-less `css()` carrying no class and no CSS, on the
+  /// assumption that every consumer inlined the declarations. The css prop
+  /// never inlines, so a reference renders unstyled without any signal -
+  /// rejecting it loudly is the only place this can be caught (the TypeScript
+  /// types cannot distinguish a reference from an inline template)
+  fn find_style_reference(expr: &Expr) -> Option<Span> {
+    match unwrap_type_casts(expr) {
+      Expr::Cond(cond) => {
+        Self::find_style_reference(&cond.cons).or_else(|| Self::find_style_reference(&cond.alt))
+      }
+      // `cond && css` - only the right hand side is a css value
+      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => Self::find_style_reference(&bin.right),
+      // `a || b` and `a ?? b` - both sides are css values
+      Expr::Bin(bin) if matches!(bin.op, BinaryOp::LogicalOr | BinaryOp::NullishCoalescing) => {
+        Self::find_style_reference(&bin.left).or_else(|| Self::find_style_reference(&bin.right))
+      }
+      // `undefined` is a valid falsy css value, any other identifier is a reference
+      Expr::Ident(ident) if ident.sym != "undefined" => Some(ident.span),
+      Expr::Member(member) => Some(member.span()),
+      Expr::OptChain(opt_chain) => Some(opt_chain.span),
+      _ => None,
+    }
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.
@@ -273,6 +306,7 @@ pub enum TransformError {
   MissingAttributeValue(Span),
   InvalidJSXEmptyExpr(Span),
   UnsupportedAttributeValue(Span),
+  StyleReference(Span),
   #[cfg(swc_ast_unknown)]
   UnsupportedJSXAttrOrSpread(),
 }
@@ -285,7 +319,8 @@ impl TransformError {
       | TransformError::InvalidJSXAttribute(span)
       | TransformError::MissingAttributeValue(span)
       | TransformError::InvalidJSXEmptyExpr(span)
-      | TransformError::UnsupportedAttributeValue(span) => *span,
+      | TransformError::UnsupportedAttributeValue(span)
+      | TransformError::StyleReference(span) => *span,
       #[cfg(swc_ast_unknown)]
       TransformError::UnsupportedJSXAttrOrSpread() => Span::default(),
     }
@@ -316,6 +351,12 @@ impl TransformError {
             TransformError::UnsupportedAttributeValue(_) =>
                 "Unsupported attribute value type. Use string literals for className, \
                 template literals for css prop, and object literals for style prop.",
+
+            TransformError::StyleReference(_) =>
+                "References to styles declared elsewhere are not supported in the 'css' prop - \
+                the referenced styles are not compiled at this usage and would silently never apply. \
+                Wrap the reference in a css template instead. \
+                Example: css={css`${mixin}`}",
 
             #[cfg(swc_ast_unknown)]
             TransformError::UnsupportedJSXAttrOrSpread() =>

@@ -5,3 +5,10 @@
    :                    ^^^^^^^^^^^^^^^^^^^^^
  5 | const Elem2 = (props: any) => <div css={props} />;
    `----
+  x References to styles declared elsewhere are not supported in the 'css' prop - the referenced styles are not compiled at this usage and would silently never apply. Wrap the reference in a css
+  | template instead. Example: css={css`${mixin}`}
+   ,-[input.js:5:1]
+ 4 | const Elem = () => <div css="invalid" />;
+ 5 | const Elem2 = (props: any) => <div css={props} />;
+   :                                         ^^^^^
+   `----
