@@ -70,3 +70,26 @@ const Elem4 = ({ active }: { active: boolean }) => {
     />
   );
 };
+
+// folds: a nested empty mixin contributes nothing instead of keeping the
+// whole css prop on the runtime path - the outer class is still minted as
+// the template carries dynamic content
+const Elem5 = ({ active }: { active: boolean }) => {
+  return <div css={css`${() => active && css``}`} />;
+};
+
+// folds: a nested empty ternary arm becomes an empty string
+const Elem6 = ({ active }: { active: boolean }) => {
+  return (
+    <div
+      css={css`
+        ${() =>
+          active
+            ? css``
+            : css`
+                color: blue;
+              `}
+      `}
+    />
+  );
+};
