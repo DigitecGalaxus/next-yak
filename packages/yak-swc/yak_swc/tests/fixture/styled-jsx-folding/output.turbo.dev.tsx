@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X0V4dGVuZGVkSW1wb3J0X203dUJCdSB7CiAgY29sb3I6IHNpbHZlcjsKfS5pbnB1dF9FeHRlbmRlZExvd2VyY2FzZV9tN3VCQnUgewogIGNvbG9yOiBnb2xkOwp9LmlucHV0X0V4dGVuZGVkTXV0YWJsZV9tN3VCQnUgewogIGNvbG9yOiBpdm9yeTsKfS5pbnB1dF9NdXRhYmxlX203dUJCdSB7CiAgY29sb3I6IHBpbms7Cn0uaW5wdXRfTGF0ZV9tN3VCQnUgewogIGNvbG9yOiBncmF5Owp9LmlucHV0X01lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IHRlYWw7Cn0uaW5wdXRfQ2FzdF9tN3VCQnUgewogIGNvbG9yOiBicm93bjsKfS5pbnB1dF9Cb3hXaXRoTWl4aW5fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kOiB3aGl0ZTsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfS5pbnB1dF9SZWFjdE1lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IG9saXZlOwp9LmlucHV0X0NvbmRpdGlvbmFsX203dUJCdSB7CiAgY29sb3I6IGNyaW1zb247Cn0uaW5wdXRfQ29uZGl0aW9uYWxfbTd1QkJ1LTAxIHsKICBjb2xvcjogbmF2eTsKfQ==";
+import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X0V4dGVuZGVkSW1wb3J0X203dUJCdSB7CiAgY29sb3I6IHNpbHZlcjsKfS5pbnB1dF9FeHRlbmRlZExvd2VyY2FzZV9tN3VCQnUgewogIGNvbG9yOiBnb2xkOwp9LmlucHV0X0V4dGVuZGVkTXV0YWJsZV9tN3VCQnUgewogIGNvbG9yOiBpdm9yeTsKfS5pbnB1dF9NdXRhYmxlX203dUJCdSB7CiAgY29sb3I6IHBpbms7Cn0uaW5wdXRfUmVkZWNsYXJlZF9tN3VCQnUgewogIGNvbG9yOiBwZXJ1Owp9LmlucHV0X1JlZGVjbGFyZWRfbTd1QkJ1LTAxIHsKICBjb2xvcjogcGx1bTsKfS5pbnB1dF9MYXRlX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0uaW5wdXRfTWVtb2l6ZWRfbTd1QkJ1IHsKICBjb2xvcjogdGVhbDsKfS5pbnB1dF9DYXN0X203dUJCdSB7CiAgY29sb3I6IGJyb3duOwp9LmlucHV0X0JveFdpdGhNaXhpbl9tN3VCQnUgewogIGJhY2tncm91bmQ6IHdoaXRlOwogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfT3B0aW1pemFibGVfbTd1QkJ1IHsKICBjb2xvcjogb3JhbmdlOwp9LmlucHV0X1JlYWN0TWVtb2l6ZWRfbTd1QkJ1IHsKICBjb2xvcjogb2xpdmU7Cn0uaW5wdXRfQ29uZGl0aW9uYWxfbTd1QkJ1IHsKICBjb2xvcjogY3JpbXNvbjsKfS5pbnB1dF9Db25kaXRpb25hbF9tN3VCQnUtMDEgewogIGNvbG9yOiBuYXZ5Owp9";
 const someRef = {
     current: null
 } as any;
@@ -96,6 +96,21 @@ let Mutable = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Mutable_m7uBBu"), {
     "displayName": "Mutable"
 });
+// bails: var redeclaration - both declarations share a single binding
+var Redeclared = /*YAK Extracted CSS:
+.input_Redeclared_m7uBBu {
+  color: peru;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Redeclared_m7uBBu"), {
+    "displayName": "Redeclared"
+});
+var Redeclared = /*YAK Extracted CSS:
+.input_Redeclared_m7uBBu-01 {
+  color: plum;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Redeclared_m7uBBu-01"), {
+    "displayName": "Redeclared"
+});
 // folds although the declaration comes after the usage
 const Early = ()=><p className="input_Late_m7uBBu">before declaration</p>;
 const Late = /*YAK Extracted CSS:
@@ -188,6 +203,7 @@ const NotOptimizable = ()=><>
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
     <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
     <Mutable>bails</Mutable>
+    <Redeclared>bails: var redeclaration</Redeclared>
     <Memoized>bails: HOC wrapper</Memoized>
     <ReactMemoized>bails: HOC wrapper</ReactMemoized>
     <Conditional>bails: conditional initializer</Conditional></>;

@@ -166,9 +166,10 @@ where
   current_declaration: Vec<Declaration>,
   /// e.g Button in const Button = styled.button`color: red;`
   current_variable_name: Option<ScopedVariableReference>,
-  /// Span of the current variable declarator's initializer (type casts and
-  /// parens stripped) - used to check a styled template is the whole
+  /// Span of the current const variable declarator's initializer (type casts
+  /// and parens stripped) - used to check a styled template is the whole
   /// initializer and not nested inside e.g. an HOC call or ternary
+  /// Only set for `const` declarators, the only ones eligible for folding
   current_declarator_init_span: Option<Span>,
   /// Current condition to name nested css expressions
   current_condition: Vec<String>,
@@ -1008,10 +1009,18 @@ where
           id.to_id(),
           vec![id.sym.clone().into()],
         ));
-        self.current_declarator_init_span = decl
-          .init
-          .as_deref()
-          .map(|init| unwrap_type_casts(init).span());
+        // only const declarators may fold - `let`/`var` bindings can be
+        // reassigned, and `var` may even be redeclared, which would register
+        // the same id twice - `immutable_bindings` drops non-const bindings
+        // later anyway, so gating here loses no folds
+        self.current_declarator_init_span = if n.kind == VarDeclKind::Const {
+          decl
+            .init
+            .as_deref()
+            .map(|init| unwrap_type_casts(init).span())
+        } else {
+          None
+        };
         decl.init.visit_mut_with(self);
         self.current_variable_name = previous_variable_name;
         self.current_declarator_init_span = previous_init_span;
