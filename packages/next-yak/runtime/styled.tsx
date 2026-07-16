@@ -224,13 +224,15 @@ const removeNonDomProperties = <T extends Record<string, unknown>>(obj: T): T =>
   return result;
 };
 
-// util function to merge class names, as they are concatenated with a space
-const mergeClassNames = (a?: string, b?: string) => {
-  if (!a && !b) return undefined;
-  if (!a) return b;
-  if (!b) return a;
-  return a + " " + b;
-};
+/**
+ * util function to merge class names, as they are concatenated with a space
+ * e.g.:\
+ * `("a", "b")` → `"a b"`\
+ * `("a", undefined)` → `"a"`\
+ * `(undefined, "b")` → `"b"`\
+ * `(undefined, undefined)` → `undefined`
+ */
+const mergeClassNames = (a?: string, b?: string) => (a && b ? a + " " + b : a || b || undefined);
 
 /**
  * merge props and processed props (including class names and styles)
