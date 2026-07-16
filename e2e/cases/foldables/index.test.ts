@@ -46,5 +46,12 @@ test(
     const disabled = page.getByTestId("disabled");
     await expect(disabled).toBeDisabled();
     await expect(disabled).toHaveCSS("color", "rgb(0, 0, 0)");
+
+    // entity-spelled attribute strings compare by decoded value, like the runtime path
+    await expect(page.getByTestId("entity")).toHaveCSS("color", "rgb(220, 20, 60)");
+    await expect(page.getByTestId("entity-runtime")).toHaveCSS("color", "rgb(220, 20, 60)");
+
+    // backslashes in JSX attributes stay literal characters when the condition is inlined
+    await expect(page.getByTestId("backslash")).toHaveCSS("color", "rgb(30, 144, 255)");
   }),
 );
