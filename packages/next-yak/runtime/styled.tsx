@@ -46,8 +46,8 @@ const styledFactory: StyledFn = (Component) =>
  */
 export const styled = styledFactory as Styled;
 
-// Real shape of the yakComponentSymbol tuple. Public YakComponent keeps it
-// opaque ([unknown, ...]); this internal type lets the write below be
+// Real internal shape of the yakComponentSymbol tuple. Public YakComponent keeps it
+// opaque ([unknown, ...])
 type YakComponentInternals = [
   self: React.FunctionComponent,
   attrsFn: AttrsFunction<any, any, any> | undefined,
