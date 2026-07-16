@@ -72,9 +72,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     | string;
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
-  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.[
-    INTERNAL.STATIC_ATTRS
-  ];
+  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.[INTERNAL.STATIC_ATTRS];
 
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
