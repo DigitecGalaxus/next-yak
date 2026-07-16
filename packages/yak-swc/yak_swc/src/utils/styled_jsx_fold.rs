@@ -937,10 +937,8 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, PropValue<'_>> {
         span: DUMMY_SP,
         value: true,
       }))),
-      // Rebuild the literal without `raw`: the JSX source spelling (HTML
-      // entities, literal backslashes) means something else once the string
-      // moves into expression position, so codegen must re-emit the decoded
-      // value with JS escaping
+      // don't add `raw` as it would otherwise break cases which
+      // require escaping like `Food &amp; Drink`
       Some(JSXAttrValue::Str(value)) => Cow::Owned(Expr::Lit(Lit::Str(str_lit(
         value.value.clone(),
         value.span,
