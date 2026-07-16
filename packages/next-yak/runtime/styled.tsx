@@ -1,4 +1,5 @@
 import { css, CSSInterpolation, ClassNames, yakComponentSymbol } from "./cssLiteral.js";
+import * as INTERNAL from "./internals/propMarkers.js";
 import React from "react";
 import type {
   Attrs,
@@ -80,7 +81,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     | string;
 
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
-  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.$staticAttrs;
+  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.[INTERNAL.STATIC_ATTRS];
 
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
@@ -105,12 +106,12 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         // className, and `source` then aliases `props` — so the class names are
         // written to the fresh, filtered object rather than back into props
         const source = (
-          staticAttrs && !("$__attrs" in props)
+          staticAttrs && !(INTERNAL.ATTRS_MERGED in props)
             ? combineProps(
                 {
                   ...(props as { className?: string; style?: React.CSSProperties }),
                   // mark the props as processed
-                  $__attrs: true,
+                  [INTERNAL.ATTRS_MERGED]: true,
                 },
                 staticAttrs,
               )
@@ -119,7 +120,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         const filteredProps = removeNonDomProperties(source) as {
           className?: string;
         };
-        if (!("$__runtimeStylesProcessed" in source)) {
+        if (!(INTERNAL.RUNTIME_STYLES_DONE in source)) {
           const classNames = new ClassNames(source.className);
           runtimeStyleProcessor(source, classNames, undefined as unknown as React.CSSProperties);
           filteredProps.className = classNames.value || undefined;
@@ -140,7 +141,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
       const combinedProps =
-        "$__attrs" in props
+        INTERNAL.ATTRS_MERGED in props
           ? ({
               theme,
               ...props,
@@ -158,7 +159,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
                   style?: React.CSSProperties;
                 }),
                 // mark the props as processed
-                $__attrs: true,
+                [INTERNAL.ATTRS_MERGED]: true,
               },
               mergedAttrsFn?.({ theme, ...(props as any) }),
             );
@@ -168,7 +169,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       //
       // inner levels of a styled(Component) chain receive already-processed
       // props and skip this entirely — no collector, no style clone
-      if (!("$__runtimeStylesProcessed" in combinedProps)) {
+      if (!(INTERNAL.RUNTIME_STYLES_DONE in combinedProps)) {
         const classNames = new ClassNames(combinedProps.className);
         // static processors never write style values, so the incoming style
         // object can be passed through without a defensive copy
@@ -177,7 +178,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
           : combinedProps.style;
         runtimeStyleProcessor(combinedProps, classNames, styles as React.CSSProperties);
         // @ts-expect-error this is not typed correctly
-        combinedProps.$__runtimeStylesProcessed = true;
+        combinedProps[INTERNAL.RUNTIME_STYLES_DONE] = true;
 
         combinedProps.className = classNames.value || undefined;
         if (styles !== combinedProps.style) {
@@ -194,7 +195,7 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
       // remove all props that start with a $ sign so they reach neither DOM
       // elements nor custom components — this also strips the internal
-      // $__attrs/$__runtimeStylesProcessed markers, which must not cross a
+      // INTERNAL.ATTRS_MERGED/INTERNAL.RUNTIME_STYLES_DONE markers, which must not cross a
       // custom component boundary (a custom component may render another yak
       // component that has to process its own attrs/styles)
       const filteredProps = removeNonDomProperties(propsBeforeFiltering);
@@ -320,7 +321,9 @@ const buildRuntimeAttrsProcessor = <
   // A `styled(StyledWithAttrs).attrs({...})` chain merges its levels per render
   // and is not tagged, which keeps a mutation of an attrs object observable.
   if (ownAttrsFn && typeof attrs !== "function") {
-    return Object.assign(ownAttrsFn, { $staticAttrs: attrs } as StaticAttrsCarrier);
+    return Object.assign(ownAttrsFn, {
+      [INTERNAL.STATIC_ATTRS]: attrs,
+    } as StaticAttrsCarrier);
   }
 
   return ownAttrsFn || parentAttrsFn;
@@ -332,7 +335,7 @@ const buildRuntimeAttrsProcessor = <
  * Kept local to this module — like the `yakComponentSymbol` tuple, it is an
  * implementation detail and must not reach the public `AttrsFunction` type.
  */
-type StaticAttrsCarrier = { $staticAttrs?: object };
+type StaticAttrsCarrier = { [K in typeof INTERNAL.STATIC_ATTRS]?: object };
 
 /**
  * Merges the runtime style function of the current component with the runtime style function of the parent component
