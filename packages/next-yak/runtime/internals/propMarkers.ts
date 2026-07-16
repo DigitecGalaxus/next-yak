@@ -1,18 +1,4 @@
-/**
- * Internal, render-time markers written onto props (or the merged attrs
- * function) and read back to skip repeated work across a `styled(...)` chain.
- *
- * These are NOT a compiler contract — nothing in yak-swc emits them — and they
- * never appear on the public API. The leading `$` is load-bearing:
- * `removeNonDomProperties` strips `$`-prefixed props, so a marker can never
- * reach the DOM. The `__` on the two prop markers guards against a user's own
- * `$`-prop colliding with one. The values are kept short so the app bundler
- * ships fewer bytes; the descriptive export names are how they read in source.
- *
- * Imported as a namespace (`import * as INTERNAL`) so each use site reads as
- * `INTERNAL.ATTRS_MERGED`; esbuild inlines the `const` values, leaving nothing
- * of the namespace in the shipped bundle.
- */
+/** Internal, render-time markers written onto props */
 
 /**
  * Set on props once the attrs functions have been folded in, so a nested yak
