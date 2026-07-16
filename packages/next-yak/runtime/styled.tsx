@@ -46,6 +46,16 @@ const styledFactory: StyledFn = (Component) =>
  */
 export const styled = styledFactory as Styled;
 
+// Real shape of the yakComponentSymbol tuple. Public YakComponent keeps it
+// opaque ([unknown, ...]); this internal type lets the write below be
+// type-checked without an `as unknown` cast.
+type YakComponentInternals = [
+  self: React.FunctionComponent,
+  attrsFn: AttrsFunction<any, any, any> | undefined,
+  styleProcessor: RuntimeStyleProcessor<unknown>,
+  target: React.FunctionComponent | string,
+];
+
 const yakStyled: StyledInternal = (Component, attrs) => {
   const isYakComponent = typeof Component !== "string" && yakComponentSymbol in Component;
 
@@ -196,15 +206,12 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
     };
 
-    // Assign the yakComponentSymbol directly without forwardRef
-    return Object.assign(Yak, {
-      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent] as [
-        unknown,
-        unknown,
-        unknown,
-        unknown,
-      ],
-    });
+    // Direct write instead of Object.assign (faster & smaller)
+    const taggedYak = Yak as React.FunctionComponent & {
+      [yakComponentSymbol]: YakComponentInternals;
+    };
+    taggedYak[yakComponentSymbol] = [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent];
+    return taggedYak;
   };
 };
 
