@@ -277,7 +277,7 @@ impl FoldVisitor<'_> {
   ///
   /// The element cannot wrap itself: only whoever owns the node can put a call
   /// expression where a JSX element was, and each position needs a different
-  /// container. Hence the split between this and the three visitor hooks.
+  /// container. Hence the split between this and the three visitor hooks
   fn try_fold(&mut self, n: &mut JSXElement) -> Vec<Binding> {
     let JSXElementName::Ident(ident) = &n.opening.name else {
       return Vec::new();
@@ -306,7 +306,7 @@ impl FoldVisitor<'_> {
     }
     // the attributes which keep a bound value read its parameter instead - the
     // parent evaluates it once, before the element is built. This runs before
-    // the className is placed, while the attribute indices still hold.
+    // the className is placed, while the attribute indices still hold
     for binding in &plan.bindings {
       if let Some(JSXAttrOrSpread::JSXAttr(attr)) = n.opening.attrs.get_mut(binding.attr_index) {
         attr.value = Some(expr_attr_value(Box::new(Expr::Ident(
@@ -448,7 +448,8 @@ struct Binding {
 /// their attribute positions, so a level never maps to a shape directly
 #[derive(Debug, PartialEq, Eq)]
 enum FoldShape {
-  /// every consumed value could be put back where it is read: today's output
+  /// every consumed value could be put back where it is read: the className is
+  /// emitted inline
   Inline,
   /// the values which stay bound are all `$`-props, which only the className
   /// has to see, and nothing observable sits between them
@@ -483,7 +484,7 @@ impl YakClassName {
 /// A merge keeps the user's className where it is. Otherwise the className goes
 /// where the first bound prop was, so the parameter block evaluates exactly
 /// where that prop's value used to - appending it would run every argument
-/// after all the other attributes instead.
+/// after all the other attributes instead
 fn class_name_slot(
   attrs: &[JSXAttrOrSpread],
   bindings: &[Binding],
@@ -497,13 +498,13 @@ fn class_name_slot(
 /// Decides the output shape of one usage
 ///
 /// Pure data in, pure data out, so every row of the case analysis is a unit
-/// test rather than a fixture run.
+/// test rather than a fixture run
 ///
 /// The parameter block evaluates at the className slot, so it moves across
 /// every attribute between the slot and the props it binds. That is only exact
 /// if nothing observable sits in the way. `$`-props never do: an unread one is
 /// dropped and never evaluates at all, a value that could be put back where it
-/// is read is pure by definition, and a bound one *is* what is moving.
+/// is read is pure by definition, and a bound one *is* what is moving
 fn select_shape(
   attrs: &[JSXAttrOrSpread],
   attr_values: &FxHashMap<Atom, PropValue>,
@@ -553,7 +554,7 @@ fn select_shape(
 ///
 /// Binds each value once, in attribute source order, and substitutes the
 /// parameter wherever the prop is read - which is exactly what attribute
-/// position guaranteed before the fold inlined the component.
+/// position guaranteed before the fold inlined the component
 fn bind_params(class_name: Box<Expr>, bindings: Vec<Binding>) -> Box<Expr> {
   let params = bindings
     .iter()
@@ -775,7 +776,7 @@ fn inline_runtime_expressions(
 /// what makes the element-wrap exact by construction. The arguments then
 /// evaluate in attribute source order and the element itself only reads
 /// parameters, so nothing can jump anything: without it
-/// `<Button id={g()} disabled={f()}/>` would run `f` before `g`.
+/// `<Button id={g()} disabled={f()}/>` would run `f` before `g`
 fn full_capture<'a>(
   attrs: &'a [JSXAttrOrSpread],
   binder: &mut ParamBinder,
@@ -824,12 +825,12 @@ fn full_capture<'a>(
 ///
 /// The props parameter must be a plain object destructuring or an identifier
 /// read through plain members (`(p) => p.$active`) - `theme` and props like
-/// `children` which are not plain attributes bail.
+/// `children` which are not plain attributes bail
 ///
 /// Every read is replaced by the prop's [ParamBinder] parameter rather than by
 /// the attribute value directly. [BakeParams] then puts the value back wherever
 /// inlining it cannot be observed; whatever is left keeps its parameter and is
-/// bound once at the usage site.
+/// bound once at the usage site
 fn inline_expression(
   expression: &Expr,
   binder: &mut ParamBinder,
@@ -901,10 +902,8 @@ fn inline_expression(
 /// component sees props, so the runtime path reads `undefined` while a
 /// substituted fold would see the attribute value - reading it must bail
 ///
-/// `ref` is deliberately absent even though it looks like the same case: on
-/// React 18 it was, but React 19 - which is the minimum next-yak supports -
-/// passes `ref` as an ordinary prop, so the runtime and the fold read the same
-/// value. Listing it would only cost folds.
+/// `ref` is absent on purpose: React 19, the minimum next-yak supports, passes
+/// it as an ordinary prop, so the runtime and the fold read the same value
 fn is_runtime_injected_prop(name: &Atom) -> bool {
   matches!(
     name.as_ref(),
@@ -975,12 +974,10 @@ fn attr_purity(attr_values: &FxHashMap<Atom, PropValue>, name: &Atom) -> Purity 
 /// Hands out one parameter per prop name while the conditions are substituted
 ///
 /// Binding during the substitution itself, rather than counting reads in a
-/// separate pass, is deliberate: a separate pass would have to replicate every
-/// rule about what actually substitutes - runtime injected props, computed
-/// access, the whole-props escape - and the two copies would drift.
+/// separate pass, keeps the substitution rules in one place
 ///
 /// One parameter per prop *name*, so a prop read by two conditions, or twice by
-/// one condition, is still bound exactly once.
+/// one condition, is still bound exactly once
 #[derive(Default)]
 struct ParamBinder {
   /// prop name -> the parameter standing in for every read of it
@@ -996,14 +993,14 @@ impl ParamBinder {
   /// Carries the same `__yak_` prefix as the other synthesized bindings, and
   /// for the same reason: the parameter shares a scope with the attribute
   /// values baked in around it, so a bare `$tilt` would capture the user's own
-  /// `$tilt` in `<Row $tilt={f()} $b={$tilt} />`.
+  /// `$tilt` in `<Row $tilt={f()} $b={$tilt} />`
   fn param_for(&mut self, name: &Atom) -> Ident {
     if let Some(param) = self.bound.get(name) {
       return param.clone();
     }
     // an attribute name is not always an identifier: `data-x` has to become
     // `data_x` to be one, which `data_x` itself already is. A duplicate
-    // parameter is a SyntaxError, so disambiguate rather than emit one.
+    // parameter is a SyntaxError, so disambiguate rather than emit one
     let sanitized: String = name
       .chars()
       .map(|char| {
@@ -1030,7 +1027,7 @@ impl ParamBinder {
   ///
   /// The gate is dup-purity, not "is it read twice": a single read is enough to
   /// change the count, because that read can sit inside a callback or behind a
-  /// short circuit.
+  /// short circuit
   fn split<'a>(
     &self,
     attrs: &'a [JSXAttrOrSpread],
@@ -1106,7 +1103,7 @@ impl VisitMut for SubstituteProps<'_> {
     expr.visit_mut_children_with(self);
   }
 
-  // expand a shorthand `{ $active }` to `{ $active: <param> }`
+  /// Expands a shorthand `{ $active }` to `{ $active: <param> }`
   fn visit_mut_prop(&mut self, prop: &mut Prop) {
     if let Prop::Shorthand(ident) = prop {
       if let Some(param) = self.param_for(ident) {
@@ -1154,7 +1151,7 @@ impl VisitMut for SubstituteMemberProps<'_> {
     expr.visit_mut_children_with(self);
   }
 
-  // a shorthand `{ p }` also escapes the whole props object
+  /// A shorthand `{ p }` also escapes the whole props object
   fn visit_mut_prop(&mut self, prop: &mut Prop) {
     if matches!(prop, Prop::Shorthand(ident) if ident.to_id() == self.param) {
       self.failed = true;
@@ -1167,7 +1164,7 @@ impl VisitMut for SubstituteMemberProps<'_> {
 /// Puts an attribute value back where its parameter is read, dropping the
 /// parameter
 ///
-/// A parameter which survives this is bound once at the usage site instead.
+/// A parameter which survives this is bound once at the usage site instead
 struct BakeParams<'a> {
   values: &'a FxHashMap<Id, Cow<'a, Expr>>,
 }

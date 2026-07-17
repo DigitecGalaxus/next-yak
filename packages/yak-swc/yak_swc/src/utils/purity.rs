@@ -3,7 +3,7 @@
 //! Folding moves an attribute expression out of attribute position - where JS
 //! evaluates it exactly once, in source order - and into arbitrary expression
 //! position inside the style conditions. [`Purity`] grades how much of that
-//! movement a value tolerates.
+//! movement a value tolerates
 
 use crate::utils::ast_helper::unwrap_type_casts;
 use swc_core::ecma::ast::*;
@@ -29,15 +29,12 @@ pub(crate) enum Purity {
 ///
 /// The levels are an allowlist: an unrecognised expression is
 /// [`Purity::Impure`]. The asymmetry is deliberate - a wrong answer towards
-/// pure is silent, a wrong answer towards impure only costs an IIFE parameter.
-///
-/// Every value is judged under [`unwrap_type_casts`], so `f() as number` is
-/// judged on `f()` and `(x)` on `x`.
+/// pure is silent, a wrong answer towards impure only costs an IIFE parameter
 ///
 /// Member reads are admitted as [`Purity::Dup`] even though a getter could
 /// observe the extra reads. Gating them would turn `$c={colors[status]}` - one
 /// of the most common prop shapes there is - into an IIFE, and an effectful
-/// getter during render already violates React's own purity rule.
+/// getter during render already violates React's own purity rule
 pub(crate) fn purity(expr: &Expr) -> Purity {
   match unwrap_type_casts(expr) {
     Expr::Lit(_) | Expr::Ident(_) => Purity::Dup,
@@ -63,7 +60,7 @@ pub(crate) fn purity(expr: &Expr) -> Purity {
         .min(purity(&cond.alt)),
     ),
     // an untagged template only concatenates - the result is a string, so two
-    // evaluations are indistinguishable. A tagged template calls its tag.
+    // evaluations are indistinguishable, while a tagged template calls its tag
     Expr::Tpl(tpl) => operand(
       tpl
         .exprs
@@ -75,7 +72,7 @@ pub(crate) fn purity(expr: &Expr) -> Purity {
     // creating a closure is unobservable - the body runs when it is called,
     // not where the expression sits. Without this arm every `onClick={() => …}`,
     // which is to say nearly every interactive element, would force the
-    // element-wrap.
+    // element-wrap
     Expr::Arrow(_) | Expr::Fn(_) => Purity::Reorder,
     // allocating is unobservable, but the element *values* are evaluated here
     Expr::Array(array) => allocation(
@@ -250,7 +247,7 @@ mod tests {
   /// Parses a bare expression, so each case reads as the source a user would
   /// write. Parsing directly rather than round-tripping through
   /// `test_transform` matters here: the printer normalises away exactly the
-  /// wrappers (`(x)`, `<T>x`) these predicates have to see through.
+  /// wrappers (`(x)`, `<T>x`) these predicates have to see through
   fn parse_expr(syntax: Syntax, source: &str) -> Box<Expr> {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.new_source_file(Lrc::new(FileName::Anon), source.to_string());
@@ -294,7 +291,7 @@ mod tests {
     assert_eq!(ts("!open"), Dup);
     assert_eq!(ts("-count"), Dup);
     assert_eq!(ts("typeof x"), Dup);
-    // the shape the deleted eslint rule wrongly called impure
+    // arithmetic and comparison chains stay duplicable
     assert_eq!(ts("i % 4 !== 0"), Dup);
     assert_eq!(ts("a && b"), Dup);
     assert_eq!(ts("a ?? b"), Dup);

@@ -169,7 +169,6 @@ where
   /// Span of the current const variable declarator's initializer (type casts
   /// and parens stripped) - used to check a styled template is the whole
   /// initializer and not nested inside e.g. an HOC call or ternary
-  /// Only set for `const` declarators, the only ones eligible for folding
   current_declarator_init_span: Option<Span>,
   /// Current condition to name nested css expressions
   current_condition: Vec<String>,
@@ -757,9 +756,7 @@ where
 
     module.visit_mut_children_with(self);
 
-    // Fold JSX usages of fully static styled components into plain DOM
-    // elements or their wrapped component
-    // This must run before the utility imports below are collected
+    // Must run before the utility imports below are collected
     self
       .styled_jsx_fold
       .fold_jsx_usages(module, self.yak_library_imports.as_mut().unwrap());
@@ -1290,8 +1287,6 @@ where
       self.process_yak_literal(n, css_state.clone());
     self.inside_global_style = was_inside_global_style;
 
-    // only a template that is the whole initializer may fold - a template
-    // nested inside e.g. an HOC call or ternary must keep the runtime path
     // dynamic css values compile to css variables set through the style prop
     // which are not folded yet
     if self.optimize_static_jsx
