@@ -43,6 +43,7 @@ describe("atoms", () => {
     // atoms' own $dynamic is not read today. Pinned to catch a fold of static
     // atoms into the outer class name, which would make the fast path reachable.
     expect((atoms("a") as unknown as { $dynamic: boolean }).$dynamic).toBe(false);
+    // @ts-expect-error calling with a class name string mimics the compiled css form
     expect((css("yak123", atoms("a")) as unknown as { $dynamic: boolean }).$dynamic).toBe(true);
   });
 });
