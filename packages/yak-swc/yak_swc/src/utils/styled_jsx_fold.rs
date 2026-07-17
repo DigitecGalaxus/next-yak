@@ -937,7 +937,12 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, PropValue<'_>> {
         span: DUMMY_SP,
         value: true,
       }))),
-      Some(JSXAttrValue::Str(value)) => Cow::Owned(Expr::Lit(Lit::Str(value.clone()))),
+      // don't add `raw` as it would otherwise break cases which
+      // require escaping like `Food &amp; Drink`
+      Some(JSXAttrValue::Str(value)) => Cow::Owned(Expr::Lit(Lit::Str(str_lit(
+        value.value.clone(),
+        value.span,
+      )))),
       Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
         expr: JSXExpr::Expr(expr),
         ..

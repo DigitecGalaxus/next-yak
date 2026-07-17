@@ -34,6 +34,27 @@ const Tone = styled.p<{ $variant?: string }>`
         `}
 `;
 
+// string comparison against an attribute that JSX spells with an HTML entity -
+// the fold must compare the decoded value, not the source text
+const Category = styled.li<{ $label?: string }>`
+  color: rgb(105, 105, 105);
+  ${({ $label }) =>
+    $label === "Food & Drink" &&
+    css`
+      color: rgb(220, 20, 60);
+    `}
+`;
+
+// backslashes in JSX attribute strings are literal characters, not JS escapes
+const Shortcut = styled.kbd<{ $keys?: string }>`
+  color: rgb(105, 105, 105);
+  ${({ $keys }) =>
+    $keys === "a\\tb" &&
+    css`
+      color: rgb(30, 144, 255);
+    `}
+`;
+
 // non-$ prop: stays on the element and toggles classes
 const ActionButton = styled.button<{ disabled?: boolean }>`
   color: rgb(0, 0, 0);
@@ -82,6 +103,17 @@ export default function App() {
       <ActionButton data-testid="disabled" disabled>
         disabled
       </ActionButton>
+      {/* entity spelling decodes to "Food & Drink" - must match like the runtime twin below */}
+      <Category data-testid="entity" $label="Food &amp; Drink">
+        Food &amp; Drink
+      </Category>
+      <Category data-testid="entity-runtime" {...{ $label: "Food & Drink" }}>
+        runtime twin
+      </Category>
+      {/* the attribute value is the four characters a \ t b - not a tab */}
+      <Shortcut data-testid="backslash" $keys="a\tb">
+        a\tb
+      </Shortcut>
     </>
   );
 }
