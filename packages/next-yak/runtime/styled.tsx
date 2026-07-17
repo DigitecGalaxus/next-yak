@@ -47,8 +47,10 @@ const styledFactory: StyledFn = (Component) =>
  */
 export const styled = styledFactory as Styled;
 
-// Real internal shape of the yakComponentSymbol tuple. Public YakComponent keeps it
-// opaque ([unknown, ...])
+/**
+ * Real shape of the yakComponentSymbol tuple, which the public `YakComponent`
+ * keeps opaque as `[unknown, ...]`
+ */
 type YakComponentInternals = [
   self: React.FunctionComponent,
   attrsFn: AttrsFunction<any, any, any> | undefined,
@@ -131,7 +133,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // attrs functions and dynamic style functions receive the theme —
       // fully static components take the fast path above and never read the
       // theme context
-      //
       const theme = useTheme();
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
@@ -311,11 +312,11 @@ const buildRuntimeAttrsProcessor = <
 
   // A constant `.attrs({...})` is wrapped into `() => attrs`, which makes it
   // indistinguishable from `.attrs(props => ...)` at render time — so record the
-  // object it will always return, the way the style processor records $dynamic.
-  // Only the wrapper closure is tagged, never a user-supplied attrs function.
+  // object it will always return. Only the wrapper closure is tagged, never a
+  // user-supplied attrs function.
   //
   // A `styled(StyledWithAttrs).attrs({...})` chain merges its levels per render
-  // and is not tagged, which keeps a mutation of an attrs object observable.
+  // and is not tagged, which keeps a mutation of an attrs object observable
   if (ownAttrsFn && typeof attrs !== "function") {
     return Object.assign(ownAttrsFn, {
       [INTERNAL.STATIC_ATTRS]: attrs,
@@ -326,10 +327,10 @@ const buildRuntimeAttrsProcessor = <
 };
 
 /**
- * The constant object a `.attrs({...})` processor always returns.
+ * The constant object a `.attrs({...})` processor always returns
  *
  * Kept local to this module — like the `yakComponentSymbol` tuple, it is an
- * implementation detail and must not reach the public `AttrsFunction` type.
+ * implementation detail and must not reach the public `AttrsFunction` type
  */
 type StaticAttrsCarrier = { [K in typeof INTERNAL.STATIC_ATTRS]?: object };
 

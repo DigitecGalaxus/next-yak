@@ -126,11 +126,10 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 };
 
 /**
- * Set-like collector for class names.
+ * Set-like collector for class names
  *
- * Implemented as a string builder in the runtime (the previous
- * Set<string> split → Set → Array.from → join round-trip dominated render
- * cost); a real Set<string> also satisfies this interface.
+ * The runtime implements this as a string builder, a real `Set<string>`
+ * satisfies it as well
  */
 export type ClassNameCollector = {
   add(className: string): void;

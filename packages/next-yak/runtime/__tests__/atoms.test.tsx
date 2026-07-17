@@ -39,9 +39,8 @@ describe("atoms", () => {
 
   it("is static on its own but dynamic once css() wraps it", () => {
     // styled`` compiles to css("yak123", atoms(...)) and gates its fast path on
-    // the outer processor, which is dynamic because atoms() is a function - so
-    // atoms' own $dynamic is not read today. Pinned to catch a fold of static
-    // atoms into the outer class name, which would make the fast path reachable.
+    // the outer processor, so atoms' own $dynamic is not read today. Pinned to
+    // catch a fold of static atoms that would make the fast path reachable
     expect((atoms("a") as unknown as { $dynamic: boolean }).$dynamic).toBe(false);
     // @ts-expect-error calling with a class name string mimics the compiled css form
     expect((css("yak123", atoms("a")) as unknown as { $dynamic: boolean }).$dynamic).toBe(true);
