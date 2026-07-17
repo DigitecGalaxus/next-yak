@@ -75,7 +75,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   // attrs and style processors are already merged at construction time, so
   // a chain of N levels renders the target directly in ONE wrapper instead
   // of re-entering every parent wrapper per element per render
-  // (the re-entry was the structural ×N multiplier in EXP-20260609-02)
   const targetComponent = (isYakComponent ? parentTarget : Component) as
     | React.FunctionComponent
     | string;
