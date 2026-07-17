@@ -132,9 +132,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       // fully static components take the fast path above and never read the
       // theme context
       //
-      // (this previously gated on `runtimeStylesFn.length` — the function
-      // ARITY, which is always ≥2 — so useTheme() ran for every component
-      // including fully static ones; see EXP-20260609-02)
       const theme = useTheme();
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
