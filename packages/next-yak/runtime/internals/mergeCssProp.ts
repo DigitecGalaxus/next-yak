@@ -26,10 +26,7 @@ export const mergeCssProp = (
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
 
-  // A falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on`
-  // false. The swc plugin folds the statically known cases, so this covers the
-  // shapes that stay on the runtime path (a mixin reference or a css template
-  // carrying runtime values).
+  // a falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on` false
   if (cssProp) {
     cssProp({}, classNames, style);
   }

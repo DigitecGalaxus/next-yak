@@ -305,9 +305,8 @@ it("merge properties with dark mode and state variants", async () => {
   });
 });
 
-// A falsy css prop applies no styles. The swc plugin folds the statically known
-// cases, so these cover the shapes that stay on the runtime path, e.g.
-// `css={on && mixin}` or `css={on ? css`...` : undefined}` with `on` false.
+// a falsy css prop applies no styles - the swc plugin folds the statically known
+// cases, so these cover the shapes that stay on the runtime path
 it.each([
   ["false", false],
   ["null", null],
