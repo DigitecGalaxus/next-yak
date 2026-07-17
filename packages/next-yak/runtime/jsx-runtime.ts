@@ -1,8 +1,10 @@
 import ReactJSXRuntime from "react/jsx-runtime";
 import type { ComponentStyles } from "./mocks/cssLiteral.js";
 
-// A falsy css prop applies no styles, which keeps conditional shapes like
-// `css={on && css`...`}` or `css={on ? css`...` : undefined}` well typed
+/**
+ * A falsy css prop applies no styles, which keeps conditional shapes like
+ * `css={on && css`...`}` or `css={on ? css`...` : undefined}` well typed
+ */
 type CSSProp = ComponentStyles<Record<keyof any, never>> | false | null | undefined;
 
 // Only return the css prop if the "className" and "style" properties are present

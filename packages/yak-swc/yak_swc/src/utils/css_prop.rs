@@ -54,7 +54,8 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
-  /// A no-op empty css prop (e.g. `css``) is dropped entirely instead.
+  /// A statically known css prop skips the merge call and folds into a plain
+  /// `className` instead (see `try_fold`), an empty one (e.g. `css``) is dropped
   pub fn transform(
     &self,
     opening_element: &mut JSXOpeningElement,
@@ -192,12 +193,8 @@ impl CSSProp {
   /// `css={styles.padding}`) in a css value position - at the top level or in
   /// the value arms of ternaries and logical expressions
   ///
-  /// The css prop only compiles styles in place: a mixin declaration compiles
-  /// to an argument-less `css()` carrying no class and no CSS, on the
-  /// assumption that every consumer inlined the declarations. The css prop
-  /// never inlines, so a reference renders unstyled without any signal -
-  /// rejecting it loudly is the only place this can be caught (the TypeScript
-  /// types cannot distinguish a reference from an inline template)
+  /// Such a reference renders unstyled because the css prop only compiles
+  /// styles in place, so it is rejected via `TransformError::StyleReference`
   fn find_style_reference(expr: &Expr) -> Option<Span> {
     match unwrap_type_casts(expr) {
       Expr::Cond(cond) => {

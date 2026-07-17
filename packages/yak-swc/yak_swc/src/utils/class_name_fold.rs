@@ -35,7 +35,7 @@ pub(crate) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box
       })))
     }
     // `cond && css("x")` folds to `cond ? "x" : ""`. There is no base class to
-    // concatenate onto, so the class name carries no leading space.
+    // concatenate onto, so the class name carries no leading space
     Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => {
       let class_name = pure_static_css_class(&bin.right, yak_imports)?;
       // keep the span of the css call so the /*YAK Extracted CSS:*/ comment
@@ -183,10 +183,7 @@ pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Op
     return None;
   }
   // an argument-less css() carries neither a class name nor runtime content,
-  // so it contributes an empty class name - a nested empty `css``` compiles
-  // to this shape and folds instead of falling back to the runtime path
-  // (note the reverse does not hold: a top level mixin also compiles to a
-  // bare css(), its css is inlined into the consumer)
+  // so it contributes an empty class name
   if call.args.is_empty() {
     return Some("".into());
   }
@@ -203,6 +200,7 @@ pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Op
   }
 }
 
+/// Matches a callee that resolves to a yak `css` import
 pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
   match callee {
     Callee::Expr(expr) => match unwrap_type_casts(expr) {
@@ -213,6 +211,8 @@ pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bo
   }
 }
 
+/// Prefixes a class name with a space so it can be concatenated onto a base
+/// class, e.g. `"a"` -> `" a"`
 pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
   // an empty class name (from an empty `css``) contributes nothing
   if class_name.is_empty() {
@@ -221,6 +221,7 @@ pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
   format!(" {}", class_name.to_string_lossy()).into()
 }
 
+/// Builds a string literal
 pub(crate) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
   Str {
     span,
@@ -229,6 +230,7 @@ pub(crate) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
   }
 }
 
+/// Builds a string literal expression with a dummy span
 pub(crate) fn str_expr(value: Wtf8Atom) -> Box<Expr> {
   Box::new(Expr::Lit(Lit::Str(str_lit(value, DUMMY_SP))))
 }

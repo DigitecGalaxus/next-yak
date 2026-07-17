@@ -24,6 +24,9 @@ pub struct YakCss {
 pub struct YakTransformResult {
   pub expression: Box<Expr>,
   pub css: YakCss,
+  /// Whether the expression should be marked as side-effect free
+  /// `false` for an empty css prop, which is dropped by the css prop transform
+  /// before a minifier could act on the annotation
   pub add_pure_annotation: bool,
 }
 
@@ -222,8 +225,8 @@ impl YakTransform for TransformCssMixin {
     let is_empty_css_prop =
       self.is_within_jsx_attribute && declarations.is_empty() && !has_dynamic_content;
     let comment_prefix = if self.is_within_jsx_attribute {
-      // An empty css prop (e.g. `css``) has no class name and no runtime.
-      // Keep the call argument-less so the css prop transform can drop it.
+      // An empty css prop (e.g. `css``) has no class name and no runtime,
+      // keep the call argument-less so the css prop transform can drop it
       if is_empty_css_prop {
         None
       } else {
