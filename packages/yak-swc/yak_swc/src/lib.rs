@@ -1486,7 +1486,9 @@ mod tests {
   };
 
   /// Per-fixture options read from an optional `config.json` next to `input.tsx`.
-  /// Fixtures without the file use the defaults.
+  /// Folding is off by default here so the bulk of the suite covers the runtime
+  /// transform; a fixture opts into folding with `{"foldStatic": true}`. This
+  /// harness default is independent of the shipped `Config` default (on).
   #[derive(Deserialize)]
   #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
   struct FixtureOptions {
@@ -1495,7 +1497,7 @@ mod tests {
 
   impl Default for FixtureOptions {
     fn default() -> Self {
-      Self { fold_static: true }
+      Self { fold_static: false }
     }
   }
 
@@ -1652,6 +1654,22 @@ mod tests {
         allow_error: true,
       },
     )
+  }
+
+  /// The fixture suite defaults to fold-off, so the shipped default is no
+  /// longer pinned by any fixture. An accidental flip would be
+  /// behavior-preserving there and ship unnoticed - assert it here, through
+  /// serde so the whole default path is covered, not just the `Default` impl.
+  #[test]
+  fn shipped_config_defaults_fold_static_on() {
+    // an options object that omits foldStatic must still fold
+    let config: Config = serde_json::from_str(r#"{ "basePath": "" }"#)
+      .expect("Config without foldStatic should deserialize");
+    assert!(
+      config.fold_static,
+      "shipped Config default for fold_static must stay true"
+    );
+    assert!(Config::default().fold_static);
   }
 
   #[test]

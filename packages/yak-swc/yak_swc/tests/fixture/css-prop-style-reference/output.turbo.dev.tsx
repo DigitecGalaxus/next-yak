@@ -30,20 +30,20 @@ const TernaryArm = ({ compact }: {
 // keeps working: inline templates in both ternary arms
 const TernaryInline = ({ compact }: {
     compact: boolean;
-})=><div className={compact ? /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp({}, compact ? /*YAK Extracted CSS:
 .input_TernaryInline_m7uBBu {
   line-height: 1;
 }
-*/ /*#__PURE__*/ "input_TernaryInline_m7uBBu" : /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_TernaryInline_m7uBBu") : /*YAK Extracted CSS:
 .input_TernaryInline_m7uBBu-01 {
   line-height: 1.5;
 }
-*/ /*#__PURE__*/ "input_TernaryInline_m7uBBu-01"}/>;
+*/ /*#__PURE__*/ css("input_TernaryInline_m7uBBu-01"))}/>;
 // keeps working: `undefined` is a valid falsy arm, not a reference
 const TernaryUndefined = ({ on }: {
     on: boolean;
-})=><div className={on ? /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
 .input_TernaryUndefined_m7uBBu {
   color: green;
 }
-*/ /*#__PURE__*/ "input_TernaryUndefined_m7uBBu" : ""}/>;
+*/ /*#__PURE__*/ css("input_TernaryUndefined_m7uBBu") : undefined)}/>;

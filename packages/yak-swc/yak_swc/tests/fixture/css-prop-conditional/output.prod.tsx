@@ -2,11 +2,11 @@ import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
-    return <div className={/*YAK Extracted CSS:
+    return <div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 :global(.ym7uBBu1) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu" + (show ? " ym7uBBu1" : "")}/>;
+*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu1"), "ym7uBBu"))}/>;
 };
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
@@ -20,13 +20,15 @@ const Elem2 = ()=>{
 };
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
-    return <div style={{
-        padding: "5px"
-    }} className={/*YAK Extracted CSS:
+    return <div {...__yak_mergeCssProp({
+        style: {
+            padding: "5px"
+        }
+    }, /*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   padding: 10px;
 }
-*/ /*#__PURE__*/ "ym7uBBu4" + (show ? " ym7uBBu5" : "")}/>;
+*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu5"), "ym7uBBu4"))}/>;
 };
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;
