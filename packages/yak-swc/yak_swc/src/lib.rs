@@ -1502,8 +1502,12 @@ mod tests {
   fn fixture_options(input: &Path) -> FixtureOptions {
     let config_path = input.with_file_name("config.json");
     match std::fs::read_to_string(&config_path) {
-      Ok(content) => serde_json::from_str(&content)
-        .unwrap_or_else(|err| panic!("invalid fixture config.json: {}: {err}", config_path.display())),
+      Ok(content) => serde_json::from_str(&content).unwrap_or_else(|err| {
+        panic!(
+          "invalid fixture config.json: {}: {err}",
+          config_path.display()
+        )
+      }),
       Err(_) => FixtureOptions::default(),
     }
   }
