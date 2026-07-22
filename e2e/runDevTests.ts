@@ -10,7 +10,10 @@ import {
   parseCLIArgs,
   runBundlerCases,
   printSummary,
+  printFoldMode,
 } from "./e2eEnvironment.ts";
+
+printFoldMode("dev tests");
 
 const discoveredBundlers = await discoverBundlers();
 const allCases = await discoverCases();

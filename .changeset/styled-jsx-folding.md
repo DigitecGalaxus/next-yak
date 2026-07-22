@@ -24,7 +24,7 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 - Class-toggling expressions (`({ $active }) => $active && css`…`` or `(p) => p.$active && css`…``) are inlined by substituting the props with the attribute values; the `$` attributes are dropped like the runtime drops them.
 - An existing `className` is merged at compile time, or through the new `__yak_mergeClassNames` helper for runtime values.
 - Usages with spread props, `theme`, dynamic css values (css variables) or `.attrs()` keep the runtime path, as do components not declared as top-level `const`.
-- The optimization can be disabled with the new `optimizeStaticJsx: false` option.
+- The new `foldStatic: false` option turns this off. It also gates the `css` prop fold, so both folds route through the runtime path when disabled.
 
 Behavioral notes: JSX folding speeds up rendering considerably, but a folded usage is no longer a component. It does not show up in React DevTools or in component stacks, in development too, and `child.type === Icon` checks no longer match it. Foreign `$props` on fully static folded usages are forwarded instead of stripped. The FAQ explains when a usage folds and what that changes.
 

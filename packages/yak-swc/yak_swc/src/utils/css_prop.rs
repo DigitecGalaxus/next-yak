@@ -54,19 +54,21 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
-  /// A statically known css prop skips the merge call and folds into a plain
-  /// `className` instead (see `try_fold`), an empty one (e.g. `css``) is dropped
+  /// An empty css prop (e.g. `css``) is always dropped. Otherwise, when
+  /// `fold_static` is on, a statically known css prop skips the merge call and
+  /// folds into a plain `className` instead (see `try_fold`).
   pub fn transform(
     &self,
     opening_element: &mut JSXOpeningElement,
     yak_imports: &mut YakImports,
     strict_css_prop: bool,
+    fold_static: bool,
   ) {
     if Self::is_noop_css_prop(&opening_element.attrs[self.index], yak_imports) {
       opening_element.attrs.remove(self.index);
       return;
     }
-    if self.try_fold(opening_element, yak_imports) {
+    if fold_static && self.try_fold(opening_element, yak_imports) {
       return;
     }
     let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");

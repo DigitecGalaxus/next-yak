@@ -85,11 +85,12 @@ pub struct Config {
   /// Enable this in development to prevent full-page reloads on CSS-only edits.
   #[serde(default)]
   pub react_refresh_reg: bool,
-  /// Fold JSX usages of fully static styled components into plain DOM
-  /// elements, skipping the runtime wrapper component.
+  /// Fold statically known styles at build time: JSX usages of fully static
+  /// styled components become plain DOM elements, and a static `css` prop
+  /// becomes a plain `className`. Both skip the runtime wrapper and merge calls.
   /// Enabled by default.
-  #[serde(default = "Config::optimize_static_jsx_default")]
-  pub optimize_static_jsx: bool,
+  #[serde(default = "Config::fold_static_default")]
+  pub fold_static: bool,
   /// Fail the build when a `css` prop has a value next-yak can't handle
   /// (e.g. a plain string). Enabled by default: next-yak claims the `css` prop,
   /// so a malformed value is almost always a mistake worth surfacing. Set to
@@ -104,7 +105,7 @@ impl Config {
     true
   }
 
-  fn optimize_static_jsx_default() -> bool {
+  fn fold_static_default() -> bool {
     true
   }
 
@@ -131,7 +132,7 @@ impl Default for Config {
       import_mode: Config::import_mode_default(),
       suppress_deprecation_warnings: Default::default(),
       react_refresh_reg: Default::default(),
-      optimize_static_jsx: Config::optimize_static_jsx_default(),
+      fold_static: Config::fold_static_default(),
       strict_css_prop: Config::strict_css_prop_default(),
     }
   }
@@ -217,8 +218,9 @@ where
   /// Registry of fully static styled components whose JSX usages
   /// are folded into plain DOM elements in a deferred pass
   styled_jsx_fold: StyledJsxFold,
-  /// Fold JSX usages of fully static styled components into plain DOM elements
-  optimize_static_jsx: bool,
+  /// Fold statically known styles into plain elements: static styled component
+  /// JSX usages and static `css` props skip their runtime wrapper and merge calls
+  fold_static: bool,
   /// True while processing a `globalStyle` literal — runtime interpolations
   /// are rejected there as a global rule has no element to attach them to
   inside_global_style: bool,
@@ -248,7 +250,7 @@ where
     import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
     react_refresh_reg: bool,
-    optimize_static_jsx: bool,
+    fold_static: bool,
     strict_css_prop: bool,
   ) -> Self {
     Self {
@@ -275,7 +277,7 @@ where
       react_refresh_reg,
       exported_styled_names: Vec::new(),
       styled_jsx_fold: StyledJsxFold::default(),
-      optimize_static_jsx,
+      fold_static,
       inside_global_style: false,
       has_global_style: false,
       global_style_error: false,
@@ -1081,6 +1083,7 @@ where
         n,
         self.yak_library_imports.as_mut().unwrap(),
         self.strict_css_prop,
+        self.fold_static,
       );
     }
   }
@@ -1289,7 +1292,7 @@ where
 
     // dynamic css values compile to css variables set through the style prop
     // which are not folded yet
-    if self.optimize_static_jsx
+    if self.fold_static
       && runtime_css_variables.is_empty()
       && self.current_declarator_init_span == Some(n.span)
     {
@@ -1473,7 +1476,7 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use std::path::PathBuf;
+  use std::path::{Path, PathBuf};
   use swc_core::common::Mark;
   use swc_core::ecma::{
     parser::{Syntax, TsSyntax},
@@ -1482,6 +1485,29 @@ mod tests {
     visit::visit_mut_pass,
   };
 
+  /// Per-fixture options read from an optional `config.json` next to `input.tsx`.
+  /// Fixtures without the file use the defaults.
+  #[derive(Deserialize)]
+  #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+  struct FixtureOptions {
+    fold_static: bool,
+  }
+
+  impl Default for FixtureOptions {
+    fn default() -> Self {
+      Self { fold_static: true }
+    }
+  }
+
+  fn fixture_options(input: &Path) -> FixtureOptions {
+    let config_path = input.with_file_name("config.json");
+    match std::fs::read_to_string(&config_path) {
+      Ok(content) => serde_json::from_str(&content)
+        .unwrap_or_else(|err| panic!("invalid fixture config.json: {}: {err}", config_path.display())),
+      Err(_) => FixtureOptions::default(),
+    }
+  }
+
   /// The fixture test pass: the resolver runs first like in the real SWC
   /// pipeline so scoped variables get distinct syntax contexts
   fn fixture_pass<C: Comments>(
@@ -1489,6 +1515,7 @@ mod tests {
     minify: bool,
     display_names: bool,
     import_mode: CssImportConfig,
+    options: &FixtureOptions,
   ) -> impl swc_core::ecma::ast::Pass {
     (
       resolver(Mark::new(), Mark::new(), true),
@@ -1501,7 +1528,7 @@ mod tests {
         import_mode,
         false,
         false,
-        true,
+        options.fold_static,
         true,
       )),
     )
@@ -1517,6 +1544,7 @@ mod tests {
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {
+    let options = fixture_options(&input);
     test_fixture(
       Syntax::Typescript(TsSyntax {
         tsx: true,
@@ -1528,6 +1556,7 @@ mod tests {
           false,
           true,
           Config::import_mode_default(),
+          &options,
         )
       },
       &input,
@@ -1542,6 +1571,7 @@ mod tests {
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev_turbo(input: PathBuf) {
+    let options = fixture_options(&input);
     test_fixture(
       Syntax::Typescript(TsSyntax {
         tsx: true,
@@ -1553,6 +1583,7 @@ mod tests {
           false,
           true,
           data_url_import_config(),
+          &options,
         )
       },
       &input,
@@ -1567,6 +1598,7 @@ mod tests {
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_prod(input: PathBuf) {
+    let options = fixture_options(&input);
     test_fixture(
       Syntax::Typescript(TsSyntax {
         tsx: true,
@@ -1578,6 +1610,7 @@ mod tests {
           true,
           false,
           Config::import_mode_default(),
+          &options,
         )
       },
       &input,
@@ -1592,6 +1625,7 @@ mod tests {
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_prod_turbo(input: PathBuf) {
+    let options = fixture_options(&input);
     test_fixture(
       Syntax::Typescript(TsSyntax {
         tsx: true,
@@ -1603,6 +1637,7 @@ mod tests {
           true,
           false,
           data_url_import_config(),
+          &options,
         )
       },
       &input,
