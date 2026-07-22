@@ -671,13 +671,8 @@ function table(title: string, headers: string[], rows: string[][]): string {
 const foldStaticEnabled = process.env.YAK_E2E_FOLD_STATIC !== "false";
 
 /** The colored on/off label for the active fold mode. */
-export function foldModeLabel(): string {
+function foldModeLabel(): string {
   return foldStaticEnabled ? styleText("green", "on") : styleText("yellow", "off");
-}
-
-/** Print the active fold mode at startup so CI logs are unambiguous. */
-export function printFoldMode(phase: string): void {
-  console.log(`${phase} — fold mode: ${foldModeLabel()}`);
 }
 
 /** Print per-case and aggregate result tables. */
