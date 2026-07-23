@@ -273,7 +273,7 @@ const Header = styled.nav('.Header',
 
 ## Animations
 
-In order to create CSS animations, you can use the `keyframes` API and specify the keyframes for the animation
+To create CSS animations, use the `keyframes` API and specify the keyframes for the animation
 you want to create. This can be used in your animation declarations within the same file.
 
 ```jsx title="my-component.tsx"
@@ -615,8 +615,7 @@ const Box = styled.div('.Box', {
 
 <Callout type="info">
   As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak
-  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs
-  seamlessly.
+  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
@@ -654,7 +653,7 @@ This approach has better performance because these values can be extracted and o
 
 ### Dynamic Theming with Context
 
-Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it in a hassle free manner that works for both Server Components and Client Components without a difference in usage for you. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
+Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it for both Server Components and Client Components, with no difference in usage. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
 
 ```tsx twoslash title="yak.context.ts"
 // @noErrors
@@ -739,7 +738,7 @@ const Button = styled.button`
 
 ### Using Async Server Functions in Next.js 15.0.0+
 
-Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs seamlessly:
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs:
 
 ```tsx
 import { cookies } from "next/headers";

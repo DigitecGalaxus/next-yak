@@ -56,7 +56,7 @@ import "./page.yak.module.css!=!./page?./page.yak.module.css";
 ```
 
 This strange looking import string is a poorly documented feature of webpack. It uses the [Inline matchResource](https://webpack.js.org/api/loaders/#inline-matchresource) to instrument webpack to use the loaders as if it was a normal `.module.css` file
-that points to the current file (`./page`). In order that this import statement works in Next.js, we need to add
+that points to the current file (`./page`). For this import statement to work in Next.js, we need to add
 a query parameter that ends with `.module.css`, as this is the way Next.js recognizes CSS modules.
 
 This recognition is not always working correctly as seen with the various issues and PRs we created on the Next.js repository like [this one](https://github.com/vercel/next.js/pull/51115),

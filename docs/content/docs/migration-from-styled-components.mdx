@@ -7,12 +7,12 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 ## Guide
 
-One of the core goals of `next-yak` is to provide a seamless migration path from `styled-components` to `next-yak`.
-This comprehensive guide will walk you through the migrating, covering common scenarios and edge cases you might encounter.
+One of the core goals of `next-yak` is to provide a smooth migration path from `styled-components` to `next-yak`.
+This guide walks you through the migration, including common scenarios and edge cases.
 
 ## Eslint plugin
 
-In order to make the migration easier, we provide an eslint plugin which will help you to identify potential issues during the migration and afterwards.
+To make the migration easier, we provide an eslint plugin which will help you to identify potential issues during the migration and afterwards.
 
 Just have a look at the [eslint plugin documentation](./eslint-plugin) and install it in your project.
 
@@ -277,7 +277,7 @@ const Button = (props) => (
 ```
 
 You can nest the css tags arbitrarily deep and next-yak will transform them into class names and css variables.
-It's important to note that you can't nest arbitrary styles inside property values, but you can nest property values inside css tags.
+You can't nest arbitrary styles inside property values, but you can nest property values inside css tags.
 Generally, you should try to simplify your styles and avoid nesting as much as possible to keep your styles as fast as possible.
 
 ### Dynamic mixins
@@ -503,7 +503,7 @@ const Button = styled.button<{ $color: string }>`
 ### CSS prop (optional)
 
 If you use the css prop in your styled components, you can almost just change the import and you're done.
-But you also need to tell TypeScript that native JSX elements can have a css prop. In order to do that, you can add the following to your `tsconfig.json`.
+But you also need to tell TypeScript that native JSX elements can have a css prop. To do that, add the following to your `tsconfig.json`.
 
 ```json title="tsconfig.json"
 {

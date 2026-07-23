@@ -8,7 +8,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 ### Is next-yak production ready?
 
-Yes, `next-yak` is production ready and battle-tested at scale.
+Yes, `next-yak` is production ready and used in production at scale.
 
 [Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors next-yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
 
@@ -152,7 +152,7 @@ This is folding, controlled by the `foldStatic` option, which also folds a stati
 ### My styles are not applied
 
 If your styles are not applied, the first thing you should check is the transformed output of your component.
-In order to do that, you can enable the `debug` option in the `withYak` function.
+To do that, enable the `debug` option in the `withYak` function.
 
 <Tabs items={['next.config.ts', 'next.config.js', 'next.config.mjs']}>
 <Tab value="next.config.ts">
