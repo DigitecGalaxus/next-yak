@@ -62,8 +62,6 @@ impl CSSProp {
     yak_imports: &mut YakImports,
     strict_css_prop: bool,
   ) {
-    // An empty css prop (e.g. `css``) compiles to a bare `css()` and contributes
-    // nothing, so drop the attribute entirely and keep the other props untouched
     if Self::is_noop_css_prop(&opening_element.attrs[self.index], yak_imports) {
       opening_element.attrs.remove(self.index);
       return;

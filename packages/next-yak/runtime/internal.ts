@@ -36,6 +36,7 @@ export { useTheme, YakThemeProvider } from "next-yak/context";
 // runtime internals (helpers which get injected by the compiler)
 export { unitPostFix as __yak_unitPostFix } from "./internals/unitPostFix.js";
 export { mergeCssProp as __yak_mergeCssProp } from "./internals/mergeCssProp.js";
+export { mergeClassNames as __yak_mergeClassNames } from "./internals/mergeClassNames.js";
 
 // export shorthand for DOM styled components (e.g. for styled.div)
 export * from "./styledDom.js";

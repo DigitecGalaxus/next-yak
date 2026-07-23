@@ -1,0 +1,30 @@
+import { css, styled } from "next-yak/internal";
+import * as __yak from "next-yak/internal";
+import "./input.yak.module.css!=!./input?./input.yak.module.css";
+// JSX attribute strings are decoded before they reach the condition:
+// entities like &amp; and literal backslashes must compare by value,
+// not by their JSX source spelling
+const Category = /*YAK Extracted CSS:
+:global(.input_Category_m7uBBu) {
+  color: grey;
+}
+:global(.input_Category___m7uBBu) {
+  color: crimson;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_li("input_Category_m7uBBu", ({ $label })=>$label === "Food & Drink" && /*#__PURE__*/ css("input_Category___m7uBBu")), {
+    "displayName": "Category"
+});
+const Shortcut = /*YAK Extracted CSS:
+:global(.input_Shortcut_m7uBBu) {
+  color: grey;
+}
+:global(.input_Shortcut___m7uBBu) {
+  color: dodgerblue;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_kbd("input_Shortcut_m7uBBu", ({ $keys })=>$keys === "a\\tb" && /*#__PURE__*/ css("input_Shortcut___m7uBBu")), {
+    "displayName": "Shortcut"
+});
+export const Menu = ()=><>
+    <li className={"input_Category_m7uBBu" + ("Food & Drink" === "Food & Drink" ? " input_Category___m7uBBu" : "")}>Food &amp; Drink</li>
+    <kbd className={"input_Shortcut_m7uBBu" + ("a\\tb" === "a\\tb" ? " input_Shortcut___m7uBBu" : "")}>a\tb</kbd>
+  </>;

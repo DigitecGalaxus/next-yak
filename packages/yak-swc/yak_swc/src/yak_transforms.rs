@@ -53,6 +53,12 @@ pub trait YakTransform {
   fn get_default_export_comment_prefix(&self) -> Option<String> {
     None
   }
+  /// The root class name a compiled styled component carries as the first
+  /// argument of its runtime call - `None` for other transforms
+  /// Used to fold static JSX usages
+  fn get_component_class_name(&self) -> Option<&str> {
+    None
+  }
 }
 
 /// Transform for nested css mixins
@@ -533,6 +539,10 @@ impl YakTransform for TransformStyled {
   /// Get the selector for the specific styled component to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
     Some(self.transpilation_mode.css_class_name(&self.class_name))
+  }
+
+  fn get_component_class_name(&self) -> Option<&str> {
+    Some(&self.class_name)
   }
 
   /// Replaces the current variable name with "default" for the comment marker

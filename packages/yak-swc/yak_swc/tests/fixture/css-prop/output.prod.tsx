@@ -74,10 +74,10 @@ const Text = /*YAK Extracted CSS:
   font-size: 20px;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBuD");
-const StyledComponentWithCSSProp = ()=><Text className={/*YAK Extracted CSS:
+const StyledComponentWithCSSProp = ()=><p className={/*YAK Extracted CSS:
 :global(.ym7uBBuE) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBuE"}>
+*/ /*#__PURE__*/ "ym7uBBuD ym7uBBuE"}>
     test
-  </Text>;
+  </p>;

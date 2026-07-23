@@ -11,13 +11,16 @@ use swc_core::atoms::Wtf8Atom;
 use swc_core::common::comments::Comment;
 use swc_core::common::comments::Comments;
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
-use utils::ast_helper::{extract_ident_and_parts, is_valid_tagged_tpl, TemplateIterator};
+use utils::ast_helper::{
+  extract_ident_and_parts, is_valid_tagged_tpl, unwrap_type_casts, TemplateIterator,
+};
 use utils::cross_file_selectors::ImportType;
 use utils::css_prop::HasCSSProp;
+use utils::styled_jsx_fold::StyledJsxFold;
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -38,6 +41,8 @@ mod utils {
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
   pub(crate) mod native_elements;
+  pub(crate) mod purity;
+  pub(crate) mod styled_jsx_fold;
 }
 pub mod naming_convention;
 use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
@@ -80,6 +85,11 @@ pub struct Config {
   /// Enable this in development to prevent full-page reloads on CSS-only edits.
   #[serde(default)]
   pub react_refresh_reg: bool,
+  /// Fold JSX usages of fully static styled components into plain DOM
+  /// elements, skipping the runtime wrapper component.
+  /// Enabled by default.
+  #[serde(default = "Config::optimize_static_jsx_default")]
+  pub optimize_static_jsx: bool,
   /// Fail the build when a `css` prop has a value next-yak can't handle
   /// (e.g. a plain string). Enabled by default: next-yak claims the `css` prop,
   /// so a malformed value is almost always a mistake worth surfacing. Set to
@@ -91,6 +101,10 @@ pub struct Config {
 
 impl Config {
   fn minify_default() -> bool {
+    true
+  }
+
+  fn optimize_static_jsx_default() -> bool {
     true
   }
 
@@ -117,6 +131,7 @@ impl Default for Config {
       import_mode: Config::import_mode_default(),
       suppress_deprecation_warnings: Default::default(),
       react_refresh_reg: Default::default(),
+      optimize_static_jsx: Config::optimize_static_jsx_default(),
       strict_css_prop: Config::strict_css_prop_default(),
     }
   }
@@ -151,6 +166,10 @@ where
   current_declaration: Vec<Declaration>,
   /// e.g Button in const Button = styled.button`color: red;`
   current_variable_name: Option<ScopedVariableReference>,
+  /// Span of the current const variable declarator's initializer (type casts
+  /// and parens stripped) - used to check a styled template is the whole
+  /// initializer and not nested inside e.g. an HOC call or ternary
+  current_declarator_init_span: Option<Span>,
   /// Current condition to name nested css expressions
   current_condition: Vec<String>,
   /// Current css expression is exported
@@ -195,6 +214,11 @@ where
   react_refresh_reg: bool,
   /// Names of exported styled components to register with $RefreshReg$
   exported_styled_names: Vec<String>,
+  /// Registry of fully static styled components whose JSX usages
+  /// are folded into plain DOM elements in a deferred pass
+  styled_jsx_fold: StyledJsxFold,
+  /// Fold JSX usages of fully static styled components into plain DOM elements
+  optimize_static_jsx: bool,
   /// True while processing a `globalStyle` literal — runtime interpolations
   /// are rejected there as a global rule has no element to attach them to
   inside_global_style: bool,
@@ -224,12 +248,14 @@ where
     import_mode: CssImportConfig,
     suppress_deprecation_warnings: bool,
     react_refresh_reg: bool,
+    optimize_static_jsx: bool,
     strict_css_prop: bool,
   ) -> Self {
     Self {
       current_css_state: None,
       current_declaration: vec![],
       current_variable_name: None,
+      current_declarator_init_span: None,
       current_condition: vec![],
       current_exported: false,
       variables: VariableVisitor::new(),
@@ -248,6 +274,8 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
+      styled_jsx_fold: StyledJsxFold::default(),
+      optimize_static_jsx,
       inside_global_style: false,
       has_global_style: false,
       global_style_error: false,
@@ -728,6 +756,11 @@ where
 
     module.visit_mut_children_with(self);
 
+    // Must run before the utility imports below are collected
+    self
+      .styled_jsx_fold
+      .fold_jsx_usages(module, self.yak_library_imports.as_mut().unwrap());
+
     // Add the css module import to the top of the file
     // if any yak imports are used
     if self.yak_library_imports.is_some() {
@@ -968,12 +1001,26 @@ where
     for decl in &mut n.decls {
       if let Pat::Ident(BindingIdent { id, .. }) = &decl.name {
         let previous_variable_name = self.current_variable_name.clone();
+        let previous_init_span = self.current_declarator_init_span;
         self.current_variable_name = Some(ScopedVariableReference::new(
           id.to_id(),
           vec![id.sym.clone().into()],
         ));
+        // only const declarators may fold - `let`/`var` bindings can be
+        // reassigned, and `var` may even be redeclared, which would register
+        // the same id twice - `immutable_bindings` drops non-const bindings
+        // later anyway, so gating here loses no folds
+        self.current_declarator_init_span = if n.kind == VarDeclKind::Const {
+          decl
+            .init
+            .as_deref()
+            .map(|init| unwrap_type_casts(init).span())
+        } else {
+          None
+        };
         decl.init.visit_mut_with(self);
         self.current_variable_name = previous_variable_name;
+        self.current_declarator_init_span = previous_init_span;
       }
     }
   }
@@ -1240,6 +1287,22 @@ where
       self.process_yak_literal(n, css_state.clone());
     self.inside_global_style = was_inside_global_style;
 
+    // dynamic css values compile to css variables set through the style prop
+    // which are not folded yet
+    if self.optimize_static_jsx
+      && runtime_css_variables.is_empty()
+      && self.current_declarator_init_span == Some(n.span)
+    {
+      if let Some(class_name) = transform.get_component_class_name() {
+        self.styled_jsx_fold.try_register(
+          self.current_variable_name.as_ref(),
+          &n.tag,
+          class_name,
+          &runtime_expressions,
+        );
+      }
+    }
+
     let transform_result = transform.transform_expression(
       n,
       runtime_expressions,
@@ -1411,11 +1474,46 @@ fn verify_valid_property_value_expr(expr: &Expr) -> bool {
 mod tests {
   use super::*;
   use std::path::PathBuf;
+  use swc_core::common::Mark;
   use swc_core::ecma::{
     parser::{Syntax, TsSyntax},
+    transforms::base::resolver,
     transforms::testing::{test_fixture, test_transform, FixtureTestConfig},
     visit::visit_mut_pass,
   };
+
+  /// The fixture test pass: the resolver runs first like in the real SWC
+  /// pipeline so scoped variables get distinct syntax contexts
+  fn fixture_pass<C: Comments>(
+    comments: C,
+    minify: bool,
+    display_names: bool,
+    import_mode: CssImportConfig,
+  ) -> impl swc_core::ecma::ast::Pass {
+    (
+      resolver(Mark::new(), Mark::new(), true),
+      visit_mut_pass(TransformVisitor::new(
+        Some(comments),
+        "path/input.tsx",
+        minify,
+        None,
+        display_names,
+        import_mode,
+        false,
+        false,
+        true,
+        true,
+      )),
+    )
+  }
+
+  fn data_url_import_config() -> CssImportConfig {
+    CssImportConfig {
+      value: "data:text/css;base64,".to_string(),
+      transpilation: TranspilationMode::Css,
+      encoding: ImportModeEncoding::Base64,
+    }
+  }
 
   #[testing::fixture("tests/fixture/**/input.tsx")]
   fn fixture_dev(input: PathBuf) {
@@ -1425,21 +1523,12 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          false,
-          None,
-          true,
-          CssImportConfig {
-            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
-            transpilation: TranspilationMode::CssModule,
-            encoding: ImportModeEncoding::None,
-          },
-          false,
+        fixture_pass(
+          tester.comments.clone(),
           false,
           true,
-        ))
+          Config::import_mode_default(),
+        )
       },
       &input,
       &input.with_file_name("output.dev.tsx"),
@@ -1459,21 +1548,12 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
-          false,
-          None,
-          true,
-          CssImportConfig {
-            value: "data:text/css;base64,".to_string(),
-            transpilation: TranspilationMode::Css,
-            encoding: ImportModeEncoding::Base64,
-          },
-          false,
+        fixture_pass(
+          tester.comments.clone(),
           false,
           true,
-        ))
+          data_url_import_config(),
+        )
       },
       &input,
       &input.with_file_name("output.turbo.dev.tsx"),
@@ -1493,21 +1573,12 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
+        fixture_pass(
+          tester.comments.clone(),
           true,
-          None,
           false,
-          CssImportConfig {
-            value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
-            transpilation: TranspilationMode::CssModule,
-            encoding: ImportModeEncoding::None,
-          },
-          false,
-          false,
-          true,
-        ))
+          Config::import_mode_default(),
+        )
       },
       &input,
       &input.with_file_name("output.prod.tsx"),
@@ -1527,21 +1598,12 @@ mod tests {
         ..Default::default()
       }),
       &|tester| {
-        visit_mut_pass(TransformVisitor::new(
-          Some(tester.comments.clone()),
-          "path/input.tsx",
+        fixture_pass(
+          tester.comments.clone(),
           true,
-          None,
           false,
-          CssImportConfig {
-            value: "data:text/css;base64,".to_string(),
-            transpilation: TranspilationMode::Css,
-            encoding: ImportModeEncoding::Base64,
-          },
-          false,
-          false,
-          true,
-        ))
+          data_url_import_config(),
+        )
       },
       &input,
       &input.with_file_name("output.turbo.prod.tsx"),

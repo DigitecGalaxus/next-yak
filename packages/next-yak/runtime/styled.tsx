@@ -19,6 +19,7 @@ import type {
 // to another file for classic react components
 import { useTheme } from "next-yak/context";
 import type { YakTheme } from "./context/index.tsx";
+import { mergeClassNames } from "./internals/mergeClassNames.js";
 
 //
 // The `styled()` API without `styled.` syntax
@@ -227,16 +228,6 @@ const removeNonDomProperties = <T extends Record<string, unknown>>(obj: T): T =>
   }
   return result;
 };
-
-/**
- * util function to merge class names, as they are concatenated with a space
- * e.g.:\
- * `("a", "b")` → `"a b"`\
- * `("a", undefined)` → `"a"`\
- * `(undefined, "b")` → `"b"`\
- * `(undefined, undefined)` → `undefined`
- */
-const mergeClassNames = (a?: string, b?: string) => (a && b ? a + " " + b : a || b || undefined);
 
 /**
  * merge props and processed props (including class names and styles)
