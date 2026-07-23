@@ -21,9 +21,16 @@ const Shortcut = styled.kbd<{ $keys?: string }>`
     `}
 `;
 
+// A static merge goes through expression position so a backslash escape in the
+// user className survives the JSX re-parse instead of doubling
+const Cross = styled.span`
+  color: grey;
+`;
+
 export const Menu = () => (
   <>
     <Category $label="Food &amp; Drink">Food &amp; Drink</Category>
     <Shortcut $keys="a\tb">a\tb</Shortcut>
+    <Cross className="before:content-['\00d7'] icon &amp; more">x</Cross>
   </>
 );

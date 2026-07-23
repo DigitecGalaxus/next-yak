@@ -139,7 +139,7 @@ impl CSSProp {
   ///
   /// e.g.
   /// ```jsx
-  /// <div css={css("a")} />                        // -> <div className="a" />
+  /// <div css={css("a")} />                        // -> <div className={"a"} />
   /// <div css={css(() => on && css("b"), "a")} />  // -> <div className={"a" + (on ? " b" : "")} />
   /// <div css={on ? css("a") : css("b")} />        // -> <div className={on ? "a" : "b"} />
   /// ```

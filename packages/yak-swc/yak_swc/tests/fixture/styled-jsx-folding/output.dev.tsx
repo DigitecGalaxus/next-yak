@@ -217,7 +217,7 @@ const Optimizable = ({ active }: {
     }} onClick={()=>{}} ref={someRef} data-x="1" className="input_Card_m7uBBu">
       forwards attributes
     </div>
-    <div className="input_Card_m7uBBu user">static class name merge</div>
+    <div className={"input_Card_m7uBBu user"}>static class name merge</div>
     <div className={__yak_mergeClassNames("input_Card_m7uBBu", active && "active")}>runtime class name merge</div>
     <div $foo="forwarded" className="input_Card_m7uBBu">$props are not filtered</div>
     <div className={/*YAK Extracted CSS:
@@ -233,7 +233,7 @@ const Optimizable = ({ active }: {
     <h1 className="input_Title_m7uBBu">folds</h1>
     <div className="input_Cast_m7uBBu">folds through the type cast</div>
     <div className="input_Card_m7uBBu input_Extended_m7uBBu">collapses to a plain div</div>
-    <div className="input_Card_m7uBBu input_Extended_m7uBBu user">collapses and merges the className</div>
+    <div className={"input_Card_m7uBBu input_Extended_m7uBBu user"}>collapses and merges the className</div>
     <div className="input_Card_m7uBBu input_Extended_m7uBBu input_ExtendedTwice_m7uBBu">collapses the whole three-level chain</div>
     <h1 className="input_Title_m7uBBu input_FancyTitle_m7uBBu">collapses the exported chain</h1>
     <ToggleBase className="input_OfDynamic_m7uBBu">folds to the dynamic parent, chain not collapsed</ToggleBase>

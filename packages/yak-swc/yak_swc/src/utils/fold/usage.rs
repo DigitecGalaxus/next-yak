@@ -480,7 +480,16 @@ impl FoldVisitor<'_> {
     // leave the specifier behind with nothing referencing it
     let Some(index) = class_name_index else {
       let value = match yak_class {
-        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(class_name, DUMMY_SP)),
+        // safe as a raw attribute string only while the class name carries no
+        // backslash or quote: those print differently under JS and JSX. A
+        // merge routes through expression position for the same reason
+        YakClassName::Static(class_name) => {
+          debug_assert!(
+            !class_name.to_string_lossy().contains(['\\', '"']),
+            "a folded class name must carry no backslash or quote: {class_name:?}"
+          );
+          JSXAttrValue::Str(str_lit(class_name, DUMMY_SP))
+        }
         YakClassName::Dynamic(expr) => expr_attr_value(expr),
       };
       return Some(FoldPlan {
@@ -509,10 +518,12 @@ impl FoldVisitor<'_> {
     match value {
       // className="user"
       JSXAttrValue::Str(user) => Some(match yak_class {
-        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(
-          merge_class_names(&class_name, &user.value),
-          user.span,
-        )),
+        // a JSX attribute string prints with JS escaping but re-parses without
+        // it, so a user backslash would double; the container keeps both
+        // directions in one regime
+        YakClassName::Static(class_name) => expr_attr_value(Box::new(Expr::Lit(Lit::Str(
+          str_lit(merge_class_names(&class_name, &user.value), user.span),
+        )))),
         // `"yX" + (on ? " yY" : "") + " user"`
         YakClassName::Dynamic(expr) => {
           expr_attr_value(append_class_name_str(expr, &user.value, user.span))
