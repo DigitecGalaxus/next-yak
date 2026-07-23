@@ -1,9 +1,9 @@
 // References to styles declared elsewhere are rejected with a compile error:
 // a mixin compiles to an argument-less css() carrying no class and no CSS
 // (its declarations are inlined at template consumers), so a css prop
-// reference would render unstyled without any signal.
-// Inline templates in ternary and logical arms keep working - only the
-// reference arms error.
+// reference would render unstyled without any signal. Only the reference arm
+// errors - inline templates in ternary and logical arms keep working, covered
+// by css-prop-ternary and css-prop-fold-bailouts.
 import { css } from "next-yak";
 import { ellipsis } from "./typography";
 import * as tokens from "./tokens";
@@ -33,34 +33,6 @@ const TernaryArm = ({ compact }: { compact: boolean }) => (
         : css`
             color: blue;
           `
-    }
-  />
-);
-
-// keeps working: inline templates in both ternary arms
-const TernaryInline = ({ compact }: { compact: boolean }) => (
-  <div
-    css={
-      compact
-        ? css`
-            line-height: 1;
-          `
-        : css`
-            line-height: 1.5;
-          `
-    }
-  />
-);
-
-// keeps working: `undefined` is a valid falsy arm, not a reference
-const TernaryUndefined = ({ on }: { on: boolean }) => (
-  <div
-    css={
-      on
-        ? css`
-            color: green;
-          `
-        : undefined
     }
   />
 );
