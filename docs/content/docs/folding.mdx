@@ -172,7 +172,11 @@ A chain does not collapse when its parent is dynamic, uses `.attrs()`, or comes 
 
 ```tsx title="input"
 const Toggle = styled.button<{ $on?: boolean }>`
-  ${({ $on }) => $on && css`color: red;`}
+  ${({ $on }) =>
+    $on &&
+    css`
+      color: red;
+    `}
 `;
 
 const Of = styled(Toggle)`
@@ -250,21 +254,27 @@ A regular prop stays on the element. When a condition reads a value that is not 
 
 ```tsx title="input"
 const Button = styled.button<{ disabled?: boolean }>`
-  ${({ disabled }) => !disabled && css`cursor: pointer;`}
+  ${({ disabled }) =>
+    !disabled &&
+    css`
+      cursor: pointer;
+    `}
 `;
 
-<Button disabled={busy()}>Save</Button>
+<Button disabled={busy()}>Save</Button>;
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-{((disabled) => (
-  <button disabled={disabled} className={"yButton" + (!disabled ? " yButton-hit" : "")}>
-    Save
-  </button>
-))(busy())}
+{
+  ((disabled) => (
+    <button disabled={disabled} className={"yButton" + (!disabled ? " yButton-hit" : "")}>
+      Save
+    </button>
+  ))(busy());
+}
 ```
 
 </div>
@@ -280,7 +290,11 @@ The [css prop](/docs/features#css-prop) folds on the same rule. A static css pro
 <div>
 
 ```tsx title="input"
-<div css={css`color: red;`} />
+<div
+  css={css`
+    color: red;
+  `}
+/>
 ```
 
 </div>
@@ -302,8 +316,16 @@ A conditional css prop keeps its condition; the branch toggles class names:
 <div
   css={css`
     color: black;
-    ${() => a && css`color: red;`}
-    ${() => b && css`font-weight: bold;`}
+    ${() =>
+      a &&
+      css`
+        color: red;
+      `}
+    ${() =>
+      b &&
+      css`
+        font-weight: bold;
+      `}
   `}
 />
 ```
@@ -336,9 +358,12 @@ Folding is on by default. Set `foldStatic: false` to turn it off. The same optio
 <Tab value="next.config.ts">
 
 ```ts
-export default withYak({
-  foldStatic: false,
-}, nextConfig);
+export default withYak(
+  {
+    foldStatic: false,
+  },
+  nextConfig,
+);
 ```
 
 </Tab>
