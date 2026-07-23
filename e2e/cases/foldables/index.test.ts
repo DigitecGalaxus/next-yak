@@ -14,6 +14,12 @@ test(
     await expect(extended).toHaveCSS("color", "rgb(0, 128, 0)");
     await expect(extended).toHaveCSS("background-color", "rgb(255, 255, 0)");
 
+    // a three-level chain keeps every level's style
+    const chain = page.getByTestId("chain");
+    await expect(chain).toHaveCSS("color", "rgb(0, 0, 139)");
+    await expect(chain).toHaveCSS("background-color", "rgb(173, 216, 230)");
+    await expect(chain).toHaveCSS("border-color", "rgb(255, 20, 147)");
+
     // inlined class-toggling conditions
     await expect(page.getByTestId("toggle-on")).toHaveCSS("color", "rgb(255, 0, 0)");
     await expect(page.getByTestId("toggle-off")).toHaveCSS("color", "rgb(0, 0, 255)");

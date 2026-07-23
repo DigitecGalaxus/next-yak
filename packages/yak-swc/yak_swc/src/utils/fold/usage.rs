@@ -1,3 +1,41 @@
+//! The rewrite phase of the styled component fold: rewrites every foldable JSX
+//! usage of a registered component into the plain element it wraps
+//!
+//! e.g.
+//! ```jsx
+//! const Card = styled.div`color: red;`;
+//! <Card>Hello</Card>
+//! ```
+//! becomes
+//! ```jsx
+//! const Card = __yak.__yak_div("yX");
+//! <div className="yX">Hello</div>
+//! ```
+//!
+//! A fully static `styled(Component)` wrapper folds to the wrapped component
+//! instead - the target component may come from another file:
+//! ```jsx
+//! const Extended = styled(Card)`padding: 4px;`;
+//! <Extended>Hello</Extended>
+//! ```
+//! becomes
+//! ```jsx
+//! <Card className="yE">Hello</Card>
+//! ```
+//!
+//! Class-toggling expressions over props are inlined at the usage by
+//! substituting the destructured props with the attribute values:
+//! ```jsx
+//! const Box = styled.div`${({ $active }) => $active && css`color: red;`}`;
+//! <Box $active={on}>Hello</Box>
+//! ```
+//! becomes
+//! ```jsx
+//! <div className={"yB" + (on ? " yA" : "")}>Hello</div>
+//! ```
+//! (no constant folding for literal values like `<Box $active>` - the minifier
+//! simplifies `"yB" + (true ? " yA" : "")` in production)
+
 use std::borrow::Cow;
 
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -6,263 +44,32 @@ use swc_core::{
   common::{SyntaxContext, DUMMY_SP},
   ecma::ast::{
     ArrowExpr, AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr,
-    Callee, Decl, Expr, ExprOrSpread, Id, Ident, IdentName, ImportSpecifier, Invalid, JSXAttr,
-    JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementChild, JSXElementName,
-    JSXEmptyExpr, JSXExpr, JSXExprContainer, KeyValueProp, Lit, MemberProp, Module, ModuleDecl,
-    ModuleItem, Number, ObjectPatProp, Pat, Prop, PropName, Stmt, UnaryExpr, UnaryOp, VarDecl,
-    VarDeclKind,
+    Callee, Expr, ExprOrSpread, Id, Ident, IdentName, Invalid, JSXAttr, JSXAttrName,
+    JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementChild, JSXElementName, JSXEmptyExpr,
+    JSXExpr, JSXExprContainer, KeyValueProp, Lit, MemberProp, Module, Number, ObjectPatProp, Pat,
+    Prop, PropName, Stmt, UnaryExpr, UnaryOp,
   },
   ecma::visit::{VisitMut, VisitMutWith},
 };
 
-use crate::utils::class_name_fold::{
-  append_condition_segment, class_name_attr, expr_attr_value, fold_condition_body, str_expr,
-  str_lit, with_leading_space, ConditionSegment,
+use super::{FoldTarget, FoldableComponent};
+use crate::utils::fold::css_expr::{
+  append_condition_segment, class_name_attr, expr_attr_value, fold_condition_body,
+  merge_class_names, str_expr, str_lit, with_leading_space, ConditionSegment,
 };
-use crate::utils::native_elements::VALID_ELEMENTS;
-use crate::utils::purity::{purity, Purity};
-use crate::variable_visitor::ScopedVariableReference;
+use crate::utils::fold::purity::{purity, Purity};
 use crate::yak_imports::YakImports;
 
-/// What a foldable JSX usage is rewritten to
-#[derive(Debug, PartialEq)]
-enum FoldTarget {
-  /// A native DOM element e.g. "div" for styled.div
-  Native(Atom),
-  /// The wrapped component e.g. Card for styled(Card)
-  Component(Ident),
-}
-
-/// A styled component whose JSX usages can be folded into their fold target
-#[derive(Debug)]
-struct FoldableComponent {
-  target: FoldTarget,
-  /// The generated static class name e.g. "ym7uBBu"
-  class_name: Wtf8Atom,
-  /// The compiled class-toggling expressions over props
-  /// e.g. `({ $active }) => $active && css("ym7uBBu1")`
-  /// Empty for fully static components; usages of dynamic components only
-  /// fold if these can be inlined by substituting the props with the
-  /// JSX attribute values
-  runtime_expressions: Vec<Expr>,
-}
-
-/// Folds JSX usages of fully static styled components declared in the same
-/// file into plain DOM elements to skip the runtime wrapper component
-///
-/// e.g.
-/// ```jsx
-/// const Card = styled.div`color: red;`;
-/// <Card>Hello</Card>
-/// ```
-/// becomes
-/// ```jsx
-/// const Card = __yak.__yak_div("yX");
-/// <div className="yX">Hello</div>
-/// ```
-///
-/// A fully static `styled(Component)` wrapper folds to the wrapped component
-/// instead - the target component may come from another file:
-/// ```jsx
-/// const Extended = styled(Card)`padding: 4px;`;
-/// <Extended>Hello</Extended>
-/// ```
-/// becomes
-/// ```jsx
-/// <Card className="yE">Hello</Card>
-/// ```
-///
-/// Class-toggling expressions over props are inlined at the usage by
-/// substituting the destructured props with the attribute values:
-/// ```jsx
-/// const Box = styled.div`${({ $active }) => $active && css`color: red;`}`;
-/// <Box $active={on}>Hello</Box>
-/// ```
-/// becomes
-/// ```jsx
-/// <div className={"yB" + (on ? " yA" : "")}>Hello</div>
-/// ```
-/// (no constant folding for literal values like `<Box $active>` - the
-/// minifier simplifies `"yB" + (true ? " yA" : "")` in production)
-///
-/// The declaration is kept untouched - it is /*#__PURE__*/ annotated so the
-/// minifier removes it if all usages could be folded and it is not exported
-///
-/// Foldable components are registered during the main transform pass and the
-/// usages are rewritten in a deferred pass over the module, as a usage may
-/// appear before the declaration (e.g. inside a hoisted function)
-#[derive(Debug, Default)]
-pub struct StyledJsxFold {
-  components: FxHashMap<Id, FoldableComponent>,
-}
-
-impl StyledJsxFold {
-  /// Registers a styled component if its JSX usages are foldable:
-  /// - `declaration` is a plain variable e.g. Card in const Card = styled.div`...`
-  /// - `tag` (the original tagged template tag) is styled.element,
-  ///   styled("element") with a native DOM element or styled(Component) -
-  ///   these shapes exclude .attrs(...) chains
-  /// - `class_name` is the static class name the compiled call carries as
-  ///   its first argument
-  /// - `runtime_expressions` must all be class-toggling arrows over props -
-  ///   anything else keeps the runtime path. Function expressions bail too:
-  ///   they bind `this`/`arguments`, which inlining would silently rebind to
-  ///   the enclosing component
-  pub fn try_register(
-    &mut self,
-    declaration: Option<&ScopedVariableReference>,
-    tag: &Expr,
-    class_name: &str,
-    runtime_expressions: &[Expr],
-  ) {
-    let Some(declaration) = declaration else {
-      return;
-    };
-    if declaration.parts.len() != 1 {
-      return;
-    }
-    let Some(target) = Self::fold_target(tag) else {
-      return;
-    };
-    if !runtime_expressions
-      .iter()
-      .all(|expr| matches!(expr, Expr::Arrow(_)))
-    {
-      return;
-    }
-    // dynamic styled(Component) wrappers keep the runtime path - the $prop
-    // forwarding semantics depend on the wrapped component
-    if !runtime_expressions.is_empty() && matches!(target, FoldTarget::Component(_)) {
-      return;
-    }
-    let previous = self.components.insert(
-      declaration.id.clone(),
-      FoldableComponent {
-        target,
-        class_name: class_name.into(),
-        runtime_expressions: runtime_expressions.to_vec(),
-      },
-    );
-    // a binding can only hold one styled component - a second registration
-    // would mean the whole-initializer check in the visitor broke
-    debug_assert!(previous.is_none());
-  }
-
-  /// Rewrites all foldable JSX usages of the registered components
-  /// Must run before the utility import specifiers are collected as it may
-  /// request the mergeClassNames utility
-  pub fn fold_jsx_usages(&mut self, module: &mut Module, yak_imports: &mut YakImports) {
-    if self.components.is_empty() {
-      return;
-    }
-    // only components declared as top level const are safe to fold
-    // (const rules out reassignment) - a component fold target must be an
-    // immutable binding as well so it still references the styled component's
-    // wrapped value at every usage
-    let immutable = Self::immutable_bindings(module);
-    self.components.retain(|id, component| {
-      immutable.contains(id)
-        && match &component.target {
-          FoldTarget::Native(_) => true,
-          FoldTarget::Component(target) => immutable.contains(&target.to_id()),
-        }
-    });
-    if self.components.is_empty() {
-      return;
-    }
-    module.visit_mut_with(&mut FoldVisitor {
-      components: &self.components,
-      yak_imports,
-    });
-  }
-
-  /// Matches the tag shapes a JSX usage can be folded for:
-  /// - `styled.element` and `styled("element")` with a native DOM element
-  /// - `styled(Component)` with an uppercase component reference - a
-  ///   lowercase name would be parsed as an intrinsic element in JSX
-  ///
-  /// .attrs(...) chains don't have any of these shapes
-  fn fold_target(tag: &Expr) -> Option<FoldTarget> {
-    match tag {
-      Expr::Member(member) => {
-        if !member.obj.is_ident() {
-          return None;
-        }
-        let MemberProp::Ident(element) = &member.prop else {
-          return None;
-        };
-        VALID_ELEMENTS
-          .contains(element.sym.as_ref())
-          .then(|| FoldTarget::Native(element.sym.clone()))
-      }
-      Expr::Call(call) => {
-        if !matches!(&call.callee, Callee::Expr(callee) if callee.is_ident()) {
-          return None;
-        }
-        let [arg] = call.args.as_slice() else {
-          return None;
-        };
-        if arg.spread.is_some() {
-          return None;
-        }
-        match &*arg.expr {
-          Expr::Lit(Lit::Str(element)) => {
-            let element = element.value.as_str()?;
-            VALID_ELEMENTS
-              .contains(element)
-              .then(|| FoldTarget::Native(Atom::from(element)))
-          }
-          Expr::Ident(component) => component
-            .sym
-            .starts_with(|c: char| c.is_ascii_uppercase())
-            .then(|| FoldTarget::Component(component.clone())),
-          _ => None,
-        }
-      }
-      _ => None,
-    }
-  }
-
-  /// Collects the module scope bindings which can not be reassigned:
-  /// top level `const X = ...` declarations (including `export const`)
-  /// and import bindings
-  fn immutable_bindings(module: &Module) -> FxHashSet<Id> {
-    let mut bindings = FxHashSet::default();
-    for item in &module.body {
-      let var: &VarDecl = match item {
-        ModuleItem::Stmt(Stmt::Decl(Decl::Var(var))) => var,
-        ModuleItem::ModuleDecl(ModuleDecl::Import(import)) => {
-          for specifier in &import.specifiers {
-            let local = match specifier {
-              ImportSpecifier::Named(named) => &named.local,
-              ImportSpecifier::Default(default) => &default.local,
-              ImportSpecifier::Namespace(namespace) => &namespace.local,
-              #[cfg(swc_ast_unknown)]
-              _ => continue,
-            };
-            bindings.insert(local.to_id());
-          }
-          continue;
-        }
-        ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(export)) => {
-          let Decl::Var(var) = &export.decl else {
-            continue;
-          };
-          var
-        }
-        _ => continue,
-      };
-      if var.kind != VarDeclKind::Const {
-        continue;
-      }
-      for declarator in &var.decls {
-        if let Pat::Ident(name) = &declarator.name {
-          bindings.insert(name.to_id());
-        }
-      }
-    }
-    bindings
-  }
+/// Rewrites every foldable JSX usage of the registered components in the module
+pub(super) fn fold(
+  module: &mut Module,
+  components: &FxHashMap<Id, FoldableComponent>,
+  yak_imports: &mut YakImports,
+) {
+  module.visit_mut_with(&mut FoldVisitor {
+    components,
+    yak_imports,
+  });
 }
 
 /// The deferred pass which rewrites foldable JSX usages
@@ -703,7 +510,7 @@ impl FoldVisitor<'_> {
       // className="user"
       JSXAttrValue::Str(user) => Some(match yak_class {
         YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(
-          merged_class_names(&class_name, &user.value),
+          merge_class_names(&class_name, &user.value),
           user.span,
         )),
         // `"yX" + (on ? " yY" : "") + " user"`
@@ -720,7 +527,7 @@ impl FoldVisitor<'_> {
           // /*YAK Extracted CSS:*/ comment from a folded css prop survives
           Expr::Lit(Lit::Str(user)) => match yak_class {
             YakClassName::Static(class_name) => Box::new(Expr::Lit(Lit::Str(str_lit(
-              merged_class_names(&class_name, &user.value),
+              merge_class_names(&class_name, &user.value),
               user.span,
             )))),
             YakClassName::Dynamic(expr) => append_class_name_str(expr, &user.value, user.span),
@@ -1220,15 +1027,6 @@ fn append_class_name_str(
   }))
 }
 
-fn merged_class_names(yak_class_name: &Wtf8Atom, user_class_name: &Wtf8Atom) -> Wtf8Atom {
-  format!(
-    "{} {}",
-    yak_class_name.to_string_lossy(),
-    user_class_name.to_string_lossy()
-  )
-  .into()
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -1236,77 +1034,6 @@ mod tests {
   use swc_core::common::{FileName, SourceMap};
   use swc_core::ecma::ast::EsVersion;
   use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax, TsSyntax};
-
-  fn call(callee: Expr, args: Vec<Expr>) -> Expr {
-    Expr::Call(CallExpr {
-      span: DUMMY_SP,
-      callee: Callee::Expr(Box::new(callee)),
-      args: args
-        .into_iter()
-        .map(|expr| ExprOrSpread {
-          spread: None,
-          expr: Box::new(expr),
-        })
-        .collect(),
-      ctxt: SyntaxContext::empty(),
-      type_args: None,
-    })
-  }
-
-  fn member(obj: &str, prop: &str) -> Expr {
-    Expr::Member(swc_core::ecma::ast::MemberExpr {
-      span: DUMMY_SP,
-      obj: Box::new(Expr::Ident(Ident::new(
-        obj.into(),
-        DUMMY_SP,
-        SyntaxContext::empty(),
-      ))),
-      prop: MemberProp::Ident(IdentName::new(prop.into(), DUMMY_SP)),
-    })
-  }
-
-  fn str_lit_expr(value: &str) -> Expr {
-    Expr::Lit(Lit::Str(str_lit(value.into(), DUMMY_SP)))
-  }
-
-  fn ident(name: &str) -> Expr {
-    Expr::Ident(Ident::new(name.into(), DUMMY_SP, SyntaxContext::empty()))
-  }
-
-  #[test]
-  fn fold_target_matches_native_elements_and_components() {
-    // styled.div
-    assert_eq!(
-      StyledJsxFold::fold_target(&member("styled", "div")),
-      Some(FoldTarget::Native("div".into()))
-    );
-    // styled("section")
-    assert_eq!(
-      StyledJsxFold::fold_target(&call(ident("styled"), vec![str_lit_expr("section")])),
-      Some(FoldTarget::Native("section".into()))
-    );
-    // styled(Component)
-    assert!(matches!(
-      StyledJsxFold::fold_target(&call(ident("styled"), vec![ident("Component")])),
-      Some(FoldTarget::Component(component)) if component.sym == *"Component"
-    ));
-    // styled.customElement
-    assert_eq!(
-      StyledJsxFold::fold_target(&member("styled", "customElement")),
-      None
-    );
-    // styled(lowercase) - would be parsed as an intrinsic element in JSX
-    assert_eq!(
-      StyledJsxFold::fold_target(&call(ident("styled"), vec![ident("lowercase")])),
-      None
-    );
-    // styled.div.attrs({ ... })
-    assert_eq!(
-      StyledJsxFold::fold_target(&call(member("styled.div", "attrs"), vec![])),
-      None
-    );
-  }
-
   /// The attributes of a parsed `<Row … />`
   fn attrs_of(source: &str) -> Vec<JSXAttrOrSpread> {
     let cm: Lrc<SourceMap> = Default::default();

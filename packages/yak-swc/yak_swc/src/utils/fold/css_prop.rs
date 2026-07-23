@@ -1,5 +1,8 @@
+//! Folds a static `css` prop into a plain `className`, skipping the runtime
+//! `mergeCssProp` spread
+
 use crate::utils::ast_helper::unwrap_type_casts;
-use crate::utils::class_name_fold::{
+use crate::utils::fold::css_expr::{
   class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee,
 };
 use crate::yak_imports::YakImports;

@@ -1,8 +1,10 @@
-//! Folds compiled `css(...)` expressions into static `className` string
-//! concatenations, e.g. `css(() => on && css("b"), "a")` into
-//! `"a" + (on ? " b" : "")`
+//! The shared primitive of the fold: turns a compiled `css(...)` expression
+//! into the static `className` value it stands for, e.g.
+//! `css(() => on && css("b"), "a")` into `"a" + (on ? " b" : "")`
 //!
-//! Shared by the css prop fold and the styled component JSX fold
+//! Both fold paths - the [`css` prop](super::css_prop) and the
+//! [styled component usage](super::usage) - build on it, together with the
+//! small string and JSX attribute builders at the bottom of the module
 
 use crate::utils::ast_helper::unwrap_type_casts;
 use crate::yak_imports::YakImports;
@@ -17,11 +19,11 @@ use swc_core::{
 
 /// A conditional class name segment: the condition expression, the class name
 /// for the truthy branch and an optional class name for the falsy branch
-pub(crate) type ConditionSegment = (Box<Expr>, Wtf8Atom, Option<Wtf8Atom>);
+pub(super) type ConditionSegment = (Box<Expr>, Wtf8Atom, Option<Wtf8Atom>);
 
 /// Folds a compiled css expression into a className expression
 /// Returns `None` if the expression is not statically foldable
-pub(crate) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
+pub(super) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
   match unwrap_type_casts(expr) {
     Expr::Call(call) => fold_css_call(call, yak_imports),
     Expr::Cond(cond) => {
@@ -119,7 +121,7 @@ fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>>
 
 /// Appends one conditional class name segment to a className expression:
 /// `<expr> + (cond ? " a" : "")` or `<expr> + (cond ? " b" : " c")`
-pub(crate) fn append_condition_segment(
+pub(super) fn append_condition_segment(
   class_name_expr: Box<Expr>,
   (condition, cons_class, alt_class): ConditionSegment,
 ) -> Box<Expr> {
@@ -156,7 +158,7 @@ fn fold_condition_arrow(arrow: &ArrowExpr, yak_imports: &YakImports) -> Option<C
 /// Matches the condition shapes `cond && css("x")` and
 /// `cond ? css("x") : css("y")` and returns the condition expression
 /// plus the static class name(s)
-pub(crate) fn fold_condition_body(
+pub(super) fn fold_condition_body(
   body: &Expr,
   yak_imports: &YakImports,
 ) -> Option<ConditionSegment> {
@@ -175,7 +177,7 @@ pub(crate) fn fold_condition_body(
 }
 
 /// Matches a `css("x")` call carrying exactly one static class string
-pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
+pub(super) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Option<Wtf8Atom> {
   let Expr::Call(call) = unwrap_type_casts(expr) else {
     return None;
   };
@@ -201,7 +203,7 @@ pub(crate) fn pure_static_css_class(expr: &Expr, yak_imports: &YakImports) -> Op
 }
 
 /// Matches a callee that resolves to a yak `css` import
-pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
+pub(super) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
   match callee {
     Callee::Expr(expr) => match unwrap_type_casts(expr) {
       Expr::Ident(ident) => yak_imports.yak_css_idents().contains(&ident.to_id()),
@@ -211,9 +213,14 @@ pub(crate) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bo
   }
 }
 
+/// Joins two class names with a single space, e.g. `"a"` and `"b"` -> `"a b"`
+pub(super) fn merge_class_names(first: &Wtf8Atom, second: &Wtf8Atom) -> Wtf8Atom {
+  format!("{} {}", first.to_string_lossy(), second.to_string_lossy()).into()
+}
+
 /// Prefixes a class name with a space so it can be concatenated onto a base
 /// class, e.g. `"a"` -> `" a"`
-pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
+pub(super) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
   // an empty class name (from an empty `css``) contributes nothing
   if class_name.is_empty() {
     return "".into();
@@ -222,7 +229,7 @@ pub(crate) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
 }
 
 /// Builds a string literal
-pub(crate) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
+pub(super) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
   Str {
     span,
     value,
@@ -231,12 +238,12 @@ pub(crate) fn str_lit(value: Wtf8Atom, span: Span) -> Str {
 }
 
 /// Builds a string literal expression with a dummy span
-pub(crate) fn str_expr(value: Wtf8Atom) -> Box<Expr> {
+pub(super) fn str_expr(value: Wtf8Atom) -> Box<Expr> {
   Box::new(Expr::Lit(Lit::Str(str_lit(value, DUMMY_SP))))
 }
 
 /// Wraps an expression into a `{...}` JSX attribute value
-pub(crate) fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
+pub(super) fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
   JSXAttrValue::JSXExprContainer(JSXExprContainer {
     span: DUMMY_SP,
     expr: JSXExpr::Expr(expr),
@@ -244,7 +251,7 @@ pub(crate) fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
 }
 
 /// Builds a `className` JSX attribute
-pub(crate) fn class_name_attr(value: JSXAttrValue) -> JSXAttrOrSpread {
+pub(super) fn class_name_attr(value: JSXAttrValue) -> JSXAttrOrSpread {
   JSXAttrOrSpread::JSXAttr(JSXAttr {
     span: DUMMY_SP,
     name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),

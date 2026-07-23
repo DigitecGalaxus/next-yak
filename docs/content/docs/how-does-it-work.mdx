@@ -375,6 +375,35 @@ const Nav = ({ active }) => (
 </div>
 </SideBySide>
 
+When the wrapped component is itself a same-file static styled component, the whole chain collapses to the plain element, at any depth. The class names merge parent-first, and the declaration flattens with them, so an exported chain ships a single wrapper and its base components drop out once nothing else uses them:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Card = styled.div`
+  color: green;
+`;
+
+export const Fancy = styled(Card)`
+  padding: 4px;
+`;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+export const Fancy = /*#__PURE__*/ __yak.__yak_div(
+  "input_Card_m7uBBu input_Fancy_m7uBBu",
+);
+```
+
+</div>
+</SideBySide>
+
+The chain does not collapse when the parent is dynamic, uses `.attrs()`, or comes from another file - the usage still folds into the wrapped component instead of the plain element. A `let`-bound parent can be reassigned, so its usages keep the runtime path entirely.
+
 Folding only happens when the plugin can prove that the folded element behaves exactly like the styled component. It bails for example on spread attributes (`<Card {...props} />`), a `theme` prop, `.attrs()` chains, HOC wrappers like `memo(...)` and style expressions that read the theme or set css variables. Bailing is never a problem, the usage simply renders through the styled component at runtime, exactly as if folding did not exist.
 
 <Callout type="warn">

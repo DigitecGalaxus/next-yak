@@ -47,12 +47,12 @@ const Card = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu"), {
     "displayName": "Card"
 });
-// styled(Component) wrapper folds to the wrapped component
+// collapses: parent Card is a same-file static component
 const Fancy = /*YAK Extracted CSS:
 :global(.input_Fancy_m7uBBu) {
   padding: 4px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Card)("input_Fancy_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu input_Fancy_m7uBBu"), {
     "displayName": "Fancy"
 });
 // bails: an .attrs() chain is never registered as foldable
@@ -107,8 +107,11 @@ const Cases = ()=><>
     { /* static component: a string className merges at compile time */ }
     <div className="input_Card_m7uBBu user">static merge</div>
 
-    { /* styled(Component) usage folds to Card with the merged class */ }
-    <Card className="input_Fancy_m7uBBu extra">wrapper fold</Card>
+    { /* the chain collapses, so the usage folds to a plain div */ }
+    <div className="input_Card_m7uBBu input_Fancy_m7uBBu extra">wrapper fold</div>
+
+    { /* bails: the spread renders the collapsed Fancy declaration at runtime */ }
+    <Fancy {...props}>spread bail</Fancy>
 
     { /* bails: a spread after className may carry className/style at runtime */ }
     <Card className="x" {...props}>

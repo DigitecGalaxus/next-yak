@@ -21,6 +21,7 @@ const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")}
 ```
 
 - Fully static components fold to the plain DOM element, `styled(Component)` wrappers fold to the wrapped component (which may be imported).
+- A `styled(Parent)` chain whose parent is a same-file static component collapses to the plain element at any depth, class names merged parent-first. Its declaration flattens too (`const Fancy = __yak.__yak_div("card fancy")`), so an exported chain ships one wrapper and unused base components drop out. A dynamic, `.attrs()`, imported, or `let`-bound parent keeps the runtime chain.
 - Class-toggling expressions (`({ $active }) => $active && css`…`` or `(p) => p.$active && css`…``) are inlined by substituting the props with the attribute values; the `$` attributes are dropped like the runtime drops them.
 - An existing `className` is merged at compile time, or through the new `__yak_mergeClassNames` helper for runtime values.
 - Usages with spread props, `theme`, dynamic css values (css variables) or `.attrs()` keep the runtime path, as do components not declared as top-level `const`.

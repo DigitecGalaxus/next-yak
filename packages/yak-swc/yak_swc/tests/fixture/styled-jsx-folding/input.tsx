@@ -33,14 +33,43 @@ const WithAttrs = styled.button.attrs({ type: "button" })`
   color: green;
 `;
 
-// folds to the wrapped component: <Extended> becomes <Card className="...">
+// collapses: parent is a same-file static component
 const Extended = styled(Card)`
   color: yellow;
 `;
 
-// folds although the wrapped component comes from another file
+// collapses: three-level chain, classes merged parent-first
+const ExtendedTwice = styled(Extended)`
+  color: coral;
+`;
+
+// collapses: exported chain keeps its folded declaration
+export const FancyTitle = styled(Title)`
+  letter-spacing: 1px;
+`;
+
+// folds to the wrapped component: a cross-file parent never collapses
 const ExtendedImport = styled(ImportedCard)`
   color: silver;
+`;
+
+// dynamic: class-toggling condition
+const ToggleBase = styled.button<{ $on?: boolean }>`
+  ${({ $on }) =>
+    $on &&
+    css`
+      color: red;
+    `}
+`;
+
+// folds to the wrapped component: a dynamic parent never collapses
+const OfDynamic = styled(ToggleBase)`
+  color: teal;
+`;
+
+// folds to the wrapped component: an attrs parent never collapses
+const OfAttrs = styled(WithAttrs)`
+  color: maroon;
 `;
 
 // bails: a lowercase name would be parsed as an intrinsic element in JSX
@@ -58,6 +87,20 @@ const ExtendedMutable = styled(MutableTarget)`
 // bails: let declaration
 let Mutable = styled.div`
   color: pink;
+`;
+
+// bails: a let parent keeps the whole chain on the runtime path
+const OfLet = styled(Mutable)`
+  color: khaki;
+`;
+
+// bails: parent declared after the child (const temporal dead zone) - collapsing
+// would turn the guaranteed ReferenceError into silently working output
+const OfLater = styled(Later)`
+  color: wheat;
+`;
+const Later = styled.div`
+  color: linen;
 `;
 
 // bails: var redeclaration - both declarations share a single binding
@@ -110,8 +153,13 @@ const Optimizable = ({ active }: { active?: boolean }) => (
     </Card>
     <Title>folds</Title>
     <Cast>folds through the type cast</Cast>
-    <Extended>folds to the wrapped component</Extended>
-    <Extended className="user">merges into the wrapped component</Extended>
+    <Extended>collapses to a plain div</Extended>
+    <Extended className="user">collapses and merges the className</Extended>
+    <ExtendedTwice>collapses the whole three-level chain</ExtendedTwice>
+    <FancyTitle>collapses the exported chain</FancyTitle>
+    <OfDynamic>folds to the dynamic parent, chain not collapsed</OfDynamic>
+    <OfAttrs>folds to the attrs parent, chain not collapsed</OfAttrs>
+    <OfLater>folds to the later-declared parent, chain not collapsed</OfLater>
     <ExtendedImport>folds to the imported component</ExtendedImport>
     <BoxWithMixin>folds with mixin</BoxWithMixin>
   </>
@@ -140,6 +188,7 @@ const NotOptimizable = () => (
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
     <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
     <Mutable>bails</Mutable>
+    <OfLet>bails: reassignable parent keeps the runtime chain</OfLet>
     <Redeclared>bails: var redeclaration</Redeclared>
     <Memoized>bails: HOC wrapper</Memoized>
     <ReactMemoized>bails: HOC wrapper</ReactMemoized>
