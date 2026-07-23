@@ -131,10 +131,7 @@ export default function App() {
       <Card data-testid="escape" className="mark before:content-['\d7']">
         escape merge
       </Card>
-      <Card
-        data-testid="escape-runtime"
-        {...{ className: "mark before:content-['\\d7']" }}
-      >
+      <Card data-testid="escape-runtime" {...{ className: "mark before:content-['\\d7']" }}>
         runtime twin
       </Card>
     </>
