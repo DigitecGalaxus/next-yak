@@ -1,0 +1,19 @@
+%% Regenerate the SVG after editing this file:
+%%   cd docs/public/img && npx -y @mermaid-js/mermaid-cli -i folding-decision.mmd -o folding-decision.svg -t neutral -b "#ffffff"
+flowchart TD
+  usage(["JSX usage of a styled component"]) --> sameFile{"declared in the same file as a<br/>top-level const Card = styled...?"}
+  sameFile -- "no: import { Card } from './card'<br/>let Card = ..., or wrapped:<br/>const Card = memo(styled.div`...`)" --> keep["no fold - keep the runtime wrapper<br/>(slower, never incorrect)"]
+  sameFile -- yes --> tagShape{"what is being styled?"}
+  tagShape -- "styled.div.attrs(...)`...`<br/>styled('my-widget')`...`" --> keep
+  tagShape -- "styled(Link)`...` containing<br/>${({ $active }) => $active && css`...`}<br/>($active is also forwarded to Link,<br/>which may style with it too)" --> keep
+  tagShape -- "styled.div`...`, styled('div')`...`,<br/>fully static styled(Component)`...`" --> segments{"what do the ${...} pieces<br/>in the template do?"}
+  segments -- "compute a css value:<br/>width: ${({ $w }) => $w}px<br/>(becomes a css variable in style)" --> keep
+  segments -- "written as function (p) {...},<br/>or anything but toggling css" --> keep
+  segments -- "nothing, or toggle css blocks:<br/>${({ $on }) => $on && css`...`}" --> attrs{"can the compiler see every prop<br/>passed at this usage?"}
+  attrs -- "no: {...props} spread, generic type<br/>arguments, theme={t}, xlink:href,<br/>the same attribute written twice" --> keep
+  attrs -- yes --> reads{"does every prop the conditions read<br/>come straight from a JSX attribute?"}
+  reads -- "no: reads theme, children, className,<br/>style or key (injected or stripped by React),<br/>({ $on: x }) rename, = default, ...rest,<br/>or the whole props object escapes: calc(p)" --> keep
+  reads -- yes --> purity{"can each attribute value run more<br/>than once without anyone noticing?"}
+  purity -- "yes: $on={open}, $c={colors[status]},<br/>$odd={i % 2 !== 0}" --> inline["fold: condition inlined into className<br/>'yX' + (open ? ' yY' : '')"]
+  purity -- "no, e.g. a call - but only<br/>className needs the value:<br/>$on={isOpen(item)}" --> iife["fold: value bound once in a function<br/>(($on) => '...')(isOpen(item))"]
+  purity -- "no, and the DOM needs it too:<br/>disabled={busy()}" --> wrap["fold: element wrapped, value bound<br/>once around it - className and DOM<br/>attribute read the same value"]

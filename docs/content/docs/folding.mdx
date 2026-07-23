@@ -1,0 +1,401 @@
+---
+title: Folding
+description: How next-yak compiles a styled component usage straight into a plain DOM element, and when it keeps the runtime wrapper.
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { SideBySide } from "../../components/sideBySide";
+
+A styled component is a React component. Every time it renders it works out its class name, merges it with the props it received, and renders the real DOM element. That is one extra component in the tree for each usage, on each render, even when everything it does is fixed at build time.
+
+When a styled component is declared and used in the same file, next-yak already knows what it renders. It folds the usage straight into the DOM element and drops the wrapper:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Card = styled.div`
+  color: red;
+`;
+
+const Page = () => <Card>hi</Card>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Card = __yak.__yak_div("yCard");
+
+const Page = () => <div className="yCard">hi</div>;
+```
+
+</div>
+</SideBySide>
+
+The declaration stays. Exports, selectors like `${Card}` and any usage that cannot fold keep working through it. Once nothing references it, the minifier removes it as dead code.
+
+Class names on this page are shortened for reading. The real output uses names like `input_Card_m7uBBu`. Helper parameters are shortened too: where an example binds a value as `$on` or `disabled`, the compiler prefixes the name to keep it unique, so the real output reads `__yak_$on` or `__yak_disabled`.
+
+## Attributes on the usage
+
+Attributes stay on the element. A `className` merges at build time when both sides are known, otherwise the small `__yak_mergeClassNames` helper merges it at render:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+<Card />
+<Card className="user" />
+<Card className={on && "on"} />
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div className="yCard" />
+<div className="yCard user" />
+<div className={__yak_mergeClassNames("yCard", on && "on")} />
+```
+
+</div>
+</SideBySide>
+
+Other attributes pass through untouched:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+<Card style={{ margin: 1 }} onClick={f} data-x="1" />
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div style={{ margin: 1 }} onClick={f} data-x="1" className="yCard" />
+```
+
+</div>
+</SideBySide>
+
+## Wrapping another component
+
+A fully static `styled(Component)` folds to the component it wraps, which may live in another file:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+import { Card } from "./card";
+
+const Fancy = styled(Card)`
+  gap: 4px;
+`;
+
+const Page = () => <Fancy>hi</Fancy>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Page = () => <Card className="yFancy">hi</Card>;
+```
+
+</div>
+</SideBySide>
+
+`Card` stays in the tree here, because the compiler cannot see across files. The wrapped target has to be an uppercase binding that cannot be reassigned; a lowercase name or a `let`-bound target keeps the runtime wrapper.
+
+## Collapsing a chain
+
+When the wrapped component is itself a same-file static styled component, the whole chain collapses to the base element, at any depth. The class names merge parent first:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Card = styled.div`
+  color: green;
+`;
+
+const Fancy = styled(Card)`
+  padding: 4px;
+`;
+
+const Page = () => <Fancy>hi</Fancy>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Page = () => <div className="yCard yFancy">hi</div>;
+```
+
+</div>
+</SideBySide>
+
+The declaration flattens the same way. An exported chain ships one wrapper, and its base components drop out once nothing else uses them:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Card = styled.div`
+  color: green;
+`;
+
+export const Fancy = styled(Card)`
+  padding: 4px;
+`;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+export const Fancy = /*#__PURE__*/ __yak.__yak_div("yCard yFancy");
+```
+
+</div>
+</SideBySide>
+
+A chain does not collapse when its parent is dynamic, uses `.attrs()`, or comes from another file. The usage still folds, but into the wrapped component instead of the plain element. A `let`-bound parent is the exception: it can be reassigned, so its usages keep the runtime path entirely, with no fold at all.
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Toggle = styled.button<{ $on?: boolean }>`
+  ${({ $on }) =>
+    $on &&
+    css`
+      color: red;
+    `}
+`;
+
+const Of = styled(Toggle)`
+  color: teal;
+`;
+
+const Page = () => <Of>hi</Of>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Toggle = __yak.__yak_button("yToggle", ({ $on }) => $on && css("yToggle-on"));
+const Of = styled(Toggle)("yOf");
+
+const Page = () => <Toggle className="yOf">hi</Toggle>;
+```
+
+</div>
+</SideBySide>
+
+## Class-toggling styles
+
+A style that toggles a `css` block on a prop folds too. The condition inlines into the `className` at the usage, with the prop value substituted in:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Box = styled.div<{ $on: boolean }>`
+  ${({ $on }) => $on && css`color: red;`}
+`;
+
+<Box $on />
+<Box $on={open} />
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div className={"yBox" + (true ? " yBox-on" : "")} />
+<div className={"yBox" + (open ? " yBox-on" : "")} />
+```
+
+</div>
+</SideBySide>
+
+The compiler leaves `true ? " yBox-on" : ""` as it is; the minifier collapses it.
+
+A prop value the compiler cannot prove safe to run twice is bound once, so it evaluates exactly as often as the original JSX did. When only the class name needs the value, it is bound in a small function around the class expression:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+<Box $on={isOpen(item)} />
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div className={(($on) => "yBox" + ($on ? " yBox-on" : ""))(isOpen(item))} />
+```
+
+</div>
+</SideBySide>
+
+A regular prop stays on the element. When a condition reads a value that is not provably safe to run twice and the element needs it too, the whole element is wrapped and the value bound once around it, so the class name and the DOM attribute always read the same value:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Button = styled.button<{ disabled?: boolean }>`
+  ${({ disabled }) =>
+    !disabled &&
+    css`
+      cursor: pointer;
+    `}
+`;
+
+<Button disabled={busy()}>Save</Button>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+{
+  ((disabled) => (
+    <button disabled={disabled} className={"yButton" + (!disabled ? " yButton-hit" : "")}>
+      Save
+    </button>
+  ))(busy());
+}
+```
+
+</div>
+</SideBySide>
+
+A value that only allocates &mdash; an arrow, an object literal, JSX &mdash; still runs once, but the compiler may move it, since building a closure a little earlier changes nothing observable. So `onClick={() => setOpen(true)}` never forces the element wrap.
+
+## The css prop
+
+The [css prop](/docs/features#css-prop) folds on the same rule. A static css prop becomes a plain `className`:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+<div
+  css={css`
+    color: red;
+  `}
+/>
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div className="yX" />
+```
+
+</div>
+</SideBySide>
+
+A conditional css prop keeps its condition; the branch toggles class names:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+<div
+  css={css`
+    color: black;
+    ${() =>
+      a &&
+      css`
+        color: red;
+      `}
+    ${() =>
+      b &&
+      css`
+        font-weight: bold;
+      `}
+  `}
+/>
+```
+
+</div>
+<div>
+
+```tsx title="output"
+<div className={"yBase" + (a ? " yA" : "") + (b ? " yB" : "")} />
+```
+
+</div>
+</SideBySide>
+
+The css prop keeps the render-time merge (`__yak_mergeCssProp`) when the element already has a `className`, spreads props, or carries a dynamic value (a css variable). A css prop that points at a `css` mixin declared elsewhere is a compile error, because the mixin carries no class name of its own.
+
+## The decision
+
+Folding happens only when the result is provable. The compiler walks the questions below, and every "no" keeps the runtime wrapper. A skipped usage costs a little render time, never correctness.
+
+![Decision flow for folding a styled component usage: it folds only when the component is a same-file top-level const, styles a plain element or a static component, toggles css blocks at most, and passes every prop as a plain JSX attribute; otherwise the runtime wrapper stays.](/img/folding-decision.svg)
+
+Reading it top to bottom: the usage folds when the component is a same-file top-level `const`, styles a plain element or a fully static `styled(Component)`, does nothing dynamic beyond toggling `css` blocks, and takes every prop it reads straight from a JSX attribute. When a toggled value cannot safely run twice, the fold binds it once instead of dropping to the wrapper: in a small function when only the class name needs it, or around the whole element when the DOM needs it too or when an impure attribute sits between bound props and their order must hold. Anything else &mdash; an import, a `let`, a spread, a `theme`, `.attrs()`, dynamic css values, a prop that is renamed or defaulted &mdash; keeps the wrapper.
+
+## Turning it off
+
+Folding is on by default. Set `foldStatic: false` to turn it off. The same option gates both the styled component fold and the css prop fold.
+
+<Tabs items={["next.config.ts", "vite.config.ts"]}>
+<Tab value="next.config.ts">
+
+```ts
+export default withYak(
+  {
+    foldStatic: false,
+  },
+  nextConfig,
+);
+```
+
+</Tab>
+<Tab value="vite.config.ts">
+
+```ts
+export default defineConfig({
+  // ideally viteYak runs before the react plugin
+  plugins: [viteYak({ foldStatic: false }), react()],
+});
+```
+
+</Tab>
+</Tabs>
+
+## Caveats
+
+A folded usage is no longer a component, and that has a few visible effects.
+
+- **It does not show in React DevTools or component stacks.** The wrapper is gone, so there is nothing named to display. This holds in development too, so development and production behave the same, and `displayName` has no effect on a folded usage.
+- **`child.type === Card` no longer matches it.** A folded usage is a plain element, so code that compares against the styled component finds a `div`, not `Card`.
+- **Foreign `$`-prefixed props reach the DOM on a fully static fold.** The runtime filters unknown `$props`; a fully static folded usage forwards them to the element instead. A class-toggling fold drops all `$props`, exactly as the runtime does.
+- **Prop expressions run the same number of times, in the same order, as the original JSX.** The two exceptions are cases React's own purity rule already forbids: an unread `$prop` is dropped without running, and a getter behind a member read (`$a={obj.x}`) fires each time a condition reads it.
+
+<Callout type="warn">
+  If the same component is used both folded and with a wrapper, switching between the two at runtime
+  remounts the subtree instead of updating it, because React sees a different element type.
+
+```tsx
+// <Card /> folds to <div>, while <Card {...props} /> keeps the wrapper.
+// Toggling `compact` remounts the card, and it loses its state.
+const List = () => <div>{compact ? <Card /> : <Card {...props} />}</div>;
+```
+
+</Callout>
