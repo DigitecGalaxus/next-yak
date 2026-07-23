@@ -26,7 +26,7 @@ export interface StyledFn {
  */
 export interface YakComponent<T> extends React.FunctionComponent<T> {
   // This is intentionally typed to hide the internal implementation details.
-  [yakComponentSymbol]: [unknown, unknown, unknown];
+  [yakComponentSymbol]: [unknown, unknown, unknown, unknown];
 }
 
 /**
@@ -126,13 +126,29 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 };
 
 /**
- * Type of all functions that can be passed to manipulate styles
+ * Set-like collector for class names
+ *
+ * The runtime implements this as a string builder, a real `Set<string>`
+ * satisfies it as well
  */
-export type RuntimeStyleProcessor<T> = (
+export type ClassNameCollector = {
+  add(className: string): void;
+  has(className: string): boolean;
+  delete(className: string): void;
+};
+
+/**
+ * Type of all functions that can be passed to manipulate styles
+ *
+ * `$dynamic` marks processors that execute user functions or write style
+ * values at render time; purely static processors (class names only) can
+ * skip theme lookup and style-object allocation.
+ */
+export type RuntimeStyleProcessor<T> = ((
   props: T,
-  classNames: Set<string>,
+  classNames: ClassNameCollector,
   style: React.CSSProperties,
-) => void;
+) => void) & { $dynamic?: boolean };
 
 /**
  * Utility type to keep the generic API of a component while still being able to use it in a selector

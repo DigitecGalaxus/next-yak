@@ -1,6 +1,6 @@
 // @ts-nocheck These are runtime tests and the external API isn't the runtime (after compile) API
 import type { YakTheme } from "../context";
-import { css } from "../cssLiteral";
+import { css, ClassNames } from "../cssLiteral";
 
 describe("cssLiteral css function", () => {
   describe("static CSS class names", () => {
@@ -233,7 +233,10 @@ describe("cssLiteral css function", () => {
       const result = processor(props, classNames, style);
 
       expect(classNames.has("static-only-class")).toBe(true);
-      expect(typeof result).toBe("function"); // Should return the cleanup function
+      // static processors are marked so the styled runtime can skip theme
+      // lookup and style-object allocation; they return nothing
+      expect(processor.$dynamic).toBe(false);
+      expect(result).toBeUndefined();
     });
   });
 
@@ -471,5 +474,30 @@ describe("cssLiteral css function", () => {
       expect(style["--dynamic1"]).toBe("dynamic1");
       expect(style["--dynamic2"]).toBe("dynamic2");
     });
+  });
+});
+
+describe("ClassNames collector", () => {
+  it("does not deduplicate added class names", () => {
+    const classNames = new ClassNames();
+    classNames.add("a");
+    classNames.add("b");
+    classNames.add("a");
+    expect(classNames.value).toBe("a b a");
+  });
+
+  it("does not deduplicate against the incoming className", () => {
+    const classNames = new ClassNames("a");
+    classNames.add("a");
+    expect(classNames.value).toBe("a a");
+  });
+
+  it("deletes every occurrence of a duplicated class", () => {
+    const classNames = new ClassNames();
+    classNames.add("a");
+    classNames.add("b");
+    classNames.add("a");
+    classNames.delete("a");
+    expect(classNames.value).toBe("b");
   });
 });

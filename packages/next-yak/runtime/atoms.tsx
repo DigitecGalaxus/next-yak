@@ -1,4 +1,4 @@
-import { ComponentStyles, css } from "./cssLiteral.js";
+import { ClassNames, ComponentStyles, css } from "./cssLiteral.js";
 import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 
 /**
@@ -18,27 +18,19 @@ import { RuntimeStyleProcessor } from "./publicStyledApi.js";
 export const atoms = <T,>(
   ...atoms: (string | RuntimeStyleProcessor<T> | false)[]
 ): ComponentStyles<T> => {
-  const staticClasses: string[] = [];
+  const staticClasses = new ClassNames();
   const dynamicFunctions: RuntimeStyleProcessor<T>[] = [];
 
   for (const atom of atoms) {
     if (typeof atom === "string") {
-      staticClasses.push(...atom.split(" "));
+      staticClasses.add(atom);
     } else if (typeof atom === "function") {
       dynamicFunctions.push(atom);
     }
   }
 
-  const runtimeFunctions: RuntimeStyleProcessor<T>[] =
-    staticClasses.length > 0
-      ? [
-          (_, classNames) => {
-            staticClasses.forEach((cls) => classNames.add(cls));
-          },
-          ...dynamicFunctions,
-        ]
-      : dynamicFunctions;
-
+  // the collected classes are passed as css()'s static class name,
+  // only the dynamic atoms stay functions
   // @ts-expect-error the internal implementation of css is not typed
-  return css(...runtimeFunctions);
+  return css(staticClasses.value, ...dynamicFunctions);
 };
