@@ -319,3 +319,20 @@ it("merge properties with dark mode and state variants", async () => {
     },
   });
 });
+
+// a falsy css prop applies no styles - the swc plugin folds the statically known
+// cases, so these cover the shapes that stay on the runtime path
+it.each([
+  ["false", false],
+  ["null", null],
+  ["undefined", undefined],
+])("applies no styles for a %s css prop", (_label, cssProp) => {
+  expect(mergeCssProp({}, cssProp)).toEqual({});
+});
+
+it("keeps the relevant props when the css prop is falsy", async () => {
+  expect(mergeCssProp({ className: "btn", style: { padding: "8px" } }, false)).toMatchObject({
+    className: "btn",
+    style: { padding: "8px" },
+  });
+});

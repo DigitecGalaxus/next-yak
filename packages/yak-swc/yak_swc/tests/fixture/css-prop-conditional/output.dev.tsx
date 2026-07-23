@@ -2,11 +2,11 @@ import { css, __yak_mergeCssProp } from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+    return <div className={/*YAK Extracted CSS:
 :global(.input_Elem__show_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem__show_m7uBBu"), "input_Elem_m7uBBu"))}/>;
+*/ /*#__PURE__*/ "input_Elem_m7uBBu" + (show ? " input_Elem__show_m7uBBu" : "")}/>;
 };
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
@@ -20,15 +20,13 @@ const Elem2 = ()=>{
 };
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
-    return <div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
+    return <div style={{
+        padding: "5px"
+    }} className={/*YAK Extracted CSS:
 :global(.input_Elem3__show_m7uBBu) {
   padding: 10px;
 }
-*/ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("input_Elem3__show_m7uBBu"), "input_Elem3_m7uBBu"))}/>;
+*/ /*#__PURE__*/ "input_Elem3_m7uBBu" + (show ? " input_Elem3__show_m7uBBu" : "")}/>;
 };
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;

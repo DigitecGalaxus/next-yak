@@ -14,6 +14,25 @@ const ComponentWithCssProp = () => {
   return <div css={css``} />;
 };
 
+const ComponentWithEmptyCssPropAndClassName = () => {
+  return <div css={css``} className="static" />;
+};
+
+const ComponentWithEmptyCssPropInTernary = () => {
+  const on = Math.random() > 0.5;
+  return (
+    <div
+      css={
+        on
+          ? css``
+          : css`
+              padding: 10px;
+            `
+      }
+    />
+  );
+};
+
 const NestedComponentWithCssProp = () => (
   <div>
     <p>

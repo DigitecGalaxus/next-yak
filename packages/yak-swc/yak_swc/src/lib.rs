@@ -33,6 +33,7 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
+  pub(crate) mod class_name_fold;
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
   pub(crate) mod css_prop;
@@ -1029,12 +1030,11 @@ where
       self.inside_element_with_css_attribute = true;
       n.visit_mut_children_with(self);
       self.inside_element_with_css_attribute = previous_inside_css_attribute;
-      let merge_ident = self
-        .yak_library_imports
-        .as_mut()
-        .unwrap()
-        .get_yak_utility_ident("mergeCssProp");
-      css_prop.transform(n, &merge_ident, self.strict_css_prop);
+      css_prop.transform(
+        n,
+        self.yak_library_imports.as_mut().unwrap(),
+        self.strict_css_prop,
+      );
     }
   }
 
@@ -1284,7 +1284,7 @@ where
     }
     // Expressions with a PURE span already carry the annotation on the node
     // itself; adding a comment at BytePos::PURE would collide across nodes.
-    if !result_span.is_pure() {
+    if transform_result.add_pure_annotation && !result_span.is_pure() {
       self.comments.add_leading(result_span.lo, pure_annotation());
     }
     self.expression_replacement = Some(transform_result.expression);

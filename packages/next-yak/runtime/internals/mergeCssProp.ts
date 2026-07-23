@@ -19,14 +19,17 @@ export const mergeCssProp = (
     className?: string;
     style?: Record<string, string>;
   } & Record<string, unknown>,
-  cssProp: RuntimeStyleProcessor<unknown>,
+  cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
 ) => {
   const classNames = new ClassNames(relevantProps.className);
 
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
 
-  cssProp({}, classNames, style);
+  // a falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on` false
+  if (cssProp) {
+    cssProp({}, classNames, style);
+  }
 
   // Forward all other props (onClick, aria-*, id, …) untouched and only
   // override className/style with the merged result — the transform already

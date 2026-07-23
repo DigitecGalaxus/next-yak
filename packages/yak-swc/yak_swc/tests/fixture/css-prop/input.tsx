@@ -59,6 +59,37 @@ const Elem7 = () => <div className="no-css" />;
 
 const Elem8 = () => <div css={css``} className="empty-css" />;
 
+const Elem9 = () => <div css={css``} />;
+
+const Elem10 = ({ on }: { on: boolean }) => (
+  <div
+    css={css`
+      ${() =>
+        on
+          ? css`
+              color: red;
+            `
+          : css`
+              color: blue;
+            `}
+    `}
+  />
+);
+
+const Elem11 = ({ on }: { on: boolean }) => (
+  <div
+    css={
+      on
+        ? (css`
+            color: red;
+          ` as any)
+        : css`
+            color: blue;
+          `
+    }
+  />
+);
+
 const Text = styled.p`
   font-size: 20px;
 `;

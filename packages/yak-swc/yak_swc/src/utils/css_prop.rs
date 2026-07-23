@@ -1,17 +1,31 @@
+use crate::utils::ast_helper::unwrap_type_casts;
+use crate::utils::class_name_fold::{
+  class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee,
+};
+use crate::yak_imports::YakImports;
 use swc_core::{
   common::errors::HANDLER,
-  common::{Span, SyntaxContext, DUMMY_SP},
+  common::{Span, Spanned, SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
-    JSXAttrValue, JSXExpr, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop, PropName,
-    PropOrSpread, SpreadElement,
+    BinaryOp, CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
+    JSXAttrValue, JSXExpr, JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop,
+    PropName, PropOrSpread, SpreadElement,
   },
 };
+
+/// An attribute that has to be merged with the css prop
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum RelevantProp {
+  ClassName,
+  Style,
+  /// A spread may carry a className or style only known at runtime
+  Spread,
+}
 
 #[derive(Debug)]
 pub struct CSSProp {
   index: usize,
-  relevant_props_indices: Vec<usize>,
+  relevant_props: Vec<(usize, RelevantProp)>,
 }
 
 impl CSSProp {
@@ -40,22 +54,37 @@ impl CSSProp {
   ///     className: "myClassName"
   ///   })} />
   /// ```
+  /// A statically known css prop skips the merge call and folds into a plain
+  /// `className` instead (see `try_fold`), an empty one (e.g. `css``) is dropped
   pub fn transform(
     &self,
     opening_element: &mut JSXOpeningElement,
-    merge_ident: &Ident,
+    yak_imports: &mut YakImports,
     strict_css_prop: bool,
   ) {
+    // An empty css prop (e.g. `css``) compiles to a bare `css()` and contributes
+    // nothing, so drop the attribute entirely and keep the other props untouched
+    if Self::is_noop_css_prop(&opening_element.attrs[self.index], yak_imports) {
+      opening_element.attrs.remove(self.index);
+      return;
+    }
+    if self.try_fold(opening_element, yak_imports) {
+      return;
+    }
+    let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
     // Build the replacement from borrowed attributes first, without mutating the
     // element. That way an invalid `css` prop can be left completely untouched
     // when strict mode is off (it might belong to another library, not next-yak).
     let merge_call: Result<Box<Expr>, TransformError> = (|| {
       let css_expr =
         Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
+      if let Some(span) = Self::find_style_reference(&css_expr) {
+        return Err(TransformError::StyleReference(span));
+      }
       let mapped_props = self
-        .relevant_props_indices
+        .relevant_props
         .iter()
-        .map(|&index| match &opening_element.attrs[index] {
+        .map(|&(index, _)| match &opening_element.attrs[index] {
           JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
           JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
           #[cfg(swc_ast_unknown)]
@@ -65,7 +94,7 @@ impl CSSProp {
       Ok(Self::create_merge_call(
         &mapped_props,
         css_expr,
-        merge_ident,
+        &merge_ident,
       ))
     })();
 
@@ -86,7 +115,7 @@ impl CSSProp {
 
     // Validation succeeded — remove the consumed attributes and insert the spread.
     opening_element.attrs.remove(self.index);
-    for &index in self.relevant_props_indices.iter().rev() {
+    for &(index, _) in self.relevant_props.iter().rev() {
       let adjusted_index = if index > self.index { index - 1 } else { index };
       opening_element.attrs.remove(adjusted_index);
     }
@@ -98,6 +127,91 @@ impl CSSProp {
         expr: merge_call,
       }),
     );
+  }
+
+  /// Replaces a statically known css prop with a plain className attribute
+  /// to avoid the runtime `mergeCssProp` call
+  /// Bails out (returns false) if the element has a className or spread attribute
+  /// or if the css expression contains dynamic values or mixin references
+  ///
+  /// e.g.
+  /// ```jsx
+  /// <div css={css("a")} />                        // -> <div className="a" />
+  /// <div css={css(() => on && css("b"), "a")} />  // -> <div className={"a" + (on ? " b" : "")} />
+  /// <div css={on ? css("a") : css("b")} />        // -> <div className={on ? "a" : "b"} />
+  /// ```
+  fn try_fold(&self, opening_element: &mut JSXOpeningElement, yak_imports: &YakImports) -> bool {
+    // a spread or className may carry class names only known at runtime
+    if self
+      .relevant_props
+      .iter()
+      .any(|&(_, kind)| kind != RelevantProp::Style)
+    {
+      return false;
+    }
+    let JSXAttrOrSpread::JSXAttr(JSXAttr {
+      value:
+        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+          expr: JSXExpr::Expr(css_expr),
+          ..
+        })),
+      ..
+    }) = &opening_element.attrs[self.index]
+    else {
+      // invalid css attribute - the runtime path reports the error
+      return false;
+    };
+    let Some(class_name_expr) = fold_css_expr(css_expr, yak_imports) else {
+      return false;
+    };
+    opening_element.attrs[self.index] = class_name_attr(expr_attr_value(class_name_expr));
+    true
+  }
+
+  /// Matches a css prop that compiles to a bare `css()` with no arguments,
+  /// produced by an empty css template such as `css``
+  fn is_noop_css_prop(attr: &JSXAttrOrSpread, yak_imports: &YakImports) -> bool {
+    let JSXAttrOrSpread::JSXAttr(JSXAttr {
+      value:
+        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+          expr: JSXExpr::Expr(expr),
+          ..
+        })),
+      ..
+    }) = attr
+    else {
+      return false;
+    };
+    matches!(
+      unwrap_type_casts(expr),
+      Expr::Call(call)
+        if is_yak_css_callee(&call.callee, yak_imports) && call.args.is_empty()
+    )
+  }
+
+  /// Finds a reference to styles declared elsewhere (`css={mixin}`,
+  /// `css={styles.padding}`) in a css value position - at the top level or in
+  /// the value arms of ternaries and logical expressions
+  ///
+  /// Such a reference renders unstyled because the css prop only compiles
+  /// styles in place, so it is rejected via `TransformError::StyleReference`
+  fn find_style_reference(expr: &Expr) -> Option<Span> {
+    match unwrap_type_casts(expr) {
+      Expr::Cond(cond) => {
+        Self::find_style_reference(&cond.cons).or_else(|| Self::find_style_reference(&cond.alt))
+      }
+      // `cond && css` - only the right hand side is a css value
+      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => Self::find_style_reference(&bin.right),
+      // `a || b` and `a ?? b` - both sides are css values
+      Expr::Bin(bin) if matches!(bin.op, BinaryOp::LogicalOr | BinaryOp::NullishCoalescing) => {
+        Self::find_style_reference(&bin.left).or_else(|| Self::find_style_reference(&bin.right))
+      }
+      // `undefined` is a valid falsy css value, any other identifier is a reference
+      Expr::Ident(ident) if ident.sym != "undefined" => Some(ident.span),
+      Expr::Member(member) => Some(member.span()),
+      Expr::OptChain(opt_chain) => Some(opt_chain.span),
+      _ => None,
+    }
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.
@@ -194,18 +308,19 @@ impl HasCSSProp for JSXOpeningElement {
           if let JSXAttrName::Ident(ident) = &attr.name {
             match ident.sym.as_ref() {
               "css" => css_index = Some(index),
-              "className" | "style" => relevant_props.push(index),
+              "className" => relevant_props.push((index, RelevantProp::ClassName)),
+              "style" => relevant_props.push((index, RelevantProp::Style)),
               _ => {}
             }
           }
         }
-        _ => relevant_props.push(index),
+        _ => relevant_props.push((index, RelevantProp::Spread)),
       }
     }
 
     css_index.map(|index| CSSProp {
       index,
-      relevant_props_indices: relevant_props,
+      relevant_props,
     })
   }
 }
@@ -218,6 +333,7 @@ pub enum TransformError {
   MissingAttributeValue(Span),
   InvalidJSXEmptyExpr(Span),
   UnsupportedAttributeValue(Span),
+  StyleReference(Span),
   #[cfg(swc_ast_unknown)]
   UnsupportedJSXAttrOrSpread(),
 }
@@ -230,7 +346,8 @@ impl TransformError {
       | TransformError::InvalidJSXAttribute(span)
       | TransformError::MissingAttributeValue(span)
       | TransformError::InvalidJSXEmptyExpr(span)
-      | TransformError::UnsupportedAttributeValue(span) => *span,
+      | TransformError::UnsupportedAttributeValue(span)
+      | TransformError::StyleReference(span) => *span,
       #[cfg(swc_ast_unknown)]
       TransformError::UnsupportedJSXAttrOrSpread() => Span::default(),
     }
@@ -261,6 +378,12 @@ impl TransformError {
             TransformError::UnsupportedAttributeValue(_) =>
                 "Unsupported attribute value type. Use string literals for className, \
                 template literals for css prop, and object literals for style prop.",
+
+            TransformError::StyleReference(_) =>
+                "References to styles declared elsewhere are not supported in the 'css' prop - \
+                the referenced styles are not compiled at this usage and would silently never apply. \
+                Wrap the reference in a css template instead. \
+                Example: css={css`${mixin}`}",
 
             #[cfg(swc_ast_unknown)]
             TransformError::UnsupportedJSXAttrOrSpread() =>
