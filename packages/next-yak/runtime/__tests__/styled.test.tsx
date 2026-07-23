@@ -148,6 +148,34 @@ it("should concatenate styles", () => {
   `);
 });
 
+it("should not inject a default style prop into a static wrapped component", () => {
+  let receivedProps = null;
+  const Component = (props) => {
+    receivedProps = props;
+    return null;
+  };
+  const StyledComponent = styled(Component)("staticClass");
+
+  render(<StyledComponent />);
+
+  expect("style" in receivedProps).toBe(false);
+});
+
+it("should forward a style prop by reference to a static wrapped component", () => {
+  let receivedProps = null;
+  const Component = (props) => {
+    receivedProps = props;
+    return null;
+  };
+  const StyledComponent = styled(Component)("staticClass");
+  const style = { color: "red" };
+
+  render(<StyledComponent style={style} />);
+
+  // no per-render clone — keeps React.memo/PureComponent on the target working
+  expect(receivedProps.style).toBe(style);
+});
+
 it("should not add class if prop is not set", () => {
   const Component = styled.input(({ testProp }) => testProp && css("test"));
 

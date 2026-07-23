@@ -1,3 +1,4 @@
+import { ClassNames } from "../cssLiteral.js";
 import { RuntimeStyleProcessor } from "../publicStyledApi.js";
 
 /**
@@ -20,8 +21,7 @@ export const mergeCssProp = (
   } & Record<string, unknown>,
   cssProp: RuntimeStyleProcessor<unknown>,
 ) => {
-  const existingClassName = relevantProps.className;
-  const classNames = existingClassName ? new Set(existingClassName.split(" ")) : new Set<string>();
+  const classNames = new ClassNames(relevantProps.className);
 
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
@@ -41,8 +41,8 @@ export const mergeCssProp = (
   } else {
     delete result.style;
   }
-  if (classNames.size > 0) {
-    result.className = Array.from(classNames).join(" ");
+  if (classNames.value) {
+    result.className = classNames.value;
   } else {
     delete result.className;
   }
