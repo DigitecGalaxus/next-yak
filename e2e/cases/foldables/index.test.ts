@@ -70,5 +70,11 @@ test(
     expect(foldedClass).not.toContain("before:content-['\\\\d7']");
     // same tokens as the runtime twin, order aside
     expect(foldedClass.split(" ").sort()).toEqual(runtimeClass.split(" ").sort());
+
+    // an emoji className survives byte-exact through the fold, like its twin
+    const emojiClass = (await page.getByTestId("emoji").getAttribute("class")) ?? "";
+    const emojiRuntimeClass = (await page.getByTestId("emoji-runtime").getAttribute("class")) ?? "";
+    expect(emojiClass).toContain("🔥");
+    expect(emojiClass.split(" ").sort()).toEqual(emojiRuntimeClass.split(" ").sort());
   }),
 );

@@ -9,7 +9,7 @@
 use crate::utils::ast_helper::unwrap_type_casts;
 use crate::yak_imports::YakImports;
 use swc_core::{
-  atoms::Wtf8Atom,
+  atoms::{wtf8::Wtf8Buf, Wtf8Atom},
   common::{Span, Spanned, DUMMY_SP},
   ecma::ast::{
     ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, IdentName,
@@ -214,8 +214,16 @@ pub(super) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bo
 }
 
 /// Joins two class names with a single space, e.g. `"a"` and `"b"` -> `"a b"`
+///
+/// Concatenates at the WTF-8 level so a user class name is copied byte for byte:
+/// emoji and any other content survive intact, where a lossy String round-trip
+/// would replace unpaired surrogates with U+FFFD
 pub(super) fn merge_class_names(first: &Wtf8Atom, second: &Wtf8Atom) -> Wtf8Atom {
-  format!("{} {}", first.to_string_lossy(), second.to_string_lossy()).into()
+  let mut buf = Wtf8Buf::with_capacity(first.len() + 1 + second.len());
+  buf.push_wtf8(first);
+  buf.push_str(" ");
+  buf.push_wtf8(second);
+  buf.into()
 }
 
 /// Prefixes a class name with a space so it can be concatenated onto a base
@@ -225,7 +233,10 @@ pub(super) fn with_leading_space(class_name: &Wtf8Atom) -> Wtf8Atom {
   if class_name.is_empty() {
     return "".into();
   }
-  format!(" {}", class_name.to_string_lossy()).into()
+  let mut buf = Wtf8Buf::with_capacity(1 + class_name.len());
+  buf.push_str(" ");
+  buf.push_wtf8(class_name);
+  buf.into()
 }
 
 /// Builds a string literal

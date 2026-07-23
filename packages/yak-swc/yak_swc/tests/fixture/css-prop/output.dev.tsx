@@ -61,6 +61,13 @@ const ElemBackslash = ()=><div {...__yak_mergeCssProp({
   color: red;
 }
 */ /*#__PURE__*/ css("input_ElemBackslash_m7uBBu"))}/>;
+const ElemEmoji = ()=><div {...__yak_mergeCssProp({
+        className: "🔥 mark"
+    }, /*YAK Extracted CSS:
+:global(.input_ElemEmoji_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("input_ElemEmoji_m7uBBu"))}/>;
 const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;

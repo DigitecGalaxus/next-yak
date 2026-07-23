@@ -73,6 +73,15 @@ const ElemBackslash = () => (
   />
 );
 
+const ElemEmoji = () => (
+  <div
+    css={css`
+      color: red;
+    `}
+    className="🔥 mark"
+  />
+);
+
 const Elem7 = () => <div className="no-css" />;
 
 const Elem8 = () => <div css={css``} className="empty-css" />;

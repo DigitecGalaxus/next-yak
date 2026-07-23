@@ -33,8 +33,17 @@ const Cross = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Cross_m7uBBu"), {
     "displayName": "Cross"
 });
+// An emoji is valid UTF-8, so a static merge copies it byte for byte
+const Emoji = /*YAK Extracted CSS:
+:global(.input_Emoji_m7uBBu) {
+  color: grey;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Emoji_m7uBBu"), {
+    "displayName": "Emoji"
+});
 export const Menu = ()=><>
     <li className={"input_Category_m7uBBu" + ("Food & Drink" === "Food & Drink" ? " input_Category___m7uBBu" : "")}>Food &amp; Drink</li>
     <kbd className={"input_Shortcut_m7uBBu" + ("a\\tb" === "a\\tb" ? " input_Shortcut___m7uBBu" : "")}>a\tb</kbd>
     <span className={"input_Cross_m7uBBu before:content-['\\00d7'] icon & more"}>x</span>
+    <span className={"input_Emoji_m7uBBu 🔥 mark"}>x</span>
   </>;

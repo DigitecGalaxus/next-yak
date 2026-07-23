@@ -134,6 +134,13 @@ export default function App() {
       <Card data-testid="escape-runtime" {...{ className: "mark before:content-['\\d7']" }}>
         runtime twin
       </Card>
+      {/* an emoji className must reach the DOM byte-exact, matching its twin */}
+      <Card data-testid="emoji" className="🔥 mark">
+        emoji merge
+      </Card>
+      <Card data-testid="emoji-runtime" {...{ className: "🔥 mark" }}>
+        runtime twin
+      </Card>
     </>
   );
 }
