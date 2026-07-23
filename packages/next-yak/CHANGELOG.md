@@ -1,5 +1,56 @@
 # next-yak
 
+## 9.7.0
+
+### Minor Changes
+
+- 5ea3955: Improve runtime render performance by collecting class names via string append instead of Set round-trips, rendering styled() composition chains as a single wrapper and skipping prop/style processing entirely for static components
+
+  Components with fully static styles no longer receive a default `style: {}` prop, and a user-passed `style` object is forwarded by reference instead of cloned on every render; components with dynamic styles are unchanged.
+
+- 5ea3955: The runtime no longer deduplicates class names, so the same class applied twice — e.g. an `atoms()` utility that is already on the element, or a shared `css` block toggled by two conditions — now appears twice in the class attribute. This is rendering-neutral, as CSS applies a class once however often it is listed.
+- 67b8875: Add JSX folding: a usage of a styled component declared in the same file compiles to a plain element, skipping the runtime wrapper. Rendering gets considerably faster, and nothing needs configuring.
+
+  ```tsx
+  const Icon = styled.span<{ $active?: boolean }>`
+    min-height: 24px;
+    ${({ $active }) =>
+      $active &&
+      css`
+        color: red;
+      `}
+  `;
+  const App = () => <Icon $active={on} />;
+
+  // compiles to
+  const App = () => (
+    <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />
+  );
+  ```
+
+  What folds:
+
+  - A fully static component folds to its plain element.
+  - `styled(Component)` folds to the wrapped component, which may be imported.
+  - A fully static `styled(Parent)` chain collapses to the base element, at any depth, with the class names merged parent-first. The declaration flattens too, so an exported chain ships one wrapper and its unused base components drop out.
+
+  What keeps the runtime path: spread props, a `theme` prop, dynamic css values, `.attrs()`, and components not declared as a top-level `const`. A chain also stays a chain when its parent is dynamic, imported, or bound with `let`.
+
+  Set `foldStatic: false` to turn folding off; it also gates the css prop fold.
+
+  Caveats: a folded usage is no longer a component, so it does not appear in React DevTools or component stacks, and `child.type === Icon` no longer matches it. Foreign `$props` on a folded usage are forwarded to the element, not stripped. Prop expressions still run the same number of times, in the same order, as the original JSX — except in code React's purity rule already forbids: an unread `$prop` is dropped without running, and a getter behind a member read (`$a={obj.x}`) can fire once per condition. The FAQ has the full rules.
+
+### Patch Changes
+
+- 7d9d0dc: Fix the css prop dropping spread props: `<div css={css`...`} {...props} />` now forwards `onClick`, `aria-*` and every other prop to the element instead of keeping only `className` and `style`.
+- Updated dependencies [011ace5]
+- Updated dependencies [eebca6f]
+- Updated dependencies [eebca6f]
+- Updated dependencies [eebca6f]
+- Updated dependencies [06a6c95]
+- Updated dependencies [67b8875]
+  - yak-swc@9.7.0
+
 ## 9.6.0
 
 ### Minor Changes
