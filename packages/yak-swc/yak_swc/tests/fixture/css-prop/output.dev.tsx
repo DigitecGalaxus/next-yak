@@ -47,6 +47,20 @@ const Elem6 = ()=><div {...__yak_mergeCssProp({
   font-size: 16px;
 }
 */ /*#__PURE__*/ css("input_Elem6_m7uBBu"))}/>;
+const ElemEntity = ()=><div {...__yak_mergeCssProp({
+        className: "Food & Drink"
+    }, /*YAK Extracted CSS:
+:global(.input_ElemEntity_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("input_ElemEntity_m7uBBu"))}/>;
+const ElemBackslash = ()=><div {...__yak_mergeCssProp({
+        className: "before:content-['\\2713']"
+    }, /*YAK Extracted CSS:
+:global(.input_ElemBackslash_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("input_ElemBackslash_m7uBBu"))}/>;
 const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;

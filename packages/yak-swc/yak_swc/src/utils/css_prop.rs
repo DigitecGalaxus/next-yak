@@ -9,7 +9,7 @@ use swc_core::{
   ecma::ast::{
     BinaryOp, CallExpr, Callee, Expr, ExprOrSpread, Ident, JSXAttr, JSXAttrName, JSXAttrOrSpread,
     JSXAttrValue, JSXExpr, JSXExprContainer, JSXOpeningElement, KeyValueProp, Lit, ObjectLit, Prop,
-    PropName, PropOrSpread, SpreadElement,
+    PropName, PropOrSpread, SpreadElement, Str,
   },
 };
 
@@ -255,7 +255,14 @@ impl CSSProp {
       .as_ref()
       .ok_or(TransformError::MissingAttributeValue(span))
       .and_then(|v| match v {
-        JSXAttrValue::Str(str_lit) => Ok(Box::new(Expr::Lit(Lit::Str(str_lit.clone())))),
+        // Drop `raw`: a JSX attribute raw is JSX-encoded text (HTML entities stay
+        // encoded, backslashes are literal). Moved into JS expression position it
+        // would be printed verbatim, so emit from the decoded `value` instead.
+        JSXAttrValue::Str(str_lit) => Ok(Box::new(Expr::Lit(Lit::Str(Str {
+          span: str_lit.span,
+          value: str_lit.value.clone(),
+          raw: None,
+        })))),
         JSXAttrValue::JSXExprContainer(container) => match &container.expr {
           JSXExpr::Expr(expr) => Ok(expr.clone()),
           _ => Err(TransformError::InvalidJSXEmptyExpr(container.span)),
