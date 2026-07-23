@@ -238,11 +238,7 @@ function normalize(code: string): string {
   return transformSync(code, BASE_SWC_OPTIONS).code;
 }
 
-function runWasmTransform(
-  input: string,
-  options: PluginOptions,
-  foldStatic: boolean,
-): string {
+function runWasmTransform(input: string, options: PluginOptions, foldStatic: boolean): string {
   return transformSync(input, {
     ...BASE_SWC_OPTIONS,
     jsc: {
