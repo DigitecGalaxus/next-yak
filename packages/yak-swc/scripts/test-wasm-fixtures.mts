@@ -23,6 +23,14 @@ type PluginOptions = {
   importMode: ImportMode;
 };
 
+// Mirrors the Rust fixture harness (`FixtureOptions` in lib.rs): folding is off
+// by default here so the bulk of the suite covers the runtime transform; a
+// fixture opts into folding with `{"foldStatic": true}`. This is independent of
+// the shipped `Config` default (on).
+type FixtureOptions = {
+  foldStatic: boolean;
+};
+
 type Mode = {
   name: string;
   output: string;
@@ -135,6 +143,7 @@ fixtures.sort();
 for (const fixtureName of fixtures) {
   const fixtureDir = join(fixtureRoot, fixtureName);
   const input = readFileSync(join(fixtureDir, "input.tsx"), "utf8");
+  const { foldStatic } = readFixtureOptions(fixtureDir);
 
   for (const { name: modeName, output, stderr, options } of MODES) {
     const outputPath = join(fixtureDir, output);
@@ -152,7 +161,7 @@ for (const fixtureName of fixtures) {
     if (existsSync(stderrPath)) {
       stats.diagnostics++;
       try {
-        runWasmTransform(input, options);
+        runWasmTransform(input, options, foldStatic);
         failures.push(
           `${label}: native records a diagnostic (${stderr}) but the wasm transform ` +
             `succeeded without throwing — the error was dropped across the wasm ABI`,
@@ -170,7 +179,7 @@ for (const fixtureName of fixtures) {
 
     let actual: string;
     try {
-      actual = runWasmTransform(input, options);
+      actual = runWasmTransform(input, options, foldStatic);
     } catch (error) {
       failures.push(`${label}: wasm transform threw unexpectedly\n${firstLine(error)}`);
       continue;
@@ -229,7 +238,11 @@ function normalize(code: string): string {
   return transformSync(code, BASE_SWC_OPTIONS).code;
 }
 
-function runWasmTransform(input: string, options: PluginOptions): string {
+function runWasmTransform(
+  input: string,
+  options: PluginOptions,
+  foldStatic: boolean,
+): string {
   return transformSync(input, {
     ...BASE_SWC_OPTIONS,
     jsc: {
@@ -240,6 +253,7 @@ function runWasmTransform(input: string, options: PluginOptions): string {
             wasmPath,
             {
               basePath: "path",
+              foldStatic,
               ...options,
             },
           ],
@@ -247,6 +261,38 @@ function runWasmTransform(input: string, options: PluginOptions): string {
       },
     },
   }).code;
+}
+
+// Reads the optional per-fixture `config.json`, mirroring the Rust harness:
+// folding defaults to off, `{"foldStatic": true}` opts in. Malformed JSON,
+// a non-object, a non-boolean value or any unknown key fails loudly - the same
+// spirit as the Rust `deny_unknown_fields` plus parse panic, never a silent
+// default.
+function readFixtureOptions(fixtureDir: string): FixtureOptions {
+  const configPath = join(fixtureDir, "config.json");
+  if (!existsSync(configPath)) {
+    return { foldStatic: false };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(configPath, "utf8"));
+  } catch (error) {
+    throw new Error(`invalid fixture config.json: ${configPath}: ${firstLine(error)}`);
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`invalid fixture config.json: ${configPath}: expected a JSON object`);
+  }
+  const options: FixtureOptions = { foldStatic: false };
+  for (const [key, value] of Object.entries(parsed)) {
+    if (key !== "foldStatic") {
+      throw new Error(`invalid fixture config.json: ${configPath}: unknown key "${key}"`);
+    }
+    if (typeof value !== "boolean") {
+      throw new Error(`invalid fixture config.json: ${configPath}: foldStatic must be a boolean`);
+    }
+    options.foldStatic = value;
+  }
+  return options;
 }
 
 function firstLine(error: unknown): string {
