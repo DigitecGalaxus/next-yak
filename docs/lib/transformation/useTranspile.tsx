@@ -23,6 +23,7 @@ export type TranspileInput = {
   options?: {
     minify?: boolean;
     showComments?: boolean;
+    foldStatic?: boolean;
   };
 };
 

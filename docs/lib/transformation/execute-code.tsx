@@ -96,6 +96,7 @@ export async function transformAll(
   options?: {
     minify?: boolean;
     showComments?: boolean;
+    foldStatic?: boolean;
   },
 ) {
   const otherFilesTransformed: {
@@ -185,6 +186,7 @@ async function transform(
   options?: {
     minify?: boolean;
     showComments?: boolean;
+    foldStatic?: boolean;
   },
 ) {
   const transformedCode = transformCode(
@@ -207,6 +209,7 @@ async function transform(
     },
     {
       minify: options?.minify ?? false, // minify the class names and don't add display names
+      foldStatic: options?.foldStatic ?? true,
     },
   ).code;
 
@@ -227,6 +230,7 @@ async function transform(
     },
     {
       minify: options?.minify ?? false, // minify the class names and don't add display names
+      foldStatic: options?.foldStatic ?? true,
     },
   ).code;
 
