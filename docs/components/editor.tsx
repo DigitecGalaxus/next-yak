@@ -37,6 +37,7 @@ export default dynamic(
       const compiledPanelRef = useRef<PanelImperativeHandle>(null);
       const [minify, setMinify] = useState(false);
       const [showComments, setShowComments] = useState(true);
+      const [foldStatic, setFoldStatic] = useState(true);
       const initialInput = useMemo(
         () => ({
           mainFile: {
@@ -62,28 +63,32 @@ export default dynamic(
 
       const [transpileResult, transpile] = useTranspile(initialInput);
 
-      const updateCode = useCallback((minify?: boolean, showComments?: boolean) => {
-        const code = modelRefs.current.reduce((acc, model) => {
-          acc[model.uri] = model.getValue();
-          return acc;
-        }, {});
-        transpile({
-          mainFile: {
-            name: "index",
-            content: code["file:///index.tsx"],
-          },
-          additionalFiles: Object.entries(code)
-            .filter(([key]) => key !== "file:///index.tsx")
-            .map(([key, value]) => ({
-              name: key.replace("file:///", "").replace(".tsx", ""),
-              content: String(value),
-            })),
-          options: {
-            minify,
-            showComments,
-          },
-        });
-      }, []);
+      const updateCode = useCallback(
+        (minify?: boolean, showComments?: boolean, foldStatic?: boolean) => {
+          const code = modelRefs.current.reduce((acc, model) => {
+            acc[model.uri] = model.getValue();
+            return acc;
+          }, {});
+          transpile({
+            mainFile: {
+              name: "index",
+              content: code["file:///index.tsx"],
+            },
+            additionalFiles: Object.entries(code)
+              .filter(([key]) => key !== "file:///index.tsx")
+              .map(([key, value]) => ({
+                name: key.replace("file:///", "").replace(".tsx", ""),
+                content: String(value),
+              })),
+            options: {
+              minify,
+              showComments,
+              foldStatic,
+            },
+          });
+        },
+        [],
+      );
 
       const readableTranspiledResult = {
         [transpileResult.transpiledMainFile.name]: transpileResult.transpiledMainFile,
@@ -110,7 +115,7 @@ export default dynamic(
               label="Minify classes"
               checked={minify}
               onCheckedChange={(val) => {
-                updateCode(val, showComments);
+                updateCode(val, showComments, foldStatic);
                 setMinify(val);
               }}
             />
@@ -118,8 +123,16 @@ export default dynamic(
               label="Show comments"
               checked={showComments}
               onCheckedChange={(val) => {
-                updateCode(minify, val);
+                updateCode(minify, val, foldStatic);
                 setShowComments(val);
+              }}
+            />
+            <Toggle
+              label="Fold static"
+              checked={foldStatic}
+              onCheckedChange={(val) => {
+                updateCode(minify, showComments, val);
+                setFoldStatic(val);
               }}
             />
           </div>
