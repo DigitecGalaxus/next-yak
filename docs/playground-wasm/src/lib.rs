@@ -108,7 +108,7 @@ fn yak_pass(
                 .into(),
             false, // suppress_deprecation_warnings
             false, // react_refresh_reg
-            true,  // fold_static
+            config.fold_static.unwrap_or(true),
             false, // strict_css_prop
         );
         program.visit_mut_with(&mut transformer);
@@ -190,6 +190,8 @@ pub struct YakConfig {
     #[tsify(optional)]
     minify: Option<bool>,
     #[tsify(optional)]
+    fold_static: Option<bool>,
+    #[tsify(optional)]
     import_mode: Option<CssImportConfig>,
 }
 
@@ -197,6 +199,7 @@ impl Default for YakConfig {
     fn default() -> Self {
         Self {
             minify: Default::default(),
+            fold_static: Default::default(),
             import_mode: Some(CssImportConfig {
                 value:
                     "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"
