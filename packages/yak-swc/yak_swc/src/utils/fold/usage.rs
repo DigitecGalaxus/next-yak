@@ -487,7 +487,10 @@ impl FoldVisitor<'_> {
           // scan the raw WTF-8 bytes: `\` and `"` are ASCII, so this never
           // decodes the value and leaves any emoji or surrogate untouched
           debug_assert!(
-            !class_name.as_bytes().iter().any(|&b| b == b'\\' || b == b'"'),
+            !class_name
+              .as_bytes()
+              .iter()
+              .any(|&b| b == b'\\' || b == b'"'),
             "a folded class name must carry no backslash or quote: {class_name:?}"
           );
           JSXAttrValue::Str(str_lit(class_name, DUMMY_SP))
