@@ -25,9 +25,11 @@ test(
     await expect(entity).toHaveClass(/(^|\s)Food & Drink($|\s)/);
     await expect(entity).toHaveCSS("color", "rgb(0, 0, 255)");
 
-    // Backslash className must reach the DOM as a single literal backslash
+    // Backslash className reaches the DOM as a single literal backslash
+    // (a non-digit after the backslash keeps octal-strict scanners out of play)
     const backslash = page.getByTestId("backslash-classname");
-    await expect(backslash).toHaveClass(/before:content-\['\\2713'\]/);
+    await expect(backslash).toHaveClass(/before:content-\['\\q'\]/);
+    await expect(backslash).not.toHaveClass(/before:content-\['\\\\q'\]/);
     await expect(backslash).toHaveCSS("color", "rgb(0, 0, 255)");
 
     // Spread props (onClick, children) survive mergeCssProp — clicking works

@@ -66,7 +66,7 @@ export default function App({ dummyBool = true }) {
       </div>
       <div
         data-testid="backslash-classname"
-        className="before:content-['\2713']"
+        className="before:content-['\q']"
         css={css`
           color: blue;
         `}
