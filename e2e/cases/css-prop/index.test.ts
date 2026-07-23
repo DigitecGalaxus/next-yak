@@ -19,5 +19,12 @@ test(
     await expect(parent).toHaveCSS("color", "rgb(238, 130, 238)");
     const child = page.getByTestId("child");
     await expect(child).toHaveCSS("color", "rgb(0, 128, 0)");
+
+    // Spread props (onClick, children) survive mergeCssProp — clicking works
+    const spreadButton = page.getByTestId("spread-button");
+    await expect(spreadButton).toHaveCSS("padding", "8px");
+    await expect(spreadButton).toHaveText("clicks: 0");
+    await spreadButton.click();
+    await expect(spreadButton).toHaveText("clicks: 1");
   }),
 );

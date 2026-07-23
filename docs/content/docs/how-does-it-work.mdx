@@ -401,7 +401,7 @@ Folded JSX usages from the compile time step skip this runtime completely, they 
 
 The runtime is essentially a type-safe `classnames` utility. It takes the generated class name strings and the component's props, evaluates the dynamic functions (conditionals, CSS variable values), and returns:
 
-- The final `className` string (merging base classes and conditional classes)
+- The final `className` string (merging any incoming `className`, base classes and conditional classes)
 - An optional `style` object (setting CSS variable values from props)
 
 Since it has no side effects, it works in both server and client components.
@@ -412,7 +412,8 @@ Here is a simplified version of what `__yak.__yak_button` does:
 function __yak_button(className, ...dynamicParts) {
   // returns a React component
   return (props) => {
-    const classNames = new Set([className]);
+    const classNames = new ClassNames(props.className);
+    classNames.add(className);
     const style = {};
 
     for (const part of dynamicParts) {
@@ -420,7 +421,7 @@ function __yak_button(className, ...dynamicParts) {
         // conditional css block, e.g.:
         // (props) => props.$primary && css("Button_primary")
         // css("Button_primary") returns a function that
-        // adds "Button_primary" to the classNames set
+        // adds "Button_primary" to the class names
         const result = part(props);
         if (result) result(props, classNames, style);
       } else if (part?.style) {
@@ -432,12 +433,12 @@ function __yak_button(className, ...dynamicParts) {
       }
     }
 
-    return <button className={[...classNames].join(" ")} style={style} />;
+    return <button className={classNames.value} style={style} />;
   };
 }
 ```
 
-When the component is rendered, the runtime passes the received props through all the dynamic functions, collects the resulting class names into a `Set` and CSS variable values into a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
+When the component is rendered, the runtime passes the received props through all the dynamic functions, collects the resulting class names into a single string and CSS variable values into a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
 
 ## Context
 

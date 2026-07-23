@@ -1,4 +1,5 @@
-import { css, CSSInterpolation, yakComponentSymbol } from "./cssLiteral.js";
+import { css, CSSInterpolation, ClassNames, yakComponentSymbol } from "./cssLiteral.js";
+import * as INTERNAL from "./internals/propMarkers.js";
 import React from "react";
 import type {
   Attrs,
@@ -19,12 +20,6 @@ import type {
 import { useTheme } from "next-yak/context";
 import type { YakTheme } from "./context/index.tsx";
 import { mergeClassNames } from "./internals/mergeClassNames.js";
-
-/**
- * This Symbol is a fake theme which was used instead of the real one from the context
- * to speed up rendering
- */
-const noTheme: YakTheme = {};
 
 //
 // The `styled()` API without `styled.` syntax
@@ -53,21 +48,42 @@ const styledFactory: StyledFn = (Component) =>
  */
 export const styled = styledFactory as Styled;
 
+/**
+ * Real shape of the yakComponentSymbol tuple, which the public `YakComponent`
+ * keeps opaque as `[unknown, ...]`
+ */
+type YakComponentInternals = [
+  self: React.FunctionComponent,
+  attrsFn: AttrsFunction<any, any, any> | undefined,
+  styleProcessor: RuntimeStyleProcessor<unknown>,
+  target: React.FunctionComponent | string,
+];
+
 const yakStyled: StyledInternal = (Component, attrs) => {
   const isYakComponent = typeof Component !== "string" && yakComponentSymbol in Component;
 
   // if the component that is wrapped is a yak component, we can extract it to render the underlying component directly
   // and we can also extract the attrs function and the dynamic style function to merge it with the current attrs function (or dynamic style function)
   // so that the sequence of the attrs functions is preserved
-  const [parentYakComponent, parentAttrsFn, parentRuntimeStylesFn] = isYakComponent
+  const [, parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? (Component[yakComponentSymbol] as [
         YakComponent<unknown>,
         ExtractAttrsFunction<typeof attrs>,
         RuntimeStyleProcessor<unknown>,
+        React.FunctionComponent | string,
       ])
     : [];
 
+  // the ultimate render target of the whole styled(styled(...)) chain:
+  // attrs and style processors are already merged at construction time, so
+  // a chain of N levels renders the target directly in ONE wrapper instead
+  // of re-entering every parent wrapper per element per render
+  const targetComponent = (isYakComponent ? parentTarget : Component) as
+    | React.FunctionComponent
+    | string;
+
   const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
+  const staticAttrs = (mergedAttrsFn as StaticAttrsCarrier | undefined)?.[INTERNAL.STATIC_ATTRS];
 
   return (styles, ...values) => {
     // combine all interpolated logic into a single function
@@ -81,25 +97,49 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       parentRuntimeStylesFn,
     );
     const Yak: React.FunctionComponent = (props) => {
-      // if the css component does not require arguments
-      // it can be called without arguments and we skip calling useTheme()
-      //
-      // `attrsFn || getRuntimeStyles.length` is NOT against the rule of hooks as
-      // getRuntimeStyles and attrsFn are constants defined outside of the component
-      //
-      // for example
-      //
-      // const Button = styled.button`color: red;`
-      //       ^ does not need to have access to theme, so we skip calling useTheme()
-      //
-      // const Button = styled.button`${({ theme }) => css`color: ${theme.color};`}`
-      //       ^ must be have access to theme, so we call useTheme()
-      const theme = mergedAttrsFn || runtimeStylesFn.length ? useTheme() : noTheme;
+      // fast path for components that contribute the same thing on every
+      // render — no attrs at all, or a constant `.attrs({...})` which cannot
+      // read the theme — and no dynamic styles. Contributes the chain's class
+      // names and strips $-props; skips theme lookup, prop spreading and style
+      // cloning entirely (this is NOT against the rule of hooks — the condition
+      // is constant for the lifetime of the component)
+      if ((!mergedAttrsFn || staticAttrs) && !runtimeStyleProcessor.$dynamic) {
+        // props that already went through a yak wrapper keep their processed
+        // className, and `source` then aliases `props` — so the class names are
+        // written to the fresh, filtered object rather than back into props
+        const source = (
+          staticAttrs && !(INTERNAL.ATTRS_MERGED in props)
+            ? combineProps(
+                {
+                  ...(props as { className?: string; style?: React.CSSProperties }),
+                  // mark the props as processed
+                  [INTERNAL.ATTRS_MERGED]: true,
+                },
+                staticAttrs,
+              )
+            : props
+        ) as { className?: string; style?: React.CSSProperties };
+        const filteredProps = removeNonDomProperties(source) as {
+          className?: string;
+        };
+        if (!(INTERNAL.RUNTIME_STYLES_DONE in source)) {
+          const classNames = new ClassNames(source.className);
+          runtimeStyleProcessor(source, classNames, undefined as unknown as React.CSSProperties);
+          filteredProps.className = classNames.value || undefined;
+        }
+        const Target = targetComponent as React.ElementType;
+        return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
+      }
+
+      // attrs functions and dynamic style functions receive the theme —
+      // fully static components take the fast path above and never read the
+      // theme context
+      const theme = useTheme();
 
       // The first components which is not wrapped in a yak component will execute all attrs functions
       // starting from the innermost yak component to the outermost yak component (itself)
       const combinedProps =
-        "$__attrs" in props
+        INTERNAL.ATTRS_MERGED in props
           ? ({
               theme,
               ...props,
@@ -117,28 +157,32 @@ const yakStyled: StyledInternal = (Component, attrs) => {
                   style?: React.CSSProperties;
                 }),
                 // mark the props as processed
-                $__attrs: true,
+                [INTERNAL.ATTRS_MERGED]: true,
               },
               mergedAttrsFn?.({ theme, ...(props as any) }),
             );
 
-      const classNames = new Set<string>(
-        "className" in combinedProps ? combinedProps.className?.split(" ") : [],
-      );
-      const styles = {
-        ...("style" in combinedProps ? combinedProps.style : {}),
-      };
-
       // execute all functions inside the style literal if not already executed
       // e.g. styled.button`color: ${props => props.color};`
-      if (!("$__runtimeStylesProcessed" in combinedProps)) {
-        runtimeStyleProcessor(combinedProps, classNames, styles);
+      //
+      // inner levels of a styled(Component) chain receive already-processed
+      // props and skip this entirely — no collector, no style clone
+      if (!(INTERNAL.RUNTIME_STYLES_DONE in combinedProps)) {
+        const classNames = new ClassNames(combinedProps.className);
+        // static processors never write style values, so the incoming style
+        // object can be passed through without a defensive copy
+        const styles = runtimeStyleProcessor.$dynamic
+          ? { ...combinedProps.style }
+          : combinedProps.style;
+        runtimeStyleProcessor(combinedProps, classNames, styles as React.CSSProperties);
         // @ts-expect-error this is not typed correctly
-        combinedProps.$__runtimeStylesProcessed = true;
-      }
+        combinedProps[INTERNAL.RUNTIME_STYLES_DONE] = true;
 
-      combinedProps.className = Array.from(classNames).join(" ") || undefined;
-      combinedProps.style = styles;
+        combinedProps.className = classNames.value || undefined;
+        if (styles !== combinedProps.style) {
+          combinedProps.style = styles;
+        }
+      }
 
       // delete the yak theme from the props
       // this must happen after the runtimeStyles are calculated
@@ -147,32 +191,25 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       const propsBeforeFiltering =
         themeAfterAttr === theme ? combinedPropsWithoutTheme : combinedProps;
 
-      // remove all props that start with a $ sign for string components e.g. "button" or "div"
-      // so that they are not passed to the DOM element
-      const filteredProps = !isYakComponent
-        ? removeNonDomProperties(propsBeforeFiltering)
-        : propsBeforeFiltering;
+      // remove all props that start with a $ sign so they reach neither DOM
+      // elements nor custom components — this also strips the internal
+      // INTERNAL.ATTRS_MERGED/INTERNAL.RUNTIME_STYLES_DONE markers, which must not cross a
+      // custom component boundary (a custom component may render another yak
+      // component that has to process its own attrs/styles)
+      const filteredProps = removeNonDomProperties(propsBeforeFiltering);
 
-      return parentYakComponent ? (
-        // if the styled(Component) syntax is used and the component is a yak component
-        // we can call the yak function directly without running through react createElement
-        parentYakComponent(filteredProps)
-      ) : (
-        // if the final component is a string component e.g. styled("div") or a custom non yak fn e.g. styled(MyComponent)
-        <Component
-          {...(filteredProps as React.ComponentProps<Exclude<typeof Component, string>>)}
-        />
-      );
+      // render the chain's target directly — parent wrappers contribute only
+      // their (already merged) attrs and style processors
+      const Target = targetComponent as React.ElementType;
+      return <Target {...(filteredProps as React.ComponentProps<typeof Target>)} />;
     };
 
-    // Assign the yakComponentSymbol directly without forwardRef
-    return Object.assign(Yak, {
-      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor] as [
-        unknown,
-        unknown,
-        unknown,
-      ],
-    });
+    // Direct write instead of Object.assign (faster & smaller)
+    const taggedYak = Yak as React.FunctionComponent & {
+      [yakComponentSymbol]: YakComponentInternals;
+    };
+    taggedYak[yakComponentSymbol] = [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent];
+    return taggedYak;
   };
 };
 
@@ -264,8 +301,29 @@ const buildRuntimeAttrsProcessor = <
     };
   }
 
+  // A constant `.attrs({...})` is wrapped into `() => attrs`, which makes it
+  // indistinguishable from `.attrs(props => ...)` at render time — so record the
+  // object it will always return. Only the wrapper closure is tagged, never a
+  // user-supplied attrs function.
+  //
+  // A `styled(StyledWithAttrs).attrs({...})` chain merges its levels per render
+  // and is not tagged, which keeps a mutation of an attrs object observable
+  if (ownAttrsFn && typeof attrs !== "function") {
+    return Object.assign(ownAttrsFn, {
+      [INTERNAL.STATIC_ATTRS]: attrs,
+    } as StaticAttrsCarrier);
+  }
+
   return ownAttrsFn || parentAttrsFn;
 };
+
+/**
+ * The constant object a `.attrs({...})` processor always returns
+ *
+ * Kept local to this module — like the `yakComponentSymbol` tuple, it is an
+ * implementation detail and must not reach the public `AttrsFunction` type
+ */
+type StaticAttrsCarrier = { [K in typeof INTERNAL.STATIC_ATTRS]?: object };
 
 /**
  * Merges the runtime style function of the current component with the runtime style function of the parent component
@@ -279,10 +337,18 @@ const buildRuntimeStylesProcessor = <T,>(
   parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
 ) => {
   if (runtimeStylesFn && parentRuntimeStylesFn) {
-    const combined: RuntimeStyleProcessor<T> = (props, classNames, style) => {
-      parentRuntimeStylesFn(props, classNames, style);
-      runtimeStylesFn(props, classNames, style);
-    };
+    const combined: RuntimeStyleProcessor<T> = Object.assign(
+      (
+        props: T,
+        classNames: Parameters<RuntimeStyleProcessor<T>>[1],
+        style: React.CSSProperties,
+      ) => {
+        parentRuntimeStylesFn(props, classNames, style);
+        runtimeStylesFn(props, classNames, style);
+      },
+      // the chain is dynamic if any level is dynamic
+      { $dynamic: runtimeStylesFn.$dynamic || parentRuntimeStylesFn.$dynamic },
+    );
     return combined;
   }
   return runtimeStylesFn || parentRuntimeStylesFn;
