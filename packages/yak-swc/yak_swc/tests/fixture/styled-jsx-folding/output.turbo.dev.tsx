@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X0V4dGVuZGVkSW1wb3J0X203dUJCdSB7CiAgY29sb3I6IHNpbHZlcjsKfS5pbnB1dF9FeHRlbmRlZExvd2VyY2FzZV9tN3VCQnUgewogIGNvbG9yOiBnb2xkOwp9LmlucHV0X0V4dGVuZGVkTXV0YWJsZV9tN3VCQnUgewogIGNvbG9yOiBpdm9yeTsKfS5pbnB1dF9NdXRhYmxlX203dUJCdSB7CiAgY29sb3I6IHBpbms7Cn0uaW5wdXRfUmVkZWNsYXJlZF9tN3VCQnUgewogIGNvbG9yOiBwZXJ1Owp9LmlucHV0X1JlZGVjbGFyZWRfbTd1QkJ1LTAxIHsKICBjb2xvcjogcGx1bTsKfS5pbnB1dF9MYXRlX203dUJCdSB7CiAgY29sb3I6IGdyYXk7Cn0uaW5wdXRfTWVtb2l6ZWRfbTd1QkJ1IHsKICBjb2xvcjogdGVhbDsKfS5pbnB1dF9DYXN0X203dUJCdSB7CiAgY29sb3I6IGJyb3duOwp9LmlucHV0X0JveFdpdGhNaXhpbl9tN3VCQnUgewogIGJhY2tncm91bmQ6IHdoaXRlOwogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfT3B0aW1pemFibGVfbTd1QkJ1IHsKICBjb2xvcjogb3JhbmdlOwp9LmlucHV0X1JlYWN0TWVtb2l6ZWRfbTd1QkJ1IHsKICBjb2xvcjogb2xpdmU7Cn0uaW5wdXRfQ29uZGl0aW9uYWxfbTd1QkJ1IHsKICBjb2xvcjogY3JpbXNvbjsKfS5pbnB1dF9Db25kaXRpb25hbF9tN3VCQnUtMDEgewogIGNvbG9yOiBuYXZ5Owp9";
+import "data:text/css;base64,LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0JveF9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RpdGxlX203dUJCdSB7CiAgZm9udC1zaXplOiAycmVtOwp9LmlucHV0X0R5bmFtaWNfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfRHluYW1pY19fY29sb3JfbTd1QkJ1KTsKfS5pbnB1dF9XaXRoQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRXh0ZW5kZWRfbTd1QkJ1IHsKICBjb2xvcjogeWVsbG93Owp9LmlucHV0X0V4dGVuZGVkVHdpY2VfbTd1QkJ1IHsKICBjb2xvcjogY29yYWw7Cn0uaW5wdXRfRmFuY3lUaXRsZV9tN3VCQnUgewogIGxldHRlci1zcGFjaW5nOiAxcHg7Cn0uaW5wdXRfRXh0ZW5kZWRJbXBvcnRfbTd1QkJ1IHsKICBjb2xvcjogc2lsdmVyOwp9LmlucHV0X1RvZ2dsZUJhc2VfX1wkb25fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X09mRHluYW1pY19tN3VCQnUgewogIGNvbG9yOiB0ZWFsOwp9LmlucHV0X09mQXR0cnNfbTd1QkJ1IHsKICBjb2xvcjogbWFyb29uOwp9LmlucHV0X0V4dGVuZGVkTG93ZXJjYXNlX203dUJCdSB7CiAgY29sb3I6IGdvbGQ7Cn0uaW5wdXRfRXh0ZW5kZWRNdXRhYmxlX203dUJCdSB7CiAgY29sb3I6IGl2b3J5Owp9LmlucHV0X011dGFibGVfbTd1QkJ1IHsKICBjb2xvcjogcGluazsKfS5pbnB1dF9PZkxldF9tN3VCQnUgewogIGNvbG9yOiBraGFraTsKfS5pbnB1dF9PZkxhdGVyX203dUJCdSB7CiAgY29sb3I6IHdoZWF0Owp9LmlucHV0X0xhdGVyX203dUJCdSB7CiAgY29sb3I6IGxpbmVuOwp9LmlucHV0X1JlZGVjbGFyZWRfbTd1QkJ1IHsKICBjb2xvcjogcGVydTsKfS5pbnB1dF9SZWRlY2xhcmVkX203dUJCdS0wMSB7CiAgY29sb3I6IHBsdW07Cn0uaW5wdXRfTGF0ZV9tN3VCQnUgewogIGNvbG9yOiBncmF5Owp9LmlucHV0X01lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IHRlYWw7Cn0uaW5wdXRfQ2FzdF9tN3VCQnUgewogIGNvbG9yOiBicm93bjsKfS5pbnB1dF9Cb3hXaXRoTWl4aW5fbTd1QkJ1IHsKICBiYWNrZ3JvdW5kOiB3aGl0ZTsKICBjb2xvcjogcmVkOwp9LmlucHV0X09wdGltaXphYmxlX203dUJCdSB7CiAgY29sb3I6IG9yYW5nZTsKfS5pbnB1dF9SZWFjdE1lbW9pemVkX203dUJCdSB7CiAgY29sb3I6IG9saXZlOwp9LmlucHV0X0NvbmRpdGlvbmFsX203dUJCdSB7CiAgY29sb3I6IGNyaW1zb247Cn0uaW5wdXRfQ29uZGl0aW9uYWxfbTd1QkJ1LTAxIHsKICBjb2xvcjogbmF2eTsKfQ==";
 const someRef = {
     current: null
 } as any;
@@ -54,21 +54,61 @@ const WithAttrs = /*YAK Extracted CSS:
 })("input_WithAttrs_m7uBBu"), {
     "displayName": "WithAttrs"
 });
-// folds to the wrapped component: <Extended> becomes <Card className="...">
+// collapses: parent is a same-file static component
 const Extended = /*YAK Extracted CSS:
 .input_Extended_m7uBBu {
   color: yellow;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Card)("input_Extended_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu input_Extended_m7uBBu"), {
     "displayName": "Extended"
 });
-// folds although the wrapped component comes from another file
+// collapses: three-level chain, classes merged parent-first
+const ExtendedTwice = /*YAK Extracted CSS:
+.input_ExtendedTwice_m7uBBu {
+  color: coral;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu input_Extended_m7uBBu input_ExtendedTwice_m7uBBu"), {
+    "displayName": "ExtendedTwice"
+});
+// collapses: exported chain keeps its folded declaration
+export const FancyTitle = /*YAK EXPORTED STYLED:FancyTitle:input_FancyTitle_m7uBBu*//*YAK Extracted CSS:
+.input_FancyTitle_m7uBBu {
+  letter-spacing: 1px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_h1("input_Title_m7uBBu input_FancyTitle_m7uBBu"), {
+    "displayName": "FancyTitle"
+});
+// folds to the wrapped component: a cross-file parent never collapses
 const ExtendedImport = /*YAK Extracted CSS:
 .input_ExtendedImport_m7uBBu {
   color: silver;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ImportedCard)("input_ExtendedImport_m7uBBu"), {
     "displayName": "ExtendedImport"
+});
+// dynamic: class-toggling condition
+const ToggleBase = /*YAK Extracted CSS:
+.input_ToggleBase__\$on_m7uBBu {
+  color: red;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_ToggleBase_m7uBBu", ({ $on })=>$on && /*#__PURE__*/ css("input_ToggleBase__$on_m7uBBu")), {
+    "displayName": "ToggleBase"
+});
+// folds to the wrapped component: a dynamic parent never collapses
+const OfDynamic = /*YAK Extracted CSS:
+.input_OfDynamic_m7uBBu {
+  color: teal;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ToggleBase)("input_OfDynamic_m7uBBu"), {
+    "displayName": "OfDynamic"
+});
+// folds to the wrapped component: an attrs parent never collapses
+const OfAttrs = /*YAK Extracted CSS:
+.input_OfAttrs_m7uBBu {
+  color: maroon;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(WithAttrs)("input_OfAttrs_m7uBBu"), {
+    "displayName": "OfAttrs"
 });
 // bails: a lowercase name would be parsed as an intrinsic element in JSX
 const lowercaseComponent = (p: any)=><i {...p}/>;
@@ -95,6 +135,30 @@ let Mutable = /*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Mutable_m7uBBu"), {
     "displayName": "Mutable"
+});
+// bails: a let parent keeps the whole chain on the runtime path
+const OfLet = /*YAK Extracted CSS:
+.input_OfLet_m7uBBu {
+  color: khaki;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Mutable)("input_OfLet_m7uBBu"), {
+    "displayName": "OfLet"
+});
+// bails: parent declared after the child (const temporal dead zone) - collapsing
+// would turn the guaranteed ReferenceError into silently working output
+const OfLater = /*YAK Extracted CSS:
+.input_OfLater_m7uBBu {
+  color: wheat;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Later)("input_OfLater_m7uBBu"), {
+    "displayName": "OfLater"
+});
+const Later = /*YAK Extracted CSS:
+.input_Later_m7uBBu {
+  color: linen;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Later_m7uBBu"), {
+    "displayName": "Later"
 });
 // bails: var redeclaration - both declarations share a single binding
 var Redeclared = /*YAK Extracted CSS:
@@ -168,8 +232,13 @@ const Optimizable = ({ active }: {
     </div>
     <h1 className="input_Title_m7uBBu">folds</h1>
     <div className="input_Cast_m7uBBu">folds through the type cast</div>
-    <Card className="input_Extended_m7uBBu">folds to the wrapped component</Card>
-    <Card className="input_Extended_m7uBBu user">merges into the wrapped component</Card>
+    <div className="input_Card_m7uBBu input_Extended_m7uBBu">collapses to a plain div</div>
+    <div className="input_Card_m7uBBu input_Extended_m7uBBu user">collapses and merges the className</div>
+    <div className="input_Card_m7uBBu input_Extended_m7uBBu input_ExtendedTwice_m7uBBu">collapses the whole three-level chain</div>
+    <h1 className="input_Title_m7uBBu input_FancyTitle_m7uBBu">collapses the exported chain</h1>
+    <ToggleBase className="input_OfDynamic_m7uBBu">folds to the dynamic parent, chain not collapsed</ToggleBase>
+    <WithAttrs className="input_OfAttrs_m7uBBu">folds to the attrs parent, chain not collapsed</WithAttrs>
+    <Later className="input_OfLater_m7uBBu">folds to the later-declared parent, chain not collapsed</Later>
     <ImportedCard className="input_ExtendedImport_m7uBBu">folds to the imported component</ImportedCard>
     <div className="input_BoxWithMixin_m7uBBu">folds with mixin</div>
   </>;
@@ -203,6 +272,7 @@ const NotOptimizable = ()=><>
     <ExtendedLowercase>bails: lowercase wrapped component</ExtendedLowercase>
     <ExtendedMutable>bails: reassignable wrapped component</ExtendedMutable>
     <Mutable>bails</Mutable>
+    <OfLet>bails: reassignable parent keeps the runtime chain</OfLet>
     <Redeclared>bails: var redeclaration</Redeclared>
     <Memoized>bails: HOC wrapper</Memoized>
     <ReactMemoized>bails: HOC wrapper</ReactMemoized>

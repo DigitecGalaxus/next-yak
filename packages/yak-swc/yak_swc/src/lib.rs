@@ -19,8 +19,8 @@ use utils::ast_helper::{
   extract_ident_and_parts, is_valid_tagged_tpl, unwrap_type_casts, TemplateIterator,
 };
 use utils::cross_file_selectors::ImportType;
-use utils::css_prop::HasCSSProp;
-use utils::styled_jsx_fold::StyledJsxFold;
+use utils::fold::css_prop::HasCSSProp;
+use utils::fold::StyledFold;
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -36,13 +36,10 @@ use math_evaluate::try_evaluate;
 mod utils {
   pub(crate) mod add_suffix_to_expr;
   pub(crate) mod ast_helper;
-  pub(crate) mod class_name_fold;
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
-  pub(crate) mod css_prop;
+  pub(crate) mod fold;
   pub(crate) mod native_elements;
-  pub(crate) mod purity;
-  pub(crate) mod styled_jsx_fold;
 }
 pub mod naming_convention;
 use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
@@ -217,7 +214,7 @@ where
   exported_styled_names: Vec<String>,
   /// Registry of fully static styled components whose JSX usages
   /// are folded into plain DOM elements in a deferred pass
-  styled_jsx_fold: StyledJsxFold,
+  styled_fold: StyledFold,
   /// Fold statically known styles into plain elements: static styled component
   /// JSX usages and static `css` props skip their runtime wrapper and merge calls
   fold_static: bool,
@@ -276,7 +273,7 @@ where
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
-      styled_jsx_fold: StyledJsxFold::default(),
+      styled_fold: StyledFold::default(),
       fold_static,
       inside_global_style: false,
       has_global_style: false,
@@ -760,8 +757,8 @@ where
 
     // Must run before the utility imports below are collected
     self
-      .styled_jsx_fold
-      .fold_jsx_usages(module, self.yak_library_imports.as_mut().unwrap());
+      .styled_fold
+      .fold_module(module, self.yak_library_imports.as_mut().unwrap());
 
     // Add the css module import to the top of the file
     // if any yak imports are used
@@ -1297,7 +1294,7 @@ where
       && self.current_declarator_init_span == Some(n.span)
     {
       if let Some(class_name) = transform.get_component_class_name() {
-        self.styled_jsx_fold.try_register(
+        self.styled_fold.try_register(
           self.current_variable_name.as_ref(),
           &n.tag,
           class_name,

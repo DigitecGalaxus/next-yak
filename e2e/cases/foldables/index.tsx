@@ -12,6 +12,17 @@ const Extended = styled(Card)`
   background-color: rgb(255, 255, 0);
 `;
 
+// three-level chain - every level's style applies with foldStatic on and off
+const Button = styled.button`
+  color: rgb(0, 0, 139);
+`;
+const PrimaryButton = styled(Button)`
+  background-color: rgb(173, 216, 230);
+`;
+const FullWidthButton = styled(PrimaryButton)`
+  border-color: rgb(255, 20, 147);
+`;
+
 // class-toggling $prop - foldable usages inline the condition
 const Toggle = styled.span<{ $active?: boolean }>`
   color: rgb(0, 0, 255);
@@ -72,6 +83,7 @@ export default function App() {
     <>
       <Card data-testid="static">static fold</Card>
       <Extended data-testid="extended">static styled(Component) fold</Extended>
+      <FullWidthButton data-testid="chain">three-level chain</FullWidthButton>
       <Toggle data-testid="toggle-on" $active>
         on
       </Toggle>
