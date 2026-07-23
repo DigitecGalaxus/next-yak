@@ -1485,19 +1485,28 @@ mod tests {
     visit::visit_mut_pass,
   };
 
-  /// Per-fixture options read from an optional `config.json` next to `input.tsx`.
-  /// Folding is off by default here so the bulk of the suite covers the runtime
-  /// transform; a fixture opts into folding with `{"foldStatic": true}`. This
-  /// harness default is independent of the shipped `Config` default (on).
+  /// Flat plugin flags read from an optional `config.json` next to `input.tsx`.
+  /// Only the flat knobs live here; the mode-driven options (minify,
+  /// displayNames, importMode) are the dev/prod/turbo matrix and stay in the
+  /// harness.
+  ///
+  /// Folding is off by default so the bulk of the suite covers the runtime
+  /// transform; a fixture opts into folding with `{"foldStatic": true}`. These
+  /// harness defaults are independent of the shipped `Config` defaults (fold on,
+  /// strict on).
   #[derive(Deserialize)]
   #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
   struct FixtureOptions {
     fold_static: bool,
+    strict_css_prop: bool,
   }
 
   impl Default for FixtureOptions {
     fn default() -> Self {
-      Self { fold_static: false }
+      Self {
+        fold_static: false,
+        strict_css_prop: true,
+      }
     }
   }
 
@@ -1535,7 +1544,7 @@ mod tests {
         false,
         false,
         options.fold_static,
-        true,
+        options.strict_css_prop,
       )),
     )
   }
