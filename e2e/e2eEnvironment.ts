@@ -663,11 +663,24 @@ function table(title: string, headers: string[], rows: string[][]): string {
   return lines.join("\n");
 }
 
+/**
+ * Whether static folding is on for this run. Controlled by
+ * YAK_E2E_FOLD_STATIC: "false" runs the off pass, anything else keeps the
+ * default (on).
+ */
+const foldStaticEnabled = process.env.YAK_E2E_FOLD_STATIC !== "false";
+
+/** The colored on/off label for the active fold mode. */
+function foldModeLabel(): string {
+  return foldStaticEnabled ? styleText("green", "on") : styleText("yellow", "off");
+}
+
 /** Print per-case and aggregate result tables. */
 export function printSummary(results: Result[]): void {
   if (results.length === 0) return;
 
   console.log("\n");
+  console.log(`fold mode: ${foldModeLabel()}`);
 
   // Per-case tables
   const caseNames = [...new Set(results.map((result) => result.caseName))];

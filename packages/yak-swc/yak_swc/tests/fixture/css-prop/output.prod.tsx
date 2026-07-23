@@ -1,11 +1,11 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-const Elem = ()=><div className={/*YAK Extracted CSS:
+const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 :global(.ym7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu"}/>;
+*/ /*#__PURE__*/ css("ym7uBBu"))}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp({
         className: "test-class"
     }, /*YAK Extracted CSS:
@@ -13,13 +13,15 @@ const Elem2 = ()=><div {...__yak_mergeCssProp({
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu1"))}/>;
-const Elem3 = ()=><div style={{
-        padding: "5px"
-    }} className={/*YAK Extracted CSS:
+const Elem3 = ()=><div {...__yak_mergeCssProp({
+        style: {
+            padding: "5px"
+        }
+    }, /*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   padding: 10px;
 }
-*/ /*#__PURE__*/ "ym7uBBu2"}/>;
+*/ /*#__PURE__*/ css("ym7uBBu2"))}/>;
 const Elem4 = (props: any)=><div {...__yak_mergeCssProp({
         ...props
     }, /*YAK Extracted CSS:
@@ -50,34 +52,34 @@ const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;
 const Elem10 = ({ on }: {
     on: boolean;
-})=><div className={/*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 :global(.ym7uBBu9) {
   color: red;
 }
 :global(.ym7uBBuA) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu8" + (on ? " ym7uBBu9" : " ym7uBBuA")}/>;
+*/ /*#__PURE__*/ css(()=>on ? /*#__PURE__*/ css("ym7uBBu9") : /*#__PURE__*/ css("ym7uBBuA"), "ym7uBBu8"))}/>;
 const Elem11 = ({ on }: {
     on: boolean;
-})=><div className={on ? /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
 :global(.ym7uBBuB) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBuB" : /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("ym7uBBuB") as any : /*YAK Extracted CSS:
 :global(.ym7uBBuC) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBuC"}/>;
+*/ /*#__PURE__*/ css("ym7uBBuC"))}/>;
 const Text = /*YAK Extracted CSS:
 :global(.ym7uBBuD) {
   font-size: 20px;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBuD");
-const StyledComponentWithCSSProp = ()=><p className={/*YAK Extracted CSS:
+const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 :global(.ym7uBBuE) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBuD ym7uBBuE"}>
+*/ /*#__PURE__*/ css("ym7uBBuE"))}>
     test
-  </p>;
+  </Text>;

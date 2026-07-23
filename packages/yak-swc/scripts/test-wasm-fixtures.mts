@@ -23,6 +23,17 @@ type PluginOptions = {
   importMode: ImportMode;
 };
 
+// Mirrors the Rust fixture harness (`FixtureOptions` in lib.rs): the flat plugin
+// flags only. The mode-driven options (minify, displayNames, importMode) are the
+// dev/prod/turbo matrix and live in MODES, not here. Folding is off by default
+// so the bulk of the suite covers the runtime transform; a fixture opts in with
+// `{"foldStatic": true}`. These defaults are independent of the shipped `Config`
+// defaults (fold on, strict on).
+type FixtureOptions = {
+  foldStatic: boolean;
+  strictCssProp: boolean;
+};
+
 type Mode = {
   name: string;
   output: string;
@@ -135,6 +146,7 @@ fixtures.sort();
 for (const fixtureName of fixtures) {
   const fixtureDir = join(fixtureRoot, fixtureName);
   const input = readFileSync(join(fixtureDir, "input.tsx"), "utf8");
+  const fixtureOptions = readFixtureOptions(fixtureDir);
 
   for (const { name: modeName, output, stderr, options } of MODES) {
     const outputPath = join(fixtureDir, output);
@@ -152,7 +164,7 @@ for (const fixtureName of fixtures) {
     if (existsSync(stderrPath)) {
       stats.diagnostics++;
       try {
-        runWasmTransform(input, options);
+        runWasmTransform(input, options, fixtureOptions);
         failures.push(
           `${label}: native records a diagnostic (${stderr}) but the wasm transform ` +
             `succeeded without throwing — the error was dropped across the wasm ABI`,
@@ -170,7 +182,7 @@ for (const fixtureName of fixtures) {
 
     let actual: string;
     try {
-      actual = runWasmTransform(input, options);
+      actual = runWasmTransform(input, options, fixtureOptions);
     } catch (error) {
       failures.push(`${label}: wasm transform threw unexpectedly\n${firstLine(error)}`);
       continue;
@@ -229,7 +241,11 @@ function normalize(code: string): string {
   return transformSync(code, BASE_SWC_OPTIONS).code;
 }
 
-function runWasmTransform(input: string, options: PluginOptions): string {
+function runWasmTransform(
+  input: string,
+  options: PluginOptions,
+  fixtureOptions: FixtureOptions,
+): string {
   return transformSync(input, {
     ...BASE_SWC_OPTIONS,
     jsc: {
@@ -240,6 +256,8 @@ function runWasmTransform(input: string, options: PluginOptions): string {
             wasmPath,
             {
               basePath: "path",
+              foldStatic: fixtureOptions.foldStatic,
+              strictCssProp: fixtureOptions.strictCssProp,
               ...options,
             },
           ],
@@ -247,6 +265,41 @@ function runWasmTransform(input: string, options: PluginOptions): string {
       },
     },
   }).code;
+}
+
+// Reads the optional per-fixture `config.json`, mirroring the Rust harness:
+// folding defaults to off, `{"foldStatic": true}` opts in; strict css-prop
+// defaults on. Malformed JSON, a non-object, a non-boolean value or any unknown
+// key fails loudly - the same spirit as the Rust `deny_unknown_fields` plus
+// parse panic, never a silent default.
+function readFixtureOptions(fixtureDir: string): FixtureOptions {
+  // the harness defaults, independent of the shipped `Config` defaults (fold on,
+  // strict on)
+  const defaults: FixtureOptions = { foldStatic: false, strictCssProp: true };
+  const configPath = join(fixtureDir, "config.json");
+  if (!existsSync(configPath)) {
+    return defaults;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(configPath, "utf8"));
+  } catch (error) {
+    throw new Error(`invalid fixture config.json: ${configPath}: ${firstLine(error)}`);
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`invalid fixture config.json: ${configPath}: expected a JSON object`);
+  }
+  const options: FixtureOptions = { ...defaults };
+  for (const [key, value] of Object.entries(parsed)) {
+    if (key !== "foldStatic" && key !== "strictCssProp") {
+      throw new Error(`invalid fixture config.json: ${configPath}: unknown key "${key}"`);
+    }
+    if (typeof value !== "boolean") {
+      throw new Error(`invalid fixture config.json: ${configPath}: ${key} must be a boolean`);
+    }
+    options[key] = value;
+  }
+  return options;
 }
 
 function firstLine(error: unknown): string {

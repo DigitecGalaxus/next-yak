@@ -29,11 +29,12 @@ export type YakConfigOptions = {
    */
   displayNames?: boolean;
   /**
-   * Fold JSX usages of fully static styled components into plain DOM
-   * elements at build time, skipping the runtime wrapper component.
+   * Fold statically known styles at build time: JSX usages of fully static
+   * styled components become plain DOM elements, and a static `css` prop
+   * becomes a plain `className`. Both skip the runtime wrapper and merge calls.
    * @defaultValue true
    */
-  optimizeStaticJsx?: boolean;
+  foldStatic?: boolean;
   /**
    * Fail the build when a `css` prop has a value next-yak can't handle
    * (e.g. a plain string). next-yak claims the `css` prop, so a malformed
@@ -78,7 +79,7 @@ export function buildYakPluginOptions(yakOptions: YakConfigOptions, basePath: st
     basePath,
     prefix: yakOptions.prefix,
     displayNames: yakOptions.displayNames ?? !minify,
-    optimizeStaticJsx: yakOptions.optimizeStaticJsx ?? true,
+    foldStatic: yakOptions.foldStatic ?? true,
     strictCssProp: yakOptions.strictCssProp ?? true,
     suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
@@ -127,7 +128,7 @@ function addYakTurbopack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
-    optimizeStaticJsx: boolean;
+    foldStatic: boolean;
     strictCssProp: boolean;
     importMode: {
       value: string;
@@ -184,7 +185,7 @@ function addYakWebpack(
     basePath: string;
     prefix?: string;
     displayNames: boolean;
-    optimizeStaticJsx: boolean;
+    foldStatic: boolean;
     strictCssProp: boolean;
     importMode: {
       value: string;

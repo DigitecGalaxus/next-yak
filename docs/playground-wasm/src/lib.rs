@@ -108,7 +108,7 @@ fn yak_pass(
                 .into(),
             false, // suppress_deprecation_warnings
             false, // react_refresh_reg
-            true,  // optimize_static_jsx
+            true,  // fold_static
             false, // strict_css_prop
         );
         program.visit_mut_with(&mut transformer);

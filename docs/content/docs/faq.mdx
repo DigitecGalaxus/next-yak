@@ -147,13 +147,13 @@ const App = () => (
 
 This skips a component and its rendering work for every element. Your styles are unaffected, but `<Button>` is gone from the React tree, so it no longer appears in React DevTools or in component stacks. It also disappears in development, so that development and production behave the same, and for the same reason `displayNames` has no effect on an inlined usage.
 
-You can turn the optimization off:
+The same `foldStatic` option also folds a static `css` prop (`css={css`…`}`) into a plain `className`. You can turn both off:
 
 <Tabs items={['next.config.ts', 'vite.config.ts']}>
 <Tab value="next.config.ts">
 ```ts
 export default withYak({
-  optimizeStaticJsx: false,
+  foldStatic: false,
 }, nextConfig);
 ```
 </Tab>
@@ -161,7 +161,7 @@ export default withYak({
 ```ts
 export default defineConfig({
   // ideally viteYak is before the react plugin
-  plugins: [viteYak({ optimizeStaticJsx: false }), react()],
+  plugins: [viteYak({ foldStatic: false }), react()],
 });
 ```
 </Tab>

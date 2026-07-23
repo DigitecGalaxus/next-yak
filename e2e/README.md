@@ -49,6 +49,29 @@ pnpm --filter next-yak-e2e test:build               # all bundlers x non-HMR cas
 pnpm --filter next-yak-e2e test:build vite           # just Vite production build
 ```
 
+## Fold modes
+
+next-yak folds statically known styles at build time: static styled-component
+JSX usages become plain DOM elements, and static `css` props become plain
+`className`s. Setting `foldStatic: false` turns this off, routing both through
+the runtime path.
+
+The suite runs in two modes so both paths get browser coverage. Each case must
+pass in both modes.
+
+```bash
+# Fold on (default)
+pnpm --filter next-yak-e2e test
+
+# Fold off — each bundler config passes foldStatic: false to next-yak
+YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test
+YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
+```
+
+`YAK_E2E_FOLD_STATIC=false` is the only value that switches modes; anything else
+(or unset) keeps folding on. The runner prints the active mode at startup and in
+the summary.
+
 ## Adding a test case
 
 Create `cases/<name>/index.tsx` and `cases/<name>/index.test.ts`:
