@@ -126,6 +126,21 @@ export default function App() {
       <Shortcut data-testid="backslash" $keys="a\tb">
         a\tb
       </Shortcut>
+      {/* a static merge with a backslash escape in the user className - the
+          folded class attribute must read the same as the runtime twin below */}
+      <Card data-testid="escape" className="mark before:content-['\d7']">
+        escape merge
+      </Card>
+      <Card data-testid="escape-runtime" {...{ className: "mark before:content-['\\d7']" }}>
+        runtime twin
+      </Card>
+      {/* an emoji className must reach the DOM byte-exact, matching its twin */}
+      <Card data-testid="emoji" className="🔥 mark">
+        emoji merge
+      </Card>
+      <Card data-testid="emoji-runtime" {...{ className: "🔥 mark" }}>
+        runtime twin
+      </Card>
     </>
   );
 }

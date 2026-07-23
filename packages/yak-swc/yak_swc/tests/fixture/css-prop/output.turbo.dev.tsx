@@ -1,6 +1,6 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW0yX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfRWxlbTNfbTd1QkJ1IHsKICBwYWRkaW5nOiAxMHB4Owp9LmlucHV0X0VsZW00X203dUJCdSB7CiAgY29sb3I6IGdyZWVuOwp9LmlucHV0X0VsZW01X203dUJCdSB7CiAgY29sb3I6IHB1cnBsZTsKfS5pbnB1dF9FbGVtNl9tN3VCQnUgewogIGZvbnQtc2l6ZTogMTZweDsKfS5pbnB1dF9FbGVtRW50aXR5X203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9FbGVtQmFja3NsYXNoX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9FbGVtMTBfX29uX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfRWxlbTEwX19ub3Rfb25fbTd1QkJ1IHsKICBjb2xvcjogYmx1ZTsKfS5pbnB1dF9FbGVtMTFfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW0xMV9tN3VCQnUtMDEgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X1RleHRfbTd1QkJ1IHsKICBmb250LXNpemU6IDIwcHg7Cn0uaW5wdXRfU3R5bGVkQ29tcG9uZW50V2l0aENTU1Byb3BfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9";
+import "data:text/css;base64,LmlucHV0X0VsZW1fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW0yX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfRWxlbTNfbTd1QkJ1IHsKICBwYWRkaW5nOiAxMHB4Owp9LmlucHV0X0VsZW00X203dUJCdSB7CiAgY29sb3I6IGdyZWVuOwp9LmlucHV0X0VsZW01X203dUJCdSB7CiAgY29sb3I6IHB1cnBsZTsKfS5pbnB1dF9FbGVtNl9tN3VCQnUgewogIGZvbnQtc2l6ZTogMTZweDsKfS5pbnB1dF9FbGVtRW50aXR5X203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9FbGVtQmFja3NsYXNoX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9FbGVtRW1vamlfbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9LmlucHV0X0VsZW0xMF9fb25fbTd1QkJ1IHsKICBjb2xvcjogcmVkOwp9Ci5pbnB1dF9FbGVtMTBfX25vdF9vbl9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X0VsZW0xMV9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0uaW5wdXRfRWxlbTExX203dUJCdS0wMSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfVGV4dF9tN3VCQnUgewogIGZvbnQtc2l6ZTogMjBweDsKfS5pbnB1dF9TdHlsZWRDb21wb25lbnRXaXRoQ1NTUHJvcF9tN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0=";
 const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 .input_Elem_m7uBBu {
   color: red;
@@ -61,6 +61,13 @@ const ElemBackslash = ()=><div {...__yak_mergeCssProp({
   color: red;
 }
 */ /*#__PURE__*/ css("input_ElemBackslash_m7uBBu"))}/>;
+const ElemEmoji = ()=><div {...__yak_mergeCssProp({
+        className: "🔥 mark"
+    }, /*YAK Extracted CSS:
+.input_ElemEmoji_m7uBBu {
+  color: red;
+}
+*/ /*#__PURE__*/ css("input_ElemEmoji_m7uBBu"))}/>;
 const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;

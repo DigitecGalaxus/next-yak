@@ -480,7 +480,21 @@ impl FoldVisitor<'_> {
     // leave the specifier behind with nothing referencing it
     let Some(index) = class_name_index else {
       let value = match yak_class {
-        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(class_name, DUMMY_SP)),
+        // safe as a raw attribute string only while the class name carries no
+        // backslash or quote: those print differently under JS and JSX. A
+        // merge routes through expression position for the same reason
+        YakClassName::Static(class_name) => {
+          // scan the raw WTF-8 bytes: `\` and `"` are ASCII, so this never
+          // decodes the value and leaves any emoji or surrogate untouched
+          debug_assert!(
+            !class_name
+              .as_bytes()
+              .iter()
+              .any(|&b| b == b'\\' || b == b'"'),
+            "a folded class name must carry no backslash or quote: {class_name:?}"
+          );
+          JSXAttrValue::Str(str_lit(class_name, DUMMY_SP))
+        }
         YakClassName::Dynamic(expr) => expr_attr_value(expr),
       };
       return Some(FoldPlan {
@@ -509,10 +523,12 @@ impl FoldVisitor<'_> {
     match value {
       // className="user"
       JSXAttrValue::Str(user) => Some(match yak_class {
-        YakClassName::Static(class_name) => JSXAttrValue::Str(str_lit(
-          merge_class_names(&class_name, &user.value),
-          user.span,
-        )),
+        // a JSX attribute string prints with JS escaping but re-parses without
+        // it, so a user backslash would double; the container keeps both
+        // directions in one regime
+        YakClassName::Static(class_name) => expr_attr_value(Box::new(Expr::Lit(Lit::Str(
+          str_lit(merge_class_names(&class_name, &user.value), user.span),
+        )))),
         // `"yX" + (on ? " yY" : "") + " user"`
         YakClassName::Dynamic(expr) => {
           expr_attr_value(append_class_name_str(expr, &user.value, user.span))
@@ -1054,6 +1070,66 @@ mod tests {
       Expr::JSXElement(element) => element.opening.attrs,
       _ => panic!("`{source}` is not a JSX element"),
     }
+  }
+
+  /// The `className` attribute's string literal value, whether spelled as a
+  /// plain attribute or a `{"..."}` container
+  fn class_name_value(source: &str) -> Wtf8Atom {
+    for attr in attrs_of(source) {
+      let JSXAttrOrSpread::JSXAttr(attr) = attr else {
+        continue;
+      };
+      let JSXAttrName::Ident(name) = &attr.name else {
+        continue;
+      };
+      if name.sym != "className" {
+        continue;
+      }
+      match attr.value.as_ref() {
+        Some(JSXAttrValue::Str(str_lit)) => return str_lit.value.clone(),
+        Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
+          expr: JSXExpr::Expr(expr),
+          ..
+        })) => {
+          if let Expr::Lit(Lit::Str(str_lit)) = &**expr {
+            return str_lit.value.clone();
+          }
+        }
+        _ => {}
+      }
+    }
+    panic!("`{source}` has no className string literal");
+  }
+
+  #[test]
+  fn a_merge_copies_the_user_class_name_byte_for_byte() {
+    // emoji are valid UTF-8, so the merge keeps them - to_string_lossy only
+    // replaces unpaired surrogates, which valid UTF-8 never has
+    assert_eq!(
+      merge_class_names(&"yak".into(), &"🔥".into()).as_str(),
+      Some("yak 🔥")
+    );
+  }
+
+  #[test]
+  fn only_a_string_literal_carries_an_unpaired_surrogate() {
+    // a JSX attribute string spells escapes literally: `\uD800` is six
+    // characters and stays valid UTF-8 - a surrogate cannot enter this way
+    assert_eq!(
+      class_name_value(r#"<div className="\uD800" />"#).as_str(),
+      Some(r"\uD800")
+    );
+    // a JS string literal decodes the escape to the surrogate, which as_str()
+    // cannot represent - this is the only path an unpaired surrogate reaches
+    let surrogate = class_name_value(r#"<div className={"\uD800"} />"#);
+    assert_eq!(surrogate.as_str(), None);
+    // the merge keeps it byte-exact instead of collapsing it to U+FFFD
+    let merged = merge_class_names(&"yak".into(), &surrogate);
+    assert_eq!(merged.as_str(), None);
+    assert_eq!(
+      merged.as_bytes(),
+      [b"yak ", surrogate.as_bytes()].concat().as_slice()
+    );
   }
 
   /// The shape a usage takes, given which of its props the style conditions

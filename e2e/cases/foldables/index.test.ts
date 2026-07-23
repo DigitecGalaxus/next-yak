@@ -59,5 +59,22 @@ test(
 
     // backslashes in JSX attributes stay literal characters when the condition is inlined
     await expect(page.getByTestId("backslash")).toHaveCSS("color", "rgb(30, 144, 255)");
+
+    // a static merge with a backslash escape in the user className keeps a single
+    // backslash after the JSX re-parse - a raw attribute string would double it
+    const escape = page.getByTestId("escape");
+    const escapeRuntime = page.getByTestId("escape-runtime");
+    const foldedClass = (await escape.getAttribute("class")) ?? "";
+    const runtimeClass = (await escapeRuntime.getAttribute("class")) ?? "";
+    expect(foldedClass).toContain("before:content-['\\d7']");
+    expect(foldedClass).not.toContain("before:content-['\\\\d7']");
+    // same tokens as the runtime twin, order aside
+    expect(foldedClass.split(" ").sort()).toEqual(runtimeClass.split(" ").sort());
+
+    // an emoji className survives byte-exact through the fold, like its twin
+    const emojiClass = (await page.getByTestId("emoji").getAttribute("class")) ?? "";
+    const emojiRuntimeClass = (await page.getByTestId("emoji-runtime").getAttribute("class")) ?? "";
+    expect(emojiClass).toContain("🔥");
+    expect(emojiClass.split(" ").sort()).toEqual(emojiRuntimeClass.split(" ").sort());
   }),
 );

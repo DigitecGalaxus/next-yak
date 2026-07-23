@@ -91,10 +91,10 @@ const Cases = ()=><>
     </button>)(cn(x), f())}
 
     { /* static component: a string className merges at compile time */ }
-    <div className="ym7uBBu7 user">static merge</div>
+    <div className={"ym7uBBu7 user"}>static merge</div>
 
     { /* the chain collapses, so the usage folds to a plain div */ }
-    <div className="ym7uBBu7 ym7uBBu8 extra">wrapper fold</div>
+    <div className={"ym7uBBu7 ym7uBBu8 extra"}>wrapper fold</div>
 
     { /* bails: the spread renders the collapsed Fancy declaration at runtime */ }
     <Fancy {...props}>spread bail</Fancy>
