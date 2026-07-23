@@ -22,6 +22,9 @@ const Toggle = styledFn("span")("toggleBase", ({ $active }) => $active && cssFn(
 const Base = (props) => <p {...props} />;
 const Extended = styledFn(Base)("extendedClass");
 const ExtendedCard = styledFn(Card)("extendedCardClass");
+// A styled(Card) chain of same-file static components collapses to a plain
+// element carrying every class, parent-first
+const ExtendedCardTwice = styledFn(ExtendedCard)("extendedTwiceClass");
 
 const renderedHtml = (element) => render(element).container.innerHTML;
 // sorted because the runtime puts the incoming className first while the
@@ -68,6 +71,24 @@ it("renders the same DOM as the wrapped component with the static class", () => 
 it("renders the same class names as a wrapped yak component", () => {
   expect(renderedClassNames(<Card className="extendedCardClass">hi</Card>)).toEqual(
     renderedClassNames(<ExtendedCard>hi</ExtendedCard>),
+  );
+});
+
+it("renders the same class names as a collapsed chain", () => {
+  expect(renderedClassNames(<div className="yakClass extendedCardClass">hi</div>)).toEqual(
+    renderedClassNames(<ExtendedCard>hi</ExtendedCard>),
+  );
+});
+
+it("renders the same class names as a collapsed three-level chain", () => {
+  expect(
+    renderedClassNames(<div className="yakClass extendedCardClass extendedTwiceClass">hi</div>),
+  ).toEqual(renderedClassNames(<ExtendedCardTwice>hi</ExtendedCardTwice>));
+});
+
+it("merges a className into a collapsed chain", () => {
+  expect(renderedClassNames(<div className="yakClass extendedCardClass user" />)).toEqual(
+    renderedClassNames(<ExtendedCard className="user" />),
   );
 });
 

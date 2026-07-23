@@ -11,7 +11,7 @@ use swc_core::ecma::ast::*;
 /// How freely the fold may treat a value's evaluation - each level includes
 /// everything the levels below it allow
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum Purity {
+pub(super) enum Purity {
   /// observable effects (calls, `new`, `i++`, assignments, `await`): evaluated
   /// exactly once, exactly where attribute position evaluated it
   Impure,
@@ -35,7 +35,7 @@ pub(crate) enum Purity {
 /// observe the extra reads. Gating them would turn `$c={colors[status]}` - one
 /// of the most common prop shapes there is - into an IIFE, and an effectful
 /// getter during render already violates React's own purity rule
-pub(crate) fn purity(expr: &Expr) -> Purity {
+pub(super) fn purity(expr: &Expr) -> Purity {
   match unwrap_type_casts(expr) {
     Expr::Lit(_) | Expr::Ident(_) => Purity::Dup,
     Expr::Member(member) => member_purity(member),
