@@ -1,3 +1,4 @@
+import { ClassNames } from "../cssLiteral.js";
 import { RuntimeStyleProcessor } from "../publicStyledApi.js";
 
 /**
@@ -20,8 +21,7 @@ export const mergeCssProp = (
   } & Record<string, unknown>,
   cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
 ) => {
-  const existingClassName = relevantProps.className;
-  const classNames = existingClassName ? new Set(existingClassName.split(" ")) : new Set<string>();
+  const classNames = new ClassNames(relevantProps.className);
 
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
@@ -31,13 +31,23 @@ export const mergeCssProp = (
     cssProp({}, classNames, style);
   }
 
-  const result: { className?: string; style?: Record<string, string> } = {};
+  // Forward all other props (onClick, aria-*, id, …) untouched and only
+  // override className/style with the merged result — the transform already
+  // built `relevantProps` in JSX attribute order, so this preserves overrides.
+  const result: Record<string, unknown> & {
+    className?: string;
+    style?: Record<string, string>;
+  } = { ...relevantProps };
 
   if (Object.keys(style).length > 0) {
     result.style = style;
+  } else {
+    delete result.style;
   }
-  if (classNames.size > 0) {
-    result.className = Array.from(classNames).join(" ");
+  if (classNames.value) {
+    result.className = classNames.value;
+  } else {
+    delete result.className;
   }
 
   return result;
