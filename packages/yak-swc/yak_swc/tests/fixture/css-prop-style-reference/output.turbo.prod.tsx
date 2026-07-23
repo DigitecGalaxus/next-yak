@@ -1,13 +1,13 @@
 // References to styles declared elsewhere are rejected with a compile error:
 // a mixin compiles to an argument-less css() carrying no class and no CSS
 // (its declarations are inlined at template consumers), so a css prop
-// reference would render unstyled without any signal.
-// Inline templates in ternary and logical arms keep working - only the
-// reference arms error.
+// reference would render unstyled without any signal. Only the reference arm
+// errors - inline templates in ternary and logical arms keep working, covered
+// by css-prop-ternary and css-prop-fold-bailouts.
 import { css, __yak_mergeCssProp } from "next-yak/internal";
 import { ellipsis } from "./typography";
 import * as tokens from "./tokens";
-import "data:text/css;base64,LnltN3VCQnUxIHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1MiB7CiAgbGluZS1oZWlnaHQ6IDE7Cn0ueW03dUJCdTMgewogIGxpbmUtaGVpZ2h0OiAxLjU7Cn0ueW03dUJCdTQgewogIGNvbG9yOiBncmVlbjsKfQ==";
+import "data:text/css;base64,LnltN3VCQnUxIHsKICBjb2xvcjogYmx1ZTsKfQ==";
 const mixin = /*#__PURE__*/ css();
 // errors: a same-file mixin reference
 const Direct = ()=><div css={mixin}/>;
@@ -27,23 +27,3 @@ const TernaryArm = ({ compact }: {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu1")}/>;
-// keeps working: inline templates in both ternary arms
-const TernaryInline = ({ compact }: {
-    compact: boolean;
-})=><div className={compact ? /*YAK Extracted CSS:
-.ym7uBBu2 {
-  line-height: 1;
-}
-*/ /*#__PURE__*/ "ym7uBBu2" : /*YAK Extracted CSS:
-.ym7uBBu3 {
-  line-height: 1.5;
-}
-*/ /*#__PURE__*/ "ym7uBBu3"}/>;
-// keeps working: `undefined` is a valid falsy arm, not a reference
-const TernaryUndefined = ({ on }: {
-    on: boolean;
-})=><div className={on ? /*YAK Extracted CSS:
-.ym7uBBu4 {
-  color: green;
-}
-*/ /*#__PURE__*/ "ym7uBBu4" : ""}/>;
