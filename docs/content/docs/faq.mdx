@@ -147,59 +147,7 @@ const App = () => (
 
 This skips a component and its rendering work for every element. Your styles are unaffected, but `<Button>` is gone from the React tree, so it no longer appears in React DevTools or in component stacks. It also disappears in development, so that development and production behave the same, and for the same reason `displayNames` has no effect on an inlined usage.
 
-The same `foldStatic` option also folds a static `css` prop (`css={css`…`}`) into a plain `className`. You can turn both off:
-
-<Tabs items={['next.config.ts', 'vite.config.ts']}>
-<Tab value="next.config.ts">
-```ts
-export default withYak({
-  foldStatic: false,
-}, nextConfig);
-```
-</Tab>
-<Tab value="vite.config.ts">
-```ts
-export default defineConfig({
-  // ideally viteYak is before the react plugin
-  plugins: [viteYak({ foldStatic: false }), react()],
-});
-```
-</Tab>
-</Tabs>
-
-There are several cases where next-yak opts out of the optimization to guarantee correctness, and the component keeps its wrapper:
-
-- **The component is declared in another file.** Bundlers hand next-yak one file at a time, so the compiler never sees the declaration of an imported component and cannot know which element and class name it belongs to. This is the most common reason, as shared components usually live in their own file.
-- **The usage spreads props**, e.g. `<Button {...props} />`. A spread can carry a `className` or a `theme` that is only known at runtime.
-- **The component uses `.attrs()`, a `theme` or dynamic css values** (css variables). These need the runtime to compute the props or the styles.
-- **The component is not declared as a top level `const`.** A `let` or a `var` can be reassigned, so it is not safe to assume every usage means the same component.
-
-Styles that depend on props are inlined too, so the optimization is not limited to fully static components:
-
-```tsx
-const Icon = styled.span<{ $active?: boolean }>`
-  ${({ $active }) =>
-    $active &&
-    css`
-      color: red;
-    `}
-`;
-
-const App = () => <Icon $active={on} />;
-
-// compiles to
-const App = () => <span className={"Icon_a1b2" + (on ? " Icon_c3d4" : "")} />;
-```
-
-A `styled(Card)` usage is inlined to `Card` instead of a DOM element, so `Card` itself stays in the tree.
-
-One edge case is worth knowing about: if the same component is used both inlined and with a wrapper, switching between the two at runtime remounts the subtree instead of updating it, because React sees a different element type.
-
-```tsx
-// <Card /> is inlined to <div>, while <Card {...props} /> keeps the wrapper.
-// Toggling `compact` therefore remounts the card and it loses its state.
-const List = () => <div>{compact ? <Card /> : <Card {...props} />}</div>;
-```
+This is folding, controlled by the `foldStatic` option, which also folds a static `css` prop into a plain `className`. See [Folding](/docs/folding) for what folds, how to turn it off, and the rest of the caveats.
 
 ### My styles are not applied
 
