@@ -55,6 +55,24 @@ const Elem6 = () => (
   />
 );
 
+const ElemEntity = () => (
+  <div
+    css={css`
+      color: red;
+    `}
+    className="Food &amp; Drink"
+  />
+);
+
+const ElemBackslash = () => (
+  <div
+    css={css`
+      color: red;
+    `}
+    className="before:content-['\2713']"
+  />
+);
+
 const Elem7 = () => <div className="no-css" />;
 
 const Elem8 = () => <div css={css``} className="empty-css" />;

@@ -47,39 +47,53 @@ const Elem6 = ()=><div {...__yak_mergeCssProp({
   font-size: 16px;
 }
 */ /*#__PURE__*/ css("ym7uBBu5"))}/>;
+const ElemEntity = ()=><div {...__yak_mergeCssProp({
+        className: "Food & Drink"
+    }, /*YAK Extracted CSS:
+:global(.ym7uBBu6) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("ym7uBBu6"))}/>;
+const ElemBackslash = ()=><div {...__yak_mergeCssProp({
+        className: "before:content-['\\2713']"
+    }, /*YAK Extracted CSS:
+:global(.ym7uBBu7) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("ym7uBBu7"))}/>;
 const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;
 const Elem10 = ({ on }: {
     on: boolean;
 })=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-:global(.ym7uBBu9) {
-  color: red;
-}
-:global(.ym7uBBuA) {
-  color: blue;
-}
-*/ /*#__PURE__*/ css(()=>on ? /*#__PURE__*/ css("ym7uBBu9") : /*#__PURE__*/ css("ym7uBBuA"), "ym7uBBu8"))}/>;
-const Elem11 = ({ on }: {
-    on: boolean;
-})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
 :global(.ym7uBBuB) {
   color: red;
 }
-*/ /*#__PURE__*/ css("ym7uBBuB") as any : /*YAK Extracted CSS:
 :global(.ym7uBBuC) {
   color: blue;
 }
-*/ /*#__PURE__*/ css("ym7uBBuC"))}/>;
-const Text = /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css(()=>on ? /*#__PURE__*/ css("ym7uBBuB") : /*#__PURE__*/ css("ym7uBBuC"), "ym7uBBuA"))}/>;
+const Elem11 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
 :global(.ym7uBBuD) {
-  font-size: 20px;
-}
-*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuD");
-const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-:global(.ym7uBBuE) {
   color: red;
 }
-*/ /*#__PURE__*/ css("ym7uBBuE"))}>
+*/ /*#__PURE__*/ css("ym7uBBuD") as any : /*YAK Extracted CSS:
+:global(.ym7uBBuE) {
+  color: blue;
+}
+*/ /*#__PURE__*/ css("ym7uBBuE"))}/>;
+const Text = /*YAK Extracted CSS:
+:global(.ym7uBBuF) {
+  font-size: 20px;
+}
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuF");
+const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+:global(.ym7uBBuG) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("ym7uBBuG"))}>
     test
   </Text>;

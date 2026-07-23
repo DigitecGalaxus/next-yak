@@ -55,6 +55,24 @@ export default function App({ dummyBool = true }) {
           Nested child
         </span>
       </div>
+      <div
+        data-testid="entity-classname"
+        className="Food &amp; Drink"
+        css={css`
+          color: blue;
+        `}
+      >
+        Entity className
+      </div>
+      <div
+        data-testid="backslash-classname"
+        className="before:content-['\2713']"
+        css={css`
+          color: blue;
+        `}
+      >
+        Backslash className
+      </div>
       <SpreadButton data-testid="spread-button" onClick={() => setCount((c) => c + 1)}>
         clicks: {count}
       </SpreadButton>
