@@ -19,6 +19,7 @@ use utils::ast_helper::{
   extract_ident_and_parts, is_valid_tagged_tpl, unwrap_type_casts, TemplateIterator,
 };
 use utils::cross_file_selectors::ImportType;
+use utils::css_variable_dedup::CssVariableDedup;
 use utils::fold::css_prop::HasCSSProp;
 use utils::fold::StyledFold;
 
@@ -38,6 +39,7 @@ mod utils {
   pub(crate) mod ast_helper;
   pub(crate) mod cross_file_selectors;
   pub(crate) mod css_hash;
+  pub(crate) mod css_variable_dedup;
   pub(crate) mod fold;
   pub(crate) mod native_elements;
 }
@@ -327,6 +329,9 @@ where
     // and must be kept for the final output (so they run at runtime)
     let mut runtime_expressions: Vec<Expr> = vec![];
     let mut runtime_css_variables: FxHashMap<String, Expr> = FxHashMap::default();
+    // Scoped to this literal so a reused variable is always declared by the
+    // same component which reads it
+    let mut css_variable_dedup = CssVariableDedup::default();
     // When moving units into css variables it has to be removed from the next css code
     // e.g. styled.button`left: ${({$x}) => $x}px;` -> `left: var(--left);`
     let mut css_code_offset: usize = 0;
@@ -662,22 +667,6 @@ ${{() => {var}}};\n",
               unit.map_or(0, |unit_str| unit_str.len())
             };
 
-            let readable_name = format!(
-              "{}__{}",
-              // Current variable name of the StyledComponent or Mixin
-              // e.g. Button for const Button = styled.button`color: red;`
-              self
-                // TODO: check if parts should also be used for the name:
-                .get_current_component_id()
-                .id
-                .0,
-              // Current property name
-              // e.g. color for styled.button`color: red;`
-              css_state.as_ref().unwrap().current_declaration.property
-            );
-            let css_variable_name = self
-              .naming_convention
-              .get_css_variable_name(readable_name.as_str());
             let css_variable_runtime_expr = if let Some(unit) = unit {
               add_suffix_to_expr(
                 *expr.clone(),
@@ -692,10 +681,41 @@ ${{() => {var}}};\n",
               *expr.clone()
             };
 
-            runtime_css_variables.insert(
-              format!("--{}", css_variable_name.clone()),
-              css_variable_runtime_expr,
-            );
+            // Two interpolations of the same function need only one variable.
+            // The unit wrapper is part of the compared expression, so
+            // `${fn}px` and `${fn}rem` keep a variable each.
+            // Only functions take part: any other expression could read or
+            // change state, so evaluating it once instead of twice is not safe.
+            let deduplicated = matches!(unwrap_type_casts(expr), Expr::Arrow(_) | Expr::Fn(_))
+              .then(|| CssVariableDedup::normalize(&css_variable_runtime_expr));
+            let reused_name = deduplicated
+              .as_ref()
+              .and_then(|normalized| css_variable_dedup.find(normalized))
+              .map(str::to_string);
+
+            let css_variable_name = reused_name.unwrap_or_else(|| {
+              let readable_name = format!(
+                "{}__{}",
+                // Current variable name of the StyledComponent or Mixin
+                // e.g. Button for const Button = styled.button`color: red;`
+                self
+                  // TODO: check if parts should also be used for the name:
+                  .get_current_component_id()
+                  .id
+                  .0,
+                // Current property name
+                // e.g. color for styled.button`color: red;`
+                css_state.as_ref().unwrap().current_declaration.property
+              );
+              let name = self
+                .naming_convention
+                .get_css_variable_name(readable_name.as_str());
+              if let Some(normalized) = deduplicated {
+                css_variable_dedup.register(normalized, name.clone());
+              }
+              runtime_css_variables.insert(format!("--{}", name), css_variable_runtime_expr);
+              name
+            });
             let (new_state, _) = parse_css(&format!("var(--{})", css_variable_name), css_state);
             css_state = Some(new_state);
           }
@@ -1449,7 +1469,7 @@ fn extract_leading_css_unit(css: &str) -> Option<&str> {
 /// Validates expressions used in CSS property values.
 /// Currently only allows arrow functions for dynamic values to make runtime behavior explicit.
 fn verify_valid_property_value_expr(expr: &Expr) -> bool {
-  match expr {
+  match unwrap_type_casts(expr) {
     // Allow arrow functions - this is the preferred format
     // e.g. styled.button`left: ${({$x}) => $x}px;`
     Expr::Arrow(_) => true,
