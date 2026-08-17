@@ -46,8 +46,9 @@ test(
     await expect(input).toHaveCSS("color", "rgb(0, 0, 0)");
     // Focused: global `input:focus-visible` (0-1-1) beats the component
     // class (0-1-0) — the state-scoped global rule wins, as it would with a
-    // plain global stylesheet. Text inputs match :focus-visible on any focus.
-    await input.focus();
+    // plain global stylesheet. A key press counts as keyboard interaction, so
+    // :focus-visible matches deterministically.
+    await input.press("Shift");
     await expect(input).toHaveCSS("color", "rgb(255, 165, 0)");
   }),
 );
