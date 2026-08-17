@@ -104,3 +104,23 @@ min(100%, calc((var(--ym7uBBuK) + 1) * 100% / (var(--ym7uBBuL) - 1)));
         "--ym7uBBuL": ({ $slideCount })=>$slideCount
     }
 });
+const Nested = /*YAK Extracted CSS:
+:global(.ym7uBBuM) {
+  left: var(--ym7uBBuN);
+  right: var(--ym7uBBuO);
+  @media (min-width: 768px) {
+    left: 0;
+    right: 0;
+  }
+  @media (min-width: 1025px) {
+    transform: translate(var(--ym7uBBuN), var(--ym7uBBuO));
+  }
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuM", {
+    "style": {
+        "--ym7uBBuN": /*#__PURE__*/ __yak_unitPostFix(({ $x })=>{
+            return $x;
+        }, "px"),
+        "--ym7uBBuO": /*#__PURE__*/ __yak_unitPostFix(({ $y })=>$y, "px")
+    }
+});

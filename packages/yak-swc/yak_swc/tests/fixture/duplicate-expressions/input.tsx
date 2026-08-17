@@ -54,3 +54,21 @@ const Dot = styled.div<{ $index: number; $slideCount: number }>`
     max(0%, calc((${({ $index }) => $index} - 1) * 100% / (${({ $slideCount }) => $slideCount} - 1)))
     min(100%, calc((${({ $index }) => $index} + 1) * 100% / (${({ $slideCount }) => $slideCount} - 1)));
 `;
+
+const Nested = styled.div<{ $x: number; $y: number }>`
+  left: ${({ $x }) => { 
+    return $x;
+  }}px;
+  right: ${({ $y }) => $y}px;
+  @media (min-width: 768px) {
+    left: 0;
+    right: 0;
+  }
+  @media (min-width: 1025px) {
+    transform: translate(${({ $x }) => { 
+      return $x;
+    }}px, ${({ $y }) => { 
+      return $y;
+    }}px);
+  }
+`;

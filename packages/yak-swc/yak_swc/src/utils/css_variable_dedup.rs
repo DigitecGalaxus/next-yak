@@ -65,6 +65,19 @@ impl VisitMut for Normalize {
     expr.visit_mut_children_with(self);
   }
 
+  fn visit_mut_arrow_expr(&mut self, arrow: &mut ArrowExpr) {
+    arrow.visit_mut_children_with(self);
+    // A block body which only returns is the same function as an expression
+    // body: `({ $x }) => { return $x }` equals `({ $x }) => $x`
+    if let BlockStmtOrExpr::BlockStmt(block) = &mut *arrow.body {
+      if let [Stmt::Return(return_stmt)] = &mut block.stmts[..] {
+        if let Some(value) = return_stmt.arg.take() {
+          arrow.body = Box::new(BlockStmtOrExpr::Expr(value));
+        }
+      }
+    }
+  }
+
   fn visit_mut_opt_ts_type_ann(&mut self, type_ann: &mut Option<Box<TsTypeAnn>>) {
     *type_ann = None;
   }
@@ -218,6 +231,19 @@ mod tests {
   #[test]
   fn parentheses_are_ignored() {
     assert!(is_deduplicated("({ $z }) => $z", "(({ $z }) => $z)"));
+  }
+
+  #[test]
+  fn return_only_block_bodies_match_expression_bodies() {
+    assert!(is_deduplicated(
+      "({ $x }) => $x",
+      "({ $x }) => { return $x; }"
+    ));
+    // A block with more than the return keeps its own variable
+    assert!(!is_deduplicated(
+      "({ $x }) => $x",
+      "({ $x }) => { log($x); return $x; }"
+    ));
   }
 
   #[test]
