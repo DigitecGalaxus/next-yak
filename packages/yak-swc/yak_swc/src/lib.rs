@@ -696,13 +696,10 @@ ${{() => {var}}};\n",
             let css_variable_name = reused_name.unwrap_or_else(|| {
               let readable_name = format!(
                 "{}__{}",
-                // Current variable name of the StyledComponent or Mixin
-                // e.g. Button for const Button = styled.button`color: red;`
-                self
-                  // TODO: check if parts should also be used for the name:
-                  .get_current_component_id()
-                  .id
-                  .0,
+                // Full path of the StyledComponent or Mixin, matching the
+                // class name, e.g. buttons.primary for
+                // const buttons = { primary: styled.button`color: red;` }
+                self.get_current_component_id().to_readable_string(),
                 // Current property name
                 // e.g. color for styled.button`color: red;`
                 css_state.as_ref().unwrap().current_declaration.property
