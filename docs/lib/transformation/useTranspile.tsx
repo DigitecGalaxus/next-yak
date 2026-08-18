@@ -3,6 +3,7 @@ import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { executeCode } from "./execute-code";
 import * as React from "react";
 import * as NextYakInternal from "next-yak/internal";
+import * as NextYakJsxRuntime from "next-yak/jsx-runtime";
 import * as HelpersWildcard from "@swc/helpers/_/_interop_require_wildcard";
 import * as HelpersDefault from "@swc/helpers/_/_interop_require_default";
 
@@ -77,6 +78,7 @@ export const useTranspile = (
         const result = executeCode(eventData, {
           react: React,
           "next-yak/internal": NextYakInternal,
+          "next-yak/jsx-runtime": NextYakJsxRuntime,
           ...allFilenames.reduce(
             (acc, filename) => ({
               ...acc,

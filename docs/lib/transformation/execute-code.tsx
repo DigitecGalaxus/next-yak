@@ -41,24 +41,19 @@ export function executeCode(
   const OriginalComponent = exports.default;
 
   let Comp = OriginalComponent;
-  // Create a wrapper component that includes the style
-  if (css && typeof OriginalComponent === "function") {
+  const styleSheets = [css, ...otherFilesTransformed.map((file) => file.css)].filter(Boolean);
+  // Create a wrapper component that includes the styles of every file
+  if (styleSheets.length && typeof OriginalComponent === "function") {
     Comp = (props: any) => {
       return React.createElement(
         React.Fragment,
         null,
-        [
+        styleSheets.map((sheet, idx) =>
           React.createElement("style", {
-            dangerouslySetInnerHTML: { __html: css },
-            key: "index",
+            dangerouslySetInnerHTML: { __html: sheet },
+            key: idx,
           }),
-          ...otherFilesTransformed.map(({ css }, idx) =>
-            React.createElement("style", {
-              dangerouslySetInnerHTML: { __html: css },
-              key: idx,
-            }),
-          ),
-        ],
+        ),
         // @ts-expect-error error
         React.createElement(OriginalComponent, props),
       );
@@ -201,6 +196,12 @@ async function transform(
           mangle: false,
         },
         preserveAllComments: true,
+        transform: {
+          react: {
+            runtime: "automatic",
+            importSource: "next-yak",
+          },
+        },
       },
       module: {
         type: "commonjs",
@@ -225,6 +226,12 @@ async function transform(
           mangle: false,
         },
         preserveAllComments: options?.showComments ?? true,
+        transform: {
+          react: {
+            runtime: "automatic",
+            importSource: "next-yak",
+          },
+        },
       },
       minify: false, // don't minify the react elements
     },
