@@ -21,8 +21,7 @@ const onmessage = async (event: MessageEvent<TranspileInput>) => {
     const response = await transformAll(
       transformFn,
       mainFile.name,
-      // add React so that the transformation is valid and can be run, but we don't need it in the editor
-      'import React from "react";\n' + mainFile.content,
+      mainFile.content,
       additionalFiles?.map(({ name, content }) => ({
         name,
         content,
