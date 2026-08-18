@@ -2,7 +2,7 @@ import type { ESTree } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
-export const enforceSemicolons = createRule("enforce-semicolon", {
+export const enforceSemicolons = createRule("enforce-semicolons", {
   meta: {
     type: "problem",
     docs: {

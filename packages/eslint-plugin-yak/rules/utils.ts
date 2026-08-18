@@ -41,11 +41,13 @@ export function isStyledOrCssTag(
   const { tag } = node;
 
   // Check for simple styled`` or css``
-  if (
-    tag.type === "Identifier" &&
-    (tag.name === importedNames.styled || tag.name === importedNames.css)
-  ) {
-    return "css";
+  if (tag.type === "Identifier") {
+    if (tag.name === importedNames.styled) {
+      return "styled";
+    }
+    if (tag.name === importedNames.css) {
+      return "css";
+    }
   }
   // Check for styled.button`` or styled(Component)``
   if (tag.type === "MemberExpression") {

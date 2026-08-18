@@ -5,7 +5,7 @@ import { cssGlobalDeprecated } from "./rules/cssGlobalDeprecated.js";
 import { enforceSemicolons } from "./rules/enforceSemicolon.js";
 import { styleConditions } from "./rules/styleConditions.js";
 
-const plugin = eslintCompatPlugin({
+const compatPlugin = eslintCompatPlugin({
   meta: {
     name: pkg.name,
   },
@@ -17,7 +17,13 @@ const plugin = eslintCompatPlugin({
   },
 });
 
-Object.assign(plugin.meta!, { version: pkg.version });
+const plugin = {
+  ...compatPlugin,
+  meta: {
+    name: pkg.name,
+    version: pkg.version,
+  },
+};
 
 const configs = {
   recommended: {
