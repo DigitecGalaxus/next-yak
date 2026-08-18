@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
+import type { ESTree, Location } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
@@ -7,8 +7,7 @@ import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 // but that's a rare edge case and acceptable for linting purposes
 const GLOBAL_SELECTOR_REGEX = /:global\([^)]*\)/g;
 
-export const cssGlobalDeprecated = createRule({
-  name: "css-global-deprecated",
+export const cssGlobalDeprecated = createRule("css-global-deprecated", {
   meta: {
     type: "problem",
     docs: {
@@ -22,14 +21,15 @@ export const cssGlobalDeprecated = createRule({
         "See https://yak.js.org/docs/migration-to-native-css for migration guide.",
     },
     schema: [],
+    defaultOptions: [],
   },
-  defaultOptions: [],
-  create: (context) => {
-    const { importedNames, ImportDeclaration } = importsNextYak();
+  createOnce: (context) => {
+    const { before, importedNames, ImportDeclaration } = importsNextYak();
     return {
+      before,
       ImportDeclaration,
       /** All return statements in styled/css literals */
-      TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
+      TaggedTemplateExpression(node: ESTree.TaggedTemplateExpression) {
         if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
@@ -38,7 +38,7 @@ export const cssGlobalDeprecated = createRule({
 
         if (
           !templateLiteral ||
-          templateLiteral.type !== AST_NODE_TYPES.TemplateLiteral ||
+          templateLiteral.type !== "TemplateLiteral" ||
           // No next-yak imports
           (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
@@ -58,10 +58,10 @@ export const cssGlobalDeprecated = createRule({
 
         // Find all :global() selectors in the code
         // Since ESLint runs on source code (not compiled), any :global() found is user-written
-        const matches = codeRaw.matchAll(GLOBAL_SELECTOR_REGEX);
-
-        for (const match of matches) {
-          const loc = getMatchLocation(codeRaw, templateLiteral, match.index!, match[0].length);
+        const selectorRegex = new RegExp(GLOBAL_SELECTOR_REGEX);
+        let match: RegExpExecArray | null;
+        while ((match = selectorRegex.exec(codeRaw)) !== null) {
+          const loc = getMatchLocation(codeRaw, templateLiteral, match.index, match[0].length);
 
           context.report({
             node: templateLiteral,
@@ -77,12 +77,12 @@ export const cssGlobalDeprecated = createRule({
 /**
  * Checks if the parent expression is a tagged template expression
  */
-function hasParentTaggedTemplateExpression(node: TSESTree.Node, maxLevels = 5): boolean {
+function hasParentTaggedTemplateExpression(node: ESTree.Node, maxLevels = 5): boolean {
   let currentLevel = 1;
-  let currentNode: TSESTree.Node | undefined = node.parent;
+  let currentNode: ESTree.Node | null = node.parent;
 
   while (currentNode && currentLevel < maxLevels) {
-    if (currentNode.type === AST_NODE_TYPES.TaggedTemplateExpression) {
+    if (currentNode.type === "TaggedTemplateExpression") {
       return true;
     }
 
@@ -98,11 +98,11 @@ function hasParentTaggedTemplateExpression(node: TSESTree.Node, maxLevels = 5): 
  */
 function getMatchLocation(
   sourceCode: string,
-  templateLiteral: TSESTree.TemplateLiteral,
+  templateLiteral: ESTree.TemplateLiteral,
   matchIndex: number,
   matchLength: number,
-): TSESTree.SourceLocation {
-  const templateStart = templateLiteral.range![0];
+): Location {
+  const templateStart = templateLiteral.range[0];
   const matchStart = templateStart + matchIndex + 1; // +1 for backtick
   const matchEnd = matchStart + matchLength;
 
@@ -139,12 +139,12 @@ function getMatchLocation(
 
   return {
     start: {
-      line: templateLiteral.loc!.start.line + startLine,
-      column: startLine === 0 ? templateLiteral.loc!.start.column + startColumn : startColumn,
+      line: templateLiteral.loc.start.line + startLine,
+      column: startLine === 0 ? templateLiteral.loc.start.column + startColumn : startColumn,
     },
     end: {
-      line: templateLiteral.loc!.start.line + endLine,
-      column: endLine === 0 ? templateLiteral.loc!.start.column + endColumn : endColumn,
+      line: templateLiteral.loc.start.line + endLine,
+      column: endLine === 0 ? templateLiteral.loc.start.column + endColumn : endColumn,
     },
   };
 }

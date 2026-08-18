@@ -1,9 +1,8 @@
-import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
+import type { ESTree } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
-export const enforceSemicolons = createRule({
-  name: "enforce-semicolons",
+export const enforceSemicolons = createRule("enforce-semicolon", {
   meta: {
     type: "problem",
     docs: {
@@ -15,13 +14,14 @@ export const enforceSemicolons = createRule({
     },
     fixable: "code",
     schema: [],
+    defaultOptions: [],
   },
-  defaultOptions: [],
-  create: (context) => {
-    const { importedNames, ImportDeclaration } = importsNextYak();
+  createOnce: (context) => {
+    const { before, importedNames, ImportDeclaration } = importsNextYak();
     return {
+      before,
       ImportDeclaration,
-      TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
+      TaggedTemplateExpression(node: ESTree.TaggedTemplateExpression) {
         if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
@@ -31,16 +31,13 @@ export const enforceSemicolons = createRule({
           return;
         }
 
-        if (templateLiteral.type !== AST_NODE_TYPES.TemplateLiteral) {
+        if (templateLiteral.type !== "TemplateLiteral") {
           throw new Error("Unexpected AST - bug in yakEnforceSemicolons");
         }
 
         // Look for all identifier expression inside the template e.g. ${foo} or ${foo.bar}
         templateLiteral.expressions.forEach((expression, index) => {
-          if (
-            expression.type !== AST_NODE_TYPES.Identifier &&
-            expression.type !== AST_NODE_TYPES.MemberExpression
-          ) {
+          if (expression.type !== "Identifier" && expression.type !== "MemberExpression") {
             return;
           }
 
@@ -60,9 +57,9 @@ export const enforceSemicolons = createRule({
 
           const previousExpressionType = templateLiteral.expressions[index - 1]?.type;
           const previousExpressionIsTerminating =
-            previousExpressionType === AST_NODE_TYPES.ArrowFunctionExpression ||
-            previousExpressionType === AST_NODE_TYPES.ConditionalExpression ||
-            previousExpressionType === AST_NODE_TYPES.LogicalExpression;
+            previousExpressionType === "ArrowFunctionExpression" ||
+            previousExpressionType === "ConditionalExpression" ||
+            previousExpressionType === "LogicalExpression";
 
           // check if the code before ends with a semicolon or a bracket or is an arrow function
           if (
@@ -87,7 +84,7 @@ export const enforceSemicolons = createRule({
   },
 });
 
-function getQuasiValue(quasi: TSESTree.TemplateElement | undefined) {
+function getQuasiValue(quasi: ESTree.TemplateElement | undefined) {
   if (!quasi) {
     return "";
   }

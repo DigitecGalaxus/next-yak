@@ -1,7 +1,7 @@
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as vitest from "vitest";
-import { cssGlobalDeprecated } from "./cssGlobalDeprecated.js";
+import yakPlugin from "../index.js";
 
 RuleTester.afterAll = vitest.afterAll;
 RuleTester.it = vitest.it;
@@ -9,6 +9,9 @@ RuleTester.itOnly = vitest.it.only;
 RuleTester.describe = vitest.describe;
 
 const ruleTester = new RuleTester({ languageOptions: { parser: tsParser } });
+const cssGlobalDeprecated = yakPlugin.rules["css-global-deprecated"] as unknown as Parameters<
+  typeof ruleTester.run
+>[1];
 
 ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
   valid: [
