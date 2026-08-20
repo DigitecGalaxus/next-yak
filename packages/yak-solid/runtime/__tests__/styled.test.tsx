@@ -215,6 +215,28 @@ it("should not emit an empty style object from mergeCssProp", () => {
   expect(result).toEqual({ class: "onlyClass" });
 });
 
+it("should forward unrelated props through mergeCssProp", () => {
+  // the compiled output spreads only mergeCssProp's result onto the element,
+  // so onClick, data-*, children etc. must survive the merge
+  const onClick = () => {};
+  const result = mergeCssProp(
+    { "data-testid": "button", onClick, children: "label", class: "user" },
+    css("cssPropClass"),
+  );
+  expect(result).toEqual({
+    "data-testid": "button",
+    onClick,
+    children: "label",
+    class: "user cssPropClass",
+  });
+});
+
+it("should apply no styles for a falsy css prop", () => {
+  // e.g. `css={on && css`...`}` with `on` being false
+  const result = mergeCssProp({ class: "user" }, false);
+  expect(result).toEqual({ class: "user" });
+});
+
 it("should forward a `component` prop to wrapped components", () => {
   // polymorphic targets (e.g. router links) accept a `component` prop -
   // it must reach them instead of being consumed by the render mechanism

@@ -666,6 +666,28 @@ importers:
         specifier: catalog:dev
         version: 8.1.1(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
 
+  e2e/bundlers/vite-solid:
+    dependencies:
+      '@solidjs/web':
+        specifier: catalog:solid
+        version: 2.0.0-rc.0(solid-js@2.0.0-rc.0)
+      '@yak/solid':
+        specifier: workspace:*
+        version: link:../../../packages/yak-solid
+      solid-js:
+        specifier: catalog:solid
+        version: 2.0.0-rc.0
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+      vite:
+        specifier: catalog:dev
+        version: 8.1.1(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
+      vite-plugin-solid:
+        specifier: catalog:solid
+        version: 3.0.0-next.27(@solidjs/web@2.0.0-rc.0(solid-js@2.0.0-rc.0))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.0)(vite@8.1.1(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+
   examples/next-js:
     dependencies:
       '@types/node':
