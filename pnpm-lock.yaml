@@ -879,6 +879,9 @@ importers:
       '@oxlint/plugins':
         specifier: catalog:dev
         version: 1.72.0
+      eslint:
+        specifier: '>=9.0.0'
+        version: 10.6.0(jiti@2.7.0)
     devDependencies:
       '@types/node':
         specifier: catalog:dev
@@ -889,15 +892,9 @@ importers:
       '@typescript-eslint/rule-tester':
         specifier: catalog:dev
         version: 8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
-      eslint:
-        specifier: catalog:dev
-        version: 10.6.0(jiti@2.7.0)
       eslint-doc-generator:
         specifier: catalog:dev
         version: 3.6.0(eslint@10.6.0(jiti@2.7.0))(prettier@3.9.4)(typescript@6.0.3)
-      next-yak:
-        specifier: workspace:*
-        version: link:../next-yak
       oxlint:
         specifier: catalog:dev
         version: 1.72.0

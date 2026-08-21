@@ -10,21 +10,10 @@ const fixtureDirectory = fileURLToPath(new URL("./fixtures/oxlint-cli/", import.
 
 describe("Oxlint CLI integration", () => {
   it("loads the package and resets import state between files", () => {
-    const result = spawnSync(
-      oxlintBin,
-      [
-        "--config",
-        ".oxlintrc.json",
-        "--format",
-        "json",
-        "input.ts",
-        "without-import.ts",
-      ],
-      {
-        cwd: fixtureDirectory,
-        encoding: "utf8",
-      },
-    );
+    const result = spawnSync(oxlintBin, ["--config", "config.json", "--format", "json", "."], {
+      cwd: fixtureDirectory,
+      encoding: "utf8",
+    });
 
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(1);

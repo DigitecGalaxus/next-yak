@@ -48,7 +48,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "pretest": "tsdown",
+    "pretest": "pnpm build",
     "test": "vitest",
     "check:docs": "pnpm build && eslint-doc-generator --check --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
     "update:docs": "pnpm build && eslint-doc-generator --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
@@ -61,9 +61,7 @@
     "@types/node": "catalog:dev",
     "@typescript-eslint/parser": "catalog:dev",
     "@typescript-eslint/rule-tester": "catalog:dev",
-    "eslint": "catalog:dev",
     "eslint-doc-generator": "catalog:dev",
-    "next-yak": "workspace:*",
     "oxlint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
