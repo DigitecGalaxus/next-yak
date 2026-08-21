@@ -1,0 +1,6 @@
+{
+  "jsPlugins": ["eslint-plugin-yak"],
+  "rules": {
+    "yak/css-nesting-operator": "error"
+  }
+}

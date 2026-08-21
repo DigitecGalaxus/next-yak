@@ -1,10 +1,8 @@
-import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
-import type { RuleFixer } from "@typescript-eslint/utils/ts-eslint";
+import type { ESTree, Fixer } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
-export const cssNestingOperator = createRule({
-  name: "css-nesting-operator",
+export const cssNestingOperator = createRule("css-nesting-operator", {
   meta: {
     type: "problem",
     docs: {
@@ -15,14 +13,15 @@ export const cssNestingOperator = createRule({
     },
     hasSuggestions: true,
     schema: [],
+    defaultOptions: [],
   },
-  defaultOptions: [],
-  create: (context) => {
-    const { importedNames, ImportDeclaration } = importsNextYak();
+  createOnce: (context) => {
+    const { before, importedNames, ImportDeclaration } = importsNextYak();
     return {
+      before,
       ImportDeclaration,
       /** All return statements in styled/css literals */
-      TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
+      TaggedTemplateExpression(node: ESTree.TaggedTemplateExpression) {
         if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
@@ -31,7 +30,7 @@ export const cssNestingOperator = createRule({
 
         if (
           !templateLiteral ||
-          templateLiteral.type !== AST_NODE_TYPES.TemplateLiteral ||
+          templateLiteral.type !== "TemplateLiteral" ||
           // No next-yak imports
           (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
@@ -95,7 +94,7 @@ export const cssNestingOperator = createRule({
               fixSnippet = "& ";
             }
 
-            fixFn = (fixer: RuleFixer) =>
+            fixFn = (fixer: Fixer) =>
               fixer.insertTextBeforeRange(
                 // End location doesn't matter, just take +1 of the start location
                 [selectorStartIndex, selectorStartIndex + 1],
@@ -142,12 +141,12 @@ export const cssNestingOperator = createRule({
 /**
  * Checks, if the parent expression is a tagged template expression, up to maxLevels up.
  */
-function hasParentTaggedTemplateExpression(node: TSESTree.Node, maxLevels = 5) {
+function hasParentTaggedTemplateExpression(node: ESTree.Node, maxLevels = 5) {
   let currentLevel = 1;
-  let currentNode: TSESTree.Node | undefined = node.parent;
+  let currentNode: ESTree.Node | null = node.parent;
 
   while (currentNode && currentLevel < maxLevels) {
-    if (currentNode.type === AST_NODE_TYPES.TaggedTemplateExpression) {
+    if (currentNode.type === "TaggedTemplateExpression") {
       return true;
     }
 

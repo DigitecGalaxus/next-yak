@@ -1,12 +1,13 @@
 {
   "name": "eslint-plugin-yak",
   "version": "1.2.0",
-  "description": "Eslint plugin for next-yak",
+  "description": "ESLint and Oxlint plugin for next-yak",
   "keywords": [
     "css-in-js",
     "eslint",
     "eslint-plugin",
     "eslintplugin",
+    "oxlint",
     "react",
     "styled-components",
     "typescript"
@@ -47,26 +48,31 @@
   },
   "scripts": {
     "build": "tsdown",
+    "pretest": "pnpm build",
     "test": "vitest",
     "check:docs": "pnpm build && eslint-doc-generator --check --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
     "update:docs": "pnpm build && eslint-doc-generator --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build && pnpm update:docs && pnpm test -- --watch=false"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "catalog:dev"
+    "@oxlint/plugins": "catalog:dev"
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
     "@typescript-eslint/parser": "catalog:dev",
     "@typescript-eslint/rule-tester": "catalog:dev",
     "eslint-doc-generator": "catalog:dev",
+    "oxlint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:dev"
   },
   "peerDependencies": {
-    "@typescript-eslint/parser": ">8.0.0",
-    "eslint": ">=9.0.0",
-    "typescript": ">=5.0.0"
+    "eslint": ">=9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
   }
 }

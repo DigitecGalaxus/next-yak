@@ -9,6 +9,8 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "allowJs": true
-  }
+    "allowJs": true,
+    "types": ["node"]
+  },
+  "exclude": ["rules/fixtures"]
 }

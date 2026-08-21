@@ -1,7 +1,7 @@
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as vitest from "vitest";
-import { cssNestingOperator } from "./cssNestingOperator.js";
+import yakPlugin from "../index.js";
 
 RuleTester.afterAll = vitest.afterAll;
 RuleTester.it = vitest.it;
@@ -9,6 +9,9 @@ RuleTester.itOnly = vitest.it.only;
 RuleTester.describe = vitest.describe;
 
 const ruleTester = new RuleTester({ languageOptions: { parser: tsParser } });
+const cssNestingOperator = yakPlugin.rules["css-nesting-operator"] as unknown as Parameters<
+  typeof ruleTester.run
+>[1];
 
 const getErrorWithSuggestionsCode = (options: { code: string }) =>
   [

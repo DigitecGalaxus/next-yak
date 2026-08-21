@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES, TSESLint, TSESTree } from "@typescript-eslint/utils";
+import type { ESTree, SourceCode } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
 import { importsNextYak, isStyledOrCssTag } from "./utils.js";
 
@@ -7,8 +7,7 @@ type ImportedNames = {
   css?: string;
 };
 
-export const styleConditions = createRule({
-  name: "style-conditions",
+export const styleConditions = createRule("style-conditions", {
   meta: {
     type: "suggestion",
     docs: {
@@ -30,13 +29,14 @@ export const styleConditions = createRule({
         "The CSS property is outside the arrow function but its value returns a css`...` literal, which next-yak can't combine into a single declaration. Move the whole declaration inside the css literal so it holds the property too, or drop the css`` and return a plain runtime value.",
     },
     schema: [],
+    defaultOptions: [],
   },
-  defaultOptions: [],
-  create: (context) => {
-    const { importedNames, ImportDeclaration } = importsNextYak();
+  createOnce: (context) => {
+    const { before, importedNames, ImportDeclaration } = importsNextYak();
     return {
+      before,
       ImportDeclaration,
-      TaggedTemplateExpression(node: TSESTree.TaggedTemplateExpression) {
+      TaggedTemplateExpression(node: ESTree.TaggedTemplateExpression) {
         if (importedNames.styled === undefined && importedNames.css === undefined) {
           return;
         }
@@ -76,7 +76,7 @@ export const styleConditions = createRule({
 
       /** All return statements in styled/css literals */
       "TaggedTemplateExpression :matches(ArrowFunctionExpression, ReturnStatement)"(
-        node: TSESTree.ReturnStatement | TSESTree.ArrowFunctionExpression,
+        node: ESTree.ReturnStatement | ESTree.ArrowFunctionExpression,
       ) {
         // Skip if this is an arrow function inside the .attrs method
         if (isInsideAttrsMethod(node)) {
@@ -100,9 +100,9 @@ export const styleConditions = createRule({
         // Get the return value of the arrow function or the return statement
         // e.g. `() => 42` or () => { return 42 }`
         const returnValue =
-          node.type === AST_NODE_TYPES.ReturnStatement
+          node.type === "ReturnStatement"
             ? node.argument
-            : node.body.type !== AST_NODE_TYPES.BlockStatement
+            : node.body.type !== "BlockStatement"
               ? node.body
               : undefined;
 
@@ -139,35 +139,35 @@ export const styleConditions = createRule({
  * Searches the node and its parents for the first css``, styled.sth`` or styled(Component)``
  */
 function findClosestStyledOrCssTag(
-  node: TSESTree.Node,
+  node: ESTree.Node,
   importedNames: ImportedNames,
 ):
   | {
       tag: undefined;
       type: undefined;
-      needle: TSESTree.Node;
-      params: TSESTree.Parameter[];
+      needle: ESTree.Node;
+      params: ESTree.ParamPattern[];
     }
   | {
-      tag: TSESTree.TaggedTemplateExpression;
+      tag: ESTree.TaggedTemplateExpression;
       type: "css" | "styled";
-      needle: TSESTree.Node;
-      params: TSESTree.Parameter[];
+      needle: ESTree.Node;
+      params: ESTree.ParamPattern[];
     } {
-  let current: TSESTree.Node | undefined = node;
-  let params: TSESTree.Parameter[] = [];
-  let needle: TSESTree.Node = node;
+  let current: ESTree.Node | null = node;
+  let params: ESTree.ParamPattern[] = [];
+  let needle: ESTree.Node = node;
 
   while (current) {
-    if (current.type === AST_NODE_TYPES.ArrowFunctionExpression) {
+    if (current.type === "ArrowFunctionExpression") {
       params = current.params;
     } else {
       const type = isStyledOrCssTag(current, importedNames);
-      if (type && current.type === AST_NODE_TYPES.TaggedTemplateExpression) {
+      if (type && current.type === "TaggedTemplateExpression") {
         return { tag: current, needle, params, type };
       }
     }
-    if (current.type !== AST_NODE_TYPES.TemplateLiteral) {
+    if (current.type !== "TemplateLiteral") {
       needle = current;
     }
     current = current.parent;
@@ -194,13 +194,13 @@ function buildRuntimeExample({
   importedNames,
   sourceCode,
 }: {
-  tag: TSESTree.TaggedTemplateExpression;
-  needle: TSESTree.Node;
-  returnValue: TSESTree.Node;
+  tag: ESTree.TaggedTemplateExpression;
+  needle: ESTree.Node;
+  returnValue: ESTree.Node;
   importedNames: ImportedNames;
-  sourceCode: TSESLint.SourceCode;
+  sourceCode: SourceCode;
 }): { property: string; before: string; after: string; example: string } | undefined {
-  if (needle.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
+  if (needle.type !== "ArrowFunctionExpression") {
     return undefined;
   }
   const property = getDeclarationProperty(tag, needle);
@@ -240,12 +240,12 @@ function buildCssTrapExample({
   importedNames,
   sourceCode,
 }: {
-  tag: TSESTree.TaggedTemplateExpression;
-  needle: TSESTree.Node;
-  cssLiteral: TSESTree.TaggedTemplateExpression;
-  params: TSESTree.Parameter[];
+  tag: ESTree.TaggedTemplateExpression;
+  needle: ESTree.Node;
+  cssLiteral: ESTree.TaggedTemplateExpression;
+  params: ESTree.ParamPattern[];
   importedNames: ImportedNames;
-  sourceCode: TSESLint.SourceCode;
+  sourceCode: SourceCode;
 }):
   | {
       kind: "move";
@@ -259,7 +259,7 @@ function buildCssTrapExample({
     }
   | { kind: "drop"; data: { property: string; value: string; before: string; after: string } }
   | undefined {
-  if (needle.type !== AST_NODE_TYPES.ArrowFunctionExpression) {
+  if (needle.type !== "ArrowFunctionExpression") {
     return undefined;
   }
   const property = getDeclarationProperty(tag, needle);
@@ -272,9 +272,7 @@ function buildCssTrapExample({
   const body = needle.body;
   const isDirect = body === cssLiteral;
   const isAndTail =
-    body.type === AST_NODE_TYPES.LogicalExpression &&
-    body.operator === "&&" &&
-    body.right === cssLiteral;
+    body.type === "LogicalExpression" && body.operator === "&&" && body.right === cssLiteral;
   if (!isDirect && !isAndTail) {
     return undefined;
   }
@@ -319,8 +317,8 @@ function buildCssTrapExample({
  * tag. e.g. for `z-index: ${needle}` it returns `"z-index: "`.
  */
 function getQuasiBeforeExpression(
-  tag: TSESTree.TaggedTemplateExpression,
-  needle: TSESTree.Node,
+  tag: ESTree.TaggedTemplateExpression,
+  needle: ESTree.Node,
 ): string | undefined {
   const index = tag.quasi.expressions.findIndex((expr) => expr === needle);
   if (index === -1) {
@@ -346,8 +344,8 @@ type CssParserState = {
  * followed without resolving JavaScript values.
  */
 function isInsideCssDeclarationValue(
-  tag: TSESTree.TaggedTemplateExpression,
-  needle: TSESTree.Node,
+  tag: ESTree.TaggedTemplateExpression,
+  needle: ESTree.Node,
 ): boolean {
   const expressionIndex = tag.quasi.expressions.findIndex((expression) => expression === needle);
   if (expressionIndex === -1) {
@@ -456,8 +454,8 @@ function hasOddNumberOfPrecedingBackslashes(segment: string, index: number): boo
  * function isn't sitting in a declaration position (`property: ${...}`).
  */
 function getDeclarationProperty(
-  tag: TSESTree.TaggedTemplateExpression,
-  needle: TSESTree.Node,
+  tag: ESTree.TaggedTemplateExpression,
+  needle: ESTree.Node,
 ): string | undefined {
   const before = getQuasiBeforeExpression(tag, needle)?.trimEnd();
   if (before === undefined || !before.endsWith(":")) {
@@ -472,13 +470,13 @@ function getDeclarationProperty(
  * and zero-expression template literals). Returns undefined for anything dynamic,
  * which signals that no clean example can be built.
  */
-function renderCssValue(node: TSESTree.Node): string | undefined {
-  if (node.type === AST_NODE_TYPES.Literal) {
+function renderCssValue(node: ESTree.Node): string | undefined {
+  if (node.type === "Literal") {
     if (typeof node.value === "string") return node.value;
     if (typeof node.value === "number") return String(node.value);
     return undefined;
   }
-  if (node.type === AST_NODE_TYPES.TemplateLiteral && node.expressions.length === 0) {
+  if (node.type === "TemplateLiteral" && node.expressions.length === 0) {
     return node.quasis[0].value.cooked ?? undefined;
   }
   return undefined;
@@ -498,13 +496,13 @@ function buildAfterExample({
 }: {
   property: string;
   paramText: string;
-  returnValue: TSESTree.Node;
+  returnValue: ESTree.Node;
   cssName: string;
-  sourceCode: TSESLint.SourceCode;
+  sourceCode: SourceCode;
 }): { after: string; example: string } | undefined {
   const head = `(${paramText}) =>`;
 
-  if (returnValue.type === AST_NODE_TYPES.ConditionalExpression) {
+  if (returnValue.type === "ConditionalExpression") {
     if (!isValidTestExpression(returnValue.test)) {
       return undefined;
     }
@@ -521,7 +519,7 @@ function buildAfterExample({
     };
   }
 
-  if (returnValue.type === AST_NODE_TYPES.LogicalExpression && returnValue.operator === "&&") {
+  if (returnValue.type === "LogicalExpression" && returnValue.operator === "&&") {
     const value = renderCssValue(returnValue.right);
     if (value === undefined) {
       return undefined;
@@ -539,10 +537,10 @@ function buildAfterExample({
  *
  * e.g. css`color: red`
  */
-function isCssLiteral(node: TSESTree.Node, importedNames: ImportedNames): boolean {
+function isCssLiteral(node: ESTree.Node, importedNames: ImportedNames): boolean {
   return (
-    node.type === AST_NODE_TYPES.TaggedTemplateExpression &&
-    node.tag.type === AST_NODE_TYPES.Identifier &&
+    node.type === "TaggedTemplateExpression" &&
+    node.tag.type === "Identifier" &&
     node.tag.name === importedNames.css
   );
 }
@@ -554,34 +552,34 @@ function isCssLiteral(node: TSESTree.Node, importedNames: ImportedNames): boolea
  * In this example foo and foo.bar are valid:
  * `(foo) => foo.bar` or `(foo) => foo`
  */
-function isValidIdentifier(node: TSESTree.Node, params: TSESTree.Parameter[]): boolean {
-  if (node.type === AST_NODE_TYPES.Identifier) {
+function isValidIdentifier(node: ESTree.Node, params: ESTree.ParamPattern[]): boolean {
+  if (node.type === "Identifier") {
     return params.some((param) => {
-      if (param.type === AST_NODE_TYPES.Identifier) {
+      if (param.type === "Identifier") {
         return param.name === node.name;
       }
-      if (param.type === AST_NODE_TYPES.ObjectPattern) {
+      if (param.type === "ObjectPattern") {
         return param.properties.some(
           (prop) =>
-            prop.type === AST_NODE_TYPES.Property &&
-            prop.key.type === AST_NODE_TYPES.Identifier &&
+            prop.type === "Property" &&
+            prop.key.type === "Identifier" &&
             prop.key.name === node.name,
         );
       }
       return false;
     });
   }
-  if (node.type === AST_NODE_TYPES.MemberExpression) {
+  if (node.type === "MemberExpression") {
     return isValidIdentifier(node.object, params);
   }
   return false;
 }
 
-function isFalsyLiteral(node: TSESTree.Node): boolean {
+function isFalsyLiteral(node: ESTree.Node): boolean {
   return (
-    (node.type === AST_NODE_TYPES.Literal &&
+    (node.type === "Literal" &&
       (node.value === null || node.value === false || node.value === 0 || node.value === "")) ||
-    (node.type === AST_NODE_TYPES.Identifier && (node.name === "undefined" || node.name === "null"))
+    (node.type === "Identifier" && (node.name === "undefined" || node.name === "null"))
   );
 }
 
@@ -589,29 +587,29 @@ function isFalsyLiteral(node: TSESTree.Node): boolean {
  * Verifies that the expression uses a value fro the params
  */
 function isNodeAccessingParams(
-  node: TSESTree.Node,
-  params: TSESTree.Parameter[],
+  node: ESTree.Node,
+  params: ESTree.ParamPattern[],
   importedNames: ImportedNames,
 ): boolean {
   switch (node.type) {
-    case AST_NODE_TYPES.Literal:
+    case "Literal":
       // A literal is not a runtime value
       return false;
-    case AST_NODE_TYPES.TemplateLiteral:
+    case "TemplateLiteral":
       // If at least one expression uses a runtime value, the whole template literal is valid
       return (
         node.expressions.length > 0 &&
         node.expressions.some((expr) => isNodeAccessingParams(expr, params, importedNames))
       );
-    case AST_NODE_TYPES.Identifier:
+    case "Identifier":
       // An identifier is valid if it's a parameter
       return isValidIdentifier(node, params);
-    case AST_NODE_TYPES.MemberExpression:
+    case "MemberExpression":
       //
       return isValidIdentifier(node, params);
-    case AST_NODE_TYPES.TaggedTemplateExpression:
+    case "TaggedTemplateExpression":
       return isCssLiteral(node, importedNames);
-    case AST_NODE_TYPES.LogicalExpression:
+    case "LogicalExpression":
       // logical operators are valid if the left side is a valid test expression
       // e.g.: isLarge($size) && css`width: 100px`
       if (node.operator === "&&" && isValidTestExpression(node.left)) {
@@ -622,31 +620,31 @@ function isNodeAccessingParams(
         isNodeAccessingParams(node.left, params, importedNames) &&
         isNodeAccessingParams(node.right, params, importedNames)
       );
-    case AST_NODE_TYPES.ConditionalExpression:
+    case "ConditionalExpression":
       return (
         isValidTestExpression(node.test) &&
         (isNodeAccessingParams(node.consequent, params, importedNames) ||
           isNodeAccessingParams(node.alternate, params, importedNames))
       );
-    case AST_NODE_TYPES.BinaryExpression:
+    case "BinaryExpression":
       // Other binary expressions like +, -, etc. are valid if at least one side is a runtime value
       return (
         isNodeAccessingParams(node.left, params, importedNames) ||
         isNodeAccessingParams(node.right, params, importedNames)
       );
-    case AST_NODE_TYPES.CallExpression:
+    case "CallExpression":
       // A call is a runtime value if the callee or any argument is prop-derived, e.g. Math.max(6, $baseWidth)
       return (
         isNodeAccessingParams(node.callee, params, importedNames) ||
         node.arguments.some((argument) =>
           isNodeAccessingParams(
-            argument.type === AST_NODE_TYPES.SpreadElement ? argument.argument : argument,
+            argument.type === "SpreadElement" ? argument.argument : argument,
             params,
             importedNames,
           ),
         )
       );
-    case AST_NODE_TYPES.UnaryExpression:
+    case "UnaryExpression":
       return isNodeAccessingParams(node.argument, params, importedNames);
     default:
       return isFalsyLiteral(node);
@@ -656,28 +654,28 @@ function isNodeAccessingParams(
 /**
  * Expressions that can be used as test expressions in logical operators or conditionals
  */
-function isValidTestExpression(node: TSESTree.Node): boolean {
+function isValidTestExpression(node: ESTree.Node): boolean {
   switch (node.type) {
     // true or false
-    case AST_NODE_TYPES.Literal:
+    case "Literal":
       return node.value === true || node.value === false;
     // x
-    case AST_NODE_TYPES.Identifier:
+    case "Identifier":
       return true;
     // x.isLarge
-    case AST_NODE_TYPES.MemberExpression:
+    case "MemberExpression":
       return true;
     // !x
-    case AST_NODE_TYPES.UnaryExpression:
+    case "UnaryExpression":
       return true;
     // test(x)
-    case AST_NODE_TYPES.CallExpression:
+    case "CallExpression":
       return true;
     // x === 4
-    case AST_NODE_TYPES.LogicalExpression:
+    case "LogicalExpression":
       return true;
     // x > 4
-    case AST_NODE_TYPES.BinaryExpression:
+    case "BinaryExpression":
       return true;
     default:
       return false;
@@ -687,23 +685,20 @@ function isValidTestExpression(node: TSESTree.Node): boolean {
 /**
  * Checks if a node is inside the attrs method of a styled component
  */
-function isInsideAttrsMethod(node: TSESTree.Node): boolean {
-  let current: TSESTree.Node | undefined = node;
+function isInsideAttrsMethod(node: ESTree.Node): boolean {
+  let current: ESTree.Node | null = node;
 
   while (current && current.parent) {
     // Check if parent is a CallExpression
-    if (current.parent.type === AST_NODE_TYPES.CallExpression) {
+    if (current.parent.type === "CallExpression") {
       const callExpr = current.parent;
 
       // Check if the callee is a MemberExpression
-      if (callExpr.callee.type === AST_NODE_TYPES.MemberExpression) {
+      if (callExpr.callee.type === "MemberExpression") {
         const memberExpr = callExpr.callee;
 
         // Check if the property name is 'attrs'
-        if (
-          memberExpr.property.type === AST_NODE_TYPES.Identifier &&
-          memberExpr.property.name === "attrs"
-        ) {
+        if (memberExpr.property.type === "Identifier" && memberExpr.property.name === "attrs") {
           return true;
         }
       }

@@ -1,6 +1,6 @@
 # eslint-plugin-yak
 
-ESLint plugin for [next-yak](https://yak.js.org/) - a powerful CSS-in-JS library for React applications.
+ESLint and Oxlint plugin for [next-yak](https://yak.js.org/) - a powerful CSS-in-JS library for React applications.
 
 Helps with the migration from `styled-components` to `next-yak` and nudges you towards using it the most performant way.
 
@@ -10,7 +10,7 @@ Helps with the migration from `styled-components` to `next-yak` and nudges you t
 npm install --save-dev eslint-plugin-yak
 ```
 
-## Usage
+## ESLint
 
 ### Recommended
 
@@ -41,6 +41,23 @@ export default defineConfig({
     "eslint-plugin-yak/style-conditions": "off",
   },
 });
+```
+
+## Oxlint
+
+Add the package to `jsPlugins` and enable the rules with their `yak` prefix:
+
+```jsonc
+// .oxlintrc.json
+{
+  "jsPlugins": ["eslint-plugin-yak"],
+  "rules": {
+    "yak/css-nesting-operator": "error",
+    "yak/css-global-deprecated": "warn",
+    "yak/enforce-semicolon": "error",
+    "yak/style-conditions": "warn"
+  }
+}
 ```
 
 ## Rules
