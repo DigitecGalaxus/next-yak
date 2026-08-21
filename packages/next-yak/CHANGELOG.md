@@ -1,5 +1,13 @@
 # next-yak
 
+## 9.8.0
+
+### Patch Changes
+
+- Updated dependencies [9efbae5]
+- Updated dependencies [1060025]
+  - yak-swc@9.8.0
+
 ## 9.7.0
 
 ### Minor Changes
@@ -23,7 +31,9 @@
   const App = () => <Icon $active={on} />;
 
   // compiles to
-  const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />;
+  const App = () => (
+    <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />
+  );
   ```
 
   What folds:
