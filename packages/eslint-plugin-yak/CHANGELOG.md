@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.3.0
+
+### Minor Changes
+
+- 4b0d3c7: Add direct Oxlint JS plugin support while preserving ESLint compatibility. Rules now use Oxlint's `createOnce` API and can be loaded directly through `jsPlugins` without installing ESLint.
+
 ## 1.2.0
 
 ### Minor Changes
