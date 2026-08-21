@@ -107,6 +107,12 @@ const Cases = ()=><>
     { /* static component: a string className merges at compile time */ }
     <div className={"input_Card_m7uBBu user"}>static merge</div>
 
+    { /* a static component reads no prop, so its $props are dropped with their
+        values - an unread $prop never evaluates, like on a dynamic component */ }
+    <div id={g()} className="input_Card_m7uBBu">
+      static component drops the unread transient prop
+    </div>
+
     { /* the chain collapses, so the usage folds to a plain div */ }
     <div className={"input_Card_m7uBBu input_Fancy_m7uBBu extra"}>wrapper fold</div>
 

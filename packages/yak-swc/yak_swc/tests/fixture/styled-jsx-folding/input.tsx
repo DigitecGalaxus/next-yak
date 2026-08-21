@@ -140,7 +140,10 @@ const Optimizable = ({ active }: { active?: boolean }) => (
     </Card>
     <Card className="user">static class name merge</Card>
     <Card className={active && "active"}>runtime class name merge</Card>
-    <Card $foo="forwarded">$props are not filtered</Card>
+    <Card $foo="dropped">$props never reach the element</Card>
+    <Card $bare $value={active} className="user">
+      every $prop is dropped, whatever its value
+    </Card>
     <Card
       css={css`
         color: orange;
@@ -155,12 +158,20 @@ const Optimizable = ({ active }: { active?: boolean }) => (
     <Cast>folds through the type cast</Cast>
     <Extended>collapses to a plain div</Extended>
     <Extended className="user">collapses and merges the className</Extended>
-    <ExtendedTwice>collapses the whole three-level chain</ExtendedTwice>
+    <ExtendedTwice $deep>
+      collapses the whole three-level chain and drops the $prop
+    </ExtendedTwice>
     <FancyTitle>collapses the exported chain</FancyTitle>
-    <OfDynamic>folds to the dynamic parent, chain not collapsed</OfDynamic>
-    <OfAttrs>folds to the attrs parent, chain not collapsed</OfAttrs>
+    <OfDynamic $on={active}>
+      folds to the dynamic parent, which still reads the $prop
+    </OfDynamic>
+    <OfAttrs $foo="kept">
+      folds to the attrs parent, which strips the $prop at runtime
+    </OfAttrs>
     <OfLater>folds to the later-declared parent, chain not collapsed</OfLater>
-    <ExtendedImport>folds to the imported component</ExtendedImport>
+    <ExtendedImport $on={active}>
+      folds to the imported component, which may read the $prop
+    </ExtendedImport>
     <BoxWithMixin>folds with mixin</BoxWithMixin>
   </>
 );
