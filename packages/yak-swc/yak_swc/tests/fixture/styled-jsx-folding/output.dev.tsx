@@ -219,7 +219,10 @@ const Optimizable = ({ active }: {
     </div>
     <div className={"input_Card_m7uBBu user"}>static class name merge</div>
     <div className={__yak_mergeClassNames("input_Card_m7uBBu", active && "active")}>runtime class name merge</div>
-    <div $foo="forwarded" className="input_Card_m7uBBu">$props are not filtered</div>
+    <div className="input_Card_m7uBBu">$props never reach the element</div>
+    <div className={"input_Card_m7uBBu user"}>
+      every $prop is dropped, whatever its value
+    </div>
     <div className={/*YAK Extracted CSS:
 :global(.input_Optimizable_m7uBBu) {
   color: orange;
@@ -234,12 +237,20 @@ const Optimizable = ({ active }: {
     <div className="input_Cast_m7uBBu">folds through the type cast</div>
     <div className="input_Card_m7uBBu input_Extended_m7uBBu">collapses to a plain div</div>
     <div className={"input_Card_m7uBBu input_Extended_m7uBBu user"}>collapses and merges the className</div>
-    <div className="input_Card_m7uBBu input_Extended_m7uBBu input_ExtendedTwice_m7uBBu">collapses the whole three-level chain</div>
+    <div className="input_Card_m7uBBu input_Extended_m7uBBu input_ExtendedTwice_m7uBBu">
+      collapses the whole three-level chain and drops the $prop
+    </div>
     <h1 className="input_Title_m7uBBu input_FancyTitle_m7uBBu">collapses the exported chain</h1>
-    <ToggleBase className="input_OfDynamic_m7uBBu">folds to the dynamic parent, chain not collapsed</ToggleBase>
-    <WithAttrs className="input_OfAttrs_m7uBBu">folds to the attrs parent, chain not collapsed</WithAttrs>
+    <ToggleBase $on={active} className="input_OfDynamic_m7uBBu">
+      folds to the dynamic parent, which still reads the $prop
+    </ToggleBase>
+    <WithAttrs $foo="kept" className="input_OfAttrs_m7uBBu">
+      folds to the attrs parent, which strips the $prop at runtime
+    </WithAttrs>
     <Later className="input_OfLater_m7uBBu">folds to the later-declared parent, chain not collapsed</Later>
-    <ImportedCard className="input_ExtendedImport_m7uBBu">folds to the imported component</ImportedCard>
+    <ImportedCard $on={active} className="input_ExtendedImport_m7uBBu">
+      folds to the imported component, which may read the $prop
+    </ImportedCard>
     <div className="input_BoxWithMixin_m7uBBu">folds with mixin</div>
   </>;
 // bails: wrapped in React.memo - the HOC result must not fold to a bare DOM element

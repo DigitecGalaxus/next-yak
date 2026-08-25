@@ -31,9 +31,7 @@
   const App = () => <Icon $active={on} />;
 
   // compiles to
-  const App = () => (
-    <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />
-  );
+  const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />;
   ```
 
   What folds:

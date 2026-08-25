@@ -171,7 +171,10 @@ const Optimizable = ({ active }: {
     </div>
     <div className={"ym7uBBu1 user"}>static class name merge</div>
     <div className={__yak_mergeClassNames("ym7uBBu1", active && "active")}>runtime class name merge</div>
-    <div $foo="forwarded" className="ym7uBBu1">$props are not filtered</div>
+    <div className="ym7uBBu1">$props never reach the element</div>
+    <div className={"ym7uBBu1 user"}>
+      every $prop is dropped, whatever its value
+    </div>
     <div className={/*YAK Extracted CSS:
 :global(.ym7uBBuR) {
   color: orange;
@@ -186,12 +189,20 @@ const Optimizable = ({ active }: {
     <div className="ym7uBBuP">folds through the type cast</div>
     <div className="ym7uBBu1 ym7uBBu7">collapses to a plain div</div>
     <div className={"ym7uBBu1 ym7uBBu7 user"}>collapses and merges the className</div>
-    <div className="ym7uBBu1 ym7uBBu7 ym7uBBu8">collapses the whole three-level chain</div>
+    <div className="ym7uBBu1 ym7uBBu7 ym7uBBu8">
+      collapses the whole three-level chain and drops the $prop
+    </div>
     <h1 className="ym7uBBu3 ym7uBBu9">collapses the exported chain</h1>
-    <ToggleBase className="ym7uBBuD">folds to the dynamic parent, chain not collapsed</ToggleBase>
-    <WithAttrs className="ym7uBBuE">folds to the attrs parent, chain not collapsed</WithAttrs>
+    <ToggleBase $on={active} className="ym7uBBuD">
+      folds to the dynamic parent, which still reads the $prop
+    </ToggleBase>
+    <WithAttrs $foo="kept" className="ym7uBBuE">
+      folds to the attrs parent, which strips the $prop at runtime
+    </WithAttrs>
     <Later className="ym7uBBuJ">folds to the later-declared parent, chain not collapsed</Later>
-    <ImportedCard className="ym7uBBuA">folds to the imported component</ImportedCard>
+    <ImportedCard $on={active} className="ym7uBBuA">
+      folds to the imported component, which may read the $prop
+    </ImportedCard>
     <div className="ym7uBBuQ">folds with mixin</div>
   </>;
 // bails: wrapped in React.memo - the HOC result must not fold to a bare DOM element

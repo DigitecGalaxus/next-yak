@@ -385,7 +385,7 @@ A folded usage is no longer a component, and that has a few visible effects.
 
 - **It does not show in React DevTools or component stacks.** The wrapper is gone, so there is nothing named to display. This holds in development too, so development and production behave the same, and `displayName` has no effect on a folded usage.
 - **`child.type === Card` no longer matches it.** A folded usage is a plain element, so code that compares against the styled component finds a `div`, not `Card`.
-- **Foreign `$`-prefixed props reach the DOM on a fully static fold.** The runtime filters unknown `$props`; a fully static folded usage forwards them to the element instead. A class-toggling fold drops all `$props`, exactly as the runtime does.
+- **`$`-prefixed props are dropped when the fold produces a plain element**, exactly as the runtime drops them before the DOM. A fold to a wrapped component keeps them, because that component may still read them for its own class names.
 - **Prop expressions run the same number of times, in the same order, as the original JSX.** The two exceptions are cases React's own purity rule already forbids: an unread `$prop` is dropped without running, and a getter behind a member read (`$a={obj.x}`) fires each time a condition reads it.
 
 <Callout type="warn">

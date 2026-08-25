@@ -131,9 +131,11 @@ impl FoldVisitor<'_> {
         attr.value = Some(value);
       }
     }
-    // the class-toggling expressions consumed the $props at compile time -
-    // drop them all like the runtime does before the DOM
-    if !component.runtime_expressions.is_empty() {
+    // the runtime strips every $prop before the element, so a fold to a plain
+    // element has to as well - the class-toggling expressions already consumed
+    // the ones they read at compile time. A component target keeps them: it may
+    // be a yak component which still has to read them for its own classes
+    if matches!(component.target, FoldTarget::Native(_)) {
       n.opening.attrs.retain(|attr| !is_transient_prop(attr));
     }
     plan.bindings
@@ -396,10 +398,10 @@ impl FoldVisitor<'_> {
   /// Checks all attributes and computes the folded className value
   /// Returns `None` if the usage is not foldable
   ///
-  /// All other attributes (style, ref, event handlers, $props of fully
-  /// static components) are forwarded unchanged - a fully static styled
-  /// component passes them through to the DOM element or the wrapped
-  /// component. Foreign $props are treated as user error and not filtered out
+  /// All other attributes (style, ref, event handlers) are forwarded
+  /// unchanged - a fully static styled component passes them through to the
+  /// DOM element or the wrapped component. $props are dropped from a fold to a
+  /// plain element, like the runtime drops them before the DOM
   fn fold_attrs(
     &mut self,
     attrs: &[JSXAttrOrSpread],
