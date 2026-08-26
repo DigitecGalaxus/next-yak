@@ -97,6 +97,13 @@ pub struct Config {
   /// when another library on the same element uses its own `css` prop.
   #[serde(default = "Config::strict_css_prop_default")]
   pub strict_css_prop: bool,
+  /// Emit the /*YAK Extracted CSS:*/ comments (and their exported-component
+  /// metadata) that loaders parse to extract the CSS. Enabled by default.
+  /// A bundler plugin that reads the CSS through a separate transform (e.g.
+  /// the Vite plugin's virtual CSS modules) can disable this for the JS it
+  /// serves. The output then stays byte-identical under CSS-only edits.
+  #[serde(default = "Config::emit_css_comments_default")]
+  pub emit_css_comments: bool,
 }
 
 impl Config {
@@ -109,6 +116,10 @@ impl Config {
   }
 
   fn strict_css_prop_default() -> bool {
+    true
+  }
+
+  fn emit_css_comments_default() -> bool {
     true
   }
 
@@ -133,6 +144,7 @@ impl Default for Config {
       react_refresh_reg: Default::default(),
       fold_static: Config::fold_static_default(),
       strict_css_prop: Config::strict_css_prop_default(),
+      emit_css_comments: Config::emit_css_comments_default(),
     }
   }
 }
@@ -234,6 +246,8 @@ where
   function_depth: u32,
   /// Fail loudly on a `css` prop next-yak can't handle instead of leaving it untouched
   strict_css_prop: bool,
+  /// Emit the /*YAK Extracted CSS:*/ comments loaders parse to extract the CSS
+  emit_css_comments: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -251,6 +265,7 @@ where
     react_refresh_reg: bool,
     fold_static: bool,
     strict_css_prop: bool,
+    emit_css_comments: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -282,6 +297,7 @@ where
       global_style_error: false,
       function_depth: 0,
       strict_css_prop,
+      emit_css_comments,
     }
   }
 
@@ -986,7 +1002,11 @@ where
       };
     }
     if let Expr::Ident(ident) = default_expr {
-      if let Some(comment) = self.default_export_comment.as_ref() {
+      if let Some(comment) = self
+        .default_export_comment
+        .as_ref()
+        .filter(|_| self.emit_css_comments)
+      {
         self.comments.add_leading(
           ident.span_lo(),
           Comment {
@@ -1353,14 +1373,16 @@ where
           }
         }
 
-        self.comments.add_leading(
-          result_span.lo,
-          Comment {
-            kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
-          },
-        );
+        if self.emit_css_comments {
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            },
+          );
+        }
       }
     }
     // Expressions with a PURE span already carry the annotation on the node
@@ -1514,6 +1536,7 @@ mod tests {
   struct FixtureOptions {
     fold_static: bool,
     strict_css_prop: bool,
+    emit_css_comments: bool,
   }
 
   impl Default for FixtureOptions {
@@ -1521,6 +1544,7 @@ mod tests {
       Self {
         fold_static: false,
         strict_css_prop: true,
+        emit_css_comments: true,
       }
     }
   }
@@ -1560,6 +1584,7 @@ mod tests {
         false,
         options.fold_static,
         options.strict_css_prop,
+        options.emit_css_comments,
       )),
     )
   }

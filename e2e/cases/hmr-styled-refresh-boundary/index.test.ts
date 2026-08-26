@@ -14,10 +14,14 @@ test(
     await expect(divider).toHaveCSS("background-color", "rgb(255, 0, 0)");
     await expect(counter).toHaveText("0");
 
-    // Set state that would be lost on full reload
-    await increment.click();
-    await increment.click();
-    await expect(counter).toHaveText("2");
+    // Set state that would be lost on full reload. The server-rendered button
+    // is clickable before hydration attaches its handler, so on a cold dev
+    // server a click can get lost. We retry until someone registers
+    await expect(async () => {
+      await increment.click();
+      await expect(counter).not.toHaveText("0", { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+    const clicks = (await counter.textContent())!;
 
     // Set marker to detect full page reloads
     await page.evaluate(() => {
@@ -25,13 +29,14 @@ test(
     });
 
     // Edit the styled-only file — change CSS color.
-    // The import chain is: Divider.tsx → barrel.ts → pageUtils.ts → index.tsx
-    // Divider.tsx is a refresh boundary thanks to yak's $RefreshReg$ injection.
-    // Without that, no module in the chain would be a boundary:
-    //   - barrel.ts: has namespace export (not a component type)
-    //   - pageUtils.ts: mixed exports (component + constant)
-    //   - index.tsx: mixed exports (component + function)
-    // …and the update would propagate to the entry point → full reload.
+    // The import chain is: Divider.tsx → barrel.tsx → pageUtils.ts → index.tsx
+    // None of the chain modules can accept an update without losing state:
+    //   - barrel.tsx: namespace export (react) / no components (solid)
+    //   - pageUtils.ts: mixed exports (react) / no components (solid)
+    //   - index.tsx: mixed exports — accepting here re-creates <App />
+    // So state survives only when the edit is handled below <App />: a
+    // CSS-only edit as a pure virtual-CSS update, and a JS edit (second
+    // phase below) by Divider.tsx accepting it as a refresh boundary.
     const src = await testEnv.readFile("Divider.tsx");
     await testEnv.writeFile(
       "Divider.tsx",
@@ -46,7 +51,19 @@ test(
     // Verify no full page reload occurred
     expect(await page.evaluate(() => window.__hmr)).toBe(true);
 
-    // Verify React state was preserved (counter didn't reset)
-    await expect(counter).toHaveText("2");
+    // Verify component state was preserved (counter didn't reset)
+    await expect(counter).toHaveText(clicks);
+
+    // Second edit changes the JS too (a dynamic interpolation), so the module
+    // itself must be replaced. On vite a CSS-only edit ships without touching
+    // the JS module, so only this edit exercises the refresh-boundary mechanism.
+    const src2 = await testEnv.readFile("Divider.tsx");
+    await testEnv.writeFile("Divider.tsx", src2.replace("height: 2px", 'height: ${() => "4px"}'));
+
+    await expect(divider).toHaveCSS("height", "4px", { timeout: 30_000 });
+
+    // Still no full reload, and state survives the module replacement
+    expect(await page.evaluate(() => window.__hmr)).toBe(true);
+    await expect(counter).toHaveText(clicks);
   }),
 );

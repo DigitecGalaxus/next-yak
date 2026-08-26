@@ -36,7 +36,13 @@ test(
     const spreadButton = page.getByTestId("spread-button");
     await expect(spreadButton).toHaveCSS("padding", "8px");
     await expect(spreadButton).toHaveText("clicks: 0");
-    await spreadButton.click();
-    await expect(spreadButton).toHaveText("clicks: 1");
+
+    // The server-rendered button is clickable before hydration attaches its
+    // handler, so on a cold dev server a click can get lost — retry until
+    // one registers.
+    await expect(async () => {
+      await spreadButton.click();
+      await expect(spreadButton).not.toHaveText("clicks: 0", { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
   }),
 );

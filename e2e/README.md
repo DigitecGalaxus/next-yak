@@ -95,8 +95,7 @@ shared `index.test.ts` needs no changes. Tests can branch on
 `testEnv.framework` when the frameworks behave differently.
 
 A case without an `index.tsx` is exclusive to the framework of its variants:
-React bundlers skip it (e.g. `hmr-solid-refresh`, which pins solid-refresh HMR
-semantics). Helper files in such a case need no `.solid.` marker.
+React bundlers skip it. Helper files in such a case need no `.solid.` marker.
 
 ## Adding a test case
 

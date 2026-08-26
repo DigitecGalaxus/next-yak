@@ -110,6 +110,7 @@ fn yak_pass(
             false, // react_refresh_reg
             config.fold_static.unwrap_or(true),
             false, // strict_css_prop
+            true,  // emit_css_comments: the playground shows the extracted CSS
         );
         program.visit_mut_with(&mut transformer);
     })

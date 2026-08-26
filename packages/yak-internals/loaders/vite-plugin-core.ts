@@ -124,6 +124,9 @@ async function viteYakImpl(
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
+  // Last served transform result per file (compiled without CSS comments).
+  // hotUpdate compares against it to detect CSS-only edits.
+  const lastJsTransformResult = new Map<string, string>();
   return {
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
@@ -272,8 +275,13 @@ async function viteYakImpl(
             yakSwcPath,
             yakOptions,
             isServe && library.reactRefreshReg,
+            // The bundled/served JS needs no CSS comments. The handler transforms again with preserved CSS comments
+            false,
           );
           debugLog("ts", result.code, id);
+          if (isServe) {
+            lastJsTransformResult.set(normalizePath(filePath), result.code);
+          }
 
           return {
             code: result.code,
@@ -289,7 +297,7 @@ async function viteYakImpl(
     // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
     // which Vite doesn't know is derived from the source file. Without explicit
     // invalidation here, the browser keeps stale CSS after edits.
-    hotUpdate({ modules, file, type }) {
+    async hotUpdate({ modules, file, type, read }) {
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
@@ -298,10 +306,38 @@ async function viteYakImpl(
       const relativePath = normalizePath(relative(basePath, file));
       const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
-      if (mod) {
-        this.environment.moduleGraph.invalidateModule(mod);
-        return [...modules, mod];
+      if (!mod) return;
+      this.environment.moduleGraph.invalidateModule(mod);
+
+      // The served JS is compiled without CSS comments, so a CSS-only edit
+      // leaves it byte-identical. Shipping just the virtual CSS module
+      // (instead of the JS module) keeps the running components alive, so
+      // their state survives the edit.
+      const previous = lastJsTransformResult.get(file);
+      if (previous !== undefined) {
+        try {
+          const result = await transform(
+            await read(),
+            file,
+            basePath,
+            yakSwcPath,
+            yakOptions,
+            isServe && library.reactRefreshReg,
+            false,
+          );
+          if (result.code === previous) {
+            // Keep other watchers (e.g. virtual CSS modules of files that
+            // reference this one cross-file), drop only this file's JS module.
+            return [
+              mod,
+              ...modules.filter((m) => m.id !== virtualId && m.id?.split("?")[0] !== file),
+            ];
+          }
+        } catch {
+          // e.g. a syntax error mid-edit — fall through to the full update
+        }
       }
+      return [...modules, mod];
     },
   };
 }
@@ -334,6 +370,7 @@ function transform(
   yakSwcPath: string,
   yakOptions: ViteYakPluginOptions,
   reactRefreshReg?: boolean,
+  emitCssComments?: boolean,
 ) {
   // https://github.com/vercel/next.js/blob/canary/packages/next/src/build/webpack/loaders/next-swc-loader.ts#L143
   return swcTransform(data, {
@@ -363,6 +400,7 @@ function transform(
               strictCssProp: yakOptions.strictCssProp ?? true,
               suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
+              ...(emitCssComments === false ? { emitCssComments: false } : {}),
               importMode: {
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
                 transpilation: "Css",
