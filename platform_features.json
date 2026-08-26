@@ -1,0 +1,22 @@
+{
+  // Choose what features are enabled in Pull Requests in GitHub
+  // If an option is missing it uses a default value.
+  "pr-features": {
+    // Links to Jira Ticket if applicable (branch name correctly formatted)
+    // Default: true
+    "pr-enricher": true,
+    // Sends notification to teams channel defined in Backstage if team label is added to a PR somewhere
+    // Default: false
+    "pr-label-notifier": false,
+    // Automatically adds Team labels if code is owned by team mentioned in CODEOWNERS.optional
+    // Default: true
+    "actions-labeler": false,
+    // Adds a comment into PR with direct links to the PR validation runs
+    // Default: false
+    "workflow-linker": false
+  },
+  // Are platform teams allowed to force-complete certain changes without your input? Valid options are 'false', 'documentation', 'infrastructure', and 'all'
+  // These options are stacking. Infrastructure contains documentation, all contains both plus actual code changes.
+  // Defaults to 'false'
+  "automated-platform-changes": "all"
+}
