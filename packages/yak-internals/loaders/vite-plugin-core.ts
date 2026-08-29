@@ -124,9 +124,6 @@ async function viteYakImpl(
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
-  // Last served transform result per file (compiled without CSS comments).
-  // hotUpdate compares against it to detect CSS-only edits.
-  const lastJsTransformResult = new Map<string, string>();
   return {
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
@@ -181,6 +178,7 @@ async function viteYakImpl(
           encoding: "utf8",
         });
         const code = await transform(sourceContent, originalId, basePath, yakSwcPath, yakOptions);
+        debugLog("ts", code.code, originalId);
         const extractedCss = extractCss(code.code, "Css");
         debugLog("css", extractedCss, originalId);
 
@@ -278,10 +276,6 @@ async function viteYakImpl(
             // The bundled/served JS needs no CSS comments. The handler transforms again with preserved CSS comments
             false,
           );
-          debugLog("ts", result.code, id);
-          if (isServe) {
-            lastJsTransformResult.set(normalizePath(filePath), result.code);
-          }
 
           return {
             code: result.code,
@@ -297,7 +291,7 @@ async function viteYakImpl(
     // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
     // which Vite doesn't know is derived from the source file. Without explicit
     // invalidation here, the browser keeps stale CSS after edits.
-    async hotUpdate({ modules, file, type, read }) {
+    hotUpdate({ modules, file, type }) {
       if (type !== "update" && type !== "create") return;
       if (!sourceFileRegex.test(file)) return;
 
@@ -306,38 +300,10 @@ async function viteYakImpl(
       const relativePath = normalizePath(relative(basePath, file));
       const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
       const mod = this.environment.moduleGraph.getModuleById(virtualId);
-      if (!mod) return;
-      this.environment.moduleGraph.invalidateModule(mod);
-
-      // The served JS is compiled without CSS comments, so a CSS-only edit
-      // leaves it byte-identical. Shipping just the virtual CSS module
-      // (instead of the JS module) keeps the running components alive, so
-      // their state survives the edit.
-      const previous = lastJsTransformResult.get(file);
-      if (previous !== undefined) {
-        try {
-          const result = await transform(
-            await read(),
-            file,
-            basePath,
-            yakSwcPath,
-            yakOptions,
-            isServe && library.reactRefreshReg,
-            false,
-          );
-          if (result.code === previous) {
-            // Keep other watchers (e.g. virtual CSS modules of files that
-            // reference this one cross-file), drop only this file's JS module.
-            return [
-              mod,
-              ...modules.filter((m) => m.id !== virtualId && m.id?.split("?")[0] !== file),
-            ];
-          }
-        } catch {
-          // e.g. a syntax error mid-edit — fall through to the full update
-        }
+      if (mod) {
+        this.environment.moduleGraph.invalidateModule(mod);
+        return [...modules, mod];
       }
-      return [...modules, mod];
     },
   };
 }
