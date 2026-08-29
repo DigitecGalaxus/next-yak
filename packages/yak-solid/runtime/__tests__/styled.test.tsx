@@ -128,6 +128,23 @@ it("should preserve attrs order across styled() levels", () => {
   expect(button.className).toBe("submit_btn reset_btn");
 });
 
+it("should flatten chains through a get-only proxy (solid-refresh dev wrapper)", () => {
+  const SubmitButton = styled.button.attrs({ type: "submit" })("submit_btn");
+  // solid-refresh registers components behind a Proxy that forwards property
+  // reads but defines no `has` trap — chain detection must still see the
+  // yak component behind it
+  const Registered = new Proxy(function HMRComp() {}, {
+    get: (_, property) => (SubmitButton as never as Record<PropertyKey, unknown>)[property],
+  });
+  const ResetButton = styled(Registered as typeof SubmitButton).attrs({ type: "reset" })(
+    "reset_btn",
+  );
+  const container = renderInto(() => <ResetButton />);
+  const button = container.querySelector("button")!;
+  expect(button.getAttribute("type")).toBe("reset");
+  expect(button.className).toBe("submit_btn reset_btn");
+});
+
 it("should run parent attrs functions before own attrs functions", () => {
   const order: string[] = [];
   const Parent = styled.input.attrs(() => {

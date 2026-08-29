@@ -1,10 +1,11 @@
 /**
  * Styled-only file — exercises HMR refresh boundary detection.
  *
- * State above this module survives a JS edit only if the module accepts the
- * update itself, which requires its styled exports to be registered with
- * solid-refresh. Unregistered, the update propagates up to the importing
- * component module and re-creates <App />, resetting its signal state.
+ * yak stamps the `@refresh component` pragma on exported styled initializers
+ * (solidjs/solid#3090), so solid-refresh registers them and this module
+ * accepts edits itself. Without that registration the update would propagate
+ * up to the importing component module and re-create <App />, resetting its
+ * signal state.
  */
 import { styled } from "@yak/solid";
 

@@ -1,9 +1,9 @@
 import { styled } from "@yak/solid";
 
 /**
- * A mixed module: Legend (JSX component) makes it a solid-refresh boundary
- * through vite-plugin-solid's own pass; Badge is a styled export with no
- * refresh registration of its own.
+ * A mixed module: a JSX component export next to a styled export. Legend is
+ * registered by vite-plugin-solid's own pass; Badge registers too because it
+ * is rendered as a JSX tag in its own module (solidjs/solid#3090).
  */
 export const Badge = styled.span.attrs({ title: "v1" })`
   color: rgb(255, 0, 0);

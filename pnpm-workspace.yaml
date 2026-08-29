@@ -105,6 +105,6 @@ catalogs:
     vitest: 4.1.9
     wasm-pack: 0.15.0
   solid:
-    "@solidjs/web": 2.0.0-rc.0
-    solid-js: 2.0.0-rc.0
+    "@solidjs/web": 2.0.0-rc.4
+    solid-js: 2.0.0-rc.4
     vite-plugin-solid: 3.0.0-next.27

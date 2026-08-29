@@ -26,7 +26,7 @@ use utils::fold::StyledFold;
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
 mod yak_imports;
-use yak_imports::{visit_module_imports, YakImports};
+use yak_imports::{visit_module_imports, YakImports, YakRuntime};
 mod math_evaluate;
 #[cfg(feature = "plugin")]
 mod plugin;
@@ -1224,11 +1224,13 @@ where
     let current_variable_id = self.get_current_component_id();
     let is_default_exported = self.is_default_exported(&current_variable_id);
 
+    let mut is_exported_styled = false;
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
       "styled" if is_top_level => {
+        is_exported_styled = self.current_exported || is_default_exported;
         // Track exported styled component names for $RefreshReg$ injection
-        if self.react_refresh_reg && (self.current_exported || is_default_exported) {
+        if self.react_refresh_reg && is_exported_styled {
           let name = current_variable_id.to_readable_string();
           if name != "default" {
             self.exported_styled_names.push(name);
@@ -1384,6 +1386,21 @@ where
           );
         }
       }
+    }
+    // Add solids "@refresh component" pragma so Solid's native compiler
+    // registers a call-shaped binding with solid-refresh (solidjs/solid#3090).
+    // Emitted for every exported styled component:
+    // a styled-only module then self-accepts edits, and a mixed module
+    // patches its styled exports in place.
+    if is_exported_styled && matches!(self.yak_imports().runtime(), YakRuntime::Solid) {
+      self.comments.add_leading(
+        result_span.lo,
+        Comment {
+          kind: swc_core::common::comments::CommentKind::Block,
+          span: DUMMY_SP,
+          text: " @refresh component ".into(),
+        },
+      );
     }
     // Expressions with a PURE span already carry the annotation on the node
     // itself; adding a comment at BytePos::PURE would collide across nodes.

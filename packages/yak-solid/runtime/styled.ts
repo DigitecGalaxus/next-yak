@@ -65,7 +65,13 @@ type PropsWithClassAndStyle = {
 } & Record<string, unknown>;
 
 const yakStyled: StyledInternal = (Component, attrs) => {
-  const isYakComponent = typeof Component === "function" && yakComponentSymbol in Component;
+  // Probe with a property read, not the `in` operator: in dev, solid-refresh
+  // wraps registered components in a Proxy that forwards `get` to the live
+  // implementation but has no `has` trap, so `in` would miss the symbol and
+  // silently skip chain flattening (breaking attrs override order).
+  const isYakComponent =
+    typeof Component === "function" &&
+    (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
 
   // if the component that is wrapped is a yak component, we can extract the attrs function
   // and the dynamic style function to merge it with the current attrs function (or dynamic

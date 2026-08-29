@@ -12,7 +12,7 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
 :global(.input_Button_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
+*/ /* @refresh component */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"
 });
 export const Static = ()=><section>
@@ -28,14 +28,14 @@ export const Base = /*YAK EXPORTED STYLED:Base:input_Base_m7uBBu*//*YAK Extracte
 :global(.input_Base_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Base_m7uBBu"), {
+*/ /* @refresh component */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Base_m7uBBu"), {
     "displayName": "Base"
 });
 export const Extended = /*YAK EXPORTED STYLED:Extended:input_Extended_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Extended_m7uBBu) {
   padding: 4px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Base_m7uBBu input_Extended_m7uBBu"), {
+*/ /* @refresh component */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Base_m7uBBu input_Extended_m7uBBu"), {
     "displayName": "Extended"
 });
 export const Chain = ()=><span class="input_Base_m7uBBu input_Extended_m7uBBu">hey</span>;

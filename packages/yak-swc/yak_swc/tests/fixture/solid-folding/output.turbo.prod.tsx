@@ -12,7 +12,7 @@ export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
+*/ /* @refresh component */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
 export const Static = ()=><section>
     { /* folds into <button class="..."> */ }
     <button type="button" class="ym7uBBu">click</button>
@@ -26,12 +26,12 @@ export const Base = /*YAK EXPORTED STYLED:Base:ym7uBBu1*//*YAK Extracted CSS:
 .ym7uBBu1 {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_span("ym7uBBu1");
+*/ /* @refresh component */ /*#__PURE__*/ __yak.__yak_span("ym7uBBu1");
 export const Extended = /*YAK EXPORTED STYLED:Extended:ym7uBBu2*//*YAK Extracted CSS:
 .ym7uBBu2 {
   padding: 4px;
 }
-*/ /*#__PURE__*/ __yak.__yak_span("ym7uBBu1 ym7uBBu2");
+*/ /* @refresh component */ /*#__PURE__*/ __yak.__yak_span("ym7uBBu1 ym7uBBu2");
 export const Chain = ()=><span class="ym7uBBu1 ym7uBBu2">hey</span>;
 // the class-toggling condition folds into the class attribute, where the
 // Solid compiler keeps it reactive
