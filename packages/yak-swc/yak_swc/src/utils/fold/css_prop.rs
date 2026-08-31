@@ -3,7 +3,7 @@
 
 use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::fold::css_expr::{
-  class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee,
+  class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee, is_yak_style_callee,
 };
 use crate::yak_imports::YakImports;
 use swc_core::{
@@ -81,9 +81,7 @@ impl CSSProp {
     let merge_call: Result<Box<Expr>, TransformError> = (|| {
       let css_expr =
         Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
-      if let Some(span) = Self::find_style_reference(&css_expr) {
-        return Err(TransformError::StyleReference(span));
-      }
+      Self::validate_css_value(&css_expr, yak_imports)?;
       let mapped_props = self
         .relevant_props
         .iter()
@@ -192,28 +190,39 @@ impl CSSProp {
     )
   }
 
-  /// Finds a reference to styles declared elsewhere (`css={mixin}`,
-  /// `css={styles.padding}`) in a css value position - at the top level or in
+  /// Checks that a css value can apply styles, both at the top level and in
   /// the value arms of ternaries and logical expressions
   ///
-  /// Such a reference renders unstyled because the css prop only compiles
-  /// styles in place, so it is rejected via `TransformError::StyleReference`
-  fn find_style_reference(expr: &Expr) -> Option<Span> {
+  /// The css prop only compiles styles written in place, so it accepts an
+  /// inline css template (already transformed into a `css(...)` call when this
+  /// runs), an `atoms(...)` call and the falsy values, which apply no styles.
+  /// Everything else is rejected here.
+  fn validate_css_value(expr: &Expr, yak_imports: &YakImports) -> Result<(), TransformError> {
     match unwrap_type_casts(expr) {
       Expr::Cond(cond) => {
-        Self::find_style_reference(&cond.cons).or_else(|| Self::find_style_reference(&cond.alt))
+        Self::validate_css_value(&cond.cons, yak_imports)?;
+        Self::validate_css_value(&cond.alt, yak_imports)
       }
       // `cond && css` - only the right hand side is a css value
-      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => Self::find_style_reference(&bin.right),
+      Expr::Bin(bin) if bin.op == BinaryOp::LogicalAnd => {
+        Self::validate_css_value(&bin.right, yak_imports)
+      }
       // `a || b` and `a ?? b` - both sides are css values
       Expr::Bin(bin) if matches!(bin.op, BinaryOp::LogicalOr | BinaryOp::NullishCoalescing) => {
-        Self::find_style_reference(&bin.left).or_else(|| Self::find_style_reference(&bin.right))
+        Self::validate_css_value(&bin.left, yak_imports)?;
+        Self::validate_css_value(&bin.right, yak_imports)
       }
-      // `undefined` is a valid falsy css value, any other identifier is a reference
-      Expr::Ident(ident) if ident.sym != "undefined" => Some(ident.span),
-      Expr::Member(member) => Some(member.span()),
-      Expr::OptChain(opt_chain) => Some(opt_chain.span),
-      _ => None,
+      Expr::Call(call) if is_yak_style_callee(&call.callee, yak_imports) => Ok(()),
+      // the falsy css values apply no styles. `true` is not one of them
+      Expr::Lit(Lit::Null(_)) => Ok(()),
+      Expr::Lit(Lit::Bool(bool_lit)) if !bool_lit.value => Ok(()),
+      Expr::Ident(ident) if ident.sym == "undefined" => Ok(()),
+      // a reference to styles declared elsewhere keeps its own message. It is
+      // fixed by wrapping the reference in a css template
+      Expr::Ident(ident) => Err(TransformError::StyleReference(ident.span)),
+      Expr::Member(member) => Err(TransformError::StyleReference(member.span)),
+      Expr::OptChain(opt_chain) => Err(TransformError::StyleReference(opt_chain.span)),
+      unsupported => Err(TransformError::UnsupportedCssValue(unsupported.span())),
     }
   }
 
@@ -344,6 +353,7 @@ pub enum TransformError {
   InvalidJSXEmptyExpr(Span),
   UnsupportedAttributeValue(Span),
   StyleReference(Span),
+  UnsupportedCssValue(Span),
   #[cfg(swc_ast_unknown)]
   UnsupportedJSXAttrOrSpread(),
 }
@@ -357,7 +367,8 @@ impl TransformError {
       | TransformError::MissingAttributeValue(span)
       | TransformError::InvalidJSXEmptyExpr(span)
       | TransformError::UnsupportedAttributeValue(span)
-      | TransformError::StyleReference(span) => *span,
+      | TransformError::StyleReference(span)
+      | TransformError::UnsupportedCssValue(span) => *span,
       #[cfg(swc_ast_unknown)]
       TransformError::UnsupportedJSXAttrOrSpread() => Span::default(),
     }
@@ -394,6 +405,15 @@ impl TransformError {
                 the referenced styles are not compiled at this usage and would silently never apply. \
                 Wrap the reference in a css template instead. \
                 Example: css={css`${mixin}`}",
+
+            TransformError::UnsupportedCssValue(_) =>
+                "Unsupported value for the 'css' prop. Only styles written in place apply: \
+                a css template, an atoms() call, those combined with ?:, && or ||, \
+                and the falsy values false, null and undefined.\n\
+                Combine several styles in one template instead of an array. \
+                Example: css={css`${first}; ${second};`}\n\
+                Write declarations in a template instead of an object. \
+                Example: css={css`color: red;`}",
 
             #[cfg(swc_ast_unknown)]
             TransformError::UnsupportedJSXAttrOrSpread() =>

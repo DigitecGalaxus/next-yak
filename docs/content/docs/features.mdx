@@ -783,6 +783,35 @@ It's meant for simple styling requirements, where you don't have to think about 
 
 The `css` prop is allowed on any element that can accept `className` and `style`.
 
+Its value has to be styles written in place: a `css` template or an `atoms()` call and logical combinations of them.
+Everything else fails the build, because next-yak only compiles the styles it sees on the element.
+To combine several styles, nest them in one template instead of passing an array:
+
+```jsx title="my-component.tsx"
+const base = css`
+  color: red;
+`;
+const highlight = css`
+  font-weight: bold;
+`;
+
+const Component = () => {
+  return (
+    <div
+      css={css`
+        ${base};
+        ${highlight};
+      `}
+    >
+      Hello there!
+    </div>
+  );
+};
+```
+
+Set the `strictCssProp` option to `false` to leave unsupported values untouched instead, for
+example when another library on the same element owns the `css` prop.
+
 If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
 
 ```jsx title="my-component.tsx"

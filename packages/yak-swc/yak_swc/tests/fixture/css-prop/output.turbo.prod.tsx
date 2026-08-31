@@ -1,6 +1,6 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1NiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1NyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1OCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1QyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdUQgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnVFIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVGIHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1RyB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnVIIHsKICBjb2xvcjogcmVkOwp9";
+import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1NiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1NyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1OCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1QyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdUQgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnVFIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVGIHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1RyB7CiAgY29sb3I6IGJyb3duOwp9LnltN3VCQnVIIHsKICBjb2xvcjogdGVhbDsKfS55bTd1QkJ1SSB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnVKIHsKICBjb2xvcjogcmVkOwp9";
 const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
 .ym7uBBu {
   color: red;
@@ -92,15 +92,29 @@ const Elem11 = ({ on }: {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBuF"))}/>;
-const Text = /*YAK Extracted CSS:
+const Elem12 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on && /*YAK Extracted CSS:
 .ym7uBBuG {
+  color: brown;
+}
+*/ /*#__PURE__*/ css("ym7uBBuG"))}/>;
+const Elem13 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
+.ym7uBBuH {
+  color: teal;
+}
+*/ /*#__PURE__*/ css("ym7uBBuH") : null)}/>;
+const Text = /*YAK Extracted CSS:
+.ym7uBBuI {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuG");
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuI");
 const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-.ym7uBBuH {
+.ym7uBBuJ {
   color: red;
 }
-*/ /*#__PURE__*/ css("ym7uBBuH"))}>
+*/ /*#__PURE__*/ css("ym7uBBuJ"))}>
     test
   </Text>;

@@ -24,6 +24,10 @@ const Elem7 = () => <div className="no-css" />;
 
 const Elem8 = () => <div css={atoms("empty-css")} className="empty-css" />;
 
+const Elem9 = ({ on }: { on: boolean }) => (
+  <div css={on ? atoms("orange") : undefined} />
+);
+
 const Text = styled.p`
   font-size: 20px;
 `;

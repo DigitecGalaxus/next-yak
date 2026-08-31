@@ -10,3 +10,11 @@ const StringValue = ()=><div css="their-class"/>;
 const Reference = (props: {
     styles?: unknown;
 })=><div css={props.styles}/>;
+const ArrayValue = (props: {
+    styles?: unknown;
+})=><div css={[
+        props.styles
+    ]}/>;
+const ObjectValue = ()=><div css={{
+        color: "red"
+    }}/>;
