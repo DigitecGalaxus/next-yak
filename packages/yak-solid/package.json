@@ -97,7 +97,7 @@
     "yak-internals": "workspace:*"
   },
   "peerDependencies": {
-    "solid-js": ">=2.0.0-rc.0",
+    "solid-js": ">=2.0.0-rc.5",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {

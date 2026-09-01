@@ -72,11 +72,6 @@ YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
 (or unset) keeps folding on. The runner prints the active mode at startup and in
 the summary.
 
-For Solid bundlers the wiring is inverted: `@yak/solid` ships with
-`foldStatic: false` as its default, so `bundlers/vite-solid/vite.config.ts`
-passes `foldStatic: true` in the default mode and pins the shipped default in
-the `YAK_E2E_FOLD_STATIC=false` pass. Both modes still cover the same two paths.
-
 ## Frameworks
 
 Bundlers render with React by default. A bundler can declare a different

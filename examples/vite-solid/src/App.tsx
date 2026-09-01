@@ -78,7 +78,7 @@ const rotate = keyframes`
   }
 `;
 
-const Spinner = styled.div`
+const Spinner = styled.span`
   width: 24px;
   height: 24px;
   display: inline-block;

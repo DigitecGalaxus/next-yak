@@ -25,7 +25,5 @@ export const yak = createViteYakPlugin({
   // vite-plugin-solid owns HMR for Solid components
   reactRefreshReg: false,
   excludePattern: /packages\/yak-solid/,
-  // off by default: not all edge-cases are tested yet, so a correct
-  // result can't be guaranteed everywhere
-  foldStatic: false,
+  foldStatic: true,
 });

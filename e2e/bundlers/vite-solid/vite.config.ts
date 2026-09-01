@@ -12,10 +12,9 @@ for (const file of readdirSync(__dirname)) {
   }
 }
 
-// Two-mode e2e, inverted relative to the react bundlers because folding
-// defaults to off for Solid: opt in to static folding unless
-// YAK_E2E_FOLD_STATIC requests the off pass.
-const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? {} : { foldStatic: true };
+// Two-mode e2e: opt out of static folding only when YAK_E2E_FOLD_STATIC is
+// "false". Otherwise pass no foldStatic key so the config stays inert.
+const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? { foldStatic: false } : {};
 
 export default defineConfig({
   plugins: [yak(yakOptions), solid()],

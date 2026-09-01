@@ -58,10 +58,10 @@ export type YakViteLibrary = {
   /** Transform-filter exclusion for the runtime package itself */
   excludePattern: RegExp;
   /**
-   * Default for the `foldStatic` option. Off for Solid: folded static
-   * markup becomes part of Solid's innerHTML templates, where tags the
-   * HTML parser relocates (e.g. a div inside a <p>) corrupt the compiled
-   * sibling walk. Users can still opt in explicitly.
+   * Fold statically known styles at build time: JSX usages of fully static
+   * styled components become plain DOM elements, and a static `css` prop
+   * becomes a plain `className`. Both skip the runtime wrapper and merge calls.
+   * @defaultValue true
    */
   foldStatic: boolean;
 };
