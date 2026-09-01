@@ -322,6 +322,8 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ‚ù§Ô
 - https://github.com/vercel/next.js/pull/89600 (expose this.\_compilation to webpack loaders in Turbopack)
 - https://github.com/vercel/next.js/pull/89901 (exempt data URL CSS from Pages Router global CSS restriction)
 - https://github.com/webpack/mini-css-extract-plugin/pull/1162 (fix: use matchResource for importModule)
+- https://github.com/solidjs/solid/issues/3090 (register factory-created components with solid-refresh)
+- https://github.com/solidjs/solid/issues/3099 (fail the compile on parser-restructured templates)
 
 [![next-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
 
