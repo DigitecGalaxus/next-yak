@@ -6,6 +6,14 @@ import {
   UnsupportedExportSource,
 } from "../../cross-file-resolver/parseModule.js";
 
+/**
+ * Extracts a module's exports for the cross-file resolver by parsing with babel. Nothing is executed.
+ *
+ * Handles `export const`, re-exports with a `from`, `export *`, and `export default`.
+ * Anything else becomes an `unsupported` entry with its source location, or is skipped.
+ *
+ * Throws if the source doesn't parse.
+ */
 export async function parseExports(sourceContents: string): Promise<ModuleExports> {
   try {
     const ast = parse(sourceContents, {
