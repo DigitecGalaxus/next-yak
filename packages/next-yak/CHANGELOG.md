@@ -1,5 +1,20 @@
 # next-yak
 
+## 9.9.0
+
+### Minor Changes
+
+- d7be766: Add support for `SolidJS` together with the new `@yak/solid` package
+
+### Patch Changes
+
+- 63847f8: Reject `css` prop values which can not apply styles (e.g. `css={[a, b]}` or `css={{ color: "red" }}`)
+- aeee845: Fix parsing of `.jsx`, `.js`, `.mjs` and `.cjs` files with Turbopack and Rsbuild
+- Updated dependencies [63847f8]
+- Updated dependencies [1a5a828]
+- Updated dependencies [d7be766]
+  - yak-swc@9.9.0
+
 ## 9.8.0
 
 ### Patch Changes
@@ -31,7 +46,9 @@
   const App = () => <Icon $active={on} />;
 
   // compiles to
-  const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />;
+  const App = () => (
+    <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />
+  );
   ```
 
   What folds:
