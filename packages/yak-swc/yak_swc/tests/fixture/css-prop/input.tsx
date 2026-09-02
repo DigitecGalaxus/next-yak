@@ -117,6 +117,29 @@ const Elem11 = ({ on }: { on: boolean }) => (
   />
 );
 
+const Elem12 = ({ on }: { on: boolean }) => (
+  <div
+    css={
+      on &&
+      css`
+        color: brown;
+      `
+    }
+  />
+);
+
+const Elem13 = ({ on }: { on: boolean }) => (
+  <div
+    css={
+      on
+        ? css`
+            color: teal;
+          `
+        : null
+    }
+  />
+);
+
 const Text = styled.p`
   font-size: 20px;
 `;

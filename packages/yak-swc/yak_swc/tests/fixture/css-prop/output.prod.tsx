@@ -92,15 +92,29 @@ const Elem11 = ({ on }: {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBuF"))}/>;
-const Text = /*YAK Extracted CSS:
+const Elem12 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on && /*YAK Extracted CSS:
 :global(.ym7uBBuG) {
+  color: brown;
+}
+*/ /*#__PURE__*/ css("ym7uBBuG"))}/>;
+const Elem13 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
+:global(.ym7uBBuH) {
+  color: teal;
+}
+*/ /*#__PURE__*/ css("ym7uBBuH") : null)}/>;
+const Text = /*YAK Extracted CSS:
+:global(.ym7uBBuI) {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuG");
+*/ /*#__PURE__*/ __yak.__yak_p("ym7uBBuI");
 const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
-:global(.ym7uBBuH) {
+:global(.ym7uBBuJ) {
   color: red;
 }
-*/ /*#__PURE__*/ css("ym7uBBuH"))}>
+*/ /*#__PURE__*/ css("ym7uBBuJ"))}>
     test
   </Text>;

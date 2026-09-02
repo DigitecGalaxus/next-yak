@@ -92,6 +92,20 @@ const Elem11 = ({ on }: {
   color: blue;
 }
 */ /*#__PURE__*/ css("input_Elem11_m7uBBu-01"))}/>;
+const Elem12 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on && /*YAK Extracted CSS:
+:global(.input_Elem12_m7uBBu) {
+  color: brown;
+}
+*/ /*#__PURE__*/ css("input_Elem12_m7uBBu"))}/>;
+const Elem13 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
+:global(.input_Elem13_m7uBBu) {
+  color: teal;
+}
+*/ /*#__PURE__*/ css("input_Elem13_m7uBBu") : null)}/>;
 const Text = /*YAK Extracted CSS:
 :global(.input_Text_m7uBBu) {
   font-size: 20px;

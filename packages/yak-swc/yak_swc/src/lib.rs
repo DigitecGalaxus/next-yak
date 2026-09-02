@@ -91,10 +91,10 @@ pub struct Config {
   #[serde(default = "Config::fold_static_default")]
   pub fold_static: bool,
   /// Fail the build when a `css` prop has a value next-yak can't handle
-  /// (e.g. a plain string). Enabled by default: next-yak claims the `css` prop,
-  /// so a malformed value is almost always a mistake worth surfacing. Set to
-  /// false to leave such props untouched instead, e.g. when another library on
-  /// the same element uses its own `css` prop.
+  /// (e.g. an array, an object or a plain string). Enabled by default: next-yak
+  /// claims the `css` prop, so a malformed value is almost always a mistake
+  /// worth surfacing. Set to false to leave such props untouched instead, e.g.
+  /// when another library on the same element uses its own `css` prop.
   #[serde(default = "Config::strict_css_prop_default")]
   pub strict_css_prop: bool,
 }
