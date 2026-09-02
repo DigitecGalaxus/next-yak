@@ -57,6 +57,9 @@ test(
     // Second edit changes the JS too (a dynamic interpolation), so the module
     // itself must be replaced. On vite a CSS-only edit ships without touching
     // the JS module, so only this edit exercises the refresh-boundary mechanism.
+    //
+    // As chokidar drops a second change event within 50ms, we need to wait a bit first.
+    await page.waitForTimeout(200);
     const src2 = await testEnv.readFile("Divider.tsx");
     await testEnv.writeFile("Divider.tsx", src2.replace("height: 2px", 'height: ${() => "4px"}'));
 
