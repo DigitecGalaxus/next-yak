@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css } from "next-yak/internal";
 const pad = /*#__PURE__*/ css();
 // Arrays aren't supported
 const ArrayValue = ()=><div css={[

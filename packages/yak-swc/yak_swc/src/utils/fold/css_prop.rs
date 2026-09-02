@@ -74,60 +74,64 @@ impl CSSProp {
     if fold_static && self.try_fold(opening_element, yak_imports) {
       return;
     }
-    let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
-    // Build the replacement from borrowed attributes first, without mutating the
-    // element. That way an invalid `css` prop can be left completely untouched
-    // when strict mode is off (it might belong to another library, not next-yak).
-    let merge_call: Result<Box<Expr>, TransformError> = (|| {
-      let css_expr =
-        Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
-      Self::validate_css_value(&css_expr, yak_imports)?;
-      let mapped_props = self
-        .relevant_props
-        .iter()
-        .map(|&(index, _)| match &opening_element.attrs[index] {
-          JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
-          JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
-          #[cfg(swc_ast_unknown)]
-          _ => Err(TransformError::UnsupportedJSXAttrOrSpread()),
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-      Ok(Self::create_merge_call(
-        &mapped_props,
-        css_expr,
-        &merge_ident,
-      ))
-    })();
-
-    let merge_call = match merge_call {
-      Ok(merge_call) => merge_call,
-      Err(err) => {
-        // Strict mode (default): a `css` prop next-yak can't handle is almost
-        // always a mistake in a next-yak project, so fail loudly. Otherwise leave
-        // the element untouched so unrelated `css` props keep working.
-        if strict_css_prop {
-          HANDLER.with(|handler| {
-            handler.struct_span_err(err.span(), err.message()).emit();
-          });
-        }
-        return;
+    // The parts are collected from borrowed attributes before anything is
+    // mutated, so both outcomes below start from the element as written.
+    match self.collect_merge_parts(opening_element, yak_imports) {
+      // We own this css prop and replaces it with the merge call
+      Ok((relevant_props, css_expr)) => {
+        let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
+        let merge_call = Self::create_merge_call(&relevant_props, css_expr, &merge_ident);
+        self.replace_with_merge_call(opening_element, merge_call);
       }
-    };
+      // We can't compile this value, so the element keeps every attribute as written
+      // and another library on it can still own the css prop.
+      // Default strict mode reports the value on top, since in a next-yak project it is almost always a mistake.
+      Err(unsupported) => {
+        if strict_css_prop {
+          unsupported.report();
+        }
+      }
+    }
+  }
 
-    // Validation succeeded — remove the consumed attributes and insert the spread.
+  fn collect_merge_parts(
+    &self,
+    opening_element: &JSXOpeningElement,
+    yak_imports: &YakImports,
+  ) -> Result<(Vec<PropOrSpread>, Box<Expr>), UnsupportedCssProp> {
+    let css_expr =
+      Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
+    Self::validate_css_value(&css_expr, yak_imports)?;
+    let relevant_props = self
+      .relevant_props
+      .iter()
+      .map(|&(index, _)| match &opening_element.attrs[index] {
+        JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
+        JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
+        #[cfg(swc_ast_unknown)]
+        _ => Err(UnsupportedCssProp::UnsupportedJSXAttrOrSpread()),
+      })
+      .collect::<Result<Vec<_>, _>>()?;
+    Ok((relevant_props, css_expr))
+  }
+
+  /// Swaps the css prop and the props merged into it for the merge call spread
+  fn replace_with_merge_call(
+    &self,
+    opening_element: &mut JSXOpeningElement,
+    merge_call: Box<Expr>,
+  ) {
     opening_element.attrs.remove(self.index);
     for &(index, _) in self.relevant_props.iter().rev() {
       let adjusted_index = if index > self.index { index - 1 } else { index };
       opening_element.attrs.remove(adjusted_index);
     }
-    let insert_index = opening_element.attrs.len();
-    opening_element.attrs.insert(
-      insert_index,
-      JSXAttrOrSpread::SpreadElement(SpreadElement {
+    opening_element
+      .attrs
+      .push(JSXAttrOrSpread::SpreadElement(SpreadElement {
         dot3_token: DUMMY_SP,
         expr: merge_call,
-      }),
-    );
+      }));
   }
 
   /// Replaces a statically known css prop with a plain className attribute
@@ -197,7 +201,7 @@ impl CSSProp {
   /// inline css template (already transformed into a `css(...)` call when this
   /// runs), an `atoms(...)` call and the falsy values, which apply no styles.
   /// Everything else is rejected here.
-  fn validate_css_value(expr: &Expr, yak_imports: &YakImports) -> Result<(), TransformError> {
+  fn validate_css_value(expr: &Expr, yak_imports: &YakImports) -> Result<(), UnsupportedCssProp> {
     match unwrap_type_casts(expr) {
       Expr::Cond(cond) => {
         Self::validate_css_value(&cond.cons, yak_imports)?;
@@ -219,53 +223,56 @@ impl CSSProp {
       Expr::Ident(ident) if ident.sym == "undefined" => Ok(()),
       // a reference to styles declared elsewhere keeps its own message. It is
       // fixed by wrapping the reference in a css template
-      Expr::Ident(ident) => Err(TransformError::StyleReference(ident.span)),
-      Expr::Member(member) => Err(TransformError::StyleReference(member.span)),
-      Expr::OptChain(opt_chain) => Err(TransformError::StyleReference(opt_chain.span)),
-      unsupported => Err(TransformError::UnsupportedCssValue(unsupported.span())),
+      Expr::Ident(ident) => Err(UnsupportedCssProp::StyleReference(ident.span)),
+      Expr::Member(member) => Err(UnsupportedCssProp::StyleReference(member.span)),
+      Expr::OptChain(opt_chain) => Err(UnsupportedCssProp::StyleReference(opt_chain.span)),
+      unsupported => Err(UnsupportedCssProp::UnsupportedValue(unsupported.span())),
     }
   }
 
   /// Extracts the CSS expression from a JSX attribute or spread element.
-  fn extract_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, TransformError> {
+  fn extract_css_expr(attr: &JSXAttrOrSpread, span: Span) -> Result<Box<Expr>, UnsupportedCssProp> {
     match attr {
       JSXAttrOrSpread::JSXAttr(jsx_attr) => jsx_attr
         .value
         .as_ref()
-        .ok_or(TransformError::InvalidCSSAttribute(span))
+        .ok_or(UnsupportedCssProp::InvalidCSSAttribute(span))
         .and_then(|value| match value {
           JSXAttrValue::JSXExprContainer(container) => match &container.expr {
             JSXExpr::Expr(expr) => Ok(expr.clone()),
-            _ => Err(TransformError::InvalidCSSAttribute(container.span)),
+            _ => Err(UnsupportedCssProp::InvalidCSSAttribute(container.span)),
           },
-          _ => Err(TransformError::InvalidCSSAttribute(span)),
+          _ => Err(UnsupportedCssProp::InvalidCSSAttribute(span)),
         }),
-      JSXAttrOrSpread::SpreadElement(_) => Err(TransformError::UnsupportedSpreadElement(span)),
+      JSXAttrOrSpread::SpreadElement(_) => Err(UnsupportedCssProp::UnsupportedSpreadElement(span)),
       #[cfg(swc_ast_unknown)]
-      _ => Err(TransformError::UnsupportedSpreadElement(span)),
+      _ => Err(UnsupportedCssProp::UnsupportedSpreadElement(span)),
     }
   }
 
   /// Maps a single JSX attribute to a PropOrSpread element.
   /// This is used to convert a JSX attribute to an object property for the merge call.
   /// e.g. `style={{color: red}}` becomes `{style: {color: red}}`
-  fn map_jsx_attr(attr: &JSXAttr) -> Result<PropOrSpread, TransformError> {
+  fn map_jsx_attr(attr: &JSXAttr) -> Result<PropOrSpread, UnsupportedCssProp> {
     match &attr.name {
       JSXAttrName::Ident(ident) => Ok(PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
         key: PropName::Ident(ident.clone()),
         value: Self::extract_value(&attr.value, attr.span)?,
       })))),
-      _ => Err(TransformError::InvalidJSXAttribute(attr.span)),
+      _ => Err(UnsupportedCssProp::InvalidJSXAttribute(attr.span)),
     }
   }
 
   /// Extracts the value from a JSX attribute.
   /// This handles different types of attribute values and converts them to expressions.
   /// e.g. `style={{color: red}}` becomes `{color: red}`
-  fn extract_value(value: &Option<JSXAttrValue>, span: Span) -> Result<Box<Expr>, TransformError> {
+  fn extract_value(
+    value: &Option<JSXAttrValue>,
+    span: Span,
+  ) -> Result<Box<Expr>, UnsupportedCssProp> {
     value
       .as_ref()
-      .ok_or(TransformError::MissingAttributeValue(span))
+      .ok_or(UnsupportedCssProp::MissingAttributeValue(span))
       .and_then(|v| match v {
         // Drop `raw`: a JSX attribute raw is JSX-encoded text (HTML entities stay
         // encoded, backslashes are literal). Moved into JS expression position it
@@ -277,9 +284,9 @@ impl CSSProp {
         })))),
         JSXAttrValue::JSXExprContainer(container) => match &container.expr {
           JSXExpr::Expr(expr) => Ok(expr.clone()),
-          _ => Err(TransformError::InvalidJSXEmptyExpr(container.span)),
+          _ => Err(UnsupportedCssProp::InvalidJSXEmptyExpr(container.span)),
         },
-        _ => Err(TransformError::UnsupportedAttributeValue(span)),
+        _ => Err(UnsupportedCssProp::UnsupportedAttributeValue(span)),
       })
   }
 
@@ -345,7 +352,7 @@ impl HasCSSProp for JSXOpeningElement {
 }
 
 #[derive(Debug)]
-pub enum TransformError {
+pub enum UnsupportedCssProp {
   InvalidCSSAttribute(Span),
   UnsupportedSpreadElement(Span),
   InvalidJSXAttribute(Span),
@@ -353,60 +360,67 @@ pub enum TransformError {
   InvalidJSXEmptyExpr(Span),
   UnsupportedAttributeValue(Span),
   StyleReference(Span),
-  UnsupportedCssValue(Span),
+  UnsupportedValue(Span),
   #[cfg(swc_ast_unknown)]
   UnsupportedJSXAttrOrSpread(),
 }
 
-impl TransformError {
+impl UnsupportedCssProp {
+  /// Reports the value as a build error
+  fn report(&self) {
+    HANDLER.with(|handler| {
+      handler.struct_span_err(self.span(), self.message()).emit();
+    });
+  }
+
   fn span(&self) -> Span {
     match self {
-      TransformError::InvalidCSSAttribute(span)
-      | TransformError::UnsupportedSpreadElement(span)
-      | TransformError::InvalidJSXAttribute(span)
-      | TransformError::MissingAttributeValue(span)
-      | TransformError::InvalidJSXEmptyExpr(span)
-      | TransformError::UnsupportedAttributeValue(span)
-      | TransformError::StyleReference(span)
-      | TransformError::UnsupportedCssValue(span) => *span,
+      UnsupportedCssProp::InvalidCSSAttribute(span)
+      | UnsupportedCssProp::UnsupportedSpreadElement(span)
+      | UnsupportedCssProp::InvalidJSXAttribute(span)
+      | UnsupportedCssProp::MissingAttributeValue(span)
+      | UnsupportedCssProp::InvalidJSXEmptyExpr(span)
+      | UnsupportedCssProp::UnsupportedAttributeValue(span)
+      | UnsupportedCssProp::StyleReference(span)
+      | UnsupportedCssProp::UnsupportedValue(span) => *span,
       #[cfg(swc_ast_unknown)]
-      TransformError::UnsupportedJSXAttrOrSpread() => Span::default(),
+      UnsupportedCssProp::UnsupportedJSXAttrOrSpread() => Span::default(),
     }
   }
 
   fn message(&self) -> &'static str {
     match self {
-            TransformError::InvalidCSSAttribute(_) =>
+            UnsupportedCssProp::InvalidCSSAttribute(_) =>
                 "Invalid CSS attribute. The 'css' prop should contain a valid CSS-in-JS expression. \
                 Example: css={css`color: red;`}",
 
-            TransformError::UnsupportedSpreadElement(_) =>
+            UnsupportedCssProp::UnsupportedSpreadElement(_) =>
                 "Spread elements are not supported in the 'css' prop. \
                     Instead, use a css template literals for your styles. \
                     Example: css={css`color: red;`}",
 
-            TransformError::InvalidJSXAttribute(_) =>
+            UnsupportedCssProp::InvalidJSXAttribute(_) =>
                 "Invalid JSX attribute detected. Ensure all attributes have valid names and values. \
                 Example: className=\"my-class\" or style={{ color: 'red' }}",
 
-            TransformError::MissingAttributeValue(_) =>
+            UnsupportedCssProp::MissingAttributeValue(_) =>
                 "An attribute is missing its value. All attributes should have a value assigned. \
                 Example: css={styles} or className=\"my-class\"",
 
-            TransformError::InvalidJSXEmptyExpr(_) =>
+            UnsupportedCssProp::InvalidJSXEmptyExpr(_) =>
                 "Invalid empty JSX expression found. Ensure your JSX expressions are valid JavaScript expressions.",
 
-            TransformError::UnsupportedAttributeValue(_) =>
+            UnsupportedCssProp::UnsupportedAttributeValue(_) =>
                 "Unsupported attribute value type. Use string literals for className, \
                 template literals for css prop, and object literals for style prop.",
 
-            TransformError::StyleReference(_) =>
+            UnsupportedCssProp::StyleReference(_) =>
                 "References to styles declared elsewhere are not supported in the 'css' prop - \
                 the referenced styles are not compiled at this usage and would silently never apply. \
                 Wrap the reference in a css template instead. \
                 Example: css={css`${mixin}`}",
 
-            TransformError::UnsupportedCssValue(_) =>
+            UnsupportedCssProp::UnsupportedValue(_) =>
                 "Unsupported value for the 'css' prop. Only styles written in place apply: \
                 a css template, an atoms() call, those combined with ?:, && or ||, \
                 and the falsy values false, null and undefined.\n\
@@ -416,7 +430,7 @@ impl TransformError {
                 Example: css={css`color: red;`}",
 
             #[cfg(swc_ast_unknown)]
-            TransformError::UnsupportedJSXAttrOrSpread() =>
+            UnsupportedCssProp::UnsupportedJSXAttrOrSpread() =>
                 "Unsupported JSX attribute or spread element detected. Ensure all attributes have valid names and values. \
                 Example: className=\"my-class\" or style={{ color: 'red' }}",
         }
