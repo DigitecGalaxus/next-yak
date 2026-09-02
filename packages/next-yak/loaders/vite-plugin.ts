@@ -1,4 +1,4 @@
-import { Options, transform as swcTransform } from "@swc/core";
+import { type JscConfig, Options, transform as swcTransform } from "@swc/core";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
@@ -10,6 +10,7 @@ import { resolveYakContext, YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+import { getSwcParserOptions } from "./lib/swcParserOptions.js";
 const require = createRequire(import.meta.url);
 
 type ViteYakPluginOptions = YakConfigOptions & {
@@ -21,20 +22,27 @@ type ViteYakPluginOptions = YakConfigOptions & {
    * @defaultValue Vite's resolved `root`
    */
   basePath?: string;
-  swcOptions?: Omit<
-    Options,
-    "filename" | "sourceFileName" | "inputSourceMap" | "sourceMaps" | "sourceRoot"
-  >;
+  /**
+   * Overrides for the SWC pass which runs the yak transform.
+   */
+  swcOptions?: SwcOverrides;
+};
+
+/**
+ * Everything of the SWC options which is not owned by the yak transform
+ * (current file being compiled and plugins can't be overridden)
+ */
+type SwcOverrides = Omit<
+  Options,
+  "filename" | "sourceFileName" | "inputSourceMap" | "sourceMaps" | "sourceRoot" | "jsc"
+> & {
+  jsc?: Omit<JscConfig, "experimental"> & {
+    experimental?: Omit<NonNullable<JscConfig["experimental"]>, "plugins">;
+  };
 };
 
 const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
   jsc: {
-    parser: {
-      syntax: "typescript",
-      tsx: true,
-      decorators: false,
-      dynamicImport: true,
-    },
     transform: {
       react: {
         runtime: "preserve",
@@ -290,8 +298,13 @@ function transform(
     sourceRoot: rootPath,
     ...yakOptions.swcOptions,
     jsc: {
+      // Derive the parser from the file name, unless the user configured one
+      parser: getSwcParserOptions(modulePath),
       ...yakOptions.swcOptions?.jsc,
       experimental: {
+        // Keep `import data from "./data.json" with { type: "json" }` intact
+        keepImportAttributes: true,
+        ...yakOptions.swcOptions?.jsc?.experimental,
         plugins: [
           [
             yakSwcPath,
