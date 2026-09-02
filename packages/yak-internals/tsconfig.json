@@ -3,12 +3,8 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": [
-      "ES2022"
-    ],
-    "types": [
-      "node"
-    ],
+    "lib": ["ES2022"],
+    "types": ["node"],
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -16,13 +12,6 @@
     "esModuleInterop": true,
     "isolatedModules": true
   },
-  "include": [
-    "config.ts",
-    "loaders/**/*",
-    "cross-file-resolver/**/*",
-    "isolated-source-eval/**/*"
-  ],
-  "exclude": [
-    "isolated-source-eval/__tests__/fixtures/**"
-  ]
+  "include": ["config.ts", "loaders/**/*", "cross-file-resolver/**/*", "isolated-source-eval/**/*"],
+  "exclude": ["isolated-source-eval/__tests__/fixtures/**"]
 }

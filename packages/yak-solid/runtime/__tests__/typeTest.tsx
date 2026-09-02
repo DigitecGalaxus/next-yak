@@ -59,4 +59,13 @@ const override = <YakThemeContext value={() => ({})}>{cssPropUsage}</YakThemeCon
 // @ts-expect-error - the context value must be an accessor, not a theme object
 const invalidOverride = <YakThemeContext value={{}}>{cssPropUsage}</YakThemeContext>;
 
-export { buttonUsage, customUsage, withAttrsUsage, Spinner, provider, themeValue, override, invalidOverride };
+export {
+  buttonUsage,
+  customUsage,
+  withAttrsUsage,
+  Spinner,
+  provider,
+  themeValue,
+  override,
+  invalidOverride,
+};

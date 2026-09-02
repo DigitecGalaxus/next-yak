@@ -1,10 +1,7 @@
 // Public entry for custom bundler integrations (e.g. esbuild): the
 // bundler-agnostic cross-file resolve logic, usable without webpack.
 // Pair with `next-yak/isolated-source-eval` for `.yak` file evaluation.
-export {
-  parseModule,
-  uncachedParseModule,
-} from "yak-internals/cross-file-resolver/parse-module";
+export { parseModule, uncachedParseModule } from "yak-internals/cross-file-resolver/parse-module";
 export type {
   ParseContext,
   ModuleExports,

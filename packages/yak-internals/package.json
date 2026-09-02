@@ -4,6 +4,9 @@
   "private": true,
   "description": "Shared framework-agnostic loader infrastructure, bundled into the yak runtime packages at build time. Never published.",
   "type": "module",
+  "sideEffects": [
+    "./isolated-source-eval/worker.ts"
+  ],
   "exports": {
     "./config": "./config.ts",
     "./vite-plugin-core": "./loaders/vite-plugin-core.ts",
@@ -30,8 +33,5 @@
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
     "vitest": "catalog:dev"
-  },
-  "sideEffects": [
-    "./isolated-source-eval/worker.ts"
-  ]
+  }
 }

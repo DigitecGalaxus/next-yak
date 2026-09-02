@@ -1,24 +1,13 @@
 {
   "compilerOptions": {
     "paths": {
-      "@yak/solid": [
-        "./runtime/index.ts"
-      ],
-      "@yak/solid/context/baseContext": [
-        "./runtime/context/baseContext.ts"
-      ],
-      "@yak/solid/context": [
-        "./runtime/context/index.ts"
-      ]
+      "@yak/solid": ["./runtime/index.ts"],
+      "@yak/solid/context/baseContext": ["./runtime/context/baseContext.ts"],
+      "@yak/solid/context": ["./runtime/context/index.ts"]
     },
     "target": "ES2022",
-    "lib": [
-      "DOM",
-      "ESNext"
-    ],
-    "types": [
-      "node"
-    ],
+    "lib": ["DOM", "ESNext"],
+    "types": ["node"],
     "jsx": "preserve",
     "jsxImportSource": "@solidjs/web",
     "module": "NodeNext",
@@ -30,13 +19,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": [
-    "**/node_modules/**/*",
-    "**/__tests__/**/*"
-  ],
-  "include": [
-    "runtime/**/*",
-    "loaders/**/*",
-    "tsdown.config.ts"
-  ]
+  "exclude": ["**/node_modules/**/*", "**/__tests__/**/*"],
+  "include": ["runtime/**/*", "loaders/**/*", "tsdown.config.ts"]
 }
