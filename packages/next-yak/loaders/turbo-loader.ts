@@ -8,6 +8,7 @@ import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "./lib/debugLogger.js";
 import { extractCss } from "./lib/extractCss.js";
 import { parseExports } from "./lib/resolveCrossFileSelectors.js";
+import { getSwcParserOptions } from "./lib/swcParserOptions.js";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
 const yakSwcPluginPath = universalRequire.resolve("yak-swc");
@@ -140,7 +141,11 @@ function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
       sourceFileName: modulePath,
       sourceRoot: rootPath,
       jsc: {
+        // Derive the parser from the file name the same way Next.js does
+        parser: getSwcParserOptions(modulePath),
         experimental: {
+          // Keep `import data from "./data.json" with { type: "json" }` intact
+          keepImportAttributes: true,
           plugins: [[yakSwcPluginPath, yakPluginOptions]],
         },
         transform: {
