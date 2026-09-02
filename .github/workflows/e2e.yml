@@ -6,6 +6,8 @@ on:
     paths:
       - "./package.json"
       - "packages/next-yak/**"
+      - "packages/yak-internals/**"
+      - "packages/yak-solid/**"
       - "packages/yak-swc/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
@@ -14,6 +16,8 @@ on:
     paths:
       - "./package.json"
       - "packages/next-yak/**"
+      - "packages/yak-internals/**"
+      - "packages/yak-solid/**"
       - "packages/yak-swc/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"

@@ -22,5 +22,11 @@
     "skipLibCheck": true
   },
   "exclude": ["**/node_modules/**/*", "**/__tests__/**/*"],
-  "include": ["runtime/**/*", "loaders/**/*", "withYak/**/*", "isolated-source-eval/**/*"]
+  "include": [
+    "runtime/**/*",
+    "loaders/**/*",
+    "withYak/**/*",
+    "isolated-source-eval/**/*",
+    "tsdown.config.ts"
+  ]
 }

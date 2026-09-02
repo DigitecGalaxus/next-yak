@@ -7,6 +7,7 @@
   },
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-unused-expressions": ["error", { "allowTaggedTemplates": true }],
     "no-var": "off",
     "no-control-regex": "off",
     "typescript/no-empty-object-type": "off",
@@ -49,7 +50,7 @@
     "cross-file-tests/__tests__/.tmp/**",
     "packages/eslint-plugin-yak/rules/fixtures/**",
     "packages/yak-swc/yak_swc/tests/fixture/**",
-    "packages/next-yak/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
+    "packages/yak-internals/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
     "e2e/**",
     "docs/**"
   ]

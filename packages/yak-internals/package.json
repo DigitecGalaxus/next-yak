@@ -1,0 +1,37 @@
+{
+  "name": "yak-internals",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared framework-agnostic loader infrastructure, bundled into the yak runtime packages at build time. Never published.",
+  "type": "module",
+  "sideEffects": [
+    "./isolated-source-eval/worker.ts"
+  ],
+  "exports": {
+    "./config": "./config.ts",
+    "./vite-plugin-core": "./loaders/vite-plugin-core.ts",
+    "./debug-logger": "./loaders/lib/debugLogger.ts",
+    "./extract-css": "./loaders/lib/extractCss.ts",
+    "./parse-exports": "./loaders/lib/parseExports.ts",
+    "./swc-parser-options": "./loaders/lib/swcParserOptions.ts",
+    "./cross-file-resolver/parse-module": "./cross-file-resolver/parseModule.ts",
+    "./cross-file-resolver/resolve": "./cross-file-resolver/resolveCrossFileConstant.ts",
+    "./cross-file-resolver/errors": "./cross-file-resolver/Errors.ts",
+    "./cross-file-resolver/types": "./cross-file-resolver/types.ts",
+    "./isolated-source-eval": "./isolated-source-eval/index.ts",
+    "./isolated-source-eval/worker": "./isolated-source-eval/worker.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:types": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@babel/parser": "catalog:core",
+    "@babel/types": "catalog:dev",
+    "@swc/core": "catalog:core",
+    "@types/node": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev"
+  }
+}

@@ -89,6 +89,9 @@ const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".mjs", ".js", ".jsx", ".html", 
 
 const CASE_NAME_PLACEHOLDER = "[case-name]";
 
+/** UI framework a bundler app renders with (see playwright-base.ts) */
+export type Framework = "react" | "solid";
+
 // ---------------------------------------------------------------------------
 // Discovery
 // ---------------------------------------------------------------------------
@@ -129,6 +132,25 @@ export function parseCLIArgs(
   return { bundlers, cases };
 }
 
+/**
+ * Keep only the cases a bundler's framework can render: react bundlers need
+ * an index.tsx, other frameworks an index.<framework>.tsx variant. A case
+ * without an index.tsx is exclusive to the framework of its variants.
+ */
+async function filterCasesForFramework(cases: string[], framework: Framework): Promise<string[]> {
+  const indexFile = framework === "react" ? "index.tsx" : `index.${framework}.tsx`;
+  const filtered: string[] = [];
+  for (const caseName of cases) {
+    try {
+      await access(join(e2eRoot, "cases", caseName, indexFile));
+      filtered.push(caseName);
+    } catch {
+      // Case not available for this framework
+    }
+  }
+  return filtered;
+}
+
 // ---------------------------------------------------------------------------
 // Assembly — builds .tmp/ with all cases for a bundler
 // ---------------------------------------------------------------------------
@@ -141,32 +163,56 @@ export function parseCLIArgs(
  *    are duplicated per case with the placeholder replaced in both path and
  *    content; other files are copied once as shared files.
  */
-export async function assembleBundler(bundler: string, caseNames: string[]): Promise<void> {
+export async function assembleBundler(
+  bundler: string,
+  caseNames: string[],
+  framework: Framework = "react",
+): Promise<void> {
   const tmpDir = resolve(e2eRoot, "bundlers", bundler, ".tmp");
   await rm(tmpDir, { recursive: true, force: true });
   await mkdir(tmpDir, { recursive: true });
 
   // Copy all case files into .tmp/cases/<case-name>/
   for (const caseName of caseNames) {
-    const caseDest = join(tmpDir, "cases", caseName);
-    await mkdir(caseDest, { recursive: true });
-    await copyCase(caseName, caseDest);
+    await copyCase(join(e2eRoot, "cases", caseName), join(tmpDir, "cases", caseName), framework);
   }
 
   // Expand bundler template files into .tmp/
   await expandBundlerTemplates(bundler, tmpDir, caseNames);
 }
 
-/** Copy a case's source files (except index.test.ts) into the destination directory. */
-async function copyCase(caseName: string, caseDir: string): Promise<void> {
-  const srcDir = join(e2eRoot, "cases", caseName);
+/** "index.tsx" -> "index.solid.tsx", "typography.yak.ts" -> "typography.solid.yak.ts" */
+function frameworkVariantName(name: string, framework: Framework): string {
+  const dot = name.indexOf(".");
+  return dot === -1 ? name : `${name.slice(0, dot)}.${framework}${name.slice(dot)}`;
+}
+
+/**
+ * Copy a case's source files (except index.test.ts) into the destination
+ * directory. Files with a framework marker in their name (e.g. index.solid.tsx)
+ * only ship to bundlers of that framework, renamed with the marker stripped so
+ * they replace their react sibling and imports stay unchanged.
+ */
+async function copyCase(srcDir: string, destDir: string, framework: Framework): Promise<void> {
   const entries = await readdir(srcDir, { withFileTypes: true });
+  await mkdir(destDir, { recursive: true });
+  const names = new Set(entries.map((entry) => entry.name));
 
   for (const entry of entries) {
     if (entry.name === "index.test.ts") continue; // tests run from cases/, not .tmp/
-    await cp(join(srcDir, entry.name), join(caseDir, entry.name), {
-      recursive: true,
-    });
+    if (entry.isDirectory()) {
+      await copyCase(join(srcDir, entry.name), join(destDir, entry.name), framework);
+      continue;
+    }
+    if (entry.name.includes(`.${framework}.`)) {
+      // Variant for this framework — strip the marker so it replaces the react file
+      await cp(join(srcDir, entry.name), join(destDir, entry.name.replace(`.${framework}.`, ".")));
+    } else if (/\.(react|solid)\./.test(entry.name)) {
+      // Variant for another framework — never ship it
+    } else if (framework === "react" || !names.has(frameworkVariantName(entry.name, framework))) {
+      // Default (react) file — ship unless this framework replaces it
+      await cp(join(srcDir, entry.name), join(destDir, entry.name));
+    }
   }
 }
 
@@ -317,6 +363,14 @@ export async function readPort(bundler: string): Promise<number> {
   const config = configModule.default;
   // Playwright's defineConfig returns the object as-is
   return config.webServer.port;
+}
+
+/** Read the framework from the bundler's playwright.config.ts (default "react"). */
+export async function readFramework(bundler: string): Promise<Framework> {
+  const configPath = join(e2eRoot, "bundlers", bundler, "playwright.config.ts");
+  const configModule = await import(configPath);
+  const config = configModule.default;
+  return config.metadata?.framework ?? "react";
 }
 
 /** Read the package name from the bundler's package.json. */
@@ -569,7 +623,16 @@ export async function runBundlerCases(
   options: RunOptions,
   discoveredBundlers: string[],
 ): Promise<Result[]> {
-  await assembleBundler(bundler, cases);
+  const framework = await readFramework(bundler);
+  const frameworkCases = await filterCasesForFramework(cases, framework);
+  if (frameworkCases.length === 0) {
+    console.log(
+      styleText("yellow", `[${bundler}] skipped — no case provides a ${framework} variant`),
+    );
+    return [];
+  }
+
+  await assembleBundler(bundler, frameworkCases, framework);
 
   const port = await readPort(bundler);
   const packageName = await readPackageName(bundler);
@@ -584,8 +647,8 @@ export async function runBundlerCases(
     await waitForPort(port);
 
     const results: Result[] = [];
-    const hmrCases = cases.filter((c) => c.startsWith("hmr-"));
-    const nonHmrCases = cases.filter((c) => !c.startsWith("hmr-"));
+    const hmrCases = frameworkCases.filter((c) => c.startsWith("hmr-"));
+    const nonHmrCases = frameworkCases.filter((c) => !c.startsWith("hmr-"));
 
     // Batch all non-HMR cases in one Playwright process (parallel workers)
     if (nonHmrCases.length > 0) {

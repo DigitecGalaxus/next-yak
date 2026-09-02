@@ -14,10 +14,12 @@ test(
       window.__hmr = true;
     });
 
-    // Add a second styled component via HMR
+    // Add a second styled component via HMR (the JSX below is framework-neutral,
+    // only the import source differs per framework)
+    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "next-yak";
     await testEnv.writeFile(
       "index.tsx",
-      `import { styled } from "next-yak";
+      `import { styled } from "${yakPackage}";
 
 const First = styled.div\`
   color: red;

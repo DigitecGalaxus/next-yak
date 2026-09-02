@@ -11,7 +11,7 @@
     "benchmarks/bench/generated/",
     "cross-file-tests/__tests__/.tmp/",
     "packages/yak-swc/yak_swc/tests/fixture/",
-    "packages/next-yak/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
+    "packages/yak-internals/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
     "examples/next-js/next-env.d.ts",
     "docs/.source/",
     "docs/playground-wasm/out/",

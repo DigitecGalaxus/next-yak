@@ -1,0 +1,20 @@
+{
+  "name": "e2e-vite-solid",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && vite --port 5373",
+    "build": "cd .tmp && vite build",
+    "start": "cd .tmp && vite preview --port 5373"
+  },
+  "dependencies": {
+    "@solidjs/web": "catalog:solid",
+    "@yak/solid": "workspace:*",
+    "solid-js": "catalog:solid"
+  },
+  "devDependencies": {
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "vite-plugin-solid": "catalog:solid"
+  }
+}

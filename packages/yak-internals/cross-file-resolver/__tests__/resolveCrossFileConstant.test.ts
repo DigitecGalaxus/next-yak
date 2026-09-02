@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { assert, expect, test, vi } from "vitest";
-import { parseExports } from "../../loaders/lib/resolveCrossFileSelectors.js";
+import { parseExports } from "../../loaders/lib/parseExports.js";
 import { ParsedModule, parseModule } from "../parseModule.js";
 import { resolveCrossFileConstant } from "../resolveCrossFileConstant.js";
 

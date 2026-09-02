@@ -25,19 +25,31 @@ export interface TestEnv {
   url: string;
   /** Directory name under bundlers/ identifying the bundler being tested */
   bundlerDirName: string;
+  /** UI framework the bundler renders with (see playwright-base.ts) */
+  framework: "react" | "solid";
   readFile(rel: string): Promise<string>;
   writeFile(rel: string, content: string): Promise<void>;
   /** Restore a file from the original case source */
   resetFile(rel: string): Promise<void>;
 }
 
+/** "index.tsx" -> "index.solid.tsx" (matches the copyCase rename in e2eEnvironment.ts) */
+function frameworkVariantName(rel: string, framework: string): string {
+  const slash = rel.lastIndexOf("/") + 1;
+  const dot = rel.indexOf(".", slash);
+  return dot === -1 ? rel : `${rel.slice(0, dot)}.${framework}${rel.slice(dot)}`;
+}
+
 const e2eRoot = import.meta.dirname;
 
 export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page) => Promise<void>) {
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
-    const bundlerDirName =
-      (testInfo.project.metadata as { bundlerDirName?: string }).bundlerDirName ??
-      testInfo.project.name;
+    const metadata = testInfo.project.metadata as {
+      bundlerDirName?: string;
+      framework?: "react" | "solid";
+    };
+    const bundlerDirName = metadata.bundlerDirName ?? testInfo.project.name;
+    const framework = metadata.framework ?? "react";
     const tmpDir = resolve(e2eRoot, "bundlers", bundlerDirName, ".tmp", "cases", caseName);
     const srcDir = resolve(e2eRoot, "cases", caseName);
 
@@ -47,6 +59,7 @@ export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page)
       cwd: tmpDir,
       url: (testInfo.project.metadata as { url: string }).url,
       bundlerDirName,
+      framework,
       async readFile(rel: string) {
         return readFile(join(tmpDir, rel), "utf-8");
       },
@@ -61,6 +74,15 @@ export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page)
         await writeFile(join(tmpDir, rel), content);
       },
       async resetFile(rel: string) {
+        if (framework !== "react") {
+          // The .tmp file may have been assembled from a framework variant
+          try {
+            await copyFile(join(srcDir, frameworkVariantName(rel, framework)), join(tmpDir, rel));
+            return;
+          } catch {
+            // No variant — the react source was shared as-is
+          }
+        }
         await copyFile(join(srcDir, rel), join(tmpDir, rel));
       },
     };

@@ -1,4 +1,4 @@
-import { YakConfigOptions } from "../../withYak/index.js";
+import { YakConfigOptions } from "../../config.js";
 
 /**
  * Extracts CSS content from code that contains YAK-generated CSS comments.

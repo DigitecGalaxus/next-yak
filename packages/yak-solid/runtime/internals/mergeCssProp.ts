@@ -1,0 +1,54 @@
+import { Classes } from "../cssLiteral.js";
+import { RuntimeStyleProcessor } from "../publicStyledApi.js";
+
+/**
+ * This is an internal helper function to merge relevant props of a native element with a css prop.
+ * It's automatically added when using the `css` prop in a JSX element.
+ * e.g.:
+ * ```tsx
+ * <p
+ *  class="foo"
+ *  css={css`
+ *   color: green;
+ * `}
+ * {...{ style: { padding: "30px" }}}
+ * />
+ */
+export const mergeCssProp = (
+  relevantProps: {
+    class?: string;
+    style?: Record<string, string>;
+  } & Record<string, unknown>,
+  cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
+) => {
+  const classes = new Classes(relevantProps.class);
+
+  const existingStyle = relevantProps.style;
+  const style = existingStyle ? { ...existingStyle } : {};
+
+  // a falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on` false
+  if (cssProp) {
+    cssProp({}, classes, style);
+  }
+
+  // Forward all other props (onClick, aria-*, id, …) untouched and only
+  // override class/style with the merged result — the transform already
+  // built `relevantProps` in JSX attribute order, so this preserves overrides.
+  const result: Record<string, unknown> & {
+    class?: string;
+    style?: Record<string, string>;
+  } = { ...relevantProps };
+
+  if (Object.keys(style).length > 0) {
+    result.style = style;
+  } else {
+    delete result.style;
+  }
+  if (classes.value) {
+    result.class = classes.value;
+  } else {
+    delete result.class;
+  }
+
+  return result;
+};

@@ -7,7 +7,7 @@
 //! small string and JSX attribute builders at the bottom of the module
 
 use crate::utils::ast_helper::unwrap_type_casts;
-use crate::yak_imports::YakImports;
+use crate::yak_imports::{YakImports, YakRuntime};
 use swc_core::{
   atoms::{wtf8::Wtf8Buf, Wtf8Atom},
   common::{Span, Spanned, DUMMY_SP},
@@ -278,11 +278,11 @@ pub(super) fn expr_attr_value(expr: Box<Expr>) -> JSXAttrValue {
   })
 }
 
-/// Builds a `className` JSX attribute
-pub(super) fn class_name_attr(value: JSXAttrValue) -> JSXAttrOrSpread {
+/// Builds the runtime's class JSX attribute
+pub(super) fn class_name_attr(runtime: YakRuntime, value: JSXAttrValue) -> JSXAttrOrSpread {
   JSXAttrOrSpread::JSXAttr(JSXAttr {
     span: DUMMY_SP,
-    name: JSXAttrName::Ident(IdentName::new("className".into(), DUMMY_SP)),
+    name: JSXAttrName::Ident(IdentName::new(runtime.class_attr().into(), DUMMY_SP)),
     value: Some(value),
   })
 }

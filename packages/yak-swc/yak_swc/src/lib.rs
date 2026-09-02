@@ -26,7 +26,7 @@ use utils::fold::StyledFold;
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
 mod yak_imports;
-use yak_imports::{visit_module_imports, YakImports};
+use yak_imports::{visit_module_imports, YakImports, YakRuntime};
 mod math_evaluate;
 #[cfg(feature = "plugin")]
 mod plugin;
@@ -97,6 +97,13 @@ pub struct Config {
   /// when another library on the same element uses its own `css` prop.
   #[serde(default = "Config::strict_css_prop_default")]
   pub strict_css_prop: bool,
+  /// Emit the /*YAK Extracted CSS:*/ comments (and their exported-component
+  /// metadata) that loaders parse to extract the CSS. Enabled by default.
+  /// A bundler plugin that reads the CSS through a separate transform (e.g.
+  /// the Vite plugin's virtual CSS modules) can disable this for the JS it
+  /// serves. The output then stays byte-identical under CSS-only edits.
+  #[serde(default = "Config::emit_css_comments_default")]
+  pub emit_css_comments: bool,
 }
 
 impl Config {
@@ -109,6 +116,10 @@ impl Config {
   }
 
   fn strict_css_prop_default() -> bool {
+    true
+  }
+
+  fn emit_css_comments_default() -> bool {
     true
   }
 
@@ -133,6 +144,7 @@ impl Default for Config {
       react_refresh_reg: Default::default(),
       fold_static: Config::fold_static_default(),
       strict_css_prop: Config::strict_css_prop_default(),
+      emit_css_comments: Config::emit_css_comments_default(),
     }
   }
 }
@@ -234,6 +246,8 @@ where
   function_depth: u32,
   /// Fail loudly on a `css` prop next-yak can't handle instead of leaving it untouched
   strict_css_prop: bool,
+  /// Emit the /*YAK Extracted CSS:*/ comments loaders parse to extract the CSS
+  emit_css_comments: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -251,6 +265,7 @@ where
     react_refresh_reg: bool,
     fold_static: bool,
     strict_css_prop: bool,
+    emit_css_comments: bool,
   ) -> Self {
     Self {
       current_css_state: None,
@@ -282,6 +297,7 @@ where
       global_style_error: false,
       function_depth: 0,
       strict_css_prop,
+      emit_css_comments,
     }
   }
 
@@ -780,9 +796,10 @@ where
     // Add the css module import to the top of the file
     // if any yak imports are used
     if self.yak_library_imports.is_some() {
+      let internal_specifier = self.yak_imports().internal_specifier();
       for item in module.body.iter_mut() {
         if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_declaration)) = item {
-          if import_declaration.src.value == "next-yak/internal" {
+          if import_declaration.src.value == *internal_specifier {
             // Add all stored utility imports
             import_declaration
               .specifiers
@@ -985,7 +1002,11 @@ where
       };
     }
     if let Expr::Ident(ident) = default_expr {
-      if let Some(comment) = self.default_export_comment.as_ref() {
+      if let Some(comment) = self
+        .default_export_comment
+        .as_ref()
+        .filter(|_| self.emit_css_comments)
+      {
         self.comments.add_leading(
           ident.span_lo(),
           Comment {
@@ -1203,11 +1224,13 @@ where
     let current_variable_id = self.get_current_component_id();
     let is_default_exported = self.is_default_exported(&current_variable_id);
 
+    let mut is_exported_styled = false;
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
       "styled" if is_top_level => {
+        is_exported_styled = self.current_exported || is_default_exported;
         // Track exported styled component names for $RefreshReg$ injection
-        if self.react_refresh_reg && (self.current_exported || is_default_exported) {
+        if self.react_refresh_reg && is_exported_styled {
           let name = current_variable_id.to_readable_string();
           if name != "default" {
             self.exported_styled_names.push(name);
@@ -1352,15 +1375,32 @@ where
           }
         }
 
-        self.comments.add_leading(
-          result_span.lo,
-          Comment {
-            kind: swc_core::common::comments::CommentKind::Block,
-            span: DUMMY_SP,
-            text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
-          },
-        );
+        if self.emit_css_comments {
+          self.comments.add_leading(
+            result_span.lo,
+            Comment {
+              kind: swc_core::common::comments::CommentKind::Block,
+              span: DUMMY_SP,
+              text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
+            },
+          );
+        }
       }
+    }
+    // Add solids "@refresh component" pragma so Solid's native compiler
+    // registers a call-shaped binding with solid-refresh (solidjs/solid#3090).
+    // Emitted for every exported styled component:
+    // a styled-only module then self-accepts edits, and a mixed module
+    // patches its styled exports in place.
+    if is_exported_styled && matches!(self.yak_imports().runtime(), YakRuntime::Solid) {
+      self.comments.add_leading(
+        result_span.lo,
+        Comment {
+          kind: swc_core::common::comments::CommentKind::Block,
+          span: DUMMY_SP,
+          text: " @refresh component ".into(),
+        },
+      );
     }
     // Expressions with a PURE span already carry the annotation on the node
     // itself; adding a comment at BytePos::PURE would collide across nodes.
@@ -1513,6 +1553,7 @@ mod tests {
   struct FixtureOptions {
     fold_static: bool,
     strict_css_prop: bool,
+    emit_css_comments: bool,
   }
 
   impl Default for FixtureOptions {
@@ -1520,6 +1561,7 @@ mod tests {
       Self {
         fold_static: false,
         strict_css_prop: true,
+        emit_css_comments: true,
       }
     }
   }
@@ -1559,6 +1601,7 @@ mod tests {
         false,
         options.fold_static,
         options.strict_css_prop,
+        options.emit_css_comments,
       )),
     )
   }

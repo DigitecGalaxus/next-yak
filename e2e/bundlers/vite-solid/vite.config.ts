@@ -1,0 +1,26 @@
+import { readdirSync } from "node:fs";
+import { resolve } from "node:path";
+import { yak } from "@yak/solid/vite";
+import { defineConfig } from "vite";
+import solid from "vite-plugin-solid";
+
+// Discover all .html entry points for multi-page build
+const htmlEntries: Record<string, string> = {};
+for (const file of readdirSync(__dirname)) {
+  if (file.endsWith(".html")) {
+    htmlEntries[file.replace(".html", "")] = resolve(__dirname, file);
+  }
+}
+
+// Two-mode e2e: opt out of static folding only when YAK_E2E_FOLD_STATIC is
+// "false". Otherwise pass no foldStatic key so the config stays inert.
+const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? { foldStatic: false } : {};
+
+export default defineConfig({
+  plugins: [yak(yakOptions), solid()],
+  build: {
+    rollupOptions: {
+      input: htmlEntries,
+    },
+  },
+});

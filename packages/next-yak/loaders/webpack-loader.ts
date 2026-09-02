@@ -1,7 +1,7 @@
 import type { LoaderContext } from "webpack";
 import type { YakConfigOptions } from "../withYak/index.js";
-import { createDebugLogger } from "./lib/debugLogger.js";
-import { extractCss } from "./lib/extractCss.js";
+import { createDebugLogger } from "yak-internals/debug-logger";
+import { extractCss } from "yak-internals/extract-css";
 import { resolveCrossFileConstant } from "./lib/resolveCrossFileSelectors.js";
 
 /**

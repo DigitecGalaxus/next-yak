@@ -6,6 +6,8 @@ on:
     paths:
       - "./package.json"
       - "packages/next-yak/**"
+      - "packages/yak-internals/**"
+      - "packages/yak-solid/**"
       - "packages/yak-swc/**"
       - "packages/storybook-addon-yak/**"
       - "packages/eslint-plugin-yak/**"
@@ -15,6 +17,8 @@ on:
     paths:
       - "./package.json"
       - "packages/next-yak/**"
+      - "packages/yak-internals/**"
+      - "packages/yak-solid/**"
       - "packages/yak-swc/**"
       - "packages/storybook-addon-yak/**"
       - "packages/eslint-plugin-yak/**"

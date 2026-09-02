@@ -38,5 +38,6 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     config.react_refresh_reg,
     config.fold_static,
     config.strict_css_prop,
+    config.emit_css_comments,
   )))
 }

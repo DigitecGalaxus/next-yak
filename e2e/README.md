@@ -72,6 +72,26 @@ YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
 (or unset) keeps folding on. The runner prints the active mode at startup and in
 the summary.
 
+## Frameworks
+
+Bundlers render with React by default. A bundler can declare a different
+framework in its Playwright config (`framework: "solid"` in
+`bundlers/vite-solid/playwright.config.ts`); such bundlers only run cases that
+provide a framework variant.
+
+Port a case to Solid by adding an `index.solid.tsx` next to the React
+`index.tsx`: same `data-testid`s, importing `@yak/solid` instead of
+`next-yak`, written with Solid idioms (`class`, signals). Helper modules that
+import `next-yak` get variants too (`mixin.solid.tsx`,
+`typography.solid.yak.ts`). During assembly the `.solid` marker is stripped
+(`index.solid.tsx` → `.tmp/cases/<name>/index.tsx`), replacing the React
+file. Variants therefore import siblings by their unmarked names, and the
+shared `index.test.ts` needs no changes. Tests can branch on
+`testEnv.framework` when the frameworks behave differently.
+
+A case without an `index.tsx` is exclusive to the framework of its variants:
+React bundlers skip it. Helper files in such a case need no `.solid.` marker.
+
 ## Adding a test case
 
 Create `cases/<name>/index.tsx` and `cases/<name>/index.test.ts`:

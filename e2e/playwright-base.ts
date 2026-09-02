@@ -15,10 +15,17 @@ interface BundlerPlaywrightConfig {
   urlPattern: string;
   /** Port the server listens on (managed by e2eEnvironment.ts) */
   port: number;
+  /**
+   * UI framework the bundler app renders with (default: "react"). A bundler
+   * only runs cases that provide a matching index file: index.tsx for react,
+   * index.<framework>.tsx otherwise.
+   */
+  framework?: "react" | "solid";
 }
 
 export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
   const e2eRoot = import.meta.dirname;
+  const framework = config.framework ?? "react";
 
   // CASES (comma-separated) for batch mode, CASE for single-case (HMR) mode
   const caseList = process.env.CASES
@@ -35,6 +42,7 @@ export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
       url: config.urlPattern.replaceAll("[case-name]", caseName),
       urlPattern: config.urlPattern,
       bundlerDirName: config.name,
+      framework,
     },
     use: { baseURL: `http://localhost:${config.port}` },
   }));
@@ -42,6 +50,8 @@ export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {
   return defineConfig({
     workers: isBatch ? undefined : 1,
     projects,
+    // Read by e2eEnvironment.ts (like webServer.port) to filter cases
+    metadata: { framework },
 
     webServer: {
       // Playwright requires a webServer.command, but e2eEnvironment.ts manages the actual

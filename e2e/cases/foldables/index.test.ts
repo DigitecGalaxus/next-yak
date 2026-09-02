@@ -32,11 +32,15 @@ test(
     await expect(runtime).toHaveCSS("color", "rgb(255, 0, 0)");
     await expect(runtime).not.toHaveAttribute("$active");
 
-    // the inlined condition stays reactive
+    // the inlined condition stays reactive. The server-rendered button is
+    // clickable before hydration attaches its handler, so on a cold dev
+    // server a click can get lost — retry until it takes effect.
     const stateDriven = page.getByTestId("toggle-state");
     await expect(stateDriven).toHaveCSS("color", "rgb(0, 0, 255)");
-    await page.getByTestId("activate").click();
-    await expect(stateDriven).toHaveCSS("color", "rgb(255, 0, 0)");
+    await expect(async () => {
+      await page.getByTestId("activate").click();
+      await expect(stateDriven).toHaveCSS("color", "rgb(255, 0, 0)", { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
 
     // a folded css prop class merges into the inlined className
     const merged = page.getByTestId("merged");

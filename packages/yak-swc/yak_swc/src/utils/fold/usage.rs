@@ -58,7 +58,7 @@ use crate::utils::fold::css_expr::{
   merge_class_names, str_expr, str_lit, with_leading_space, ConditionSegment,
 };
 use crate::utils::fold::purity::{purity, Purity};
-use crate::yak_imports::YakImports;
+use crate::yak_imports::{YakImports, YakRuntime};
 
 /// Rewrites every foldable JSX usage of the registered components in the module
 pub(super) fn fold(
@@ -66,9 +66,11 @@ pub(super) fn fold(
   components: &FxHashMap<Id, FoldableComponent>,
   yak_imports: &mut YakImports,
 ) {
+  let runtime = yak_imports.runtime();
   module.visit_mut_with(&mut FoldVisitor {
     components,
     yak_imports,
+    runtime,
   });
 }
 
@@ -76,6 +78,7 @@ pub(super) fn fold(
 struct FoldVisitor<'a> {
   components: &'a FxHashMap<Id, FoldableComponent>,
   yak_imports: &'a mut YakImports,
+  runtime: YakRuntime,
 }
 
 impl FoldVisitor<'_> {
@@ -122,7 +125,10 @@ impl FoldVisitor<'_> {
       }
     }
     match plan.class_name {
-      ClassNameFold::Insert(index, value) => n.opening.attrs.insert(index, class_name_attr(value)),
+      ClassNameFold::Insert(index, value) => n
+        .opening
+        .attrs
+        .insert(index, class_name_attr(self.runtime, value)),
       ClassNameFold::Replace(index, value) => {
         let JSXAttrOrSpread::JSXAttr(attr) = &mut n.opening.attrs[index] else {
           // fold_attrs only records indices of plain JSXAttr entries
@@ -319,6 +325,7 @@ fn select_shape(
   attr_values: &FxHashMap<Atom, PropValue>,
   bindings: &[Binding],
   class_name_index: Option<usize>,
+  runtime: YakRuntime,
 ) -> FoldShape {
   let (Some(first), Some(last)) = (bindings.first(), bindings.last()) else {
     return FoldShape::Inline;
@@ -348,7 +355,7 @@ fn select_shape(
   // evaluates after it - which only matches source order if every bound prop
   // came first
   if let Some(class_name_index) = class_name_index {
-    if attr_purity(attr_values, &"className".into()) < Purity::Reorder
+    if attr_purity(attr_values, runtime.class_attr()) < Purity::Reorder
       && bindings
         .iter()
         .any(|binding| binding.attr_index > class_name_index)
@@ -433,7 +440,7 @@ impl FoldVisitor<'_> {
             // a css prop is folded before this pass runs - if it is still
             // present it is invalid and reported by the runtime path
             "css" => return None,
-            "className" => class_name_attr = Some((index, attr)),
+            name if *name == *self.runtime.class_attr() => class_name_attr = Some((index, attr)),
             _ => {}
           }
         }
@@ -456,18 +463,34 @@ impl FoldVisitor<'_> {
         inline_runtime_expressions(component, &mut binder, self.yak_imports)?;
       let (bakeable, bindings) = binder.split(attrs, &attr_values);
       class_name_expr.visit_mut_with(&mut BakeParams { values: &bakeable });
-      match select_shape(attrs, &attr_values, &bindings, class_name_index) {
+      match select_shape(
+        attrs,
+        &attr_values,
+        &bindings,
+        class_name_index,
+        self.runtime,
+      ) {
         FoldShape::Inline => YakClassName::Dynamic(class_name_expr),
         FoldShape::ClassNameIife => {
           slot = class_name_slot(attrs, &bindings, class_name_index);
           YakClassName::Dynamic(bind_params(class_name_expr, bindings))
         }
         FoldShape::ElementWrap => {
+          // Solid components run once, so an element-wrap would freeze its
+          // bound values (only the other shapes stay inside the class
+          // attribute, which Solid compiles to an effect) -> keep the
+          // runtime component instead
+          if self.runtime == YakRuntime::Solid {
+            return None;
+          }
           let read: FxHashSet<Atom> = binder.bound.keys().cloned().collect();
           capture = full_capture(attrs, &mut binder, &attr_values, &read);
           // the user's className is bound like any other value, so it composes
           // around the parameter block instead of evaluating inside it
-          if let Some(binding) = capture.iter().find(|binding| binding.name == "className") {
+          if let Some(binding) = capture
+            .iter()
+            .find(|binding| binding.name == *self.runtime.class_attr())
+          {
             user_class_name = Some(expr_attr_value(Box::new(Expr::Ident(
               binding.param.clone(),
             ))));
@@ -729,11 +752,10 @@ fn inline_expression(
 ///
 /// `ref` is absent on purpose: React 19, the minimum next-yak supports, passes
 /// it as an ordinary prop, so the runtime and the fold read the same value
+///
 fn is_runtime_injected_prop(name: &Atom) -> bool {
-  matches!(
-    name.as_ref(),
-    "theme" | "children" | "className" | "style" | "key"
-  )
+  matches!(name.as_ref(), "theme" | "children" | "style" | "key")
+    || YakRuntime::is_class_attr(name.as_ref())
 }
 
 /// An attribute's value expression and how freely the fold may treat it
@@ -790,9 +812,9 @@ fn attr_value_map(attrs: &[JSXAttrOrSpread]) -> FxHashMap<Atom, PropValue<'_>> {
 ///
 /// An attribute the map skipped (an empty `className={}` container) evaluates
 /// nothing, so it counts as freely movable
-fn attr_purity(attr_values: &FxHashMap<Atom, PropValue>, name: &Atom) -> Purity {
+fn attr_purity(attr_values: &FxHashMap<Atom, PropValue>, name: &str) -> Purity {
   attr_values
-    .get(name)
+    .get(&Atom::from(name))
     .map_or(Purity::Dup, |prop_value| prop_value.purity)
 }
 
@@ -1154,7 +1176,13 @@ mod tests {
         value: Box::new(Expr::Ident(Ident::from("bound_value"))),
       })
       .collect();
-    select_shape(&attrs, &attr_values, &bindings, class_name_index)
+    select_shape(
+      &attrs,
+      &attr_values,
+      &bindings,
+      class_name_index,
+      YakRuntime::React,
+    )
   }
 
   #[test]

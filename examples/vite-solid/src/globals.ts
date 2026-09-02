@@ -1,0 +1,15 @@
+import { globalStyle } from "@yak/solid";
+
+globalStyle`
+  body {
+    margin: 0;
+    font-family: "Open Sans", system-ui, sans-serif;
+    background: #f7f7fb;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+`;
