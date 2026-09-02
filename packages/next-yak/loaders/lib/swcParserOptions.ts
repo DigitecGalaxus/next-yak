@@ -6,8 +6,8 @@ const typeScriptWithJsx = /\.tsx$/;
 /**
  * Derive the SWC parser configuration for a single file.
  *
- * JSX is enabled everywhere except in `.ts`, `.mts` and `.cts`,
- * where angle brackets are type assertions and generics rather than elements.
+ * JSX is not allowed in `.ts`, `.mts` and `.cts`
+ * therefore we must parse these as pure TS/JS and must not return JSX
  *
  * This is inspired by next.js own handling.
  */
