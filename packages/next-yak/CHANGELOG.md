@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- d7be766: Add support for `SolidJs` together with the new `@yak/solid` package
+- d7be766: Add support for `SolidJS` together with the new `@yak/solid` package
 
 ### Patch Changes
 
