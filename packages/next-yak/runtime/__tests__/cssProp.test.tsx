@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { it, expect } from "vitest";
+import { it, expect, describe, beforeEach, afterEach } from "vitest";
 import { mergeCssProp } from "../internals/mergeCssProp";
 import { css } from "../cssLiteral";
 import { atoms } from "../atoms";
@@ -334,5 +334,37 @@ it("keeps the relevant props when the css prop is falsy", async () => {
   expect(mergeCssProp({ className: "btn", style: { padding: "8px" } }, false)).toMatchObject({
     className: "btn",
     style: { padding: "8px" },
+  });
+});
+
+describe("a css prop which can not apply styles", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  beforeEach(() => {
+    // errors are only thrown in development mode
+    process.env.NODE_ENV = "development";
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("throws for an array instead of calling it", () => {
+    expect(() => mergeCssProp({}, [css("yakCss1")])).toThrowError(/but received an array/);
+  });
+
+  it("throws for an object instead of calling it", () => {
+    expect(() => mergeCssProp({}, { color: "red" })).toThrowError(
+      /but received a value of type object/,
+    );
+  });
+
+  it("throws for a plain string instead of calling it", () => {
+    expect(() => mergeCssProp({}, "yakCss1")).toThrowError(/but received a value of type string/);
+  });
+
+  it("renders unstyled in production instead of taking the page down", () => {
+    process.env.NODE_ENV = "production";
+    expect(mergeCssProp({ className: "btn" }, [css("yakCss1")])).toEqual({ className: "btn" });
   });
 });

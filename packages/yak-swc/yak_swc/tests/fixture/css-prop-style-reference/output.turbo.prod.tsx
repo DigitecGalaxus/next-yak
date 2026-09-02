@@ -4,7 +4,7 @@
 // reference would render unstyled without any signal. Only the reference arm
 // errors - inline templates in ternary and logical arms keep working, covered
 // by css-prop-ternary and css-prop-fold-bailouts.
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css } from "next-yak/internal";
 import { ellipsis } from "./typography";
 import * as tokens from "./tokens";
 import "data:text/css;base64,LnltN3VCQnUxIHsKICBjb2xvcjogYmx1ZTsKfQ==";

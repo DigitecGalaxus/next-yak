@@ -26,9 +26,21 @@ export const mergeCssProp = (
   const existingStyle = relevantProps.style;
   const style = existingStyle ? { ...existingStyle } : {};
 
-  // a falsy css prop applies no styles, e.g. `css={on && css`...`}` with `on` false
-  if (cssProp) {
+  // only a style function applies styles. A falsy css prop applies none,
+  // e.g. `css={on && css`...`}` with `on` false
+  if (typeof cssProp === "function") {
     cssProp({}, classNames, style);
+  } else if (cssProp) {
+    // The swc plugin rejects a value which can not apply styles at build time,
+    // so this only runs where it can not see one during build time.
+    if (process.env.NODE_ENV === "development") {
+      const received: unknown = cssProp;
+      throw new Error(
+        `The css prop only applies styles written in place, but received ${
+          Array.isArray(received) ? "an array" : `a value of type ${typeof received}`
+        }.\n\nCombine several styles in one template instead of an array: css={css\`\${first} \${second}\`}\nWrite declarations in a template instead of an object: css={css\`color: red;\`}`,
+      );
+    }
   }
 
   // Forward all other props (onClick, aria-*, id, …) untouched and only

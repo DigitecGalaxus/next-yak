@@ -213,6 +213,23 @@ pub(super) fn is_yak_css_callee(callee: &Callee, yak_imports: &YakImports) -> bo
   }
 }
 
+/// Matches a callee that resolves to a yak style function: `css`, which an
+/// inline template compiles to, or `atoms`
+pub(super) fn is_yak_style_callee(callee: &Callee, yak_imports: &YakImports) -> bool {
+  if is_yak_css_callee(callee, yak_imports) {
+    return true;
+  }
+  match callee {
+    Callee::Expr(expr) => match unwrap_type_casts(expr) {
+      Expr::Ident(ident) => {
+        yak_imports.get_yak_library_name_for_ident(&ident.to_id()) == Some("atoms".into())
+      }
+      _ => false,
+    },
+    _ => false,
+  }
+}
+
 /// Joins two class names with a single space, e.g. `"a"` and `"b"` -> `"a b"`
 ///
 /// Concatenates at the WTF-8 level so a user class name is copied byte for byte:

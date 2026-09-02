@@ -27,6 +27,9 @@ const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div {...__yak_mergeCssProp({
         className: "empty-css"
     }, atoms("empty-css"))}/>;
+const Elem9 = ({ on }: {
+    on: boolean;
+})=><div {...__yak_mergeCssProp({}, on ? atoms("orange") : undefined)}/>;
 const Text = /*YAK Extracted CSS:
 :global(.input_Text_m7uBBu) {
   font-size: 20px;
