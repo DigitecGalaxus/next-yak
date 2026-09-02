@@ -32,6 +32,7 @@ type PluginOptions = {
 type FixtureOptions = {
   foldStatic: boolean;
   strictCssProp: boolean;
+  emitCssComments: boolean;
 };
 
 type Mode = {
@@ -258,6 +259,7 @@ function runWasmTransform(
               basePath: "path",
               foldStatic: fixtureOptions.foldStatic,
               strictCssProp: fixtureOptions.strictCssProp,
+              emitCssComments: fixtureOptions.emitCssComments,
               ...options,
             },
           ],
@@ -273,9 +275,12 @@ function runWasmTransform(
 // key fails loudly - the same spirit as the Rust `deny_unknown_fields` plus
 // parse panic, never a silent default.
 function readFixtureOptions(fixtureDir: string): FixtureOptions {
-  // the harness defaults, independent of the shipped `Config` defaults (fold on,
-  // strict on)
-  const defaults: FixtureOptions = { foldStatic: false, strictCssProp: true };
+  // the harness defaults, independent of the shipped `Config` defaults
+  const defaults: FixtureOptions = {
+    foldStatic: false,
+    strictCssProp: true,
+    emitCssComments: true,
+  };
   const configPath = join(fixtureDir, "config.json");
   if (!existsSync(configPath)) {
     return defaults;
@@ -291,7 +296,7 @@ function readFixtureOptions(fixtureDir: string): FixtureOptions {
   }
   const options: FixtureOptions = { ...defaults };
   for (const [key, value] of Object.entries(parsed)) {
-    if (key !== "foldStatic" && key !== "strictCssProp") {
+    if (key !== "foldStatic" && key !== "strictCssProp" && key !== "emitCssComments") {
       throw new Error(`invalid fixture config.json: ${configPath}: unknown key "${key}"`);
     }
     if (typeof value !== "boolean") {
