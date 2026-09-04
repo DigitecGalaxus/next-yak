@@ -71,21 +71,9 @@ jobs:
       - name: Verify npm version
         run: npm --version
 
-      # changesets/action runs `git push` directly, so it needs an authenticated remote.
-      # Done explicitly here (rather than via checkout's persist-credentials) so the
-      # credential is scoped to this step's needs and zizmor can audit the setup.
-      - name: Configure git auth for changesets push
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
-          git config --local "http.https://github.com/.extraheader" "AUTHORIZATION: basic $auth"
-
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
+        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
         with:
-          publish: pnpm release
-          title: Release new version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          publish-script: pnpm release
+          pr-title: Release new version

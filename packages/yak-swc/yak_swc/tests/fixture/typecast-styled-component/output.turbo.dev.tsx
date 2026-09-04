@@ -35,7 +35,7 @@ export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:input_PrimaryBu
   color: red;
   animation: fade_m7uBBu 1s linear;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(StyledSvg)("input_PrimaryButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(StyledSvg))("input_PrimaryButton_m7uBBu"), {
     "displayName": "PrimaryButton"
 }) as unknown as StyledComponent<"svg", DefaultTheme, {
 }>;

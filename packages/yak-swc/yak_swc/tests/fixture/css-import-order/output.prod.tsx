@@ -11,4 +11,4 @@ export const FancyIconButton = /*YAK EXPORTED STYLED:FancyIconButton:ym7uBBu*//*
     color: #f0f;
   }
 }
-*/ /*#__PURE__*/ styled(IconButton)("ym7uBBu");
+*/ /*#__PURE__*/ (styled(IconButton))("ym7uBBu");

@@ -65,6 +65,9 @@ jobs:
       - name: Lint (oxlint)
         run: pnpm lint:fix
 
+      - name: Lint (knip)
+        run: pnpm lint:knip
+
       - name: Format Rust (cargo fmt)
         run: pnpm format:rust
 

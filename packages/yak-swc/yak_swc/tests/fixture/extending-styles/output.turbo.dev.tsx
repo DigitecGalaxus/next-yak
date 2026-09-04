@@ -20,7 +20,7 @@ export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:input_PrimaryBu
     background-color: #0056b3;
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(BaseButton)("input_PrimaryButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(BaseButton))("input_PrimaryButton_m7uBBu"), {
     "displayName": "PrimaryButton"
 });
 export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:input_SecondaryButton_m7uBBu*//*YAK Extracted CSS:
@@ -31,6 +31,6 @@ export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:input_Secon
     background-color: #545b62;
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(BaseButton)("input_SecondaryButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(BaseButton))("input_SecondaryButton_m7uBBu"), {
     "displayName": "SecondaryButton"
 });

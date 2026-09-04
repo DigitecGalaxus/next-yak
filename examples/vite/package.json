@@ -23,5 +23,5 @@
     "typescript": "catalog:dev",
     "vite": "catalog:dev"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@12.3.1"
 }

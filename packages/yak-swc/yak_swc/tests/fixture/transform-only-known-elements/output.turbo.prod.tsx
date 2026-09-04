@@ -10,9 +10,9 @@ export const CustomElement = /*YAK EXPORTED STYLED:CustomElement:ym7uBBu1*//*YAK
 .ym7uBBu1 {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ styled("unknown")("ym7uBBu1");
+*/ /*#__PURE__*/ (styled("unknown"))("ym7uBBu1");
 export const SomeThingElse = /*YAK EXPORTED STYLED:SomeThingElse:ym7uBBu2*//*YAK Extracted CSS:
 .ym7uBBu2 {
   margin-bottom: 15px;
 }
-*/ /*#__PURE__*/ styled("something-else")("ym7uBBu2");
+*/ /*#__PURE__*/ (styled("something-else"))("ym7uBBu2");

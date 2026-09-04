@@ -1,9 +1,9 @@
 "use client";
 import { use, useEffect, useState } from "react";
-import { ShikiMagicMove } from "shiki-magic-move/react";
+import { ShikiMagicMove } from "@shikijs/magic-move/react";
 import { highlighterPromise } from "@/lib/shiki";
 import { useTheme } from "next-themes";
-import "shiki-magic-move/dist/style.css";
+import "@shikijs/magic-move/style.css";
 import { styled } from "next-yak";
 import { breakpoints, colors, theme } from "@/lib/utils/constants";
 

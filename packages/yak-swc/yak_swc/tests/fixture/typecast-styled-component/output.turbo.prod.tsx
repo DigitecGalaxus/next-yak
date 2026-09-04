@@ -33,7 +33,7 @@ export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:ym7uBBu3*//*YAK
   color: red;
   animation: ym7uBBu2 1s linear;
 }
-*/ /*#__PURE__*/ styled(StyledSvg)("ym7uBBu3") as unknown as StyledComponent<"svg", DefaultTheme, {
+*/ /*#__PURE__*/ (styled(StyledSvg))("ym7uBBu3") as unknown as StyledComponent<"svg", DefaultTheme, {
 }>;
 // using the cast styled component as a same-file selector
 export const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu4*//*YAK Extracted CSS:

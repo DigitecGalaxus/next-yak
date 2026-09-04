@@ -5,6 +5,6 @@ export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ __yak.__yak_button.functionName({
+*/ /*#__PURE__*/ (__yak.__yak_button.functionName({
     arg: "something"
-})("ym7uBBu");
+}))("ym7uBBu");

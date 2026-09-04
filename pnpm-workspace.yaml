@@ -8,16 +8,17 @@ packages:
 
 overrides:
   yak-swc: workspace:*
+  # Every copy of @swc/core in the workspace must stay on the ABI line the
+  # yak-swc wasm plugin is built for (see the core catalog). Storybook's
+  # webpack builder runs the plugin through its own swc-loader, so a second,
+  # newer @swc/core would break it.
+  "@swc/core": catalog:core
 
-# pnpm 11 enables a supply-chain "minimum release age" gate by default, which
-# would block freshly published versions and churn an auto-generated exclude
-# list on every update. This repo intentionally tracks the latest versions, so
-# the gate is disabled (matching the prior pnpm 10 behaviour).
-minimumReleaseAge: 0
+# Only install versions published at least a day ago
+minimumReleaseAge: 1440
 
-# Native/postinstall build scripts that are allowed to run (pnpm 11 requires
-# explicit approval).
 allowBuilds:
+  "@parcel/watcher": false
   "@swc/core": true
   esbuild: true
   sharp: true
@@ -26,85 +27,90 @@ allowBuilds:
 
 catalogs:
   core:
-    "@babel/parser": 8.0.0
-    "@swc/core": 1.15.43
-    "@swc/counter": 0.1.3
+    "@babel/parser": ^8.0.4
+    "@oxlint/plugins": ^1.81.0
+    "@solidjs/web": ^2.0.0-rc.6
+    # Keep in sync with swc_core in packages/yak-swc/Cargo.toml and next.js version of bundled SWC
+    "@swc/core": ~1.15.47
+    "@swc/counter": ^0.1.3
+    solid-js: ^2.0.0-rc.6
   dev:
-    "@babel/types": 8.0.0
-    "@rsbuild/core": 2.1.1
+    "@babel/types": 8.0.4
+    "@rsbuild/core": 2.2.2
     "@rsbuild/plugin-react": 2.1.0
-    "@changesets/cli": 2.31.0
+    "@changesets/cli": 3.0.1
     "@monaco-editor/react": 4.7.0
-    "@next/eslint-plugin-next": 16.2.9
-    "@oxlint/plugins": 1.72.0
-    "@playwright/test": 1.61.1
-    "@radix-ui/react-switch": 1.3.1
-    "@shikijs/monaco": 4.3.0
-    "@shikijs/transformers": 4.3.0
-    "@storybook/addon-docs": 10.4.6
+    "@next/eslint-plugin-next": 16.3.4
+    "@playwright/test": 1.62.1
+    "@radix-ui/react-switch": 1.3.7
+    "@shikijs/magic-move": 4.4.3
+    "@shikijs/monaco": 4.4.3
+    "@shikijs/transformers": 4.4.3
+    "@storybook/addon-docs": 10.6.0
     "@storybook/addon-webpack5-compiler-swc": 4.0.3
-    "@storybook/react": 10.4.6
-    "@storybook/react-vite": 10.4.6
-    "@storybook/react-webpack5": 10.4.6
+    "@storybook/react": 10.6.0
+    "@storybook/react-vite": 10.6.0
+    "@storybook/react-webpack5": 10.6.0
     "@swc/helpers": 0.5.23
-    "@tailwindcss/postcss": 4.3.2
-    "@tanstack/react-router": 1.170.16
-    "@tanstack/react-start": 1.168.26
+    "@tailwindcss/postcss": 4.3.3
+    "@tanstack/react-router": 1.170.32
+    "@tanstack/react-start": 1.168.49
     "@testing-library/dom": 10.4.1
-    "@testing-library/jest-dom": 6.9.1
-    "@testing-library/react": 16.3.2
+    "@testing-library/react": 16.3.3
     "@types/benchmark": 2.1.5
     "@types/jest": 30.0.0
     "@types/mdx": 2.0.14
-    "@types/node": 26.0.1
-    "@types/react": 19.2.17
-    "@types/react-dom": 19.2.3
+    "@types/node": 26.4.1
+    "@types/react": 19.2.18
+    "@types/react-dom": 19.2.5
     "@types/webpack": 5.28.5
-    "@typescript-eslint/parser": 8.62.1
-    "@typescript-eslint/rule-tester": 8.62.1
-    "@typescript-eslint/utils": 8.62.1
+    "@typescript-eslint/parser": 8.69.0
+    "@typescript-eslint/rule-tester": 8.69.0
     "@vercel/analytics": 2.0.1
-    "@vitejs/plugin-react": 6.0.3
-    "@vitejs/plugin-react-swc": 4.3.1
-    "@vitejs/plugin-rsc": 0.5.27
+    "@vitejs/plugin-react": 6.1.1
+    "@vitejs/plugin-react-swc": 4.3.3
+    "@vitejs/plugin-rsc": 0.5.34
     benchmark: 2.1.4
-    eslint: 10.6.0
-    eslint-config-next: 16.2.9
-    eslint-doc-generator: 3.6.0
+    eslint: 10.9.1
+    eslint-config-next: 16.3.4
+    eslint-doc-generator: 3.7.1
     fflate: 0.8.3
-    fumadocs-core: 16.10.7
-    fumadocs-mdx: 15.0.13
-    fumadocs-twoslash: 3.2.1
-    fumadocs-ui: 16.10.7
-    jest: 30.4.2
-    jest-environment-jsdom: 30.4.1
-    js-base64: 3.8.0
-    jsdom: 29.1.1
+    fumadocs-core: 16.15.5
+    fumadocs-mdx: 15.4.0
+    fumadocs-twoslash: 3.3.0
+    fumadocs-ui: 16.15.5
+    jest: 30.5.1
+    "@testing-library/jest-dom": 7.0.1
+    jest-environment-jsdom: 30.5.1
+    js-base64: 3.9.3
+    jsdom: 30.0.1
+    knip: 6.34.0
     lz-string: 1.5.0
-    next: 16.2.9
+    next: 16.3.4
     next-themes: 0.4.6
-    oxfmt: 0.57.0
-    oxlint: 1.72.0
-    postcss: 8.5.16
+    oxfmt: 0.66.0
+    oxlint: 1.81.0
+    postcss: 8.5.26
+    # postcss-nested 8 is ESM-only. Next.js loads postcss plugins for webpack
+    # via `require(name)(options)`, which cannot consume that (Turbopack is fine),
+    # so the Next.js example stays on 7.x until Next handles ESM plugins.
     postcss-nested: 7.0.2
-    prettier: 3.9.4
+    prettier: 3.9.6
     raw-loader: 4.0.2
-    react: 19.2.7
-    react-dom: 19.2.7
-    react-resizable-panels: 4.12.0
-    shiki: 4.3.0
-    shiki-magic-move: 1.4.0
-    storybook: 10.4.6
-    styled-components: 6.4.3
-    tailwindcss: 4.3.2
-    tsdown: 0.22.3
-    tsx: 4.22.4
+    react: 19.2.8
+    react-dom: 19.2.8
+    react-resizable-panels: 4.12.3
+    shiki: 4.4.3
+    storybook: 10.6.0
+    styled-components: 6.5.3
+    tailwindcss: 4.3.3
+    tsdown: 0.22.14
+    tsx: 4.23.13
+    # TypeScript 7 (the native compiler) ships no programmatic API yet, which
+    # typescript-eslint, twoslash and the dts bundler need, so stay on 6.x.
     typescript: 6.0.3
-    vinext: 1.0.0-beta.1
-    vite: 8.1.1
-    vitest: 4.1.9
-    wasm-pack: 0.15.0
-  solid:
-    "@solidjs/web": 2.0.0-rc.5
-    solid-js: 2.0.0-rc.5
+    vinext: 1.0.0-beta.9
+    vite: 8.2.2
     vite-plugin-solid: 3.0.0-next.27
+    vitest: 4.1.11
+    wasm-pack: 0.15.0
