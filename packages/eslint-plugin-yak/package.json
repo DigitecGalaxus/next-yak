@@ -56,7 +56,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@oxlint/plugins": "catalog:dev"
+    "@oxlint/plugins": "catalog:core"
   },
   "devDependencies": {
     "@types/node": "catalog:dev",

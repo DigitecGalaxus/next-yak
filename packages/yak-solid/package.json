@@ -84,20 +84,21 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
-    "@solidjs/web": "catalog:solid",
+    "@solidjs/web": "catalog:core",
     "@testing-library/jest-dom": "catalog:dev",
     "@types/node": "catalog:dev",
     "jsdom": "catalog:dev",
-    "solid-js": "catalog:solid",
+    "solid-js": "catalog:core",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:solid",
+    "vite-plugin-solid": "catalog:dev",
     "vitest": "catalog:dev",
     "yak-internals": "workspace:*"
   },
   "peerDependencies": {
-    "solid-js": ">=2.0.0-rc.5",
+    "@solidjs/web": "catalog:core",
+    "solid-js": "catalog:core",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {

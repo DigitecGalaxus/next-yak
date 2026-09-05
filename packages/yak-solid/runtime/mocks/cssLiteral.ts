@@ -1,7 +1,5 @@
 import type { css as cssInternal, NestedRuntimeStyleProcessor } from "../cssLiteral.js";
 
-export type { ComponentStyles, CSSInterpolation } from "../cssLiteral.js";
-
 /**
  * Allows to use CSS styles in a styled or css block
  *

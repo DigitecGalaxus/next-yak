@@ -10,7 +10,7 @@ export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:ym7uBBu1*//*YAK Ext
 :global(.ym7uBBu1) {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ styled(Button)("ym7uBBu1");
+*/ /*#__PURE__*/ (styled(Button))("ym7uBBu1");
 export const Button2 = /*YAK EXPORTED STYLED:Button2:ym7uBBu2*//*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   background-color: #007bfb;
@@ -20,4 +20,4 @@ export const Button3 = /*YAK EXPORTED STYLED:Button3:ym7uBBu3*//*YAK Extracted C
 :global(.ym7uBBu3) {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ styled("button")("ym7uBBu3");
+*/ /*#__PURE__*/ (styled("button"))("ym7uBBu3");

@@ -15,6 +15,6 @@ export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
     background-color: #0056b3;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("ym7uBBu");
+}))("ym7uBBu");

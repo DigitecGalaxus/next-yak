@@ -91,7 +91,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile
 
       - name: Install Vercel CLI
-        run: npm install -g vercel@52.0.0
+        run: npm install -g vercel@59.11.2
 
       - name: Deploy prebuilt output to Vercel
         id: deploy

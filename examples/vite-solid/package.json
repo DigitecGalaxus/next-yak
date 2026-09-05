@@ -11,15 +11,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@solidjs/web": "catalog:solid",
+    "@solidjs/web": "catalog:core",
     "@yak/solid": "workspace:*",
-    "solid-js": "catalog:solid"
+    "solid-js": "catalog:core"
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:solid"
+    "vite-plugin-solid": "catalog:dev"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@12.3.1"
 }

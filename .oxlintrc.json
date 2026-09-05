@@ -26,6 +26,7 @@
         "no-constant-condition": "off",
         "typescript/triple-slash-reference": "off",
         "oxc/number-arg-out-of-range": "off",
+        "react/purity": "off",
         "yak/enforce-semicolon": "off",
         "yak/style-conditions": "off"
       }
@@ -33,7 +34,8 @@
     {
       "files": ["examples/**"],
       "rules": {
-        "no-constant-binary-expression": "off"
+        "no-constant-binary-expression": "off",
+        "react/set-state-in-effect": "off"
       }
     }
   ],

@@ -21,7 +21,7 @@ const Box = /*YAK Extracted CSS:
 .input_Box_m7uBBu {
   color: blue;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("section")("input_Box_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled("section"))("input_Box_m7uBBu"), {
     "displayName": "Box"
 });
 // exported: local usages fold, the declaration stays
@@ -49,9 +49,9 @@ const WithAttrs = /*YAK Extracted CSS:
 .input_WithAttrs_m7uBBu {
   color: green;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("input_WithAttrs_m7uBBu"), {
+}))("input_WithAttrs_m7uBBu"), {
     "displayName": "WithAttrs"
 });
 // collapses: parent is a same-file static component
@@ -83,7 +83,7 @@ const ExtendedImport = /*YAK Extracted CSS:
 .input_ExtendedImport_m7uBBu {
   color: silver;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ImportedCard)("input_ExtendedImport_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(ImportedCard))("input_ExtendedImport_m7uBBu"), {
     "displayName": "ExtendedImport"
 });
 // dynamic: class-toggling condition
@@ -99,7 +99,7 @@ const OfDynamic = /*YAK Extracted CSS:
 .input_OfDynamic_m7uBBu {
   color: teal;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ToggleBase)("input_OfDynamic_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(ToggleBase))("input_OfDynamic_m7uBBu"), {
     "displayName": "OfDynamic"
 });
 // folds to the wrapped component: an attrs parent never collapses
@@ -107,7 +107,7 @@ const OfAttrs = /*YAK Extracted CSS:
 .input_OfAttrs_m7uBBu {
   color: maroon;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(WithAttrs)("input_OfAttrs_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(WithAttrs))("input_OfAttrs_m7uBBu"), {
     "displayName": "OfAttrs"
 });
 // bails: a lowercase name would be parsed as an intrinsic element in JSX
@@ -116,7 +116,7 @@ const ExtendedLowercase = /*YAK Extracted CSS:
 .input_ExtendedLowercase_m7uBBu {
   color: gold;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(lowercaseComponent)("input_ExtendedLowercase_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(lowercaseComponent))("input_ExtendedLowercase_m7uBBu"), {
     "displayName": "ExtendedLowercase"
 });
 // bails: the wrapped component binding can be reassigned
@@ -125,7 +125,7 @@ const ExtendedMutable = /*YAK Extracted CSS:
 .input_ExtendedMutable_m7uBBu {
   color: ivory;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(MutableTarget)("input_ExtendedMutable_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(MutableTarget))("input_ExtendedMutable_m7uBBu"), {
     "displayName": "ExtendedMutable"
 });
 // bails: let declaration
@@ -141,7 +141,7 @@ const OfLet = /*YAK Extracted CSS:
 .input_OfLet_m7uBBu {
   color: khaki;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Mutable)("input_OfLet_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(Mutable))("input_OfLet_m7uBBu"), {
     "displayName": "OfLet"
 });
 // bails: parent declared after the child (const temporal dead zone) - collapsing
@@ -150,7 +150,7 @@ const OfLater = /*YAK Extracted CSS:
 .input_OfLater_m7uBBu {
   color: wheat;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Later)("input_OfLater_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(Later))("input_OfLater_m7uBBu"), {
     "displayName": "OfLater"
 });
 const Later = /*YAK Extracted CSS:

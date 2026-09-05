@@ -70,7 +70,3 @@ const HourHand = styled(ClockHand)`
   background: black;
   translate: 0 0 40px;
 `;
-
-export const maxWidthMixin = css`
-  max-width: 300px;
-`;

@@ -29,7 +29,17 @@ next-yak/
 
 ## Common Commands
 
-All commands use **pnpm** (v10.15.0+). Run from the repository root unless specified.
+All commands use **pnpm** (v12, pinned in the root `packageManager` field; pnpm switches to that version automatically). Run from the repository root unless specified.
+
+### Linting
+
+```bash
+# oxlint plus knip (unused files, exports and dependencies; configured in knip.ts)
+pnpm lint
+
+# knip only
+pnpm lint:knip
+```
 
 ### Building
 
@@ -212,6 +222,6 @@ For Vite, debug logs are controlled the same way via plugin options.
 ## Prerequisites
 
 - Node.js >= 22
-- pnpm >= 10.15.0
+- pnpm >= 12 (the exact version is pinned in the root `package.json` `packageManager` field)
 - Rust toolchain (install from rust-lang.org, not brew)
 - WASM target: `rustup target add wasm32-wasip1`
