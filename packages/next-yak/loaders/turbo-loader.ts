@@ -9,6 +9,7 @@ import { createDebugLogger } from "yak-internals/debug-logger";
 import { extractCss } from "yak-internals/extract-css";
 import { parseExports } from "yak-internals/parse-exports";
 import { getSwcParserOptions } from "yak-internals/swc-parser-options";
+import { replaceDataUrlImport } from "./lib/replaceDataUrlImport.js";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
 const yakSwcPluginPath = universalRequire.resolve("yak-swc");
@@ -112,12 +113,7 @@ export default async function cssExtractLoader(
       this.addDependency(dep);
     }
 
-    const dataUrl = result.code.split("\n").find((line) => line.includes("data:text/css;base64"))!;
-
-    const codeWithCrossFileResolved = result.code.replace(
-      dataUrl,
-      `import "data:text/css;base64,${Buffer.from(resolved).toString("base64")}"`,
-    );
+    const codeWithCrossFileResolved = replaceDataUrlImport(result.code, resolved);
 
     debugLog("css-resolved", resolved, this.resourcePath);
     return callback(null, codeWithCrossFileResolved, result.map);
