@@ -1,5 +1,17 @@
 # next-yak
 
+## 9.10.0
+
+### Minor Changes
+
+- 71b8d7b: Update dependencies and publish the direct dependencies with semver ranges instead of exact pins
+
+### Patch Changes
+
+- dbd8e7e: Fix Turbopack rewriting files that import next-yak without declaring styles
+- Updated dependencies [71b8d7b]
+  - yak-swc@9.10.0
+
 ## 9.9.0
 
 ### Minor Changes
