@@ -73,7 +73,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "test": "vitest run",
+    "test": "vitest run && vitest run --config vitest.ssr.config.ts",
     "test:watch": "vitest",
     "test:types": "tsc -p tsconfig.json && tsc -p runtime/__tests__/tsconfig.json",
     "prepublishOnly": "pnpm build && pnpm test && pnpm test:types"

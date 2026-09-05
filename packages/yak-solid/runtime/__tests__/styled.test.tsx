@@ -3,6 +3,7 @@
 // 1:1 the API exposed to the user before compilation.
 // Therefore types are not matching and need to be ignored.
 import { expect, it, vi } from "vitest";
+import { createSignal, flush } from "solid-js";
 import { YakThemeProvider } from "../context/index.ts";
 import { css } from "../cssLiteral.ts";
 import { mergeCssProp } from "../internals/mergeCssProp.ts";
@@ -267,4 +268,150 @@ it("should forward a `component` prop to wrapped components", () => {
   const anchor = container.querySelector("a");
   expect(anchor?.getAttribute("data-received")).toBe("button");
   expect(anchor?.className).toContain("styledClass");
+});
+
+// --- props assembly -----------------------------------------------------------
+// A single Proxy assembles the props a styled element hands to its target. These
+// tests pin what it has to guarantee: which props are visible, in which order,
+// and which source wins when two of them set the same key.
+
+it("should enumerate props in source order with contributed values last", () => {
+  const Component = styled.input("cssClass");
+  const seen: string[] = [];
+  const Probe = (props: Record<string, unknown>) => {
+    seen.push(...Object.keys(props));
+    return <input />;
+  };
+  const Wrapped = styledFn(Probe)("wrapped");
+  renderInto(() => <Wrapped id="a" name="b" $hidden />);
+  expect(seen).toEqual(["id", "name", "class"]);
+  // and the same set is what actually reaches a real element
+  const container = renderInto(() => <Component id="a" name="b" $hidden />);
+  expect(container.innerHTML).toBe('<input id="a" name="b" class="cssClass">');
+});
+
+it("should hide $ props from `in` checks and from enumeration", () => {
+  const probe: Record<string, unknown> = {};
+  const Probe = (props: Record<string, unknown>) => {
+    probe.hasHidden = "$hidden" in props;
+    probe.hasId = "id" in props;
+    probe.keys = Object.keys(props);
+    probe.hiddenValue = props.$hidden;
+    return <input />;
+  };
+  const Wrapped = styledFn(Probe)("wrapped");
+  renderInto(() => <Wrapped id="a" $hidden="x" />);
+  expect(probe.hasHidden).toBe(false);
+  expect(probe.hasId).toBe(true);
+  expect(probe.keys).toEqual(["id", "class"]);
+  expect(probe.hiddenValue).toBeUndefined();
+});
+
+it("should not leak a user `component` prop onto a tag target", () => {
+  const Component = styled.input("cssClass");
+  const container = renderInto(() => <Component component="span" id="a" />);
+  expect(container.innerHTML).toBe('<input id="a" class="cssClass">');
+});
+
+it("should pass a user `component` prop to a custom component target", () => {
+  const seen: Record<string, unknown> = {};
+  const Probe = (props: Record<string, unknown>) => {
+    seen.component = props.component;
+    return <input />;
+  };
+  const Wrapped = styledFn(Probe)("wrapped");
+  renderInto(() => <Wrapped component="span" />);
+  expect(seen.component).toBe("span");
+});
+
+it("should let attrs override author props and contributed class win over both", () => {
+  const Component = styledFn("input").attrs({ id: "from-attrs", class: "from-attrs" })("cssClass");
+  const container = renderInto(() => <Component id="from-author" />);
+  const input = container.querySelector("input")!;
+  expect(input.getAttribute("id")).toBe("from-attrs");
+  expect(input.className).toBe("from-attrs cssClass");
+});
+
+it("should keep the class binding reactive when a $ prop changes", () => {
+  const [ghost, setGhost] = createSignal(false);
+  const Component = styled.button("base", (props) => props.$ghost && css("ghost"));
+  const container = renderInto(() => <Component $ghost={ghost()} />);
+  const button = container.querySelector("button")!;
+  expect(button.className).toBe("base");
+  setGhost(true);
+  flush();
+  expect(button.className).toBe("base ghost");
+  expect(button.hasAttribute("$ghost")).toBe(false);
+});
+
+it("should not answer inherited Object.prototype members from the props proxy", () => {
+  const probe: Record<string, unknown> = {};
+  const Probe = (props: Record<string, unknown>) => {
+    probe.hasOwn = props.hasOwnProperty("id");
+    probe.coerced = String(props);
+    probe.toStringIsFn = typeof props.toString === "function";
+    probe.constructorIsFn = typeof props.constructor === "function";
+    probe.valueOfIsFn = typeof props.valueOf === "function";
+    probe.propertyIsEnumerable = props.propertyIsEnumerable("id");
+    return <input />;
+  };
+  const Wrapped = styledFn(Probe)("wrapped");
+  renderInto(() => <Wrapped id="a" />);
+  expect(probe.hasOwn).toBe(true);
+  expect(probe.coerced).toBe("[object Object]");
+  expect(probe.toStringIsFn).toBe(true);
+  expect(probe.constructorIsFn).toBe(true);
+  expect(probe.valueOfIsFn).toBe(true);
+  expect(probe.propertyIsEnumerable).toBe(true);
+});
+
+it("should still contribute class when a prop shadows an Object.prototype name", () => {
+  const seen: Record<string, unknown> = {};
+  const Probe = (props: Record<string, unknown>) => {
+    seen.class = props.class;
+    seen.toString = props.toString;
+    return <input />;
+  };
+  const Wrapped = styledFn(Probe)("wrapped");
+  renderInto(() => <Wrapped toString="shadowed" />);
+  expect(seen.class).toBe("wrapped");
+  expect(seen.toString).toBe("shadowed");
+});
+
+// --- element creation -----------------------------------------------------------
+// A tag target is created the way the compiler creates `<tag {...props} />`.
+
+it("should create namespaced elements for svg tags", () => {
+  const Circle = styledFn("circle")("dot");
+  const Svg = styledFn("svg")("canvas");
+  const container = renderInto(() => (
+    <Svg>
+      <Circle r="1" />
+    </Svg>
+  ));
+  const svg = container.querySelector("svg")!;
+  const circle = container.querySelector("circle")!;
+  expect(svg.namespaceURI).toBe("http://www.w3.org/2000/svg");
+  expect(circle.namespaceURI).toBe("http://www.w3.org/2000/svg");
+  expect(circle.getAttribute("class")).toBe("dot");
+});
+
+it("should keep an html namespace for ambiguous tags outside svg", () => {
+  const Link = styledFn("a")("link");
+  const container = renderInto(() => <Link href="#x">x</Link>);
+  const a = container.querySelector("a")!;
+  expect(a.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
+  expect(a.className).toBe("link");
+});
+
+it("should keep the element and update bindings when props change", () => {
+  const [id, setId] = createSignal("one");
+  const Box = styledFn("div")("box");
+  const container = renderInto(() => <Box id={id()} />);
+  const before = container.querySelector("div")!;
+  setId("two");
+  flush();
+  const after = container.querySelector("div")!;
+  expect(after).toBe(before);
+  expect(after.id).toBe("two");
 });

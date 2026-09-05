@@ -1,19 +1,16 @@
 import { fileURLToPath } from "node:url";
-import solid from "vite-plugin-solid";
 import { defineConfig } from "vitest/config";
 
+// Server build of the runtime: `@solidjs/web` resolves to its server entry
+// through the `node` condition, so `isServer` is true and rendering goes
+// through `renderToString`.
 export default defineConfig({
-  // vite-plugin-solid compiles the JSX in test files with babel-preset-solid
-  plugins: [solid()],
   test: {
-    environment: "jsdom",
+    environment: "node",
     globals: true,
-    include: ["runtime/__tests__/**/*.test.{ts,tsx}"],
-    // server rendering has its own project: vitest.ssr.config.ts
-    exclude: ["runtime/__tests__/ssr/**"],
+    include: ["runtime/__tests__/ssr/**/*.test.ts"],
   },
   resolve: {
-    // run tests against the uncompiled TS runtime
     alias: {
       "@yak/solid/context/baseContext": fileURLToPath(
         new URL("./runtime/context/baseContext.ts", import.meta.url),
@@ -22,6 +19,6 @@ export default defineConfig({
       "@yak/solid/internal": fileURLToPath(new URL("./runtime/internal.ts", import.meta.url)),
       "@yak/solid": fileURLToPath(new URL("./runtime/index.ts", import.meta.url)),
     },
-    conditions: ["browser", "development"],
+    conditions: ["node"],
   },
 });
