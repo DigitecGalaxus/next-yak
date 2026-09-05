@@ -9,10 +9,10 @@ import { createDebugLogger } from "yak-internals/debug-logger";
 import { extractCss } from "yak-internals/extract-css";
 import { parseExports } from "yak-internals/parse-exports";
 import { getSwcParserOptions } from "yak-internals/swc-parser-options";
-import { replaceDataUrlImport } from "./lib/replaceDataUrlImport.js";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
 const yakSwcPluginPath = universalRequire.resolve("yak-swc");
+const dataUrlImportPrefix = 'import "data:text/css;base64,';
 
 /**
  * This loader transforms styled-components styles to a static data-url import
@@ -125,6 +125,23 @@ export default async function cssExtractLoader(
     }
     return callback(error instanceof Error ? error : new Error(String(error)));
   }
+}
+
+/**
+ * Swap the data-url import the SWC plugin emitted for one carrying the resolved css.
+ *
+ * Modules which import next-yak without declaring styles get no such import and are
+ * returned unchanged. The import is matched from the start of the line so that source
+ * code merely mentioning a data url cannot be mistaken for it.
+ */
+function replaceDataUrlImport(code: string, resolvedCss: string): string {
+  const lines = code.split("\n");
+  const lineIndex = lines.findIndex((line) => line.trimStart().startsWith(dataUrlImportPrefix));
+  if (lineIndex === -1) {
+    return code;
+  }
+  lines[lineIndex] = `${dataUrlImportPrefix}${Buffer.from(resolvedCss).toString("base64")}";`;
+  return lines.join("\n");
 }
 
 function createTransform(yakPluginOptions: any, yakSwcPluginPath: string) {
