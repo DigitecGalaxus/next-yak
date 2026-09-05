@@ -1,6 +1,6 @@
 {
   "name": "@yak/solid",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SolidJS runtime for yak: styled-components syntax, compiled to plain CSS at build time. Targets Solid 2.",
   "keywords": [
     "css-in-js",

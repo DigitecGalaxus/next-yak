@@ -1,5 +1,11 @@
 # yak-swc
 
+## 9.10.0
+
+### Minor Changes
+
+- 71b8d7b: Update dependencies and publish the direct dependencies with semver ranges instead of exact pins
+
 ## 9.9.0
 
 ### Minor Changes
