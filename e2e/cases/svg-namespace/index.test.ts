@@ -21,12 +21,12 @@ test(
     await expect(page.getByTestId("outer-link")).toHaveCSS("color", "rgb(0, 0, 255)");
     await expect(page.getByTestId("icon")).toHaveCSS("width", "24px");
 
-    // the click lands on the hydrated element; the same node updates
-    await dot.evaluate((el) => ((el as HTMLElement).dataset.marker = "same"));
+    // Keep the node reference without changing the markup during hydration.
+    const originalDot = await dot.elementHandle();
     await expect(async () => {
       await page.getByTestId("outer-link").click();
       await expect(dot).toHaveCSS("fill", "rgb(255, 0, 0)", { timeout: 1_000 });
     }).toPass({ timeout: 15_000 });
-    expect(await dot.evaluate((el) => (el as HTMLElement).dataset.marker)).toBe("same");
+    expect(await dot.evaluate((el, original) => el === original, originalDot)).toBe(true);
   }),
 );
