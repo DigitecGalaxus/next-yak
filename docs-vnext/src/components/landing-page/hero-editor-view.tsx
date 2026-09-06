@@ -9,6 +9,7 @@ import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
 import { asset } from "@/lib/site";
 import { frameworks } from "./frameworks";
+import { Dot, EditorDots } from "./editor-dots";
 
 const blink = keyframes`
   0%, 49% {
@@ -18,14 +19,6 @@ const blink = keyframes`
     opacity: 0;
   }
 `;
-
-function Dot({ color }: { color: string }) {
-  return (
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="5.5" cy="5.5" r="5.5" fill={color} />
-    </svg>
-  );
-}
 
 /**
  * Interactive shell for the hero code editor. Highlighting happens on the server
@@ -119,18 +112,7 @@ export default function HeroEditorView({
               gap: 16px;
             `}
           >
-            <div
-              css={css`
-                display: flex;
-                flex-shrink: 0;
-                align-items: center;
-                gap: 7px;
-              `}
-            >
-              <Dot color={ink.dotRed} />
-              <Dot color={ink.dotYellow} />
-              <Dot color={ink.dotGreen} />
-            </div>
+            <EditorDots />
             <div
               css={css`
                 color: ${ink.fgMuted};
