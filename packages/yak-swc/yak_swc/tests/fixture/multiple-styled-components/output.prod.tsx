@@ -15,9 +15,9 @@ export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:ym7uBBu2*//*YAK Ext
 :global(.ym7uBBu2) {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ styled(Button)("ym7uBBu2");
+*/ /*#__PURE__*/ (styled(Button))("ym7uBBu2");
 export const FancyButton2 = /*YAK EXPORTED STYLED:FancyButton2:ym7uBBu3*//*YAK Extracted CSS:
 :global(.ym7uBBu3) {
   margin-bottom: 17px;
 }
-*/ /*#__PURE__*/ styled(Button2)("ym7uBBu3");
+*/ /*#__PURE__*/ (styled(Button2))("ym7uBBu3");

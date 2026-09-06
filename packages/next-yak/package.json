@@ -175,7 +175,6 @@
     "yak-swc": "9.9.0"
   },
   "devDependencies": {
-    "@babel/types": "catalog:dev",
     "@rsbuild/core": "catalog:dev",
     "@testing-library/react": "catalog:dev",
     "@types/jest": "catalog:dev",

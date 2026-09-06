@@ -335,6 +335,7 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ‚ù§Ô
 
 - https://next-yak-benchmark.vercel.app/
 - https://yacijs.vercel.app/
+
 </details>
 
 ## Acknowledgments

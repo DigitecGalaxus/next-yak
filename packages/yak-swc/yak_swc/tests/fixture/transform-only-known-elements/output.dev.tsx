@@ -12,13 +12,13 @@ export const CustomElement = /*YAK EXPORTED STYLED:CustomElement:input_CustomEle
 :global(.input_CustomElement_m7uBBu) {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("unknown")("input_CustomElement_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled("unknown"))("input_CustomElement_m7uBBu"), {
     "displayName": "CustomElement"
 });
 export const SomeThingElse = /*YAK EXPORTED STYLED:SomeThingElse:input_SomeThingElse_m7uBBu*//*YAK Extracted CSS:
 :global(.input_SomeThingElse_m7uBBu) {
   margin-bottom: 15px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("something-else")("input_SomeThingElse_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled("something-else"))("input_SomeThingElse_m7uBBu"), {
     "displayName": "SomeThingElse"
 });

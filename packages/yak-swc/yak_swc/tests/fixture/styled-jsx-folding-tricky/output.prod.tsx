@@ -50,9 +50,9 @@ const WithAttrs = /*YAK Extracted CSS:
 :global(.ym7uBBu9) {
   color: blue;
 }
-*/ /*#__PURE__*/ __yak.__yak_input.attrs({
+*/ /*#__PURE__*/ (__yak.__yak_input.attrs({
     type: "text"
-})("ym7uBBu9");
+}))("ym7uBBu9");
 // bails: a let binding can be reassigned, so its usages keep the runtime path
 let Mutable = /*YAK Extracted CSS:
 :global(.ym7uBBuA) {

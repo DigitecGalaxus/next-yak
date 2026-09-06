@@ -12,7 +12,7 @@ export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:input_FancyButton_m
 .input_FancyButton_m7uBBu {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Button)("input_FancyButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(Button))("input_FancyButton_m7uBBu"), {
     "displayName": "FancyButton"
 });
 export const Button2 = /*YAK EXPORTED STYLED:Button2:input_Button2_m7uBBu*//*YAK Extracted CSS:
@@ -26,6 +26,6 @@ export const Button3 = /*YAK EXPORTED STYLED:Button3:input_Button3_m7uBBu*//*YAK
 .input_Button3_m7uBBu {
   background-color: #007bfb;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("button")("input_Button3_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled("button"))("input_Button3_m7uBBu"), {
     "displayName": "Button3"
 });

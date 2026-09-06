@@ -41,9 +41,7 @@
   const App = () => <Icon $active={on} />;
 
   // compiles to
-  const App = () => (
-    <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />
-  );
+  const App = () => <span className={"yak-icon" + (on ? " yak-icon--active" : "")} />;
   ```
 
   What folds:
@@ -61,7 +59,7 @@
 ### Patch Changes
 
 - 011ace5: A `className` string next to a `css` prop kept its JSX encoding: `className="Food &amp; Drink"` rendered the entity into the DOM class, and a backslash class like `before:content-['\2713']` broke the build with a SyntaxError. The value now reaches the DOM exactly as written.
-- eebca6f: Drop empty css props at build time instead of emitting a dead class name, e.g. ` <div css={css``} /> ` becomes `<div />` and an empty ternary arm folds to `""`. A nested empty ` css` `` also folds to an empty class name instead of keeping the whole css prop on the runtime merge path.
+- eebca6f: Drop empty css props at build time instead of emitting a dead class name, e.g. `<div css={css``} />` becomes `<div />` and an empty ternary arm folds to `""`. A nested empty ` css` `` also folds to an empty class name instead of keeping the whole css prop on the runtime merge path.
 - 06a6c95: A folded `className` merge keeps the user's class name exactly as written: backslashes, HTML entities and emoji reach the DOM byte for byte.
 
 ## 9.6.0

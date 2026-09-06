@@ -192,7 +192,7 @@ const DynamicExtended = /*YAK Extracted CSS:
 :global(.input_DynamicExtended__\$active_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(ImportedCard)("input_DynamicExtended_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_DynamicExtended__$active_m7uBBu")), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(ImportedCard))("input_DynamicExtended_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_DynamicExtended__$active_m7uBBu")), {
     "displayName": "DynamicExtended"
 });
 // usages bail: attrs
@@ -200,9 +200,9 @@ const DynamicAttrs = /*YAK Extracted CSS:
 :global(.input_DynamicAttrs__\$active_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("input_DynamicAttrs_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_DynamicAttrs__$active_m7uBBu")), {
+}))("input_DynamicAttrs_m7uBBu", ({ $active })=>$active && /*#__PURE__*/ css("input_DynamicAttrs__$active_m7uBBu")), {
     "displayName": "DynamicAttrs"
 });
 // usages bail: a namespaced attribute is keyed by its plain name everywhere

@@ -15,8 +15,8 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
     background-color: #0056b3;
   }
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("input_Button_m7uBBu"), {
+}))("input_Button_m7uBBu"), {
     "displayName": "Button"
 });

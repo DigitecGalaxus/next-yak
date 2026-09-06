@@ -4,8 +4,8 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
 :global(.input_Button_m7uBBu) {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled("button").attrs({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ ((styled("button")).attrs({
     type: "button"
-})("input_Button_m7uBBu"), {
+}))("input_Button_m7uBBu"), {
     "displayName": "Button"
 });

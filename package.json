@@ -18,8 +18,9 @@
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "lint": "pnpm run --filter=eslint-plugin-yak build && oxlint",
+    "lint": "pnpm run --filter=eslint-plugin-yak build && oxlint && knip",
     "lint:fix": "pnpm run --filter=eslint-plugin-yak build && oxlint --fix",
+    "lint:knip": "knip",
     "format:rust": "pnpm run --filter=yak-swc format",
     "test": "pnpm run build && pnpm -r --filter='!yak-swc' --filter='!next-yak-e2e' run \"/test($|:types)/\"",
     "test:watch": "pnpm --filter=next-yak run test:watch",
@@ -32,11 +33,12 @@
   "devDependencies": {
     "@changesets/cli": "catalog:dev",
     "eslint-plugin-yak": "workspace:*",
+    "knip": "catalog:dev",
     "oxfmt": "catalog:dev",
     "oxlint": "catalog:dev"
   },
   "engines": {
     "node": ">=22.18.0"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@12.3.1"
 }

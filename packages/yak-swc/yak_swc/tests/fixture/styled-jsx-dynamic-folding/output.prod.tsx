@@ -160,15 +160,15 @@ const DynamicExtended = /*YAK Extracted CSS:
 :global(.ym7uBBub) {
   color: red;
 }
-*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBua", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBub"));
+*/ /*#__PURE__*/ (styled(ImportedCard))("ym7uBBua", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBub"));
 // usages bail: attrs
 const DynamicAttrs = /*YAK Extracted CSS:
 :global(.ym7uBBud) {
   color: red;
 }
-*/ /*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("ym7uBBuc", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBud"));
+}))("ym7uBBuc", ({ $active })=>$active && /*#__PURE__*/ css("ym7uBBud"));
 // usages bail: a namespaced attribute is keyed by its plain name everywhere
 // below, so it would evaluate on the element without ever counting as an
 // obstacle the parameter block may not jump - `<use xlink:href>` is the

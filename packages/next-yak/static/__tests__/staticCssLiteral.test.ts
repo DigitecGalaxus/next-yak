@@ -38,10 +38,12 @@ it("convert numbers to string", () => {
 it("work nested", () => {
   const styles = css`
     .test {
-      ${true &&
-      css`
-        color: red;
-      `}
+      ${
+        true &&
+        css`
+          color: red;
+        `
+      }
     }
   `;
   expect(styles).toBe(".test {\n      color: red;\n    }");

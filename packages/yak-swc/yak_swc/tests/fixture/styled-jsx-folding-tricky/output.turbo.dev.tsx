@@ -60,9 +60,9 @@ const WithAttrs = /*YAK Extracted CSS:
 .input_WithAttrs_m7uBBu {
   color: blue;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_input.attrs({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_input.attrs({
     type: "text"
-})("input_WithAttrs_m7uBBu"), {
+}))("input_WithAttrs_m7uBBu"), {
     "displayName": "WithAttrs"
 });
 // bails: a let binding can be reassigned, so its usages keep the runtime path

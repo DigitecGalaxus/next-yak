@@ -19,13 +19,13 @@ export const FancyButton = /*YAK EXPORTED STYLED:FancyButton:input_FancyButton_m
 :global(.input_FancyButton_m7uBBu) {
   margin-bottom: 23px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Button)("input_FancyButton_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(Button))("input_FancyButton_m7uBBu"), {
     "displayName": "FancyButton"
 });
 export const FancyButton2 = /*YAK EXPORTED STYLED:FancyButton2:input_FancyButton2_m7uBBu*//*YAK Extracted CSS:
 :global(.input_FancyButton2_m7uBBu) {
   margin-bottom: 17px;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ styled(Button2)("input_FancyButton2_m7uBBu"), {
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (styled(Button2))("input_FancyButton2_m7uBBu"), {
     "displayName": "FancyButton2"
 });

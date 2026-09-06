@@ -45,7 +45,10 @@ function getYakOptions(options: StorybookOptions): YakAddonOptions {
  */
 async function findYakSwcPlugin(): Promise<string> {
   try {
-    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const loaderPath = require.resolve("next-yak/loaders/webpack-loader");
+    const packageJsonPath = require.resolve("yak-swc/package.json", {
+      paths: [dirname(loaderPath)],
+    });
     const packageRoot = dirname(packageJsonPath);
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
     return path.resolve(packageRoot, packageJson.main);

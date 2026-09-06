@@ -12,10 +12,10 @@ crate-type = ["cdylib"]
 __plugin = []
 
 [dependencies]
-anyhow = "1.0.103"
+anyhow = "1.0.104"
 console_error_panic_hook = "0.1.7"
-js-sys = "0.3.103"
-serde = { version = "1.0.228", features = ["derive"] }
+js-sys = "0.3.104"
+serde = { version = "1.0.229", features = ["derive"] }
 serde-wasm-bindgen = { version = "0.6.5" }
 # enable the js flag for the getrandom transitive dependency
 # (pinned to 0.3 so it unifies with the copy pulled in via swc_core/ahash;
@@ -28,10 +28,10 @@ swc_core = { workspace = true, features = [
   "ecma_transforms_module",
   "base_module",
 ] }
-wasm-bindgen = "0.2.126"
+wasm-bindgen = "0.2.127"
 yak_swc = { version = "0.1.0", path = "../../packages/yak-swc/yak_swc", default-features = false }
-either = "1.16.0"
-tsify = "0.5.6"
+either = "1.18.0"
+tsify = "0.5.8"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.76"
+wasm-bindgen-test = "0.3.77"

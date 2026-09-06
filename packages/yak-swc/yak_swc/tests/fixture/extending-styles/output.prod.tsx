@@ -18,7 +18,7 @@ export const PrimaryButton = /*YAK EXPORTED STYLED:PrimaryButton:ym7uBBu1*//*YAK
     background-color: #0056b3;
   }
 }
-*/ /*#__PURE__*/ styled(BaseButton)("ym7uBBu1");
+*/ /*#__PURE__*/ (styled(BaseButton))("ym7uBBu1");
 export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:ym7uBBu2*//*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   background-color: #6c757d;
@@ -27,4 +27,4 @@ export const SecondaryButton = /*YAK EXPORTED STYLED:SecondaryButton:ym7uBBu2*//
     background-color: #545b62;
   }
 }
-*/ /*#__PURE__*/ styled(BaseButton)("ym7uBBu2");
+*/ /*#__PURE__*/ (styled(BaseButton))("ym7uBBu2");

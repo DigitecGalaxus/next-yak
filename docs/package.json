@@ -18,6 +18,7 @@
   "dependencies": {
     "@monaco-editor/react": "catalog:dev",
     "@radix-ui/react-switch": "catalog:dev",
+    "@shikijs/magic-move": "catalog:dev",
     "@shikijs/monaco": "catalog:dev",
     "@shikijs/transformers": "catalog:dev",
     "@vercel/analytics": "catalog:dev",
@@ -37,7 +38,6 @@
     "react-dom": "catalog:dev",
     "react-resizable-panels": "catalog:dev",
     "shiki": "catalog:dev",
-    "shiki-magic-move": "catalog:dev",
     "yak-swc": "workspace:*"
   },
   "devDependencies": {

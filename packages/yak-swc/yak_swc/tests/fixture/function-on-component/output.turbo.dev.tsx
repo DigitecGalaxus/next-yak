@@ -5,8 +5,8 @@ export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Ex
 .input_Button_m7uBBu {
   background-color: #007bff;
 }
-*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button.functionName({
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_button.functionName({
     arg: "something"
-})("input_Button_m7uBBu"), {
+}))("input_Button_m7uBBu"), {
     "displayName": "Button"
 });

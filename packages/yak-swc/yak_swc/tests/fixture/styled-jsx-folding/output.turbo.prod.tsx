@@ -19,7 +19,7 @@ const Box = /*YAK Extracted CSS:
 .ym7uBBu2 {
   color: blue;
 }
-*/ /*#__PURE__*/ styled("section")("ym7uBBu2");
+*/ /*#__PURE__*/ (styled("section"))("ym7uBBu2");
 // exported: local usages fold, the declaration stays
 export const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu3*//*YAK Extracted CSS:
 .ym7uBBu3 {
@@ -41,9 +41,9 @@ const WithAttrs = /*YAK Extracted CSS:
 .ym7uBBu6 {
   color: green;
 }
-*/ /*#__PURE__*/ __yak.__yak_button.attrs({
+*/ /*#__PURE__*/ (__yak.__yak_button.attrs({
     type: "button"
-})("ym7uBBu6");
+}))("ym7uBBu6");
 // collapses: parent is a same-file static component
 const Extended = /*YAK Extracted CSS:
 .ym7uBBu7 {
@@ -67,7 +67,7 @@ const ExtendedImport = /*YAK Extracted CSS:
 .ym7uBBuA {
   color: silver;
 }
-*/ /*#__PURE__*/ styled(ImportedCard)("ym7uBBuA");
+*/ /*#__PURE__*/ (styled(ImportedCard))("ym7uBBuA");
 // dynamic: class-toggling condition
 const ToggleBase = /*YAK Extracted CSS:
 .ym7uBBuC {
@@ -79,27 +79,27 @@ const OfDynamic = /*YAK Extracted CSS:
 .ym7uBBuD {
   color: teal;
 }
-*/ /*#__PURE__*/ styled(ToggleBase)("ym7uBBuD");
+*/ /*#__PURE__*/ (styled(ToggleBase))("ym7uBBuD");
 // folds to the wrapped component: an attrs parent never collapses
 const OfAttrs = /*YAK Extracted CSS:
 .ym7uBBuE {
   color: maroon;
 }
-*/ /*#__PURE__*/ styled(WithAttrs)("ym7uBBuE");
+*/ /*#__PURE__*/ (styled(WithAttrs))("ym7uBBuE");
 // bails: a lowercase name would be parsed as an intrinsic element in JSX
 const lowercaseComponent = (p: any)=><i {...p}/>;
 const ExtendedLowercase = /*YAK Extracted CSS:
 .ym7uBBuF {
   color: gold;
 }
-*/ /*#__PURE__*/ styled(lowercaseComponent)("ym7uBBuF");
+*/ /*#__PURE__*/ (styled(lowercaseComponent))("ym7uBBuF");
 // bails: the wrapped component binding can be reassigned
 let MutableTarget = (p: any)=><b {...p}/>;
 const ExtendedMutable = /*YAK Extracted CSS:
 .ym7uBBuG {
   color: ivory;
 }
-*/ /*#__PURE__*/ styled(MutableTarget)("ym7uBBuG");
+*/ /*#__PURE__*/ (styled(MutableTarget))("ym7uBBuG");
 // bails: let declaration
 let Mutable = /*YAK Extracted CSS:
 .ym7uBBuH {
@@ -111,14 +111,14 @@ const OfLet = /*YAK Extracted CSS:
 .ym7uBBuI {
   color: khaki;
 }
-*/ /*#__PURE__*/ styled(Mutable)("ym7uBBuI");
+*/ /*#__PURE__*/ (styled(Mutable))("ym7uBBuI");
 // bails: parent declared after the child (const temporal dead zone) - collapsing
 // would turn the guaranteed ReferenceError into silently working output
 const OfLater = /*YAK Extracted CSS:
 .ym7uBBuJ {
   color: wheat;
 }
-*/ /*#__PURE__*/ styled(Later)("ym7uBBuJ");
+*/ /*#__PURE__*/ (styled(Later))("ym7uBBuJ");
 const Later = /*YAK Extracted CSS:
 .ym7uBBuK {
   color: linen;

@@ -63,7 +63,7 @@ jobs:
         run: pnpm run build:swc
 
       - name: Install Vercel CLI
-        run: npm install -g vercel@52.0.0
+        run: npm install -g vercel@59.11.2
 
       # Stub `.vercel/project.json` so `vercel build` knows which project to
       # build for, without needing `vercel pull` (which requires the token).
@@ -73,7 +73,7 @@ jobs:
       - name: Stub Vercel project link
         run: |
           mkdir -p .vercel
-          printf '{"projectId":"%s","orgId":"%s","settings":{"framework":"nextjs","rootDirectory":"docs"}}' \
+          printf '{"projectId":"%s","orgId":"%s","settings":{"framework":"nextjs","rootDirectory":"docs","installCommand":"pnpm install --frozen-lockfile"}}' \
             "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
 
       - name: Build Vercel output

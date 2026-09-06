@@ -9,6 +9,38 @@ const outExtensions: UserConfig["outExtensions"] = ({ format }) => ({
 // comments like `@__PURE__` so downstream tree-shakers can still see them.
 const stripJsdoc = { comments: { jsdoc: false } } as const;
 
+// Shared by the webpack and turbo loader builds below.
+const loaderConfig: UserConfig = {
+  format: ["cjs"],
+  minify: false,
+  sourcemap: true,
+  clean: false,
+  deps: {
+    neverBundle: [
+      // all non-relative (package) imports stay external
+      /^(?!yak-internals)[@a-zA-Z]/,
+      // node built-ins
+      /^node:/,
+      // isolated-source-eval must not be bundled (worker path would break)
+      /\.\.\/isolated-source-eval\//,
+      /^yak-internals\/isolated-source-eval$/,
+      // withYak is shipped as its own entry. Keep its types as re-imports
+      // in the loader `.d.ts` rather than inlining them
+      /\.\.\/withYak\//,
+    ],
+  },
+  outputOptions: {
+    ...stripJsdoc,
+    codeSplitting: false,
+    paths: { "yak-internals/isolated-source-eval": "../isolated-source-eval/index.js" },
+  },
+  dts: { eager: true },
+  platform: "node",
+  target: "es2022",
+  outDir: "dist/loaders",
+  outExtensions,
+};
+
 export default defineConfig([
   // runtime
   {
@@ -225,39 +257,8 @@ export default defineConfig([
   // webpack-loader and turbo-loader each need to be a self-contained CJS file
   // (loaded by path, no sibling chunks), so they're built separately with
   // codeSplitting disabled. The rsbuild plugin reuses turbo-loader.cjs as-is.
-  ...["loaders/webpack-loader.ts", "loaders/turbo-loader.ts"].map(
-    (loaderEntry): UserConfig => ({
-      entry: [loaderEntry],
-      format: ["cjs"],
-      minify: false,
-      sourcemap: true,
-      clean: false,
-      deps: {
-        neverBundle: [
-          // all non-relative (package) imports stay external
-          /^(?!yak-internals)[@a-zA-Z]/,
-          // node built-ins
-          /^node:/,
-          // isolated-source-eval must not be bundled (worker path would break)
-          /\.\.\/isolated-source-eval\//,
-          /^yak-internals\/isolated-source-eval$/,
-          // withYak is shipped as its own entry. Keep its types as re-imports
-          // in the loader `.d.ts` rather than inlining them
-          /\.\.\/withYak\//,
-        ],
-      },
-      outputOptions: {
-        ...stripJsdoc,
-        codeSplitting: false,
-        paths: { "yak-internals/isolated-source-eval": "../isolated-source-eval/index.js" },
-      },
-      dts: { eager: true },
-      platform: "node",
-      target: "es2022",
-      outDir: "dist/loaders",
-      outExtensions,
-    }),
-  ),
+  { entry: ["loaders/webpack-loader.ts"], ...loaderConfig },
+  { entry: ["loaders/turbo-loader.ts"], ...loaderConfig },
   // jsx-runtime
   {
     entry: ["runtime/jsx-runtime.ts"],

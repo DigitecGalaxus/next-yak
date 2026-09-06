@@ -22,5 +22,3 @@ declare module "@solidjs/web" {
     }
   }
 }
-
-export {};
