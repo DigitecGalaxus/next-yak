@@ -23,13 +23,11 @@ const lastWith = (sources: Source[], key: string): Source | undefined => {
  * ```tsx
  * <button {...__yak_mergeCssProp(css("yak1"), { class: "a" }, props, { style: s })} />
  * ```
- * Nothing is read while this runs. Spreading the sources into one object would
- * invoke their getters, and the Solid compiler evaluates this call before
- * `ssrElement` takes the hydration key on the server but inside the spread's
- * callback after the element is claimed on the client: a `children` getter
- * read here would take its hydration id on one side only and the element would
- * never hydrate. So the descriptors are copied untouched, and `class` and
- * `style` are resolved by whoever reads them.
+ * Optimized to not read the sources and therefore not invoke their Solid
+ * getters: the descriptors are copied untouched, and `class` and `style` are
+ * resolved by whoever reads them. A getter invoked here would run before the
+ * element takes its hydration key on the server but after it on the client,
+ * and a `children` getter that renders would then take its id on one side only.
  */
 export const mergeCssProp = (
   cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
