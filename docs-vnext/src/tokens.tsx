@@ -104,15 +104,19 @@ export const container = {
     switch: "460px", // framework pills ↔ compact dropdown
   },
   section: {
-    twoCol: "460px", // feature grid 1 → 2 columns
+    twoCol: "740px", // feature concept cards 1 → 2 columns (each needs ~360px for its code slice)
     figureRow: "560px", // benchmark caption stacks → row
     splitRow: "640px", // rename block: mascot beside the copy
     statGrid: "700px", // stat cards 2 → 4 col; coverage terminal beside "works with"
-    threeCol: "720px", // feature grid 2 → 3 columns
+    annotateOne: "800px", // feature callout cards line up on one side of the editor, snapped to code lines
+    annotate: "980px", // feature callout cards flank the editor on both sides
     flow: "800px", // how-it-works steps reflow into the 3-col diagram
   },
   hero: {
     split: "950px", // hero copy beside the editor
+  },
+  card: {
+    row: "600px", // feature concept card: copy stacked above code → copy beside code
   },
   prose: {
     sideBySide: "620px", // <SideBySide> 2 → 1 col (each code column drops under ~300px)

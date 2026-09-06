@@ -2,21 +2,19 @@ import type { CSSProperties } from "react";
 import { highlighterPromise, yakTheme } from "@/lib/shiki";
 import HeroEditorView from "./hero-editor-view";
 import { frameworks } from "./frameworks";
+import { FRAMEWORK_TABS as TABS } from "./framework-tabs";
 
-const TABS = frameworks.map((f) => ({
-  value: f.id,
-  node: (
-    <>
-      <f.Icon mono />
-      {f.id}
-    </>
-  ),
-}));
+// The same component per framework. Only the import and the prop interpolation change:
+// React destructures its props, Solid reads them off the reactive `props` object.
+const PROP_ACCESS: Record<string, { params: string; read: string }> = {
+  react: { params: "({ $primary })", read: "$primary" },
+  solid: { params: "(props)", read: "props.$primary" },
+  qwik: { params: "({ $primary })", read: "$primary" },
+};
 
-// Only the import line differs between frameworks; everything else is identical.
-const codeFor = (
-  id: string,
-) => `import { styled, css } from "${frameworks.find((f) => f.id === id)?.pkg}";
+const codeFor = (id: string) => {
+  const { params, read } = PROP_ACCESS[id];
+  return `import { styled, css } from "${frameworks.find((f) => f.id === id)?.pkg}";
 
 const Button = styled.button<{ $primary?: boolean }>\`
   font-size: 1.5em;
@@ -26,14 +24,15 @@ const Button = styled.button<{ $primary?: boolean }>\`
     color: red;
   }
 
-  \${({ $primary }) =>
-    $primary &&
+  \${${params} =>
+    ${read} &&
     css\`
       background: blue;
       color: white;
     \`}
   \`;
 `;
+};
 
 export default async function HeroEditor({
   className,
