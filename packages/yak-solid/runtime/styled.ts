@@ -13,7 +13,7 @@ import type {
   RuntimeStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
-import { createMemo, untrack, type MemoOptions } from "solid-js";
+import { $PROXY, createMemo, untrack, type MemoOptions } from "solid-js";
 import {
   ChildProperties,
   createComponent,
@@ -66,7 +66,7 @@ const elementTemplate = (tag: string) => {
 
 /**
  * Renders a tag target the way the compiler renders `<tag {...props} />`: on
- * the server one `ssrElement` call, on the client the claimed or cloned
+ * the server one serialization pass, on the client the claimed or cloned
  * element plus one `spread`. No memo and no owner per element, so a styled
  * element gets the same hydration key an unstyled one would. (Solid's
  * `dynamic()` adds a memo so the tag can change; a styled tag never does.)
@@ -87,11 +87,11 @@ const elementRenderer = (tag: string): ((props: Record<PropertyKey, unknown>) =>
   const create = elementTemplate(tag);
   return (props) => {
     const el = getNextElement(create);
-    // no children, no insert effect; a key check, nothing to track
+    // A proxy can add children later, so it needs a child binding.
     spread(
       el,
       props,
-      untrack(() => !("children" in props)),
+      untrack(() => !($PROXY in props) && !("children" in props)),
     );
     runHydrationEvents();
     return el;
@@ -195,8 +195,26 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       runtimeStyleProcessor(props, classes, undefined as unknown as StyleObject);
       return classes.value || undefined;
     };
+    // Cache the markup for static tags whose only prop is children.
+    const staticTemplate =
+      isServer && isStatic && tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
+        ? [`<${tag}`, `${staticClass ? ` class="${ssrClassName(staticClass)}"` : ""}>`, `</${tag}>`]
+        : undefined;
     const Yak: AnyComponent<PropsWithClassAndStyle> = isStatic
-      ? (props) => renderTarget(yakProps(props, staticClassOf, undefined, tag))
+      ? (props) => {
+          if (staticTemplate) {
+            const keys = Object.keys(props);
+            if (!keys.length || (keys.length === 1 && keys[0] === "children")) {
+              const hk = ssrHydrationKey();
+              return ssr(
+                staticTemplate,
+                hk,
+                resolveSSRNode(keys.length ? escape(props.children) : undefined, undefined, true),
+              ) as JSX.Element;
+            }
+          }
+          return renderTarget(yakProps(props, staticClassOf, undefined, tag));
+        }
       : (props) => {
           // attrs functions and style interpolations receive the theme; the
           // static path above never subscribes to it
@@ -278,14 +296,18 @@ const withTheme = (
   props: PropsWithClassAndStyle,
   theme: Accessor<YakTheme>,
 ): PropsWithClassAndStyle & { theme: Accessor<YakTheme> } =>
-  ("theme" in props
+  (!($PROXY in props) && "theme" in props
     ? props
     : new Proxy(props, {
-        get: (target, key) => (key === "theme" ? theme : Reflect.get(target, key)),
+        get: (target, key) =>
+          key === "theme" ? ("theme" in target ? target.theme : theme) : Reflect.get(target, key),
         has: (target, key) => key === "theme" || Reflect.has(target, key),
-        ownKeys: (target) => [...Reflect.ownKeys(target), "theme"],
+        ownKeys: (target) => {
+          const keys = Reflect.ownKeys(target);
+          return keys.includes("theme") ? keys : [...keys, "theme"];
+        },
         getOwnPropertyDescriptor: (target, key) =>
-          key === "theme"
+          key === "theme" && !(key in target)
             ? { value: theme, enumerable: true, configurable: true }
             : Reflect.getOwnPropertyDescriptor(target, key),
       })) as PropsWithClassAndStyle & {
@@ -297,10 +319,14 @@ const withTheme = (
  * over the author's props. A lookup, not a copy.
  */
 const withAttrs = <T extends object>(props: T, attrs: Record<string, unknown>): T =>
-  new Proxy(props, {
-    get: (target, key) =>
-      typeof key === "string" && key in attrs ? attrs[key] : Reflect.get(target, key),
-    has: (target, key) => (typeof key === "string" && key in attrs) || Reflect.has(target, key),
+  new Proxy({} as T, {
+    get: (_, key) => (key in attrs ? Reflect.get(attrs, key) : Reflect.get(props, key)),
+    has: (_, key) => key in attrs || key in props,
+    ownKeys: () => [...new Set([...Reflect.ownKeys(props), ...Reflect.ownKeys(attrs)])],
+    getOwnPropertyDescriptor: (_, key) => {
+      const descriptor = Reflect.getOwnPropertyDescriptor(key in attrs ? attrs : props, key);
+      return descriptor && { ...descriptor, configurable: true };
+    },
   });
 
 type ComputedStyles = {
@@ -408,7 +434,7 @@ const yakProps = <T extends object>(
     attrsProps,
   };
   if (isServer && isTag) return serverRender(tag, sources) as unknown as T;
-  if (!attrsProps) return copyProps(sources) as T;
+  if (!attrsProps && !($PROXY in props)) return copyProps(sources) as T;
   return proxyProps(sources) as T;
 };
 
@@ -493,7 +519,7 @@ const serverProps = <T extends object>(sources: PropSources<T>): Record<string, 
 };
 
 /**
- * Without attrs the key set is fixed, so the descriptors are copied onto a
+ * Plain props have fixed keys, so their descriptors are copied onto a
  * plain object. Compiled getters are closures that ignore `this`, so they go
  * over unchanged and are never invoked here; every later read, `in` check and
  * enumeration by the target (a spread, an `omit`) is a plain property access.
@@ -522,12 +548,12 @@ const copyProps = <T extends object>(sources: PropSources<T>): Record<PropertyKe
 };
 
 /**
- * With attrs the keys are only known once the attrs ran, so a Proxy resolves
- * each read against the three sources.
+ * Attrs and reactive spreads can change keys. A Proxy resolves each read
+ * against the current sources.
  */
 const proxyProps = <T extends object>(sources: PropSources<T>): T => {
   const { props, skip, classOf, styleFn } = sources;
-  const attrsProps = sources.attrsProps!;
+  const attrsProps = sources.attrsProps ?? (() => undefined);
   const classFn = () => classOf(props);
   const contributed = (key: PropertyKey) =>
     key === "class" ? classFn : key === "style" ? styleFn : undefined;
@@ -537,6 +563,7 @@ const proxyProps = <T extends object>(sources: PropSources<T>): T => {
   };
   return new Proxy(props, {
     get(target, key) {
+      if (key === $PROXY) return true;
       const getter = contributed(key);
       if (getter) return getter();
       if (skip(key)) return undefined;
@@ -544,6 +571,7 @@ const proxyProps = <T extends object>(sources: PropSources<T>): T => {
       return attrs ? attrs[key as string] : Reflect.get(target, key);
     },
     has(target, key) {
+      if (key === $PROXY) return true;
       if (contributed(key)) return true;
       if (skip(key)) return false;
       return Reflect.has(target, key) || fromAttrs(key) !== undefined;
@@ -563,7 +591,7 @@ const proxyProps = <T extends object>(sources: PropSources<T>): T => {
       if (skip(key)) return undefined;
       const attrs = fromAttrs(key);
       if (attrs) {
-        return { enumerable: true, configurable: true, get: () => attrs[key as string] };
+        return { enumerable: true, configurable: true, get: () => attrsProps()?.[key as string] };
       }
       return Reflect.getOwnPropertyDescriptor(target, key);
     },
