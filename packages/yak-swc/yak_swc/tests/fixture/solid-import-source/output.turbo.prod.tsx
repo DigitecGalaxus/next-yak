@@ -18,13 +18,13 @@ export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:ym7uBBu1*//*YAK
         "--ym7uBBu3": /*#__PURE__*/ __yak_unitPostFix(({ $spacing })=>$spacing * 8, "px")
     }
 });
-export const Elem = ()=><div {...__yak_mergeCssProp({
+export const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
+.ym7uBBu4 {
+  color: blue;
+}
+*/ /*#__PURE__*/ css("ym7uBBu4"), {
         class: "test-class",
         style: {
             padding: "5px"
         }
-    }, /*YAK Extracted CSS:
-.ym7uBBu4 {
-  color: blue;
-}
-*/ /*#__PURE__*/ css("ym7uBBu4"))}/>;
+    })}/>;

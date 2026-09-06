@@ -42,7 +42,7 @@ const TernaryUndefined = ({ on }: {
 const LogicalAndDynamic = ({ on, color }: {
     on: boolean;
     color: string;
-})=><div {...__yak_mergeCssProp({}, on && /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(on && /*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   color: var(--ym7uBBu6);
 }

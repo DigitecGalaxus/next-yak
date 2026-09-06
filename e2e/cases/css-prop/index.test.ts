@@ -37,21 +37,6 @@ test(
     await expect(spreadButton).toHaveCSS("padding", "8px");
     await expect(spreadButton).toHaveText("clicks: 0");
 
-    // TODO: the Solid server render does not hydrate this button. The yak
-    // transform emits `__yak_mergeCssProp({ ...props }, css)`, the Solid
-    // compiler passes that call straight to `ssrElement` on the server (before
-    // the hydration key is taken) but wraps it in a callback on the client
-    // (after the element is claimed), and the object spread reads the
-    // `children` getter, which allocates a memo id. The button's key drifts by
-    // one and its handler never attaches. Fix: emit the sources as separate
-    // arguments and let the helper copy descriptors and add class and style as
-    // getters, so no getter runs before the key. Until then the click is not
-    // asserted on vite-solid; the hydration warning is also expected there.
-    if (testEnv.bundlerDirName === "vite-solid") {
-      testEnv.expectConsoleErrors("css prop with a spread does not hydrate yet, see TODO above");
-      return;
-    }
-
     // The server-rendered button is clickable before hydration attaches its
     // handler, so on a cold dev server a click can get lost — retry until
     // one registers.
@@ -59,5 +44,23 @@ test(
       await spreadButton.click();
       await expect(spreadButton).not.toHaveText("clicks: 0", { timeout: 1000 });
     }).toPass({ timeout: 15_000 });
+
+    // sources merge in JSX order: a spread's class joins the css prop's class,
+    // and a later source replaces an earlier class attribute
+    const spreadClass = page.getByTestId("spread-class");
+    await expect(spreadClass).toHaveClass(/from-spread/);
+    await expect(spreadClass).toHaveCSS("color", "rgb(0, 0, 255)");
+    const laterWins = page.getByTestId("later-wins");
+    await expect(laterWins).toHaveClass(/late/);
+    await expect(laterWins).not.toHaveClass(/early/);
+    await expect(laterWins).toHaveCSS("color", "rgb(0, 0, 255)");
+
+    // a css prop interpolation that reads state updates the same element
+    // after the click above
+    const live = page.getByTestId("live");
+    await expect(live).toHaveCSS("color", "rgb(255, 0, 0)");
+    for (const id of ["spread-class", "later-wins", "live", "spread-button"]) {
+      await expect(page.getByTestId(id)).not.toHaveAttribute("style", "");
+    }
   }),
 );

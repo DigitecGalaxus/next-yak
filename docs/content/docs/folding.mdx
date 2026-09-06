@@ -340,7 +340,7 @@ A conditional css prop keeps its condition; the branch toggles class names:
 </div>
 </SideBySide>
 
-The css prop keeps the render-time merge (`__yak_mergeCssProp`) when the element already has a `className`, spreads props, or carries a dynamic value (a css variable). A css prop that points at a `css` mixin declared elsewhere is a compile error, because the mixin carries no class name of its own.
+The css prop keeps the render-time merge (`__yak_mergeCssProp`) when the element already has a `className`, spreads props, or carries a dynamic value (a css variable). The helper takes the css value first and then one argument per merged source in JSX order, a run of `className` and `style` attributes as one object and a spread as the expression it was written as, so a spread is never copied into an object at the call site. A css prop that points at a `css` mixin declared elsewhere is a compile error, because the mixin carries no class name of its own.
 
 ## The decision
 

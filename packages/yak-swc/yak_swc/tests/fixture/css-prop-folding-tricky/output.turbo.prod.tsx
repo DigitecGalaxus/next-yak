@@ -40,38 +40,36 @@ const WithStyle = ()=><div style={{
 }
 */ /*#__PURE__*/ "ym7uBBu6"}/>;
 // bails: a className is not a style, so the fold hands off to the runtime merge
-const WithClassName = ()=><div {...__yak_mergeCssProp({
-        className: "user"
-    }, /*YAK Extracted CSS:
+const WithClassName = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBu7 {
   color: purple;
 }
-*/ /*#__PURE__*/ css("ym7uBBu7"))}/>;
+*/ /*#__PURE__*/ css("ym7uBBu7"), {
+        className: "user"
+    })}/>;
 // bails: className and style together keep the runtime merge
-const WithBoth = ()=><div {...__yak_mergeCssProp({
+const WithBoth = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
+.ym7uBBu8 {
+  font-size: 16px;
+}
+*/ /*#__PURE__*/ css("ym7uBBu8"), {
         className: "main",
         style: {
             fontWeight: "bold"
         }
-    }, /*YAK Extracted CSS:
-.ym7uBBu8 {
-  font-size: 16px;
-}
-*/ /*#__PURE__*/ css("ym7uBBu8"))}/>;
+    })}/>;
 // bails: a spread element may carry a className, so the fold keeps the runtime
 // merge
-const WithSpread = ()=><div {...__yak_mergeCssProp({
-        ...props
-    }, /*YAK Extracted CSS:
+const WithSpread = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBu9 {
   color: olive;
 }
-*/ /*#__PURE__*/ css("ym7uBBu9"))}/>;
+*/ /*#__PURE__*/ css("ym7uBBu9"), props)}/>;
 // bails: a runtime css variable is a mixed static/dynamic segment the fold
 // cannot flatten, so the whole prop stays on the runtime path
 const MixedDynamic = ({ color }: {
     color: string;
-})=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBuA {
   color: var(--ym7uBBuB);
 }

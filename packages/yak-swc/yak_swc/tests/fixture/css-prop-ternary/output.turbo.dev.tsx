@@ -37,7 +37,7 @@ const Elem3 = ({ active, width }: {
     active: boolean;
     width: number;
 })=>{
-    return <div {...__yak_mergeCssProp({}, active ? /*YAK Extracted CSS:
+    return <div {...__yak_mergeCssProp(active ? /*YAK Extracted CSS:
 .input_Elem3_m7uBBu {
   width: var(--input_Elem3__width_m7uBBu);
 }

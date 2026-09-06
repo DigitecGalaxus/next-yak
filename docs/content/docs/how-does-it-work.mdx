@@ -243,7 +243,15 @@ const Elem = ({ on }) => <div className={on ? "input_Elem_m7uBBu" : "input_Elem_
 </div>
 </SideBySide>
 
-Only if the element has an existing `className` attribute or spread attributes the class names have to be merged at render time. In that case the plugin wraps the attributes with the small `__yak_mergeCssProp` runtime helper.
+Only if the element has an existing `className` attribute or spread attributes the class names have to be merged at render time. In that case the plugin hands the attributes to the small `__yak_mergeCssProp` runtime helper: the css value first, then one argument per merged source in JSX order.
+
+```tsx title="output"
+const Elem = (props) => (
+  <div {...__yak_mergeCssProp(css("input_Elem_m7uBBu"), { className: "card" }, props)} />
+);
+```
+
+Handing the sources over separately keeps the call itself free of reads. The Solid helper copies the property descriptors instead of spreading them, so no prop getter runs before the element takes its hydration key, and `class` and `style` stay live bindings that update in place.
 
 #### Transform CSS
 

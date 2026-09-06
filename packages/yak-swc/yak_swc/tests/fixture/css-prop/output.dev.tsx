@@ -1,79 +1,74 @@
 import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
 import * as __yak from "next-yak/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-const Elem = ()=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem_m7uBBu) {
   color: red;
 }
 */ /*#__PURE__*/ css("input_Elem_m7uBBu"))}/>;
-const Elem2 = ()=><div {...__yak_mergeCssProp({
-        className: "test-class"
-    }, /*YAK Extracted CSS:
+const Elem2 = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem2_m7uBBu) {
   color: blue;
 }
-*/ /*#__PURE__*/ css("input_Elem2_m7uBBu"))}/>;
-const Elem3 = ()=><div {...__yak_mergeCssProp({
-        style: {
-            padding: "5px"
-        }
-    }, /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_Elem2_m7uBBu"), {
+        className: "test-class"
+    })}/>;
+const Elem3 = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem3_m7uBBu) {
   padding: 10px;
 }
-*/ /*#__PURE__*/ css("input_Elem3_m7uBBu"))}/>;
-const Elem4 = (props: any)=><div {...__yak_mergeCssProp({
-        ...props
-    }, /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_Elem3_m7uBBu"), {
+        style: {
+            padding: "5px"
+        }
+    })}/>;
+const Elem4 = (props: any)=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem4_m7uBBu) {
   color: green;
 }
-*/ /*#__PURE__*/ css("input_Elem4_m7uBBu"))}/>;
-const Elem5 = (props: any)=><div {...__yak_mergeCssProp({
-        ...props.a,
-        ...props.b
-    }, /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_Elem4_m7uBBu"), props)}/>;
+const Elem5 = (props: any)=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem5_m7uBBu) {
   color: purple;
 }
-*/ /*#__PURE__*/ css("input_Elem5_m7uBBu"))}/>;
-const Elem6 = ()=><div {...__yak_mergeCssProp({
+*/ /*#__PURE__*/ css("input_Elem5_m7uBBu"), props.a, props.b)}/>;
+const Elem6 = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
+:global(.input_Elem6_m7uBBu) {
+  font-size: 16px;
+}
+*/ /*#__PURE__*/ css("input_Elem6_m7uBBu"), {
         className: "main",
         style: {
             fontWeight: "bold"
         }
-    }, /*YAK Extracted CSS:
-:global(.input_Elem6_m7uBBu) {
-  font-size: 16px;
-}
-*/ /*#__PURE__*/ css("input_Elem6_m7uBBu"))}/>;
-const ElemEntity = ()=><div {...__yak_mergeCssProp({
-        className: "Food & Drink"
-    }, /*YAK Extracted CSS:
+    })}/>;
+const ElemEntity = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_ElemEntity_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ css("input_ElemEntity_m7uBBu"))}/>;
-const ElemBackslash = ()=><div {...__yak_mergeCssProp({
-        className: "before:content-['\\2713']"
-    }, /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_ElemEntity_m7uBBu"), {
+        className: "Food & Drink"
+    })}/>;
+const ElemBackslash = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_ElemBackslash_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ css("input_ElemBackslash_m7uBBu"))}/>;
-const ElemEmoji = ()=><div {...__yak_mergeCssProp({
-        className: "🔥 mark"
-    }, /*YAK Extracted CSS:
+*/ /*#__PURE__*/ css("input_ElemBackslash_m7uBBu"), {
+        className: "before:content-['\\2713']"
+    })}/>;
+const ElemEmoji = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_ElemEmoji_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ css("input_ElemEmoji_m7uBBu"))}/>;
+*/ /*#__PURE__*/ css("input_ElemEmoji_m7uBBu"), {
+        className: "🔥 mark"
+    })}/>;
 const Elem7 = ()=><div className="no-css"/>;
 const Elem8 = ()=><div className="empty-css"/>;
 const Elem9 = ()=><div/>;
 const Elem10 = ({ on }: {
     on: boolean;
-})=><div {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_Elem10__on_m7uBBu) {
   color: red;
 }
@@ -83,7 +78,7 @@ const Elem10 = ({ on }: {
 */ /*#__PURE__*/ css(()=>on ? /*#__PURE__*/ css("input_Elem10__on_m7uBBu") : /*#__PURE__*/ css("input_Elem10__not_on_m7uBBu"), "input_Elem10_m7uBBu"))}/>;
 const Elem11 = ({ on }: {
     on: boolean;
-})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(on ? /*YAK Extracted CSS:
 :global(.input_Elem11_m7uBBu) {
   color: red;
 }
@@ -94,14 +89,14 @@ const Elem11 = ({ on }: {
 */ /*#__PURE__*/ css("input_Elem11_m7uBBu-01"))}/>;
 const Elem12 = ({ on }: {
     on: boolean;
-})=><div {...__yak_mergeCssProp({}, on && /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(on && /*YAK Extracted CSS:
 :global(.input_Elem12_m7uBBu) {
   color: brown;
 }
 */ /*#__PURE__*/ css("input_Elem12_m7uBBu"))}/>;
 const Elem13 = ({ on }: {
     on: boolean;
-})=><div {...__yak_mergeCssProp({}, on ? /*YAK Extracted CSS:
+})=><div {...__yak_mergeCssProp(on ? /*YAK Extracted CSS:
 :global(.input_Elem13_m7uBBu) {
   color: teal;
 }
@@ -113,7 +108,7 @@ const Text = /*YAK Extracted CSS:
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Text_m7uBBu"), {
     "displayName": "Text"
 });
-const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp({}, /*YAK Extracted CSS:
+const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_StyledComponentWithCSSProp_m7uBBu) {
   color: red;
 }
