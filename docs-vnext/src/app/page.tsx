@@ -3,8 +3,7 @@ import CtaButton from "../components/landing-page/cta-button";
 import CodePanel from "../components/landing-page/code-panel";
 import HeroEditor from "../components/landing-page/hero-editor";
 import Badge from "../components/landing-page/badge";
-import Code from "../components/landing-page/code";
-import Feature from "../components/landing-page/feature";
+import FeatureShowcase from "../components/landing-page/feature-showcase";
 import Step from "../components/landing-page/step";
 import StatCard from "../components/landing-page/stat-card";
 import Bar from "../components/landing-page/bench-bar";
@@ -15,14 +14,6 @@ import Coverage from "../components/landing-page/coverage";
 import { Container, Section } from "../components/landing-page/section";
 import { FRAMEWORKS } from "../components/landing-page/framework-icons";
 import { ArrowRightIcon, FlowArrowIcon, GitHubIcon } from "../components/landing-page/ui-icons";
-import {
-  ZeroRuntimeIcon,
-  SyntaxIcon,
-  RealCssIcon,
-  TypeSafeIcon,
-  FrameworkIcon,
-  RustIcon,
-} from "../components/landing-page/feature-icons";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -74,8 +65,9 @@ export default async function Home() {
                which would already be mid-progress at load on tall viewports).
                Progressive enhancement — browsers without scroll-driven animations
                just get the pin. */
-            @media (min-width: ${container.hero
-              .split}) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
+            @media (min-width: ${
+              container.hero.split
+            }) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
               @supports (animation-timeline: scroll()) {
                 transform-origin: 50% 30%;
                 animation: ${recede} linear both;
@@ -471,61 +463,21 @@ export default async function Home() {
         >
           <SectionIntro
             eyebrow="why teams pick it"
-            title="Familiar on the surface. Real CSS underneath."
+            title={
+              <>
+                Familiar on the surface.
+                <br />
+                Real CSS underneath.
+              </>
+            }
             css={css`
-              max-width: 550px;
+              align-items: center;
+              text-align: center;
+              margin-inline: auto;
             `}
-          >
-            The styled-components syntax you already know — nesting, keyframes, media queries and
-            all — compiled to static CSS with zero runtime in production.
-          </SectionIntro>
+          />
 
-          <ul
-            css={css`
-              display: grid;
-              grid-template-columns: 1fr;
-              gap: 1px;
-              background: light-dark(${light.beige4}, ${dark.navy4});
-              border: 1px solid light-dark(${light.beige4}, ${dark.navy4});
-              border-radius: 16px;
-              overflow: hidden;
-              list-style: none;
-
-              @container section (min-width: ${container.section.twoCol}) {
-                grid-template-columns: repeat(2, 1fr);
-              }
-
-              @container section (min-width: ${container.section.threeCol}) {
-                grid-template-columns: repeat(3, 1fr);
-              }
-            `}
-          >
-            <Feature title="Zero runtime, RSC-ready" icon={<ZeroRuntimeIcon />}>
-              Every style at build. No styling library ships to the client, and there's no “use
-              client” boundary just to style a server component.
-            </Feature>
-            <Feature title="A syntax you already know" icon={<SyntaxIcon />}>
-              Tagged template literals, prop interpolation, the <Code>css</Code> helper. It's
-              styled-components down to the import, so migration is mostly changing one line.
-            </Feature>
-            <Feature title="Real CSS, fully" icon={<RealCssIcon />}>
-              Nesting, keyframes, media queries, and same-file targeting like{" "}
-              <Code>{"${Other}:hover"}</Code>. Plus new CSS like <Code>@container</Code> and{" "}
-              <Code>:has()</Code> the day the browser ships it, never gated behind a library update.
-            </Feature>
-            <Feature title="Type-safe props" icon={<TypeSafeIcon />}>
-              Typed generics flow into your templates, so a bad <Code>$primary</Code> is a compile
-              error, not a runtime surprise.
-            </Feature>
-            <Feature title="Framework-agnostic" icon={<FrameworkIcon />}>
-              One plugin, many bundlers. Next.js, Vite, react-router and TanStack Start all build
-              the same extracted CSS.
-            </Feature>
-            <Feature title="Rust-powered" icon={<RustIcon />}>
-              Although yak focuses on max user performance, yaks rust compiler makes it also blazing
-              fast during development.
-            </Feature>
-          </ul>
+          <FeatureShowcase />
         </Container>
       </Section>
       <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
