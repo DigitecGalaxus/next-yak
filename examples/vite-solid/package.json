@@ -19,7 +19,7 @@
     "@types/node": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:dev"
+    "@solidjs/vite-plugin": "catalog:dev"
   },
   "packageManager": "pnpm@12.3.1"
 }

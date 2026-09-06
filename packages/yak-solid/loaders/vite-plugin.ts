@@ -12,7 +12,7 @@ export type { ViteYakPluginOptions as ViteYakSolidOptions } from "yak-internals/
  * ```ts
  * // vite.config.ts
  * import { defineConfig } from "vite";
- * import solid from "vite-plugin-solid";
+ * import solid from "@solidjs/vite-plugin";
  * import { yak } from "@yak/solid/vite";
  *
  * export default defineConfig({
@@ -22,7 +22,7 @@ export type { ViteYakPluginOptions as ViteYakSolidOptions } from "yak-internals/
  */
 export const yak = createViteYakPlugin({
   name: "@yak/solid",
-  // vite-plugin-solid owns HMR for Solid components
+  // @solidjs/vite-plugin owns HMR for Solid components
   reactRefreshReg: false,
   excludePattern: /packages\/yak-solid/,
   foldStatic: true,

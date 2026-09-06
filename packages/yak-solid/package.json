@@ -92,7 +92,7 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:dev",
+    "@solidjs/vite-plugin": "catalog:dev",
     "vitest": "catalog:dev",
     "yak-internals": "workspace:*"
   },

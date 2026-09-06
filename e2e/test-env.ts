@@ -16,7 +16,7 @@ declare global {
 
 import { readFile, writeFile, copyFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import type { Page, TestInfo } from "@playwright/test";
+import type { ConsoleMessage, Page, TestInfo } from "@playwright/test";
 
 export interface TestEnv {
   /** Absolute path to the .tmp/cases/<case> dir */
@@ -31,7 +31,18 @@ export interface TestEnv {
   writeFile(rel: string, content: string): Promise<void>;
   /** Restore a file from the original case source */
   resetFile(rel: string): Promise<void>;
+  /**
+   * Every test fails on browser console errors and warnings and on page
+   * errors. A case that provokes them on purpose (a syntax error written
+   * into a source file) opts out here and says why.
+   */
+  expectConsoleErrors(reason: string): void;
 }
+
+/** console output every bundler emits that carries no signal */
+const BENIGN_MESSAGES: RegExp[] = [];
+/** failed requests that are not the app's fault: Chrome asks for a favicon on every page */
+const BENIGN_URLS = [/\/favicon\.ico$/];
 
 /** "index.tsx" -> "index.solid.tsx" (matches the copyCase rename in e2eEnvironment.ts) */
 function frameworkVariantName(rel: string, framework: string): string {
@@ -54,6 +65,22 @@ export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page)
     const srcDir = resolve(e2eRoot, "cases", caseName);
 
     const originals = new Map<string, string>();
+
+    const consoleFailures: string[] = [];
+    let consoleErrorsExpected: string | undefined;
+    const onConsole = (message: ConsoleMessage) => {
+      const type = message.type();
+      if (type !== "error" && type !== "warning") return;
+      const text = message.text();
+      if (BENIGN_MESSAGES.some((pattern) => pattern.test(text))) return;
+      if (BENIGN_URLS.some((pattern) => pattern.test(message.location().url))) return;
+      consoleFailures.push(`console.${type}: ${text}`);
+    };
+    const onPageError = (error: Error) => {
+      consoleFailures.push(`pageerror: ${error.message}`);
+    };
+    page.on("console", onConsole);
+    page.on("pageerror", onPageError);
 
     const testEnv: TestEnv = {
       cwd: tmpDir,
@@ -85,14 +112,39 @@ export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page)
         }
         await copyFile(join(srcDir, rel), join(tmpDir, rel));
       },
+      expectConsoleErrors(reason: string) {
+        consoleErrorsExpected = reason;
+      },
     };
 
+    const report = () =>
+      `${consoleFailures.length} unexpected browser console message(s):\n` +
+      consoleFailures.map((line) => `  - ${line}`).join("\n");
     try {
       await fn(testEnv, page);
+    } catch (error) {
+      // the assertion is the failure; the console output is the likely cause
+      if (consoleFailures.length > 0) console.log(`[${bundlerDirName}/${caseName}] ${report()}`);
+      throw error;
     } finally {
+      page.off("console", onConsole);
+      page.off("pageerror", onPageError);
       for (const [rel, original] of originals) {
         await writeFile(join(tmpDir, rel), original).catch(() => {});
       }
+    }
+
+    if (consoleFailures.length === 0) return;
+    if (consoleErrorsExpected) {
+      console.log(
+        `[${bundlerDirName}/${caseName}] expected (${consoleErrorsExpected}): ${report()}`,
+      );
+    } else if (process.env.YAK_E2E_CONSOLE_SOFT) {
+      console.warn(`[${bundlerDirName}/${caseName}] ${report()}`);
+    } else {
+      throw new Error(
+        `${report()}\n\nIf this output is expected, call testEnv.expectConsoleErrors("why").`,
+      );
     }
   };
 }
