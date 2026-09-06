@@ -251,8 +251,6 @@ const Elem = (props) => (
 );
 ```
 
-Handing the sources over separately keeps the call itself free of reads. The Solid helper copies the property descriptors instead of spreading them, so no prop getter runs before the element takes its hydration key, and `class` and `style` stay live bindings that update in place.
-
 #### Transform CSS
 
 The next step is to extract the CSS to a comment in the source code. This is useful because the transformation should happen
