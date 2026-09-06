@@ -6,7 +6,7 @@ type Theme = { accent: string; mode: string };
 const theme: Theme = { accent: "rgb(0, 128, 0)", mode: "dark" };
 
 const Panel = styled.div.attrs((props) => ({
-  "data-mode": (props.theme() as Theme).mode,
+  title: (props.theme() as Theme).mode,
 }))`
   color: ${({ theme }) => (theme() as Theme).accent};
 `;

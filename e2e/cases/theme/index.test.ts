@@ -7,7 +7,7 @@ test(
     await page.goto(testEnv.url);
     const panel = page.getByTestId("panel");
     await expect(panel).toHaveCSS("color", "rgb(0, 128, 0)");
-    await expect(panel).toHaveAttribute("data-mode", "dark");
+    await expect(panel).toHaveAttribute("title", "dark");
     await expect(panel).not.toHaveAttribute("theme");
   }),
 );
