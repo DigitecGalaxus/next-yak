@@ -6,8 +6,8 @@
     ".": "./test-env.ts"
   },
   "scripts": {
-    "test": "node runDevTests.ts",
-    "test:build": "node runBuildTests.ts"
+    "test": "node ../scripts/e2e-exists.mjs && node runDevTests.ts",
+    "test:build": "node ../scripts/e2e-exists.mjs && node runBuildTests.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:dev",

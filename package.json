@@ -18,7 +18,7 @@
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "lint": "pnpm run --filter=eslint-plugin-yak build && oxlint && knip",
+    "lint": "pnpm run --filter=eslint-plugin-yak build && oxlint && knip && node scripts/e2e-exists.mjs",
     "lint:fix": "pnpm run --filter=eslint-plugin-yak build && oxlint --fix",
     "lint:knip": "knip",
     "format:rust": "pnpm run --filter=yak-swc format",
