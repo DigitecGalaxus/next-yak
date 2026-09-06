@@ -49,20 +49,20 @@ import type { Accessor } from "solid-js";
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
 //
 /**
- * The element names that exist in both the HTML and the SVG vocabulary.
- *
- * Every other tag tells its namespace by name: `div` is HTML, `circle` is
- * SVG, so the element can be created up front. These four are HTML when
- * written under a `<div>` and SVG when written under an `<svg>`, and the
- * DOM has no element that is both: `<a>` under an `<svg>` created with
- * `document.createElement` is an HTML element the browser never renders.
- * A styled component does not know its parent when it is defined, only
- * when the element is inserted. Solid's `dynamic()` creates the element at
- * that point and reads the namespace from the insertion parent, so these
- * four go through it and keep its memo; the rest use the direct path.
- * Same list as Solid's `AmbiguousSVGElements`.
+ * Tags that are HTML under a `<div>` and SVG under an `<svg>`. Only the parent
+ * decides, so `dynamic()` creates them at insertion time; every other tag is
+ * created up front from its name.
  */
-const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
+const ambiguousSvgTags = new Set([
+  /** the HTML link and the SVG link: an HTML `<a>` inside an svg never renders */
+  "a",
+  /** a page script and SVG's script element, which runs in the svg's scope */
+  "script",
+  /** a page stylesheet and SVG's style element, which styles only the svg */
+  "style",
+  /** the document title and an SVG shape's accessible name, shown as a tooltip */
+  "title",
+]);
 
 /** the compiler's template for one element; a namespaced one is cloned out of its root */
 const elementTemplate = (tag: string) => {
