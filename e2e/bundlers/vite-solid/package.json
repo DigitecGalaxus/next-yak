@@ -13,8 +13,8 @@
     "solid-js": "catalog:core"
   },
   "devDependencies": {
+    "@solidjs/vite-plugin": "catalog:dev",
     "typescript": "catalog:dev",
-    "vite": "catalog:dev",
-    "@solidjs/vite-plugin": "catalog:dev"
+    "vite": "catalog:dev"
   }
 }
