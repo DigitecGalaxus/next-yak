@@ -106,8 +106,9 @@ file. Variants therefore import siblings by their unmarked names, and the
 shared `index.test.ts` needs no changes. Tests can branch on
 `testEnv.framework` when the frameworks behave differently.
 
-A case without an `index.tsx` is exclusive to the framework of its variants:
-React bundlers skip it. Helper files in such a case need no `.solid.` marker.
+Every case has an `index.tsx`, an `index.test.ts`, and a React twin for each
+`.solid.` variant; `checkCaseLayout.ts` checks that layout when the runner
+starts, so a case cannot run on one framework only by accident.
 
 ## Adding a test case
 

@@ -14,7 +14,9 @@ import {
   runBundlerCases,
   printSummary,
 } from "./e2eEnvironment.ts";
+import { checkCaseLayout } from "./checkCaseLayout.ts";
 
+checkCaseLayout();
 const discoveredBundlers = await discoverBundlers();
 const allCases = await discoverCases();
 const { bundlers, cases } = parseCLIArgs(discoveredBundlers, allCases);
