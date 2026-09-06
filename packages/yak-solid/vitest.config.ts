@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -9,8 +9,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     include: ["runtime/__tests__/**/*.test.{ts,tsx}"],
-    // server rendering has its own project: vitest.ssr.config.ts
-    exclude: ["runtime/__tests__/ssr/**"],
   },
   resolve: {
     // run tests against the uncompiled TS runtime

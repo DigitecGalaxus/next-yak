@@ -16,10 +16,10 @@
     "solid-js": "catalog:solid"
   },
   "devDependencies": {
+    "@solidjs/vite-plugin": "catalog:solid",
     "@types/node": "catalog:dev",
     "typescript": "catalog:dev",
-    "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:solid"
+    "vite": "catalog:dev"
   },
   "packageManager": "pnpm@11.9.0"
 }

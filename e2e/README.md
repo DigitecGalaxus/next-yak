@@ -72,12 +72,29 @@ YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
 (or unset) keeps folding on. The runner prints the active mode at startup and in
 the summary.
 
+## Console output fails a test
+
+Every test runs through `withTestEnv`, which listens to the page's console
+and fails the test on `console.error`, `console.warning` and page errors. A
+React or Solid hydration mismatch is reported that way, so every bundler that
+server-renders gets a hydration check for free. A case that provokes errors
+on purpose calls `testEnv.expectConsoleErrors("why")` first. Set
+`YAK_E2E_CONSOLE_SOFT=1` to log instead of fail, for example when adding a
+bundler and collecting what it prints; messages every bundler emits without
+signal go into `BENIGN_MESSAGES` in `test-env.ts`.
+
 ## Frameworks
 
 Bundlers render with React by default. A bundler can declare a different
 framework in its Playwright config (`framework: "solid"` in
 `bundlers/vite-solid/playwright.config.ts`); such bundlers only run cases that
 provide a framework variant.
+
+`vite-solid` server-renders each case and hydrates it: `server.mjs` runs Vite
+in middleware mode for `dev` (HMR included) and serves the built client and
+server bundles for `start`. Each case has its own page, server entry and client
+entry, expanded from the `[case-name]` templates, so a page only carries its
+own CSS.
 
 Port a case to Solid by adding an `index.solid.tsx` next to the React
 `index.tsx`: same `data-testid`s, importing `@yak/solid` instead of

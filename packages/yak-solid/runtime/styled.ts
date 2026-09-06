@@ -48,7 +48,14 @@ import type { Accessor } from "solid-js";
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/constructors/styled.tsx
 // https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
 //
-const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
+// Element names HTML and SVG share. Solid picks the namespace from the parent
+// at insertion time, so it cannot be decided when the styled component is made.
+const ambiguousSvgTags = new Set([
+  "a", // the HTML link and the SVG link element
+  "script", // a document script and SVG's embedded script element
+  "style", // a document stylesheet and SVG's embedded stylesheet element
+  "title", // the document title and SVG's accessible name for a shape
+]);
 
 /** the compiler's template for one element; a namespaced one is cloned out of its root */
 const elementTemplate = (tag: string) => {
@@ -69,10 +76,12 @@ const elementRenderer = (tag: string): ((props: Record<PropertyKey, unknown>) =>
   // `dynamic()` resolves at insertion time. Its memo takes a hydration id,
   // so the server goes through it as well
   if (ambiguousSvgTags.has(tag)) {
-    return dynamic(() => tag) as (props: Record<PropertyKey, unknown>) => JSX.Element;
+    return dynamic(() => tag);
   }
   if (isServer) {
-    // `yakProps` returns the serializer for the element (see there)
+    // `yakProps` returns the serializer for the element instead of a props
+    // object (see there); a props record and a function do not overlap, so
+    // the cast has to go through `unknown`
     return (render) => (render as unknown as () => JSX.Element)();
   }
   const create = elementTemplate(tag);
@@ -85,7 +94,7 @@ const elementRenderer = (tag: string): ((props: Record<PropertyKey, unknown>) =>
       untrack(() => !("children" in props)),
     );
     runHydrationEvents();
-    return el as unknown as JSX.Element;
+    return el;
   };
 };
 
@@ -160,9 +169,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     // target is called directly, which also leaves a prop named `component`
     // free for the author to use.
     const isTag = typeof targetComponent === "string";
-    const tag = isTag ? (targetComponent as string) : undefined;
+    const tag = isTag ? targetComponent : undefined;
     const renderTarget = isTag
-      ? elementRenderer(targetComponent as string)
+      ? elementRenderer(targetComponent)
       : (finalProps: Record<PropertyKey, unknown>) =>
           createComponent(
             targetComponent as (props: Record<PropertyKey, unknown>) => JSX.Element,

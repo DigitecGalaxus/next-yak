@@ -73,7 +73,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "test": "vitest run && vitest run --config vitest.ssr.config.ts",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:types": "tsc -p tsconfig.json && tsc -p runtime/__tests__/tsconfig.json",
     "prepublishOnly": "pnpm build && pnpm test && pnpm test:types"
@@ -84,6 +84,7 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
+    "@solidjs/vite-plugin": "catalog:solid",
     "@solidjs/web": "catalog:solid",
     "@testing-library/jest-dom": "catalog:dev",
     "@types/node": "catalog:dev",
@@ -92,12 +93,12 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:solid",
     "vitest": "catalog:dev",
     "yak-internals": "workspace:*"
   },
   "peerDependencies": {
-    "solid-js": ">=2.0.0-rc.5",
+    "@solidjs/web": ">=2.0.0-rc.6",
+    "solid-js": ">=2.0.0-rc.6",
     "vite": ">=7.0.0"
   },
   "peerDependenciesMeta": {
