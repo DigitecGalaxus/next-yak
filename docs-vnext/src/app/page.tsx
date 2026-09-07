@@ -9,7 +9,6 @@ import Bar from "../components/landing-page/bench-bar";
 import { cardStyles } from "../components/landing-page/card";
 import Eyebrow from "../components/landing-page/eyebrow";
 import SectionIntro, { SectionHeading, SubHeading } from "../components/landing-page/section-intro";
-import Coverage from "../components/landing-page/coverage";
 import { Container, Section } from "../components/landing-page/section";
 import { FRAMEWORKS } from "../components/landing-page/framework-icons";
 import { ArrowRightIcon, GitHubIcon } from "../components/landing-page/ui-icons";
@@ -222,7 +221,7 @@ export default async function Home() {
             <HeroEditor />
           </div>
         </section>
-        <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
+        <Section>
           <Container
             css={css`
               padding-top: clamp(48px, 7vw, 88px);
@@ -453,7 +452,7 @@ export default async function Home() {
           </Container>
         </Section>
       </div>
-      <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
+      <Section>
         <Container
           css={css`
             padding-top: clamp(56px, 7vw, 84px);
@@ -479,7 +478,7 @@ export default async function Home() {
           <FeatureShowcase />
         </Container>
       </Section>
-      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave>
+      <Section>
         <Container
           css={css`
             padding-top: clamp(48px, 6vw, 72px);
@@ -493,47 +492,15 @@ export default async function Home() {
               max-width: 530px;
             `}
           >
-            A Rust SWC plugin rewrites your styled components at compile time. Static styles become
-            a class; dynamic values ride on inline CSS variables.
+            A Rust SWC plugin rewrites your styled components at compile time, inside whichever
+            bundler you use. Static styles become a class; dynamic values ride on inline CSS
+            variables.
           </SectionIntro>
 
           <Pipeline />
         </Container>
       </Section>
-      <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
-        <Container
-          css={css`
-            padding-top: clamp(56px, 7vw, 84px);
-            padding-bottom: clamp(64px, 9vw, 104px);
-          `}
-        >
-          <div
-            css={css`
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 16px;
-            `}
-          >
-            <Eyebrow>coverage</Eyebrow>
-            <SectionHeading>
-              One API.
-              <br />
-              Every bundler that matters.
-            </SectionHeading>
-            <SubHeading
-              css={css`
-                max-width: 460px;
-              `}
-            >
-              yak compiles to a plain stylesheet, so it fits the stack you already use. Choose your
-              framework to see the bundlers and meta-frameworks it works with.
-            </SubHeading>
-          </div>
-          <Coverage />
-        </Container>
-      </Section>
-      <Section background={`light-dark(${light.beige3}, ${dark.navy3})`} wave="top">
+      <Section>
         <Container
           css={css`
             padding-top: clamp(56px, 7vw, 80px);
