@@ -25,17 +25,3 @@ export function GitHubIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
-
-export function FlowArrowIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon viewBox="0 0 40 16" width={40} height={16} {...props}>
-      <path
-        d="M2 8h34M30 3l6 5-6 5"
-        stroke="#f2462e"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Icon>
-  );
-}
