@@ -36,7 +36,7 @@ export { light, dark, ink, status, headerBg, scrim } from "./theme/palette.yak";
 export const shadow = {
   card: "0 18px 44px -14px rgba(8, 4, 20, 0.55)",
   popover: "0 16px 40px -10px rgba(15, 3, 38, 0.5)",
-  indicator: "0 1px 3px light-dark(rgba(31, 10, 77, 0.16), rgba(0, 0, 0, 0.4))", // coverage tab pill
+  indicator: "0 1px 3px light-dark(rgba(31, 10, 77, 0.16), rgba(0, 0, 0, 0.4))", // segmented tab pill
 } as const;
 
 // The code-highlight (shiki) palette. Raw hex — NOT CSS vars — because it's consumed at
@@ -107,10 +107,10 @@ export const container = {
     twoCol: "740px", // feature concept cards 1 → 2 columns (each needs ~360px for its code slice)
     figureRow: "560px", // benchmark caption stacks → row
     splitRow: "640px", // rename block: mascot beside the copy
-    statGrid: "700px", // stat cards 2 → 4 col; coverage terminal beside "works with"
+    statGrid: "700px", // stat cards 2 → 4 col
     annotateOne: "800px", // feature callout cards line up on one side of the editor, snapped to code lines
     annotate: "980px", // feature callout cards flank the editor on both sides
-    flow: "940px", // how-it-works pipeline: stacked → input · plugin · outputs row
+    flow: "960px", // how-it-works pipeline: stacked → yours · plugin · outputs row
   },
   hero: {
     split: "950px", // hero copy beside the editor
