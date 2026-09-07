@@ -110,7 +110,7 @@ export const container = {
     statGrid: "700px", // stat cards 2 → 4 col; coverage terminal beside "works with"
     annotateOne: "800px", // feature callout cards line up on one side of the editor, snapped to code lines
     annotate: "980px", // feature callout cards flank the editor on both sides
-    flow: "800px", // how-it-works steps reflow into the 3-col diagram
+    flow: "940px", // how-it-works pipeline: stacked → input · plugin · outputs row
   },
   hero: {
     split: "950px", // hero copy beside the editor

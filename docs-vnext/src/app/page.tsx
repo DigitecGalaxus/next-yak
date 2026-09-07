@@ -1,10 +1,9 @@
-import { css, keyframes, styled } from "next-yak";
+import { css, keyframes } from "next-yak";
 import CtaButton from "../components/landing-page/cta-button";
-import CodePanel from "../components/landing-page/code-panel";
 import HeroEditor from "../components/landing-page/hero-editor";
 import Badge from "../components/landing-page/badge";
 import FeatureShowcase from "../components/landing-page/feature-showcase";
-import Step from "../components/landing-page/step";
+import Pipeline from "../components/landing-page/pipeline";
 import StatCard from "../components/landing-page/stat-card";
 import Bar from "../components/landing-page/bench-bar";
 import { cardStyles } from "../components/landing-page/card";
@@ -13,7 +12,7 @@ import SectionIntro, { SectionHeading, SubHeading } from "../components/landing-
 import Coverage from "../components/landing-page/coverage";
 import { Container, Section } from "../components/landing-page/section";
 import { FRAMEWORKS } from "../components/landing-page/framework-icons";
-import { ArrowRightIcon, FlowArrowIcon, GitHubIcon } from "../components/landing-page/ui-icons";
+import { ArrowRightIcon, GitHubIcon } from "../components/landing-page/ui-icons";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -498,95 +497,7 @@ export default async function Home() {
             a class; dynamic values ride on inline CSS variables.
           </SectionIntro>
 
-          <div
-            css={css`
-              display: grid;
-              gap: 24px;
-              grid-template-columns: 1fr;
-
-              & > *:nth-child(6) {
-                display: none;
-              }
-
-              /* wide enough: reflow into [code · plugin · code] over the 3 steps */
-              @container section (min-width: ${container.section.flow}) {
-                grid-template-columns: repeat(3, 1fr);
-
-                & > *:nth-child(1) {
-                  order: 4;
-                } /* Step 1 — Write */
-                & > *:nth-child(2) {
-                  order: 1;
-                } /* code in — Button.tsx */
-                & > *:nth-child(3) {
-                  order: 5;
-                } /* Step 2 — Compile */
-                & > *:nth-child(4) {
-                  order: 6;
-                } /* Step 3 — Ship */
-                & > *:nth-child(5) {
-                  order: 3;
-                } /* code out */
-                & > *:nth-child(6) {
-                  order: 2;
-                  display: flex;
-                } /* plugin / arrow */
-              }
-            `}
-          >
-            <Step n={1} title="Write">
-              Author components with the styled API you already know.
-            </Step>
-            <PanelColumn>
-              <CodePanel title="Button.tsx" blocks={[{ code: WRITE_CODE, lang: "tsx" }]} />
-            </PanelColumn>
-            <Step n={2} title="Compile">
-              The Rust SWC plugin extracts static styles into a CSS file.
-            </Step>
-            <Step n={3} title="Ship">
-              Browser loads a plain stylesheet. No styling runtime.
-            </Step>
-            <PanelColumn>
-              <CodePanel
-                title="Button.css"
-                blocks={[
-                  { code: OUTPUT_CSS, lang: "css" },
-                  { code: SHIP_HTML, lang: "tsx" },
-                ]}
-              />
-            </PanelColumn>
-            <div
-              css={css`
-                display: flex;
-                flex: 0 0 auto;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 14px;
-                padding: 0 8px;
-                font-family: ${fonts.mono};
-                font-size: 13px;
-              `}
-            >
-              <span
-                css={css`
-                  font-weight: 700;
-                  letter-spacing: 0.88px;
-                  white-space: nowrap;
-                `}
-              >
-                RUST SWC PLUGIN
-              </span>
-              <FlowArrowIcon />
-              <span
-                css={css`
-                  letter-spacing: 0.44px;
-                `}
-              >
-                build time
-              </span>
-            </div>
-          </div>
+          <Pipeline />
         </Container>
       </Section>
       <Section background={`light-dark(${light.beige2}, ${dark.navy2})`}>
@@ -752,25 +663,6 @@ const BENCH_ROWS = [
   { label: "styled-components", value: "55,753", percent: 25.7 },
   { label: "Emotion", value: "31,789", percent: 14.7 },
 ];
-
-const WRITE_CODE = `const Button = styled.button\`
-  font-size: 1.5em;
-  color: palevioletred;
-  &:hover { color: red; }
-\`;`;
-
-const OUTPUT_CSS = `.button_x7a {
-  font-size: 1.5em;
-  color: palevioletred;
-}
-.button_x7a:hover { color: red; }`;
-
-const SHIP_HTML = `<button class="button_x7a" />`;
-
-const PanelColumn = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
 
 const recede = keyframes`
   to {

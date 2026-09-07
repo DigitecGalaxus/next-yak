@@ -8,6 +8,7 @@ import { subsectionHeading } from "@/lib/mixins";
 import { cardStyles } from "./card";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { EditorDots } from "./editor-dots";
+import { tourTimeline, tourWindow } from "@/lib/scroll-tour";
 
 export type Callout = {
   title: string;
@@ -37,8 +38,8 @@ const ROWS_BEFORE_CODE = 2;
  * line, padding): the editor spans all rows, so a card on `grid-row: line + 2 / span n`
  * lands level with its lines. From `annotate` the cards sit three a side, from
  * `annotateOne` they queue in one compact column. Scrolling tours the callouts: each has
- * a highlight band on its rows, and a view timeline on the grid gives band and card
- * consecutive windows of the scroll range. Pure CSS, progressive enhancement.
+ * a highlight band on its rows, and a view timeline on the grid (lib/scroll-tour) gives band
+ * and card consecutive windows of the scroll range. Pure CSS, progressive enhancement.
  *
  * Narrower sections drop the editor and each card shows its own slice of the code
  * instead; a card picks stacked or copy-beside-code from its own width.
@@ -147,8 +148,7 @@ export default function FeatureShowcaseView({
   );
 }
 
-/* a band fades in over the first fifth of its window and out over the last fifth, so
-   neighbouring bands cross-fade instead of popping */
+/* fades in over the first fifth of its turn and out over the last fifth */
 const bandReveal = keyframes`
   0%,
   100% {
@@ -171,15 +171,6 @@ const leaderAccent = keyframes`
   90% {
     --leader: var(--leader-on);
   }
-`;
-
-/* the slice of the grid's scroll range a callout owns: window i of --n, spread over the
-   middle 70% of the grid's trip through the viewport, each overlapping its neighbours
-   by --tour-overlap so the hand-over is a cross-fade */
-const tourWindow = css`
-  animation-timeline: --showcase;
-  animation-range: cover calc(var(--tour-start) + var(--i) * var(--tour-step) - var(--tour-overlap))
-    cover calc(var(--tour-start) + (var(--i) + 1) * var(--tour-step) + var(--tour-overlap));
 `;
 
 const Grid = styled.div`
@@ -212,11 +203,8 @@ const Grid = styled.div`
     column-gap: var(--col-gap);
     row-gap: 0;
 
-    /* the scroll tour's timeline and pacing (see tourWindow) */
-    view-timeline: --showcase block;
-    --tour-start: 15%;
-    --tour-step: calc(70% / var(--n));
-    --tour-overlap: 2%;
+    /* the scroll tour that walks the callouts (lib/scroll-tour) */
+    ${tourTimeline};
   }
 
   @container section (min-width: ${container.section.annotate}) {
