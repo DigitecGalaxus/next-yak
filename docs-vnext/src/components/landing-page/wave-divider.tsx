@@ -2,7 +2,7 @@ import { css } from "next-yak";
 import { light, dark } from "@/tokens";
 
 // Fills BELOW the curve down to the strip's bottom edge (29.86 ≈ 38px / the 1.2727
-// scale) with the section's own background, so the area above the wave is genuine
+// scale) with the owning section's tone, so the area above the wave is genuine
 // transparency — the pinned hero shows through the performance section's top edge
 // as it scrolls over. <Section> clips its background out of the strip to match.
 const FILL_PATH =
@@ -11,25 +11,20 @@ const FILL_PATH =
 const LINE_PATH =
   "M0 9.5C62.8 15.1667 125.6 15.1667 188.4 9.5C285.2 -1.5 382 -1.5 478.8 9.5C559.533 18.0333 640.3 18.0333 721.1 9.5C799.9 2.36667 878.7 2.36667 957.5 9.5C1039.37 20.7667 1121.23 20.7667 1203.1 9.5C1228.77 3.03333 1254.4 3.03333 1280 9.5";
 
-export default function WaveDivider({
-  background,
-  flip = false,
-}: {
-  /** The owning section's background — becomes the below-curve fill. */
-  background: string;
-  flip?: boolean;
-}) {
+export default function WaveDivider({ flip = false }: { flip?: boolean }) {
   return (
     <svg
       viewBox="0 0 1280 38"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="none"
-      style={{ color: background, transform: flip ? "scaleY(-1)" : undefined }}
+      style={{ transform: flip ? "scaleY(-1)" : undefined }}
       css={css`
         display: block;
         width: 100%;
         height: 38px;
+        /* the owning <Section>'s tone becomes the below-curve fill */
+        color: var(--section-bg);
 
         & > path:first-of-type {
           fill: currentColor;

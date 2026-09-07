@@ -1,40 +1,35 @@
-import { css, styled } from "next-yak";
+import { styled } from "next-yak";
 import type { CSSProperties, ReactNode } from "react";
-import { maxContentWidth } from "@/tokens";
+import { maxContentWidth, light, dark } from "@/tokens";
 import WaveDivider from "./wave-divider";
 
 /**
- * A full-width landing-page section. Sets the background and, when `wave` is set,
- * adds the in-flow wave dividers used between the beige bands: `true` for both
- * edges, or `"top"`/`"bottom"` for one — the last section uses `"top"` so the page
- * doesn't end on a scalloped edge. Pair with <Container> for the padded inner column.
+ * A full-width landing-page section. Sections alternate between the page's beige and
+ * the raised beige by position, so no section declares a colour: odd `<section>`s
+ * among their siblings are the page tone, even ones the raised tone (see Outer). The
+ * hero wrapper holds exactly two sections (the plain hero and the performance section),
+ * so the count carries on correctly for the sections after it; keep it at an even
+ * number if that block ever changes.
+ *
+ * The raised bands carve wavy edges into the page tone: every even section gets the
+ * in-flow wave dividers on both edges, page-tone sections none (a wave in the page's
+ * own colour would be invisible, and two waves on one boundary clash). Pair with
+ * <Container> for the padded column.
  */
 export function Section({
-  background,
-  wave = false,
   className,
   style,
   children,
 }: {
-  background: string;
-  wave?: boolean | "top" | "bottom";
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
 }) {
-  const top = wave === true || wave === "top";
-  const bottom = wave === true || wave === "bottom";
   return (
-    <Outer
-      $bg={background}
-      $waveTop={top}
-      $waveBottom={bottom}
-      className={className}
-      style={style}
-    >
-      {top ? <WaveDivider background={background} /> : null}
+    <Outer className={className} style={style}>
+      <WaveDivider />
       {children}
-      {bottom ? <WaveDivider background={background} flip /> : null}
+      <WaveDivider flip />
     </Outer>
   );
 }
@@ -64,32 +59,35 @@ export const Container = styled.div`
   }
 `;
 
-const Outer = styled.section<{ $bg: string; $waveTop: boolean; $waveBottom: boolean }>`
+const Outer = styled.section`
+  /* The band's tone, by position: the page's own beige for odd sections, the raised
+     beige for even ones. The wave dividers read the same variable for their fill. */
+  --section-bg: light-dark(${light.beige2}, ${dark.navy2});
+
   /* The background is painted as a clipped layer so the wave-divider strips stay
      unpainted: the divider's own below-curve fill supplies the wavy edge there and
      the area above the curve is real transparency (the pinned hero shows through).
      The clip stops 1px inside each strip so the two same-color layers overlap
-     instead of meeting at an anti-aliased hairline seam. */
-  --section-bg: ${({ $bg }) => $bg};
+     instead of meeting at an anti-aliased hairline seam. Page-tone sections have no
+     strips (their waves are hidden), so their clip is zero. */
   background-image: linear-gradient(var(--section-bg), var(--section-bg));
   background-repeat: no-repeat;
-  background-position: 0 var(--wave-clip-top, 0px);
-  background-size: 100% calc(100% - var(--wave-clip-top, 0px) - var(--wave-clip-bottom, 0px));
+  background-position: 0 var(--wave-clip, 0px);
+  background-size: 100% calc(100% - 2 * var(--wave-clip, 0px));
 
-  ${({ $waveTop }) =>
-    $waveTop &&
-    css`
-      --wave-clip-top: 37px;
-    `}
-  ${({ $waveBottom }) =>
-    $waveBottom &&
-    css`
-      --wave-clip-bottom: 37px;
-    `}
-  ${({ $waveTop, $waveBottom }) =>
-    ($waveTop || $waveBottom) &&
-    css`
-      position: relative;
-      z-index: 0;
-    `}
+  & > svg {
+    display: none;
+  }
+
+  /* raised: the other beige, and waves on both edges */
+  &:nth-of-type(even) {
+    --section-bg: light-dark(${light.beige3}, ${dark.navy3});
+    --wave-clip: 37px;
+    position: relative;
+    z-index: 0;
+
+    & > svg {
+      display: block;
+    }
+  }
 `;
