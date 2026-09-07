@@ -7,7 +7,16 @@ import Link from "next/link";
 import NavLink from "./nav-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
-import { screen, fonts, headerHeight, maxContentWidth, typography, light, dark, headerBg } from "@/tokens";
+import {
+  screen,
+  fonts,
+  headerHeight,
+  maxContentWidth,
+  typography,
+  light,
+  dark,
+  headerBg,
+} from "@/tokens";
 import Yak from "./yak";
 
 export default function Header({
@@ -77,6 +86,10 @@ export default function Header({
             >
               yak
             </span>
+            <RenameNote>
+              yak, formerly next-yak. Same library, same team, broader home: the package is now
+              @yak/react, with @yak/solid and @yak/qwik beside it.
+            </RenameNote>
           </Link>
           <DesktopLinks>
             <NavLink href="/documentation/getting-started">Documentation</NavLink>
@@ -125,4 +138,16 @@ const DesktopActions = styled.div`
   @container header (max-width: ${screen.nav}) {
     display: none;
   }
+`;
+
+/* The rename, for screen readers, crawlers and language models rather than for eyes:
+   visually hidden but in the accessibility tree and the HTML of every page, so the old
+   name stays associated with the new one. */
+const RenameNote = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 `;

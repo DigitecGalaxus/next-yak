@@ -4,9 +4,7 @@ import HeroEditor from "../components/landing-page/hero-editor";
 import Badge from "../components/landing-page/badge";
 import FeatureShowcase from "../components/landing-page/feature-showcase";
 import Pipeline from "../components/landing-page/pipeline";
-import StatCard from "../components/landing-page/stat-card";
-import Bar from "../components/landing-page/bench-bar";
-import { cardStyles } from "../components/landing-page/card";
+import Footer from "../components/landing-page/footer";
 import Eyebrow from "../components/landing-page/eyebrow";
 import SectionIntro, { SectionHeading, SubHeading } from "../components/landing-page/section-intro";
 import { Container, Section } from "../components/landing-page/section";
@@ -500,106 +498,7 @@ export default async function Home() {
           <Pipeline />
         </Container>
       </Section>
-      <Section>
-        <Container
-          css={css`
-            padding-top: clamp(56px, 7vw, 80px);
-            padding-bottom: clamp(64px, 8vw, 96px);
-          `}
-        >
-          <div
-            css={css`
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 28px;
-
-              @container section (min-width: ${container.section.splitRow}) {
-                flex-direction: row;
-                align-items: center;
-                gap: 48px;
-              }
-            `}
-          >
-            <div
-              css={css`
-                display: flex;
-                flex: 0 0 auto;
-                align-items: center;
-                gap: 18px;
-              `}
-            >
-              <Yak
-                css={css`
-                  width: 120px;
-                  height: auto;
-                `}
-              />
-              <div
-                css={css`
-                  display: flex;
-                  flex-direction: column;
-                  gap: 2px;
-                  font-family: ${fonts.mono};
-                `}
-              >
-                <span
-                  css={css`
-                    font-size: 13px;
-                    color: light-dark(${light.violetSoft}, ${dark.fog});
-                  `}
-                >
-                  next-yak
-                </span>
-                <span
-                  css={css`
-                    font-size: 18px;
-                    font-weight: ${fontWeight.bold};
-                    color: light-dark(${light.violet}, ${dark.white});
-                  `}
-                >
-                  → Yak CSS
-                </span>
-              </div>
-            </div>
-            <div
-              css={css`
-                display: flex;
-                flex: 1;
-                min-width: 0;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-              `}
-            >
-              <Eyebrow>the rename</Eyebrow>
-              <SectionHeading>It outgrew the name.</SectionHeading>
-              <SubHeading>
-                We started as next-yak — built first for Next.js. But the project now spans React,
-                Solid, and Qwik across every modern bundler. Tying the name to one framework
-                undersold the reach.
-              </SubHeading>
-              <p
-                css={css`
-                  line-height: 24px;
-                `}
-              >
-                So it's <b>Yak CSS</b> now. Same library, same team, broader home.{" "}
-                {/* TODO: point at a dedicated rename/story page once it exists */}
-                <a
-                  href="/documentation/getting-started"
-                  css={css`
-                    color: light-dark(${light.red}, ${dark.red});
-                    font-weight: ${fontWeight.bold};
-                  `}
-                >
-                  Read the full story →
-                </a>
-              </p>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      <Footer />
     </>
   );
 }
