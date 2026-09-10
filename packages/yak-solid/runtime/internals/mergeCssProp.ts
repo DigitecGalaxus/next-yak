@@ -23,11 +23,6 @@ const lastWith = (sources: Source[], key: string): Source | undefined => {
  * ```tsx
  * <button {...__yak_mergeCssProp(css("yak1"), { class: "a" }, props, { style: s })} />
  * ```
- * Optimized to not read the sources and therefore not invoke their Solid
- * getters: the descriptors are copied untouched, and `class` and `style` are
- * resolved by whoever reads them. A getter invoked here would run before the
- * element takes its hydration key on the server but after it on the client,
- * and a `children` getter that renders would then take its id on one side only.
  */
 export const mergeCssProp = (
   cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,

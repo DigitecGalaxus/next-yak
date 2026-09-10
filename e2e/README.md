@@ -90,7 +90,7 @@ framework in its Playwright config (`framework: "solid"` in
 `bundlers/vite-solid/playwright.config.ts`); such bundlers only run cases that
 provide a framework variant.
 
-`vite-solid` server-renders each case and hydrates it: `server.mjs` runs Vite
+`vite-solid` server-renders each case and hydrates it: `server.ts` runs Vite
 in middleware mode for `dev` (HMR included) and serves the built client and
 server bundles for `start`. Each case has its own page, server entry and client
 entry, expanded from the `[case-name]` templates, so a page only carries its

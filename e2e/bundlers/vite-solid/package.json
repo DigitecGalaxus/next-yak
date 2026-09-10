@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && node server.mjs",
+    "dev": "cd .tmp && node server.ts",
     "build": "cd .tmp && vite build && vite build --ssr",
-    "start": "cd .tmp && node server.mjs --prod"
+    "start": "cd .tmp && node server.ts --prod"
   },
   "dependencies": {
     "@solidjs/web": "catalog:core",
