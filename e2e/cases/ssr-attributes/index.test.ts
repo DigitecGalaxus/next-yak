@@ -52,6 +52,12 @@ test(
         expect(div).not.toHaveProperty("data-ref");
       }
       expect(serverAttributes(html, "dynamic-div")["data-attrs"]).toBe("yes");
+      // innerHTML won over the unread textContent getter (which throws on the server)
+      for (const id of ["unread-div", "unread-a"]) {
+        expect(html).toMatch(
+          new RegExp(`<(?:div|a)\\b(?:[^>"]|"[^"]*")*data-testid="${id}"(?:[^>"]|"[^"]*")*><b>raw</b></(?:div|a)>`),
+        );
+      }
     }
 
     await page.goto(testEnv.url);
@@ -85,6 +91,9 @@ test(
         await expect(div).toHaveAttribute("data-attrs", "yes");
         await expect(anchor).toHaveAttribute("data-attrs", "yes");
       }
+    }
+    for (const id of ["unread-div", "unread-a"]) {
+      await expect(page.getByTestId(id).locator("b")).toHaveText("raw");
     }
   }),
 );

@@ -48,6 +48,16 @@ export default function App() {
       <DynamicAnchor data-testid="dynamic-a" $tone="rgb(255, 0, 0)" {...special}>
         text
       </DynamicAnchor>
+      <DynamicDiv
+        data-testid="unread-div"
+        $tone="rgb(0, 0, 0)"
+        dangerouslySetInnerHTML={{ __html: "<b>raw</b>" }}
+      />
+      <DynamicAnchor
+        data-testid="unread-a"
+        $tone="rgb(0, 0, 0)"
+        dangerouslySetInnerHTML={{ __html: "<b>raw</b>" }}
+      />
     </div>
   );
 }

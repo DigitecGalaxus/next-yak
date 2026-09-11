@@ -446,11 +446,17 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
   });
 };
 
-/** Build the props Solid reads for tags rendered through dynamic(). */
+/**
+ * Build the props Solid reads for tags rendered through dynamic().
+ * copies descriptors, not values: ssrElement reads one child prop and leaves
+ * the others unread, a children getter may render and take hydration ids
+ */
 const serverProps = (props: Props, meta: RenderMeta): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
   forEachProp(props, meta, meta.hasAttrs ? meta.compute().attrs : undefined, (key, source) => {
-    out[key] = source[key];
+    const descriptor = Reflect.getOwnPropertyDescriptor(source, key);
+    if (!descriptor || "value" in descriptor) out[key] = source[key];
+    else Object.defineProperty(out, key, descriptor);
   });
   // `ssrElement` writes `class=""` for an undefined class, so leave it out.
   const className = classNameOf(props, meta);

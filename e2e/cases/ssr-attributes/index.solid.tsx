@@ -1,4 +1,12 @@
 import { styled } from "@yak/solid";
+import { isServer } from "@solidjs/web";
+
+// the server reads only the first child prop; a second one must stay unread,
+// it may render a component and take hydration ids the client will not take
+const unreadChildProp = () => {
+  if (isServer) throw new Error("the unused child prop was read on the server");
+  return "client";
+};
 
 // Two SSR paths render styled tags: a direct writer for most tags and Solid's
 // ssrElement for the tags that can be HTML or SVG (a, script, style, title).
@@ -51,6 +59,20 @@ export default function App() {
       <DynamicAnchor data-testid="dynamic-a" $tone="rgb(255, 0, 0)" {...special}>
         text
       </DynamicAnchor>
+      {/* attrs keep these on the runtime path in both fold modes; a folded
+          native element lets the Solid compiler evaluate textContent itself */}
+      <DynamicDiv
+        data-testid="unread-div"
+        $tone="rgb(0, 0, 0)"
+        innerHTML="<b>raw</b>"
+        textContent={unreadChildProp()}
+      />
+      <DynamicAnchor
+        data-testid="unread-a"
+        $tone="rgb(0, 0, 0)"
+        innerHTML="<b>raw</b>"
+        textContent={unreadChildProp()}
+      />
     </div>
   );
 }
