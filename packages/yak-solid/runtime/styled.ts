@@ -13,7 +13,7 @@ import type {
   StaticStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
-import { $PROXY, createMemo, untrack, type MemoOptions } from "solid-js";
+import { $PROXY, createMemo, untrack } from "solid-js";
 import {
   ChildProperties,
   createComponent,
@@ -203,7 +203,7 @@ const createDynamicComponent =
     // transparent memo: no hydration id is claimed for it
     const computed = isServer
       ? once(compute)
-      : createMemo(compute, { transparent: true } as MemoOptions<ComputedStyles>);
+      : createMemo(compute, { transparent: true });
     // theme rules
     // style callbacks see an explicit theme prop before the provider theme
     // the target only gets a theme when attrs replaced the provider accessor,
