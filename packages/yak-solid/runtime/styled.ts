@@ -94,7 +94,7 @@ export type StyledInternal = <
   attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
 ) => StyledLiteral<Substitute<T, TAttrsIn>>;
 
-/** These tags can be HTML or SVG. dynamic() chooses from the insertion parent. */
+/** these tags exist in html and svg; a fresh mount picks the namespace from the insertion parent */
 const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
 
 const VOID_ELEMENTS =
