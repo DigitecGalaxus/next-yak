@@ -260,15 +260,19 @@ const createElementRenderer = (tag: string): TargetRenderer => {
     if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
     const owner = getOwner();
     let el: Element | undefined;
+    // the thunk runs inside the parent's insert effect with tracking on;
+    // untrack keeps that effect from subscribing to the prop reads here
     const lazy = () =>
-      (el ??= runWithOwner(owner, () => {
-        const parent = solidWeb.getInsertionParent() as Element | null;
-        const inSvg =
-          !!parent &&
-          parent.namespaceURI === Namespaces.svg &&
-          parent.localName !== "foreignObject";
-        return bindElement((inSvg ? createSvg : create)(), props, meta);
-      }));
+      (el ??= runWithOwner(owner, () =>
+        untrack(() => {
+          const parent = solidWeb.getInsertionParent() as Element | null;
+          const inSvg =
+            !!parent &&
+            parent.namespaceURI === Namespaces.svg &&
+            parent.localName !== "foreignObject";
+          return bindElement((inSvg ? createSvg : create)(), props, meta);
+        }),
+      ));
     // insert() accepts an accessor at runtime (dynamic() returns one), the
     // JSX.Element type does not include it
     return lazy as unknown as JSX.Element;
