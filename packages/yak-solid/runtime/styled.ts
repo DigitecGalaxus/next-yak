@@ -360,7 +360,25 @@ const serializeElement = (
   // Void tags need no child resolution; return Solid's server node directly.
   if (!closing) return { t: result + "/>" } as JSX.Element;
   if (typeof children === "function") children = children();
+  // text and finished nodes join in place, which is what solid's own
+  // resolver does with them; arrays (separator markers) and async holes go
+  // through ssr() so solid keeps its bookkeeping for them
+  const text = plainContent(children);
+  if (text !== undefined) return { t: result + ">" + text + closing } as JSX.Element;
   return ssr([result + ">", closing], resolveSSRNode(children, undefined, true));
+};
+
+/** the string a child resolves to when it needs no resolver, else undefined */
+const plainContent = (node: unknown): string | undefined => {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node !== "object" || Array.isArray(node)) return undefined;
+  const server = node as { t?: unknown; h?: unknown[] };
+  if (server.h && server.h.length > 0) return undefined;
+  if (typeof server.t === "string") return server.t;
+  if (Array.isArray(server.t) && server.t.length === 1) return server.t[0] as string;
+  return undefined;
 };
 
 /** Format one SSR attribute, including its leading space. */
