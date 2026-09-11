@@ -23,7 +23,6 @@ import {
   isServer,
   MathMLElements,
   Namespaces,
-  resolveSSRNode,
   runHydrationEvents,
   spread,
   ssr,
@@ -302,10 +301,11 @@ const createChildrenRenderer = (
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
       const children = hasChildren ? escape(props.children) : undefined;
-      // plain children join in place like in serializeElement
+      // plain children join in place like in serializeElement; the rest is
+      // a hole for ssr(), as in compiled templates
       const text = plainContent(children);
       if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${parts[2]}` } as JSX.Element;
-      return ssr(parts, hk, resolveSSRNode(children, undefined, true));
+      return ssr(parts, hk, children);
     };
   }
   const create = createElementTemplate(tag, className);
@@ -359,11 +359,12 @@ const serializeElement = (
   if (!closing) return { t: result + "/>" } as JSX.Element;
   if (typeof children === "function") children = children();
   // text and finished nodes join in place, which is what solid's own
-  // resolver does with them; arrays (separator markers) and async holes go
-  // through ssr() so solid keeps its bookkeeping for them
+  // resolver does with them. arrays and async holes go to ssr() as a hole,
+  // the way compiled templates pass children: it puts the separator marker
+  // between adjacent text items so the client can claim two text nodes
   const text = plainContent(children);
   if (text !== undefined) return { t: result + ">" + text + closing } as JSX.Element;
-  return ssr([result + ">", closing], resolveSSRNode(children, undefined, true));
+  return ssr([result + ">", closing], children);
 };
 
 /** the string a child resolves to when it needs no resolver, else undefined */
