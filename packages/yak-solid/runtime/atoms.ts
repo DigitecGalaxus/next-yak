@@ -39,6 +39,6 @@ export const atoms = <T>(
         ]
       : dynamicFunctions;
 
-  // @ts-expect-error the internal implementation of css is not typed
-  return css(...runtimeFunctions);
+  // The public interpolation type describes the code before compilation.
+  return css(...runtimeFunctions) as unknown as ComponentStyles<T>;
 };

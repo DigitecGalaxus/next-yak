@@ -168,6 +168,18 @@ export type RuntimeStyleProcessor<T> = ((
   style: StyleObject,
 ) => void) & { $dynamic?: boolean };
 
+/** A class-only processor ignores props and needs no style object. */
+export type StaticStyleProcessor = ((
+  props: unknown,
+  classes: ClassCollector,
+  style?: StyleObject,
+) => void) & { $dynamic: false };
+
+/** css() marks its output so styled() can select the static render path. */
+export type CompiledStyleProcessor<T> =
+  | StaticStyleProcessor
+  | (RuntimeStyleProcessor<T> & { $dynamic: true });
+
 /**
  * Utility type to keep the generic API of a component while still being able to use it in a selector
  */

@@ -1,16 +1,16 @@
-import { css, CSSInterpolation, Classes, yakComponentSymbol } from "./cssLiteral.js";
+import { css, Classes, yakComponentSymbol } from "./cssLiteral.js";
 import type {
   AnyComponent,
   Attrs,
   AttrsMerged,
   Styled,
   YakComponent,
-  AttrsFunction,
   StyledFn,
   HtmlTags,
   Substitute,
   StyledLiteral,
-  RuntimeStyleProcessor,
+  CompiledStyleProcessor,
+  StaticStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
 import { $PROXY, createMemo, untrack, type MemoOptions } from "solid-js";
@@ -20,6 +20,7 @@ import {
   dynamic,
   escape,
   getNextElement,
+  insert,
   isServer,
   MathMLElements,
   resolveSSRNode,
@@ -34,65 +35,223 @@ import {
   type JSX,
 } from "@solidjs/web";
 import { normalizeClass } from "./internals/mergeClasses.js";
-// the following import is not relative but the package-level "@yak/solid/context"
-// export: it keeps a single context instance shared between the bundled runtime
-// and user code (and lets the vite plugin alias the user's theme context)
+// Keep the runtime and app on the same theme context; Vite can alias this export.
 import { useTheme } from "@yak/solid/context";
 import type { YakTheme } from "./context/index.js";
 import type { Accessor } from "solid-js";
 
-//
-// The `styled()` API without `styled.` syntax
-//
-// The API design is inspired by styled-components:
-// https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/constructors/styled.tsx
-// https://github.com/styled-components/styled-components/blob/main/packages/styled-components/src/models/StyledComponent.ts
-//
-/**
- * Tags that are HTML under a `<div>` and SVG under an `<svg>`. Only the parent
- * decides, so `dynamic()` creates them at insertion time; every other tag is
- * created up front from its name.
- */
-const ambiguousSvgTags = new Set([
-  /** the HTML link and the SVG link: an HTML `<a>` inside an svg never renders */
-  "a",
-  /** a page script and SVG's script element, which runs in the svg's scope */
-  "script",
-  /** a page stylesheet and SVG's style element, which styles only the svg */
-  "style",
-  /** the document title and an SVG shape's accessible name, shown as a tooltip */
-  "title",
-]);
+// Combine parent attrs and styles when a Yak component is defined. At render
+// time, keep class/style work beside props so the target controls getter reads.
+type Props = {
+  class?: string;
+  style?: StyleObject | string;
+  theme?: Accessor<YakTheme>;
+} & Record<PropertyKey, unknown>;
 
-/** the compiler's template for one element; a namespaced one is cloned out of its root */
-const elementTemplate = (tag: string) => {
-  if (SVGElements.has(tag) && tag !== "svg") return template(`<svg><${tag}>`, 2);
-  if (MathMLElements.has(tag) && tag !== "math") return template(`<math><${tag}>`, 2);
-  return template(`<${tag}>`);
+type StyleProcessor = CompiledStyleProcessor<unknown>;
+
+type RuntimeAttrsFn = (props: Props) => Props;
+
+type RuntimeAttrs = Props | RuntimeAttrsFn;
+
+type ComputedStyles = {
+  class: string | undefined;
+  style: StyleObject | undefined;
+  attrs: Props | undefined;
 };
 
-/**
- * Renders a tag target the way the compiler renders `<tag {...props} />`: on
- * the server one serialization pass, on the client the claimed or cloned
- * element plus one `spread`. No memo and no owner per element, so a styled
- * element gets the same hydration key an unstyled one would. (Solid's
- * `dynamic()` adds a memo so the tag can change; a styled tag never does.)
- */
-const elementRenderer = (tag: string): ((props: Record<PropertyKey, unknown>) => JSX.Element) => {
-  // these four exist in HTML and in SVG and only the parent decides, which
-  // `dynamic()` resolves at insertion time. Its memo takes a hydration id,
-  // so the server goes through it as well
+/** Render work kept separate from the author's props. */
+type RenderMeta = {
+  skip: (key: PropertyKey) => boolean;
+} & (
+  | { compute: undefined; classOf: (props: Props) => string | undefined; hasAttrs: false }
+  | { compute: () => ComputedStyles; classOf: undefined; hasAttrs: boolean }
+);
+
+type ComponentMetadata = [
+  component: AnyComponent<any>,
+  attrs: RuntimeAttrsFn | undefined,
+  styles: StyleProcessor,
+  target: AnyComponent<any> | string,
+];
+
+type TargetRenderer = (props: Props, meta: RenderMeta) => JSX.Element;
+
+/** Create a styled tag or component, with optional attrs. */
+export type StyledInternal = <
+  T extends object,
+  TAttrsIn extends object = {},
+  TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
+>(
+  Component: AnyComponent<T> | YakComponent<T> | HtmlTags | string,
+  attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
+) => StyledLiteral<Substitute<T, TAttrsIn>>;
+
+// These tags can be HTML or SVG. dynamic() chooses from the insertion parent.
+const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
+
+const VOID_ELEMENTS =
+  /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
+
+const styledFactory: StyledFn = (Component) =>
+  Object.assign(yakStyled(Component), {
+    attrs: (attrs: Attrs<any>) => yakStyled(Component, attrs),
+  });
+
+/** Style a tag or a component that forwards its class prop. */
+export const styled = styledFactory as Styled;
+
+const yakStyled: StyledInternal = (Component, attrs) => {
+  // solid-refresh forwards reads to the live component, but does not forward `in` checks.
+  const isYakComponent =
+    typeof Component === "function" &&
+    (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
+
+  // Apply parent attrs and styles before this component's own.
+  const [, parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
+    ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as ComponentMetadata)
+    : [];
+
+  // Render the chain's final target once, with all attrs and style processors combined.
+  const targetComponent = parentTarget ?? Component;
+
+  const mergedAttrsFn = composeAttrs(attrs as RuntimeAttrs | undefined, parentAttrsFn);
+
+  return (styles, ...values) => {
+    const runtimeStylesFn = css(styles, ...values);
+    const runtimeStyleProcessor = composeStyles(runtimeStylesFn, parentRuntimeStylesFn);
+
+    const isTag = typeof targetComponent === "string";
+    const renderTarget = createTargetRenderer(targetComponent);
+    const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
+    const omitted = new Set(["class", "theme"]);
+    if (isTag) omitted.add("component");
+    if (!isStatic) omitted.add("style");
+    const skip = (key: PropertyKey) =>
+      typeof key === "string" && (key.charCodeAt(0) === 36 /* $ */ || omitted.has(key));
+    const Yak = isStatic
+      ? createStaticComponent(
+          isTag ? targetComponent : undefined,
+          renderTarget,
+          runtimeStyleProcessor,
+          skip,
+        )
+      : createDynamicComponent(renderTarget, mergedAttrsFn, runtimeStyleProcessor, skip);
+
+    return Object.assign(Yak, {
+      [yakComponentSymbol]: [
+        Yak,
+        mergedAttrsFn,
+        runtimeStyleProcessor,
+        targetComponent,
+      ] satisfies ComponentMetadata,
+    });
+  };
+};
+
+const createStaticComponent = (
+  tag: string | undefined,
+  renderTarget: TargetRenderer,
+  processor: StaticStyleProcessor,
+  skip: (key: PropertyKey) => boolean,
+): AnyComponent<Props> => {
+  const staticClass = collectStaticClass(processor);
+  const classOf = (props: Props): string | undefined => {
+    const userClass = normalizeClass(props.class);
+    if (!userClass) return staticClass;
+    // The collector skips generated classes the user already supplied.
+    const classes = new Classes(userClass);
+    processor(props, classes);
+    return classes.value || undefined;
+  };
+  const renderChildren =
+    tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
+      ? createChildrenRenderer(tag, staticClass)
+      : undefined;
+  const meta: RenderMeta = { skip, classOf, compute: undefined, hasAttrs: false };
+  return (props) => {
+    // Reactive spreads can add props, so they need the full client binding.
+    if (renderChildren && (isServer || !($PROXY in props))) {
+      const keys = Object.keys(props);
+      if (!keys.length || (keys.length === 1 && keys[0] === "children")) {
+        return renderChildren(props, keys.length !== 0);
+      }
+    }
+    return renderTarget(props, meta);
+  };
+};
+
+const createDynamicComponent =
+  (
+    renderTarget: TargetRenderer,
+    attrsFn: RuntimeAttrsFn | undefined,
+    processor: StyleProcessor,
+    skip: (key: PropertyKey) => boolean,
+  ): AnyComponent<Props> =>
+  (props) => {
+    const theme = useTheme();
+    const propsWithTheme = withTheme(props, theme);
+    const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
+    // SSR reads styles once. The client memo tracks updates without taking a hydration ID.
+    const computed = isServer
+      ? once(compute)
+      : createMemo(compute, { transparent: true } as MemoOptions<ComputedStyles>);
+    // Forward a theme only when attrs replace the provider's accessor.
+    const allowTheme =
+      attrsFn &&
+      (() => {
+        const attrs = computed().attrs;
+        return !!attrs && "theme" in attrs && attrs.theme !== theme;
+      });
+    return renderTarget(props, {
+      skip: allowTheme ? (key) => (key === "theme" ? !allowTheme() : skip(key)) : skip,
+      compute: computed,
+      classOf: undefined,
+      hasAttrs: !!attrsFn,
+    });
+  };
+
+/** Choose the target's render path once per styled component. */
+const createTargetRenderer = (target: AnyComponent<any> | string): TargetRenderer => {
+  if (typeof target !== "string") {
+    return (props, meta) => createComponent(target, yakProps(props, meta));
+  }
+  if (isServer) {
+    if (ambiguousSvgTags.has(target)) {
+      // Match the client dynamic() memo and hydration IDs. Read props after taking the key.
+      const render = dynamic(() => target) as (
+        props: Record<string, unknown> | (() => Record<string, unknown>),
+      ) => JSX.Element;
+      return (props, meta) => render(() => serverProps(props, meta));
+    }
+    const isVoid = VOID_ELEMENTS.test(target);
+    return (props, meta) => serializeElement(target, props, meta, isVoid);
+  }
+  const render = createElementRenderer(target);
+  return (props, meta) => render(yakProps(props, meta));
+};
+
+// Parse SVG and MathML children inside their namespace root.
+const createElementTemplate = (tag: string, className?: string) => {
+  const classAttribute = className
+    ? ` class="${className.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`
+    : "";
+  const opening = `<${tag}${classAttribute}>`;
+  if (SVGElements.has(tag) && tag !== "svg") return template(`<svg>${opening}`, 2);
+  if (MathMLElements.has(tag) && tag !== "math") return template(`<math>${opening}`, 2);
+  return template(opening);
+};
+
+/** Bind a fixed client tag without dynamic()'s per-element memo. */
+const createElementRenderer = (
+  tag: string,
+): ((props: Record<PropertyKey, unknown>) => JSX.Element) => {
   if (ambiguousSvgTags.has(tag)) {
     return dynamic(() => tag);
   }
-  if (isServer) {
-    // `yakProps` returns the serializer for the element instead of a props
-    // object (see there); a props record and a function do not overlap, so
-    // the cast has to go through `unknown`
-    return (render) => (render as unknown as () => JSX.Element)();
-  }
-  const create = elementTemplate(tag);
+  const create = createElementTemplate(tag);
   return (props) => {
+    // Reuse SSR DOM during hydration; otherwise clone the cached template.
     const el = getNextElement(create);
     // A proxy can add children later, so it needs a child binding.
     spread(
@@ -100,179 +259,282 @@ const elementRenderer = (tag: string): ((props: Record<PropertyKey, unknown>) =>
       props,
       untrack(() => !($PROXY in props) && !("children" in props)),
     );
+    // Replay events after the element's bindings are ready.
     runHydrationEvents();
     return el;
   };
 };
 
-const styledFactory: StyledFn = (Component) =>
-  Object.assign(yakStyled(Component), {
-    attrs: (attrs: Attrs<any>) => yakStyled(Component, attrs),
-  });
-
-/**
- * The `styled` method works perfectly on all of your own or any third-party component,
- * as long as they attach the passed `class` prop to a DOM element.
- *
- * @usage
- *
- * ```tsx
- * const StyledLink = styled(Link)`
- *  color: #BF4F74;
- *  font-weight: bold;
- * `;
- * ```
- */
-export const styled = styledFactory as Styled;
-
-type PropsWithClassAndStyle = {
-  class?: string;
-  style?: StyleObject | string;
-  theme?: Accessor<YakTheme>;
-} & Record<string, unknown>;
-
-const yakStyled: StyledInternal = (Component, attrs) => {
-  // Probe with a property read, not the `in` operator: in dev, solid-refresh
-  // wraps registered components in a Proxy that forwards `get` to the live
-  // implementation but has no `has` trap, so `in` would miss the symbol and
-  // silently skip chain flattening (breaking attrs override order).
-  const isYakComponent =
-    typeof Component === "function" &&
-    (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
-
-  // if the component that is wrapped is a yak component, we can extract the attrs function
-  // and the dynamic style function to merge it with the current attrs function (or dynamic
-  // style function) so that the sequence of the attrs functions is preserved
-  const [, parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
-    ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as unknown as [
-        YakComponent<unknown>,
-        ExtractAttrsFunction<typeof attrs>,
-        RuntimeStyleProcessor<unknown>,
-        AnyComponent<any> | string,
-      ])
-    : [];
-
-  // the ultimate render target of the whole styled(styled(...)) chain:
-  // attrs and style processors are already merged at construction time, so
-  // a chain of N levels renders the target directly in ONE component instead
-  // of re-entering every parent wrapper per element
-  const targetComponent = (isYakComponent ? parentTarget : Component) as AnyComponent<any> | string;
-
-  const mergedAttrsFn = buildRuntimeAttrsProcessor(attrs, parentAttrsFn);
-
-  return (styles, ...values) => {
-    // combine all interpolated logic into a single function
-    // e.g. styled.button`color: ${props => props.color}; margin: ${props => props.margin};`
-    const runtimeStylesFn = css(
-      styles,
-      ...(values as CSSInterpolation<unknown>[]),
-    ) as RuntimeStyleProcessor<unknown>;
-    const runtimeStyleProcessor = buildRuntimeStylesProcessor(
-      runtimeStylesFn,
-      parentRuntimeStylesFn,
-    );
-
-    // Chosen once per styled component, not once per element. A component
-    // target is called directly, which also leaves a prop named `component`
-    // free for the author to use.
-    const isTag = typeof targetComponent === "string";
-    const tag = isTag ? targetComponent : undefined;
-    const renderTarget = isTag
-      ? elementRenderer(targetComponent)
-      : (finalProps: Record<PropertyKey, unknown>) =>
-          createComponent(
-            targetComponent as (props: Record<PropertyKey, unknown>) => JSX.Element,
-            finalProps,
-          );
-
-    // fast path for fully static components (no attrs, no dynamic styles;
-    // the most common case): contribute the chain's class names through a
-    // single reactive `class` getter and strip $-props; skips theme lookup,
-    // memo creation and style handling entirely
-    const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
-    // a static chain contributes the same classes to every element, so they
-    // are collected once here instead of once per element
-    const staticClass = isStatic ? collectStaticClass(runtimeStyleProcessor) : undefined;
-    // one function per styled component, not one closure per element; the
-    // client reads it through a getter, so the class binding stays reactive
-    const staticClassOf = (props: PropsWithClassAndStyle): string | undefined => {
-      const userClass = normalizeClass(props.class);
-      if (!userClass) return staticClass;
-      const classes = new Classes(userClass);
-      runtimeStyleProcessor(props, classes, undefined as unknown as StyleObject);
-      return classes.value || undefined;
+/** Cache the tag and class; only children need a binding or serialization. */
+const createChildrenRenderer = (
+  tag: string,
+  className: string | undefined,
+): ((props: Props, hasChildren: boolean) => JSX.Element) => {
+  if (isServer) {
+    const parts = [
+      `<${tag}`,
+      `${className ? ` class="${ssrClassName(className)}"` : ""}>`,
+      `</${tag}>`,
+    ];
+    return (props, hasChildren) => {
+      const hk = ssrHydrationKey();
+      return ssr(
+        parts,
+        hk,
+        resolveSSRNode(hasChildren ? escape(props.children) : undefined, undefined, true),
+      );
     };
-    // Cache the markup for static tags whose only prop is children.
-    const staticTemplate =
-      isServer && isStatic && tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
-        ? [`<${tag}`, `${staticClass ? ` class="${ssrClassName(staticClass)}"` : ""}>`, `</${tag}>`]
-        : undefined;
-    const Yak: AnyComponent<PropsWithClassAndStyle> = isStatic
-      ? (props) => {
-          if (staticTemplate) {
-            const keys = Object.keys(props);
-            if (!keys.length || (keys.length === 1 && keys[0] === "children")) {
-              const hk = ssrHydrationKey();
-              return ssr(
-                staticTemplate,
-                hk,
-                resolveSSRNode(keys.length ? escape(props.children) : undefined, undefined, true),
-              ) as JSX.Element;
-            }
-          }
-          return renderTarget(yakProps(props, staticClassOf, undefined, tag));
-        }
-      : (props) => {
-          // attrs functions and style interpolations receive the theme; the
-          // static path above never subscribes to it
-          const theme = useTheme();
-          const propsWithTheme = withTheme(props, theme);
-          const compute = () =>
-            computeStyles(props, propsWithTheme, mergedAttrsFn, runtimeStyleProcessor);
-          // On the server nothing re-reads, so the computation runs once. On
-          // the client a memo keeps the class and style bindings live; a
-          // transparent one takes no hydration id, so the element gets the
-          // same key on both sides.
-          const computed = isServer
-            ? once(compute)
-            : createMemo(compute, { transparent: true } as MemoOptions<ComputedStyles>);
-          return renderTarget(
-            yakProps(
-              props,
-              () => computed().class,
-              () => computed().style,
-              tag,
-              mergedAttrsFn ? () => computed().attrs : undefined,
-              // the theme prop stays only if an attrs function replaced it
-              () => {
-                const attrs = computed().attrs;
-                return !!attrs && "theme" in attrs && attrs.theme !== theme;
-              },
-            ),
-          );
-        };
-
-    return Object.assign(Yak, {
-      [yakComponentSymbol]: [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent] as [
-        unknown,
-        unknown,
-        unknown,
-        unknown,
-      ],
-    });
+  }
+  const create = createElementTemplate(tag, className);
+  return (props, hasChildren) => {
+    const el = getNextElement(create);
+    if (hasChildren) insert(el, () => props.children);
+    runHydrationEvents();
+    return el;
   };
 };
 
-const hasKeys = (object: object): boolean => {
-  for (const _ in object) return true;
-  return false;
+// Write SSR output directly to avoid a filtered props object and getter wrappers.
+const serializeElement = (
+  tag: string,
+  props: Props,
+  meta: RenderMeta,
+  skipChildren: boolean,
+): JSX.Element => {
+  // Take the element's key before reading props; a getter may render a child.
+  const hk = ssrHydrationKey();
+  const computed = meta.compute?.();
+  const attrs = computed?.attrs;
+  const className = computed ? computed.class : meta.classOf!(props);
+  const style = computed?.style;
+  let result = `<${tag}${hk}`;
+  let children: unknown;
+  // Child getters on void tags must stay unread to preserve hydration IDs.
+  forEachProp(props, meta, attrs, (key, source) => {
+    if (!ChildProperties.has(key)) result += attribute(key, source[key]);
+    else if (children === undefined && !skipChildren)
+      children = childContent(tag, key, source[key]);
+  });
+  if (className !== undefined) result += ` class="${ssrClassName(className)}"`;
+  if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
+  // Void tags need no child resolution; return Solid's server node directly.
+  if (skipChildren) return { t: result + "/>" } as JSX.Element;
+  if (typeof children === "function") children = children();
+  return ssr([result + ">", `</${tag}>`], resolveSSRNode(children, undefined, true));
+};
+
+/** Format one SSR attribute, including its leading space. */
+const attribute = (prop: string, value: unknown): string => {
+  if (prop === "style") return ` style="${ssrStyle(value as string)}"`;
+  if (prop === "class") return ` class="${ssrClassName(value as string)}"`;
+  if (value == undefined || prop === "ref" || prop.startsWith("on") || prop.startsWith("prop:")) {
+    return "";
+  }
+  if (typeof value === "boolean") return value ? ` ${escape(prop)}` : "";
+  return value === "" ? ` ${escape(prop)}` : ` ${escape(prop)}="${escape(value, true)}"`;
+};
+
+/** Keep raw markup; escape other child values. */
+const childContent = (tag: string, prop: string, value: unknown): unknown =>
+  tag === "script" || tag === "style" || prop === "innerHTML" ? value : escape(value);
+
+/**
+ * The props a styled element hands to its target: the author's props, the
+ * attrs output, then the computed class and style. Hide $-props and the
+ * provider theme. Only component targets receive a prop named `component`.
+ */
+const yakProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
+  if (!meta.hasAttrs && !($PROXY in props)) return copyProps(props, meta);
+  return proxyProps(props, meta);
 };
 
 /**
- * Normalize a Solid style prop to an object the style processor can extend.
- * Solid allows string styles on elements; they are converted here so CSS custom
- * properties from dynamic values can be merged in (prefer object styles).
+ * Copy fixed keys without reading getters: a getter can render a child and
+ * consume hydration IDs. Solid's compiled getters do not depend on `this`.
  */
+const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
+  const { compute, classOf } = meta;
+  const classFn = compute ? () => compute().class : () => classOf(props);
+  const styleFn = compute ? () => compute().style : undefined;
+  const out: Record<PropertyKey, unknown> = {};
+  for (const key of Reflect.ownKeys(props)) {
+    if (meta.skip(key)) continue;
+    const descriptor = Reflect.getOwnPropertyDescriptor(props, key)!;
+    if ("value" in descriptor && descriptor.enumerable) {
+      out[key] = descriptor.value;
+    } else {
+      Object.defineProperty(out, key, descriptor);
+    }
+  }
+  Object.defineProperty(out, "class", {
+    get: classFn,
+    enumerable: true,
+    configurable: true,
+  });
+  if (styleFn) {
+    Object.defineProperty(out, "style", { get: styleFn, enumerable: true, configurable: true });
+  }
+  return out;
+};
+
+/**
+ * Attrs and reactive spreads can add or remove keys. $PROXY keeps downstream
+ * omit() calls reactive.
+ */
+const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
+  const { skip, compute, classOf } = meta;
+  const attrsProps = () => (meta.hasAttrs ? meta.compute().attrs : undefined);
+  const classFn = compute ? () => compute().class : () => classOf(props);
+  const styleFn = compute ? () => compute().style : undefined;
+  const contributed = (key: PropertyKey) =>
+    key === "class" ? classFn : key === "style" ? styleFn : undefined;
+  const fromAttrs = (key: PropertyKey) => {
+    const attrs = attrsProps();
+    return attrs && key in attrs ? attrs : undefined;
+  };
+  return new Proxy(props, {
+    get(target, key) {
+      if (key === $PROXY) return true;
+      const getter = contributed(key);
+      if (getter) return getter();
+      if (skip(key)) return undefined;
+      const attrs = fromAttrs(key);
+      return attrs ? attrs[key] : Reflect.get(target, key);
+    },
+    has(target, key) {
+      if (key === $PROXY) return true;
+      if (contributed(key)) return true;
+      if (skip(key)) return false;
+      return Reflect.has(target, key) || fromAttrs(key) !== undefined;
+    },
+    ownKeys(target) {
+      const keys = new Set<string | symbol>();
+      for (const key of Reflect.ownKeys(target)) if (!skip(key)) keys.add(key);
+      for (const key of Object.keys(attrsProps() ?? {})) if (!skip(key)) keys.add(key);
+      // Class and computed style follow author props and attrs.
+      keys.add("class");
+      if (styleFn) keys.add("style");
+      return [...keys];
+    },
+    getOwnPropertyDescriptor(target, key) {
+      const getter = contributed(key);
+      if (getter) return { enumerable: true, configurable: true, get: getter };
+      if (skip(key)) return undefined;
+      const attrs = fromAttrs(key);
+      if (attrs) {
+        return { enumerable: true, configurable: true, get: () => attrsProps()?.[key] };
+      }
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    },
+  });
+};
+
+/** Build the props Solid reads for tags rendered through dynamic(). */
+const serverProps = (props: Props, meta: RenderMeta): Record<string, unknown> => {
+  const out: Record<string, unknown> = {};
+  forEachProp(props, meta, meta.hasAttrs ? meta.compute().attrs : undefined, (key, source) => {
+    out[key] = source[key];
+  });
+  // `ssrElement` writes `class=""` for an undefined class, so leave it out.
+  const computed = meta.compute?.();
+  const className = computed ? computed.class : meta.classOf!(props);
+  if (className !== undefined) out.class = className;
+  const style = computed?.style;
+  if (style !== undefined) out.style = style;
+  return out;
+};
+
+/** Visit author keys with attrs overrides, then keys added by attrs. */
+const forEachProp = (
+  props: Props,
+  meta: RenderMeta,
+  attrs: Props | undefined,
+  visit: (key: string, source: Props) => void,
+) => {
+  for (const key of Object.keys(props)) {
+    if (!meta.skip(key)) visit(key, attrs && key in attrs ? attrs : props);
+  }
+  if (!attrs) return;
+  for (const key of Object.keys(attrs)) {
+    if (!meta.skip(key) && !(key in props)) visit(key, attrs);
+  }
+};
+
+/** Resolve attrs, then run styles against that props view. */
+const computeStyles = (
+  props: Props,
+  propsWithTheme: Props,
+  attrsFn: RuntimeAttrsFn | undefined,
+  processor: StyleProcessor,
+): ComputedStyles => {
+  const attrs = attrsFn?.(propsWithTheme);
+  const classes = new Classes(normalizeClass(props.class));
+  const attrsClass = normalizeClass(attrs?.class);
+  if (attrsClass) classes.add(attrsClass);
+  // A static processor writes no style values, so the author's style object
+  // can pass through without a copy.
+  const style =
+    processor.$dynamic || attrs?.style
+      ? { ...unwrapStyle(props.style), ...unwrapStyle(attrs?.style) }
+      : unwrapStyle(props.style);
+  processor(
+    attrs ? withAttrs(propsWithTheme, attrs) : propsWithTheme,
+    classes,
+    style as StyleObject,
+  );
+  return {
+    class: classes.value || undefined,
+    style: style && hasKeys(style) ? style : undefined,
+    attrs,
+  };
+};
+
+// Share trap functions across instances; each proxy holds its props and theme.
+type ThemeProps = { props: Props; theme: Accessor<YakTheme> };
+
+const themeTraps: ProxyHandler<ThemeProps> = {
+  get: ({ props, theme }, key) =>
+    key === "theme" ? ("theme" in props ? props.theme : theme) : Reflect.get(props, key),
+  has: ({ props }, key) => key === "theme" || Reflect.has(props, key),
+  ownKeys: ({ props }) => {
+    const keys = Reflect.ownKeys(props);
+    return keys.includes("theme") ? keys : [...keys, "theme"];
+  },
+  getOwnPropertyDescriptor: ({ props, theme }, key) => {
+    if (key === "theme" && !(key in props)) {
+      return { value: theme, enumerable: true, configurable: true };
+    }
+    const descriptor = Reflect.getOwnPropertyDescriptor(props, key);
+    // These virtual props must stay configurable on the proxy's backing object.
+    return descriptor && { ...descriptor, configurable: true };
+  },
+};
+
+/** Use the provider theme when props has no theme. Other reads stay reactive. */
+const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
+  (!($PROXY in props) && "theme" in props
+    ? props
+    : new Proxy({ props, theme }, themeTraps)) as Props;
+
+/**
+ * Let style interpolations read attrs over author props. Read getters only
+ * when the interpolation asks for that key.
+ */
+const withAttrs = (props: Props, attrs: Props): Props =>
+  new Proxy(
+    {},
+    {
+      get: (_, key) => (key in attrs ? Reflect.get(attrs, key) : Reflect.get(props, key)),
+      has: (_, key) => key in attrs || key in props,
+      ownKeys: () => [...new Set([...Reflect.ownKeys(props), ...Reflect.ownKeys(attrs)])],
+      getOwnPropertyDescriptor: (_, key) => {
+        const descriptor = Reflect.getOwnPropertyDescriptor(key in attrs ? attrs : props, key);
+        return descriptor && { ...descriptor, configurable: true };
+      },
+    },
+  );
+
+/** Convert string styles before adding CSS variables. */
 const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | undefined => {
   if (typeof style !== "string") {
     return style;
@@ -290,88 +552,12 @@ const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | und
   return result as StyleObject;
 };
 
-/**
- * The props as attrs functions and style interpolations see them: the author's
- * props plus the context theme. An author-supplied `theme` prop wins, as in
- * React. A Proxy that answers one key instead of a merge: nothing is copied,
- * and a read of `$active` goes straight to the compiled getter on the original
- * props object, so it stays lazy and tracked where it is read. (A prototype
- * chain would copy nothing either, but a new prototype per element gives the
- * read site a new object shape every time and the engine stops optimizing it.)
- */
-const withTheme = (
-  props: PropsWithClassAndStyle,
-  theme: Accessor<YakTheme>,
-): PropsWithClassAndStyle & { theme: Accessor<YakTheme> } =>
-  (!($PROXY in props) && "theme" in props
-    ? props
-    : new Proxy(props, {
-        get: (target, key) =>
-          key === "theme" ? ("theme" in target ? target.theme : theme) : Reflect.get(target, key),
-        has: (target, key) => key === "theme" || Reflect.has(target, key),
-        ownKeys: (target) => {
-          const keys = Reflect.ownKeys(target);
-          return keys.includes("theme") ? keys : [...keys, "theme"];
-        },
-        getOwnPropertyDescriptor: (target, key) =>
-          key === "theme" && !(key in target)
-            ? { value: theme, enumerable: true, configurable: true }
-            : Reflect.getOwnPropertyDescriptor(target, key),
-      })) as PropsWithClassAndStyle & {
-    theme: Accessor<YakTheme>;
-  };
-
-/**
- * Style interpolations also see the output of the attrs functions, which wins
- * over the author's props. A lookup, not a copy.
- */
-const withAttrs = <T extends object>(props: T, attrs: Record<string, unknown>): T =>
-  new Proxy({} as T, {
-    get: (_, key) => (key in attrs ? Reflect.get(attrs, key) : Reflect.get(props, key)),
-    has: (_, key) => key in attrs || key in props,
-    ownKeys: () => [...new Set([...Reflect.ownKeys(props), ...Reflect.ownKeys(attrs)])],
-    getOwnPropertyDescriptor: (_, key) => {
-      const descriptor = Reflect.getOwnPropertyDescriptor(key in attrs ? attrs : props, key);
-      return descriptor && { ...descriptor, configurable: true };
-    },
-  });
-
-type ComputedStyles = {
-  class: string | undefined;
-  style: StyleObject | undefined;
-  attrs: PropsWithClassAndStyle | undefined;
+const hasKeys = (object: object): boolean => {
+  for (const _ in object) return true;
+  return false;
 };
 
-/** attrs first (innermost yak component to outermost), then the style interpolations */
-const computeStyles = (
-  props: PropsWithClassAndStyle,
-  propsWithTheme: PropsWithClassAndStyle,
-  attrsFn: ((props: any) => unknown) | undefined,
-  processor: RuntimeStyleProcessor<unknown>,
-): ComputedStyles => {
-  const attrs = attrsFn ? (attrsFn(propsWithTheme) as PropsWithClassAndStyle) : undefined;
-  const classes = new Classes(normalizeClass(props.class));
-  const attrsClass = normalizeClass(attrs?.class);
-  if (attrsClass) classes.add(attrsClass);
-  // a static processor writes no style values, so the author's style object
-  // can pass through without a copy
-  const style =
-    processor.$dynamic || attrs?.style
-      ? { ...unwrapStyle(props.style), ...unwrapStyle(attrs?.style) }
-      : unwrapStyle(props.style);
-  processor(
-    attrs ? withAttrs(propsWithTheme, attrs) : propsWithTheme,
-    classes,
-    style as StyleObject,
-  );
-  return {
-    class: classes.value || undefined,
-    style: style && hasKeys(style) ? style : undefined,
-    attrs,
-  };
-};
-
-/** runs `fn` on the first call and returns that result from then on */
+/** Run once and reuse the result. */
 const once = <T>(fn: () => T): (() => T) => {
   let done = false;
   let value: T;
@@ -384,351 +570,58 @@ const once = <T>(fn: () => T): (() => T) => {
   };
 };
 
-/**
- * The classes a static style processor adds. It reads no props, so running it
- * once with an empty collector gives the value every element will get.
- */
-const collectStaticClass = (processor: RuntimeStyleProcessor<unknown>): string | undefined => {
+/** Collect static classes without reading props. */
+const collectStaticClass = (processor: StaticStyleProcessor): string | undefined => {
   const classes = new Classes();
-  processor(undefined, classes, undefined as unknown as StyleObject);
+  processor(undefined, classes);
   return classes.value || undefined;
 };
 
-/** what a styled element's final props are assembled from */
-type PropSources<T extends object> = {
-  props: T;
-  /** keys the target must not see, in the author's props or the attrs output */
-  skip: (key: PropertyKey) => boolean;
-  classOf: (props: T) => string | undefined;
-  styleFn: (() => StyleObject | undefined) | undefined;
-  attrsProps: (() => Record<string, unknown> | undefined) | undefined;
-};
-
-const skipKey = (
-  key: PropertyKey,
-  hasStyle: boolean,
-  isTag: boolean,
-  allowTheme: (() => boolean) | undefined,
-): boolean =>
-  typeof key === "string" &&
-  (key.charCodeAt(0) === 36 /* $ */ ||
-    key === "class" ||
-    (key === "style" && hasStyle) ||
-    (key === "theme" && !(allowTheme && allowTheme())) ||
-    (isTag && key === "component"));
-
-/**
- * The props a styled element hands to its target: the author's props, the
- * attrs output on top, then this wrapper's `class` and `style`. $-props and
- * the internal theme never come out. `component` names the tag for Solid, so
- * a tag target never sees it either.
- */
-const yakProps = <T extends object>(
-  props: T,
-  classOf: (props: T) => string | undefined,
-  styleFn: (() => StyleObject | undefined) | undefined,
-  tag: string | undefined,
-  attrsProps?: () => Record<string, unknown> | undefined,
-  allowTheme?: () => boolean,
-): T => {
-  const hasStyle = styleFn !== undefined;
-  const isTag = tag !== undefined;
-  const sources: PropSources<T> = {
-    props,
-    skip: (key) => skipKey(key, hasStyle, isTag, allowTheme),
-    classOf,
-    styleFn,
-    attrsProps,
-  };
-  if (isServer && isTag) return serverRender(tag, sources) as unknown as T;
-  if (!attrsProps && !($PROXY in props)) return copyProps(sources) as T;
-  return proxyProps(sources) as T;
-};
-
-/**
- * On the server the props are read once, after the hydration key is taken,
- * so this returns a function for the element renderer to call. Most tags
- * serialize the element directly; the tags `dynamic()` renders get the props
- * object `ssrElement` reads.
- */
-const serverRender = <T extends object>(tag: string, sources: PropSources<T>) =>
-  ambiguousSvgTags.has(tag) ? () => serverProps(sources) : () => serializeElement(tag, sources);
-
-/** every key the target sees, in `ssrElement` order: author props with attrs winning in place, then new attrs keys */
-const forEachProp = <T extends object>(
-  sources: PropSources<T>,
-  attrs: Record<string, unknown> | undefined,
-  visit: (key: string, value: unknown) => void,
-) => {
-  const props = sources.props as Record<string, unknown>;
-  for (const key of Object.keys(props)) {
-    if (!sources.skip(key)) visit(key, attrs && key in attrs ? attrs[key] : props[key]);
-  }
-  if (!attrs) return;
-  for (const key of Object.keys(attrs)) {
-    if (!sources.skip(key) && !(key in props)) visit(key, attrs[key]);
-  }
-};
-
-const VOID_ELEMENTS =
-  /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
-
-/** a styled tag as `ssrElement` would write it, straight from the sources */
-const serializeElement = <T extends object>(tag: string, sources: PropSources<T>): JSX.Element => {
-  const hk = ssrHydrationKey();
-  const attrs = sources.attrsProps?.();
-  const className = sources.classOf(sources.props);
-  const style = sources.styleFn?.();
-  const skipChildren = VOID_ELEMENTS.test(tag);
-  let result = `<${tag}${hk}`;
-  let children: unknown;
-  forEachProp(sources, attrs, (key, value) => {
-    if (!ChildProperties.has(key)) result += attribute(key, value);
-    else if (children === undefined && !skipChildren) children = childContent(tag, key, value);
-  });
-  if (className !== undefined) result += ` class="${ssrClassName(className)}"`;
-  if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
-  if (skipChildren) return { t: result + "/>" } as unknown as JSX.Element;
-  if (typeof children === "function") children = children();
-  return ssr(
-    [result + ">", `</${tag}>`],
-    resolveSSRNode(children, undefined, true),
-  ) as unknown as JSX.Element;
-};
-
-/** one attribute as `ssrElement` writes it, with its leading space, or nothing */
-const attribute = (prop: string, value: unknown): string => {
-  if (prop === "style") return ` style="${ssrStyle(value as string)}"`;
-  if (prop === "class") return ` class="${ssrClassName(value as string)}"`;
-  if (value == undefined || prop === "ref" || prop.startsWith("on") || prop.startsWith("prop:")) {
-    return "";
-  }
-  if (typeof value === "boolean") return value ? ` ${escape(prop)}` : "";
-  return value === "" ? ` ${escape(prop)}` : ` ${escape(prop)}="${escape(value, true)}"`;
-};
-
-/** the content a child property carries, escaped unless it is markup */
-const childContent = (tag: string, prop: string, value: unknown): unknown =>
-  tag === "script" || tag === "style" || prop === "innerHTML" ? value : escape(value);
-
-/** the props object `ssrElement` reads */
-const serverProps = <T extends object>(sources: PropSources<T>): Record<string, unknown> => {
-  const out: Record<string, unknown> = {};
-  forEachProp(sources, sources.attrsProps?.(), (key, value) => {
-    out[key] = value;
-  });
-  // `ssrElement` writes `class=""` for an undefined class, so leave it out
-  const className = sources.classOf(sources.props);
-  if (className !== undefined) out.class = className;
-  const style = sources.styleFn?.();
-  if (style !== undefined) out.style = style;
-  return out;
-};
-
-/**
- * Plain props have fixed keys, so their descriptors are copied onto a
- * plain object. Compiled getters are closures that ignore `this`, so they go
- * over unchanged and are never invoked here; every later read, `in` check and
- * enumeration by the target (a spread, an `omit`) is a plain property access.
- */
-const copyProps = <T extends object>(sources: PropSources<T>): Record<PropertyKey, unknown> => {
-  const { props, classOf, styleFn } = sources;
-  const out: Record<PropertyKey, unknown> = {};
-  for (const key of Reflect.ownKeys(props)) {
-    if (sources.skip(key)) continue;
-    const descriptor = Reflect.getOwnPropertyDescriptor(props, key)!;
-    if (descriptor.get || descriptor.set || !descriptor.enumerable) {
-      Object.defineProperty(out, key, descriptor);
-    } else {
-      out[key] = descriptor.value;
-    }
-  }
-  Object.defineProperty(out, "class", {
-    get: () => classOf(props),
-    enumerable: true,
-    configurable: true,
-  });
-  if (styleFn) {
-    Object.defineProperty(out, "style", { get: styleFn, enumerable: true, configurable: true });
-  }
-  return out;
-};
-
-/**
- * Attrs and reactive spreads can change keys. A Proxy resolves each read
- * against the current sources.
- */
-const proxyProps = <T extends object>(sources: PropSources<T>): T => {
-  const { props, skip, classOf, styleFn } = sources;
-  const attrsProps = sources.attrsProps ?? (() => undefined);
-  const classFn = () => classOf(props);
-  const contributed = (key: PropertyKey) =>
-    key === "class" ? classFn : key === "style" ? styleFn : undefined;
-  const fromAttrs = (key: PropertyKey) => {
-    const attrs = attrsProps();
-    return attrs && key in attrs ? attrs : undefined;
-  };
-  return new Proxy(props, {
-    get(target, key) {
-      if (key === $PROXY) return true;
-      const getter = contributed(key);
-      if (getter) return getter();
-      if (skip(key)) return undefined;
-      const attrs = fromAttrs(key);
-      return attrs ? attrs[key as string] : Reflect.get(target, key);
-    },
-    has(target, key) {
-      if (key === $PROXY) return true;
-      if (contributed(key)) return true;
-      if (skip(key)) return false;
-      return Reflect.has(target, key) || fromAttrs(key) !== undefined;
-    },
-    ownKeys(target) {
-      const keys = new Set<string | symbol>();
-      for (const key of Reflect.ownKeys(target)) if (!skip(key)) keys.add(key);
-      for (const key of Object.keys(attrsProps() ?? {})) if (!skip(key)) keys.add(key);
-      // contributed keys last: author props, attrs, then this wrapper's own
-      keys.add("class");
-      if (styleFn) keys.add("style");
-      return [...keys];
-    },
-    getOwnPropertyDescriptor(target, key) {
-      const getter = contributed(key);
-      if (getter) return { enumerable: true, configurable: true, get: getter };
-      if (skip(key)) return undefined;
-      const attrs = fromAttrs(key);
-      if (attrs) {
-        return { enumerable: true, configurable: true, get: () => attrsProps()?.[key as string] };
-      }
-      return Reflect.getOwnPropertyDescriptor(target, key);
-    },
-  });
-};
-
-// util function to merge class names, as they are concatenated with a space
-const mergeClasses = (a?: string, b?: string) => {
-  if (!a && !b) return undefined;
-  if (!a) return b;
-  if (!b) return a;
-  return a + " " + b;
-};
-
-/**
- * merge props and processed props (including class names and styles)
- * e.g.:\
- * `{ class: "a", foo: 1 }` and `{ class: "b", bar: 2 }` \
- * => `{ class: "a b", foo: 1, bar: 2 }`
- */
-const combineProps = <
-  T extends {
-    class?: string;
-    style?: StyleObject | string;
-  },
-  TOther extends
-    | {
-        class?: string;
-        style?: StyleObject | string;
-      }
-    | null
-    | undefined,
->(
-  props: T,
-  newProps: TOther,
-) =>
-  newProps
-    ? (props.class === newProps.class || !newProps.class) &&
-      (props.style === newProps.style || !newProps.style)
-      ? // shortcut if no style and class merging is necessary
-        {
-          ...props,
-          ...newProps,
-        }
-      : // merge class names and styles
-        {
-          ...props,
-          ...newProps,
-          class: mergeClasses(props.class, newProps.class),
-          style: { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) },
-        }
-    : // if no new props are provided, no merging is necessary
-      props;
-
-/**
- * Merges the attrs function of the current component with the attrs function of the parent component
- * in order to preserve the sequence of the attrs functions.
- * Note: In theory, the parentAttrsFn can have different types for TAttrsIn and TAttrsOut
- * but as this is only used internally, we can ignore and simplify this case
- * @param attrs The attrs object or function of the current component (if any)
- * @param parentAttrsFn The attrs function of the parent/wrapped component (if any)
- * @returns A function that receives the props and returns the transformed props
- */
-const buildRuntimeAttrsProcessor = <
-  T,
-  TAttrsIn extends object,
-  TAttrsOut extends AttrsMerged<T, TAttrsIn>,
->(
-  attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
-  parentAttrsFn?: AttrsFunction<T, TAttrsIn, TAttrsOut>,
-): AttrsFunction<T, TAttrsIn, TAttrsOut> | undefined => {
+/** Apply parent attrs first, then let own attrs read and override that result. */
+const composeAttrs = (
+  attrs?: RuntimeAttrs,
+  parentAttrsFn?: RuntimeAttrsFn,
+): RuntimeAttrsFn | undefined => {
   const ownAttrsFn = attrs && (typeof attrs === "function" ? attrs : () => attrs);
-
-  if (ownAttrsFn && parentAttrsFn) {
-    return (props) => {
-      const parentProps = parentAttrsFn(props);
-
-      // overwrite and merge the parent props with the props received from the attrs function
-      // after they went through the parent attrs function.
-      //
-      // This makes sure the linearity of the attrs functions is preserved and all attrs function receive
-      // the whole props object calculated from the previous attrs functions
-      return combineProps(
-        parentProps as any,
-        ownAttrsFn(combineProps(props as any, parentProps as any) as any),
-      ) as any;
-    };
-  }
-
-  return ownAttrsFn || parentAttrsFn;
+  if (!ownAttrsFn) return parentAttrsFn;
+  if (!parentAttrsFn) return ownAttrsFn;
+  return (props) => {
+    const parentProps = parentAttrsFn(props);
+    return combineProps(parentProps, ownAttrsFn(combineProps(props, parentProps)));
+  };
 };
 
-/**
- * Merges the runtime style function of the current component with the runtime style function of the parent component
- * in order to preserve the sequence of the attrs functions.
- * @param runtimeStylesFn The current runtime styles function
- * @param parentRuntimeStylesFn The parent runtime styles function
- * @returns The merged runtime styles function
- */
-const buildRuntimeStylesProcessor = <T>(
-  runtimeStylesFn: RuntimeStyleProcessor<T>,
-  parentRuntimeStylesFn?: RuntimeStyleProcessor<T>,
-) => {
-  if (runtimeStylesFn && parentRuntimeStylesFn) {
-    const combined: RuntimeStyleProcessor<T> = Object.assign(
-      (props: T, classes: Parameters<RuntimeStyleProcessor<T>>[1], style: StyleObject) => {
-        parentRuntimeStylesFn(props, classes, style);
-        runtimeStylesFn(props, classes, style);
-      },
-      // the chain is dynamic if any level is dynamic
-      { $dynamic: runtimeStylesFn.$dynamic || parentRuntimeStylesFn.$dynamic },
-    );
-    return combined;
-  }
-  return runtimeStylesFn || parentRuntimeStylesFn;
+/** Run parent styles before own styles, with one collector and style object. */
+const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
+  if (!parent) return own;
+  // The flag covers both processors; neither needs a style object when it is false.
+  return Object.assign(
+    (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
+      parent(props, classes, style);
+      own(props, classes, style);
+    },
+    { $dynamic: own.$dynamic || parent.$dynamic },
+  ) as StyleProcessor;
 };
 
-/**
- * Internal function where attrs are passed to be processed
- */
-export type StyledInternal = <
-  T extends object,
-  TAttrsIn extends object = {},
-  TAttrsOut extends AttrsMerged<T, TAttrsIn> = AttrsMerged<T, TAttrsIn>,
->(
-  Component: AnyComponent<T> | YakComponent<T> | HtmlTags | string,
-  attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
-) => StyledLiteral<Substitute<T, TAttrsIn>>;
+/** Attrs override props; class and style values combine. */
+const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
+  if (!newProps) return props;
+  if (
+    (props.class === newProps.class || !newProps.class) &&
+    (props.style === newProps.style || !newProps.style)
+  )
+    return { ...props, ...newProps };
+  return {
+    ...props,
+    ...newProps,
+    class: mergeClasses(props.class, newProps.class),
+    style: { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) },
+  };
+};
 
-/**
- * Utility type to extract the AttrsFunction from the Attrs type
- */
-export type ExtractAttrsFunction<T> = T extends (p: any) => any ? T : never;
+// Join nonempty class names with a space.
+const mergeClasses = (a?: string, b?: string) => {
+  if (!a) return b || undefined;
+  return b ? a + " " + b : a;
+};
