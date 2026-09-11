@@ -225,8 +225,9 @@ const createTargetRenderer = (target: AnyComponent<any> | string): TargetRendere
     return (props, meta) => createComponent(target, yakProps(props, meta));
   }
   if (isServer) {
-    const isVoid = VOID_ELEMENTS.test(target);
-    return (props, meta) => serializeElement(target, props, meta, isVoid);
+    // void tags close in the opening tag, others get a closing tag built once here
+    const closing = VOID_ELEMENTS.test(target) ? undefined : `</${target}>`;
+    return (props, meta) => serializeElement(target, closing, props, meta);
   }
   return createElementRenderer(target);
 };
@@ -325,9 +326,9 @@ const createChildrenRenderer = (
  */
 const serializeElement = (
   tag: string,
+  closing: string | undefined,
   props: Props,
   meta: RenderMeta,
-  skipChildren: boolean,
 ): JSX.Element => {
   // Take the element's key before reading props; a getter may render a child.
   const hk = ssrHydrationKey();
@@ -335,20 +336,31 @@ const serializeElement = (
   const attrs = computed?.attrs;
   const className = classNameOf(props, meta);
   const style = computed?.style;
+  const skip = meta.skip;
   let result = `<${tag}${hk}`;
   let children: unknown;
-  // Child getters on void tags must stay unread to preserve hydration IDs.
-  forEachProp(props, meta, attrs, (key, source) => {
+  // author keys first, an attrs value wins; then the keys only attrs has.
+  // only the first child prop is read, and none on a void tag: a child
+  // getter may render and take hydration ids
+  for (const key of Object.keys(props)) {
+    if (skip(key)) continue;
+    const source = attrs && key in attrs ? attrs : props;
     if (!ChildProperties.has(key)) result += attribute(key, source[key]);
-    else if (children === undefined && !skipChildren)
-      children = childContent(tag, key, source[key]);
-  });
+    else if (children === undefined && closing) children = childContent(tag, key, source[key]);
+  }
+  if (attrs) {
+    for (const key of Object.keys(attrs)) {
+      if (skip(key) || key in props) continue;
+      if (!ChildProperties.has(key)) result += attribute(key, attrs[key]);
+      else if (children === undefined && closing) children = childContent(tag, key, attrs[key]);
+    }
+  }
   if (className !== undefined) result += ` class="${ssrClassName(className)}"`;
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
   // Void tags need no child resolution; return Solid's server node directly.
-  if (skipChildren) return { t: result + "/>" } as JSX.Element;
+  if (!closing) return { t: result + "/>" } as JSX.Element;
   if (typeof children === "function") children = children();
-  return ssr([result + ">", `</${tag}>`], resolveSSRNode(children, undefined, true));
+  return ssr([result + ">", closing], resolveSSRNode(children, undefined, true));
 };
 
 /** Format one SSR attribute, including its leading space. */
@@ -481,22 +493,6 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
 /** the class for one render, from the memo or the static class function */
 const classNameOf = (props: Props, meta: RenderMeta): string | undefined =>
   meta.compute ? meta.compute().class : meta.classOf(props);
-
-/** Visit author keys with attrs overrides, then keys added by attrs. */
-const forEachProp = (
-  props: Props,
-  meta: RenderMeta,
-  attrs: Props | undefined,
-  visit: (key: string, source: Props) => void,
-) => {
-  for (const key of Object.keys(props)) {
-    if (!meta.skip(key)) visit(key, attrs && key in attrs ? attrs : props);
-  }
-  if (!attrs) return;
-  for (const key of Object.keys(attrs)) {
-    if (!meta.skip(key) && !(key in props)) visit(key, attrs);
-  }
-};
 
 /** Resolve attrs, then run styles against that props view. */
 const computeStyles = (
