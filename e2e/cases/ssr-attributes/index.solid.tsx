@@ -1,4 +1,4 @@
-import { styled } from "@yak/solid";
+import { css, styled } from "@yak/solid";
 import { isServer } from "@solidjs/web";
 
 // the server reads only the first child prop; a second one must stay unread,
@@ -25,6 +25,18 @@ const DynamicDiv = styled.div.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
 const DynamicAnchor = styled.a.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
   padding: 1px;
   color: ${(props) => props.$tone};
+`;
+
+// a component target that spreads its props into a native element: the
+// props it receives go through Solid's ssrElement on the server. the
+// conditional class keeps the component dynamic without any style value
+const Spread = (props: Record<string, unknown>) => <p {...props} />;
+const StyledSpread = styled(Spread)<{ $green?: boolean }>`
+  ${(props) =>
+    props.$green &&
+    css`
+      color: rgb(0, 128, 0);
+    `}
 `;
 
 // every kind of value the serializer treats specially
@@ -61,6 +73,9 @@ export default function App() {
       </DynamicAnchor>
       {/* attrs keep these on the runtime path in both fold modes; a folded
           native element lets the Solid compiler evaluate textContent itself */}
+      <StyledSpread data-testid="spread-target" $green>
+        text
+      </StyledSpread>
       <DynamicDiv
         data-testid="unread-div"
         $tone="rgb(0, 0, 0)"

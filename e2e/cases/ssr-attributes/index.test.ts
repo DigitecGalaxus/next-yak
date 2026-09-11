@@ -8,7 +8,7 @@ const IGNORED = new Set(["_hk", "data-testid", "class", "style"]);
 /** attributes of the element with this test id in the raw server html */
 function serverAttributes(html: string, testId: string): Record<string, string | undefined> {
   // attribute values may contain ">" so the tag body is matched with quotes in mind
-  const tags = [...html.matchAll(/<(?:div|a)\b((?:[^>"]|"[^"]*")*)>/g)].map((match) => match[1]);
+  const tags = [...html.matchAll(/<[a-z]+\b((?:[^>"]|"[^"]*")*)>/g)].map((match) => match[1]);
   const body = tags.find((tag) => tag.includes(`data-testid="${testId}"`));
   expect(body, `server html has ${testId}`).toBeDefined();
   const attributes: Record<string, string | undefined> = {};
@@ -52,6 +52,12 @@ test(
         expect(div).not.toHaveProperty("data-ref");
       }
       expect(serverAttributes(html, "dynamic-div")["data-attrs"]).toBe("yes");
+      // a component target that spreads its props must not receive an empty
+      // style for a dynamic component without style values
+      const spread = serverAttributes(html, "spread-target");
+      expect(html).not.toMatch(/data-testid="spread-target"[^>]*style=""/);
+      expect(spread).not.toHaveProperty("$green");
+      expect(spread).not.toHaveProperty("style");
       // innerHTML won over the unread textContent getter (which throws on the server)
       for (const id of ["unread-div", "unread-a"]) {
         expect(html).toMatch(
@@ -95,5 +101,7 @@ test(
     for (const id of ["unread-div", "unread-a"]) {
       await expect(page.getByTestId(id).locator("b")).toHaveText("raw");
     }
+    await expect(page.getByTestId("spread-target")).toHaveCSS("color", "rgb(0, 128, 0)");
+    await expect(page.getByTestId("spread-target")).not.toHaveAttribute("$green");
   }),
 );

@@ -390,7 +390,7 @@ const yakProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> 
 const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { compute, classOf } = meta;
   const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = compute ? () => compute().style : undefined;
+  const styleFn = styleGetter(compute);
   const out: Record<PropertyKey, unknown> = {};
   for (const key of Reflect.ownKeys(props)) {
     if (meta.skip(key)) continue;
@@ -413,6 +413,20 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
 };
 
 /**
+ * the style accessor a component target receives, or none
+ * on the server the value is final, and a target that spreads its props
+ * into ssrElement would write style="" for an undefined one; on the client
+ * the accessor stays so the memo can set a style later
+ */
+const styleGetter = (
+  compute: (() => ComputedStyles) | undefined,
+): (() => StyleObject | undefined) | undefined => {
+  if (!compute) return undefined;
+  if (isServer && compute().style === undefined) return undefined;
+  return () => compute().style;
+};
+
+/**
  * Attrs and reactive spreads can add or remove keys. $PROXY keeps downstream
  * omit() calls reactive.
  */
@@ -420,7 +434,7 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
   const { skip, compute, classOf } = meta;
   const attrsProps = () => (meta.hasAttrs ? meta.compute().attrs : undefined);
   const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = compute ? () => compute().style : undefined;
+  const styleFn = styleGetter(compute);
   const contributed = (key: PropertyKey) =>
     key === "class" ? classFn : key === "style" ? styleFn : undefined;
   const fromAttrs = (key: PropertyKey) => {

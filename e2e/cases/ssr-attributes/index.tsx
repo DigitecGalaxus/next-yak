@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { css, styled } from "next-yak";
 
 // React twin of the Solid case: the same props on a styled div and a styled a,
 // once static and once with attrs and a dynamic style.
@@ -15,6 +15,16 @@ const DynamicDiv = styled.div.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
 const DynamicAnchor = styled.a.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
   padding: 1px;
   color: ${(props) => props.$tone};
+`;
+
+// a component target that spreads its props into a native element
+const Spread = (props: Record<string, unknown>) => <p {...props} />;
+const StyledSpread = styled(Spread)<{ $green?: boolean }>`
+  ${(props) =>
+    props.$green &&
+    css`
+      color: rgb(0, 128, 0);
+    `}
 `;
 
 const special = {
@@ -48,6 +58,9 @@ export default function App() {
       <DynamicAnchor data-testid="dynamic-a" $tone="rgb(255, 0, 0)" {...special}>
         text
       </DynamicAnchor>
+      <StyledSpread data-testid="spread-target" $green>
+        text
+      </StyledSpread>
       <DynamicDiv
         data-testid="unread-div"
         $tone="rgb(0, 0, 0)"
