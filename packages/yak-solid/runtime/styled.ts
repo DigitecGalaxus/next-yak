@@ -201,9 +201,7 @@ const createDynamicComponent =
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
     // the server has no updates so a run-once cache replaces the memo
     // transparent memo: no hydration id is claimed for it
-    const computed = isServer
-      ? once(compute)
-      : createMemo(compute, { transparent: true });
+    const computed = isServer ? once(compute) : createMemo(compute, { transparent: true });
     // theme rules
     // style callbacks see an explicit theme prop before the provider theme
     // the target only gets a theme when attrs replaced the provider accessor,
@@ -322,7 +320,7 @@ const serializeElement = (
   const hk = ssrHydrationKey();
   const computed = meta.compute?.();
   const attrs = computed?.attrs;
-  const className = computed ? computed.class : meta.classOf!(props);
+  const className = classNameOf(props, meta);
   const style = computed?.style;
   let result = `<${tag}${hk}`;
   let children: unknown;
@@ -460,13 +458,16 @@ const serverProps = (props: Props, meta: RenderMeta): Record<string, unknown> =>
     out[key] = source[key];
   });
   // `ssrElement` writes `class=""` for an undefined class, so leave it out.
-  const computed = meta.compute?.();
-  const className = computed ? computed.class : meta.classOf!(props);
+  const className = classNameOf(props, meta);
   if (className !== undefined) out.class = className;
-  const style = computed?.style;
+  const style = meta.compute?.().style;
   if (style !== undefined) out.style = style;
   return out;
 };
+
+/** the class for one render, from the memo or the static class function */
+const classNameOf = (props: Props, meta: RenderMeta): string | undefined =>
+  meta.compute ? meta.compute().class : meta.classOf(props);
 
 /** Visit author keys with attrs overrides, then keys added by attrs. */
 const forEachProp = (
