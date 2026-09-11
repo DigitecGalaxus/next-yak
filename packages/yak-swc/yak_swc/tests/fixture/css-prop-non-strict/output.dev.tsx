@@ -5,16 +5,16 @@ import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const yakClass = /*#__PURE__*/ css();
 // A css prop next-yak owns is still compiled and merged with className and
 // style. Non-strict only changes what happens to a value it can not compile.
-const Merged = ()=><div {...__yak_mergeCssProp({
+const Merged = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
+:global(.input_Merged_m7uBBu) {
+  color: red;
+}
+*/ /*#__PURE__*/ css("input_Merged_m7uBBu"), {
         className: "theirs",
         style: {
             padding: "5px"
         }
-    }, /*YAK Extracted CSS:
-:global(.input_Merged_m7uBBu) {
-  color: red;
-}
-*/ /*#__PURE__*/ css("input_Merged_m7uBBu"))}/>;
+    })}/>;
 // With strictCssProp off, a css prop value next-yak can't handle is left
 // untouched instead of failing the build - useful when another library on the
 // same element owns the css prop. Under the default strict mode these error

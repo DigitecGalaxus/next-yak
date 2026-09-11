@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && vite --port 5373",
-    "build": "cd .tmp && vite build",
-    "start": "cd .tmp && vite preview --port 5373"
+    "dev": "cd .tmp && node server.ts",
+    "build": "cd .tmp && vite build && vite build --ssr",
+    "start": "cd .tmp && node server.ts --prod"
   },
   "dependencies": {
     "@solidjs/web": "catalog:core",
@@ -13,8 +13,8 @@
     "solid-js": "catalog:core"
   },
   "devDependencies": {
+    "@solidjs/vite-plugin": "catalog:dev",
     "typescript": "catalog:dev",
-    "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:dev"
+    "vite": "catalog:dev"
   }
 }

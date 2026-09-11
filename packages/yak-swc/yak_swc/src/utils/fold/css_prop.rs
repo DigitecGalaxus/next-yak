@@ -46,17 +46,22 @@ impl CSSProp {
   /// ```
   /// and
   /// ```jsx
-  /// <div css={css("divClassName")} style={{color: red}} className="myClassName" />
+  /// <div className="myClassName" {...rest} style={{color: red}} css={css("divClassName")} />
   /// ```
   /// becomes
   /// ```jsx
   /// <div {...__yak_mergeCssProp(
-  ///   css("divClassName")({}),
-  ///   {
-  ///     style: {color: red},
-  ///     className: "myClassName"
-  ///   })} />
+  ///   css("divClassName"),
+  ///   { className: "myClassName" },
+  ///   rest,
+  ///   { style: {color: red} }
+  /// )} />
   /// ```
+  /// The css value comes first, then one argument per merged source in JSX
+  /// order: a run of plain attributes as one object literal, a spread as the
+  /// expression it was written as. The helper never receives a props object
+  /// spread at the call site, so it can copy property descriptors instead of
+  /// reading values (the Solid runtime relies on that for hydration).
   /// An empty css prop (e.g. `css``) is always dropped. Otherwise, when
   /// `fold_static` is on, a statically known css prop skips the merge call and
   /// folds into a plain `className` instead (see `try_fold`).
@@ -78,9 +83,9 @@ impl CSSProp {
     // mutated, so both outcomes below start from the element as written.
     match self.collect_merge_parts(opening_element, yak_imports) {
       // We own this css prop and replaces it with the merge call
-      Ok((relevant_props, css_expr)) => {
+      Ok((sources, css_expr)) => {
         let merge_ident = yak_imports.get_yak_utility_ident("mergeCssProp");
-        let merge_call = Self::create_merge_call(&relevant_props, css_expr, &merge_ident);
+        let merge_call = Self::create_merge_call(sources, css_expr, &merge_ident);
         self.replace_with_merge_call(opening_element, merge_call);
       }
       // We can't compile this value, so the element keeps every attribute as written
@@ -94,25 +99,42 @@ impl CSSProp {
     }
   }
 
+  /// The css expression and the merge sources in JSX order: consecutive plain
+  /// attributes become one object literal, a spread stays the expression it is
   fn collect_merge_parts(
     &self,
     opening_element: &JSXOpeningElement,
     yak_imports: &YakImports,
-  ) -> Result<(Vec<PropOrSpread>, Box<Expr>), UnsupportedCssProp> {
+  ) -> Result<(Vec<Box<Expr>>, Box<Expr>), UnsupportedCssProp> {
     let css_expr =
       Self::extract_css_expr(&opening_element.attrs[self.index], opening_element.span)?;
     Self::validate_css_value(&css_expr, yak_imports)?;
-    let relevant_props = self
-      .relevant_props
-      .iter()
-      .map(|&(index, _)| match &opening_element.attrs[index] {
-        JSXAttrOrSpread::JSXAttr(attr) => Self::map_jsx_attr(attr),
-        JSXAttrOrSpread::SpreadElement(spread) => Ok(PropOrSpread::Spread(spread.clone())),
+    let mut sources: Vec<Box<Expr>> = Vec::new();
+    let mut attr_run: Vec<PropOrSpread> = Vec::new();
+    for &(index, _) in self.relevant_props.iter() {
+      match &opening_element.attrs[index] {
+        JSXAttrOrSpread::JSXAttr(attr) => attr_run.push(Self::map_jsx_attr(attr)?),
+        JSXAttrOrSpread::SpreadElement(spread) => {
+          Self::close_attr_run(&mut attr_run, &mut sources);
+          sources.push(spread.expr.clone());
+        }
         #[cfg(swc_ast_unknown)]
-        _ => Err(UnsupportedCssProp::UnsupportedJSXAttrOrSpread()),
-      })
-      .collect::<Result<Vec<_>, _>>()?;
-    Ok((relevant_props, css_expr))
+        _ => return Err(UnsupportedCssProp::UnsupportedJSXAttrOrSpread()),
+      }
+    }
+    Self::close_attr_run(&mut attr_run, &mut sources);
+    Ok((sources, css_expr))
+  }
+
+  /// Turns the open run of plain attributes into one object literal source
+  fn close_attr_run(attr_run: &mut Vec<PropOrSpread>, sources: &mut Vec<Box<Expr>>) {
+    if attr_run.is_empty() {
+      return;
+    }
+    sources.push(Box::new(Expr::Object(ObjectLit {
+      span: DUMMY_SP,
+      props: std::mem::take(attr_run),
+    })));
   }
 
   /// Swaps the css prop and the props merged into it for the merge call spread
@@ -291,27 +313,28 @@ impl CSSProp {
       })
   }
 
-  /// Creates a merge call expression that combines the CSS props with other relevant props.
-  /// This is used when there are additional props (like className or style) that need to be merged.
-  /// e.g. `style={{color: "red"}} className="foo"` becomes `merge_ident({style: {color: "red"}}, {className: "foo"})`
+  /// Creates the merge call: the css value first, then every source in JSX
+  /// order. Later sources win, as they did in one object literal.
+  /// e.g. `className="foo" {...rest}` becomes `__yak_mergeCssProp(css, { className: "foo" }, rest)`
   fn create_merge_call(
-    mapped_props: &[PropOrSpread],
-    expr: Box<Expr>,
+    sources: Vec<Box<Expr>>,
+    css_expr: Box<Expr>,
     merge_ident: &Ident,
   ) -> Box<Expr> {
+    let mut args = Vec::with_capacity(sources.len() + 1);
+    args.push(ExprOrSpread {
+      spread: None,
+      expr: css_expr,
+    });
+    args.extend(
+      sources
+        .into_iter()
+        .map(|expr| ExprOrSpread { spread: None, expr }),
+    );
     Box::new(Expr::Call(CallExpr {
       span: DUMMY_SP,
       callee: Callee::Expr(Box::new(Expr::Ident(merge_ident.clone()))),
-      args: vec![
-        ExprOrSpread {
-          spread: None,
-          expr: Box::new(Expr::Object(ObjectLit {
-            span: DUMMY_SP,
-            props: mapped_props.to_vec(),
-          })),
-        },
-        ExprOrSpread { spread: None, expr },
-      ],
+      args,
       ctxt: SyntaxContext::empty(),
       type_args: None,
     }))

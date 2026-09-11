@@ -47,8 +47,12 @@ test(
     // Focused: global `input:focus-visible` (0-1-1) beats the component
     // class (0-1-0) — the state-scoped global rule wins, as it would with a
     // plain global stylesheet. Text inputs match :focus-visible on any focus.
-    await input.focus();
-    await expect(input).toHaveCSS("color", "rgb(255, 165, 0)");
+    // Dev tools and hydration can move focus while the page starts up.
+    await expect(async () => {
+      await input.focus();
+      await expect(input).toBeFocused({ timeout: 1000 });
+      await expect(input).toHaveCSS("color", "rgb(255, 165, 0)", { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
   }),
 );
 

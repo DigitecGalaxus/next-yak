@@ -9,6 +9,13 @@ test(
     const first = page.getByTestId("first");
     await expect(first).toHaveCSS("color", "rgb(255, 0, 0)");
 
+    // The server can provide CSS before the client registers its HMR handlers.
+    const ready = page.getByTestId("ready");
+    await expect(async () => {
+      await ready.click();
+      await expect(ready).toHaveText("Ready", { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+
     // Set marker to detect full page reloads
     await page.evaluate(() => {
       window.__hmr = true;

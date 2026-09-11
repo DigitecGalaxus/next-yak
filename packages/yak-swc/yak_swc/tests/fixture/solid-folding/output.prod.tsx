@@ -61,10 +61,10 @@ export const CssProp = ()=><p class={/*YAK Extracted CSS:
 }
 */ /*#__PURE__*/ "ym7uBBu7"}/>;
 // an existing class attribute keeps the runtime merge
-export const CssPropMerge = ()=><p {...__yak_mergeCssProp({
-        class: "user"
-    }, /*YAK Extracted CSS:
+export const CssPropMerge = ()=><p {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.ym7uBBu8) {
   color: green;
 }
-*/ /*#__PURE__*/ css("ym7uBBu8"))}/>;
+*/ /*#__PURE__*/ css("ym7uBBu8"), {
+        class: "user"
+    })}/>;

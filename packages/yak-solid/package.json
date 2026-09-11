@@ -84,6 +84,7 @@
     "yak-swc": "workspace:*"
   },
   "devDependencies": {
+    "@solidjs/vite-plugin": "catalog:dev",
     "@solidjs/web": "catalog:core",
     "@testing-library/jest-dom": "catalog:dev",
     "@types/node": "catalog:dev",
@@ -92,7 +93,6 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vite-plugin-solid": "catalog:dev",
     "vitest": "catalog:dev",
     "yak-internals": "workspace:*"
   },
