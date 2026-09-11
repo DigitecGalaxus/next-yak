@@ -58,6 +58,8 @@ type RuntimeAttrs = Props | RuntimeAttrsFn;
 
 type ComputedStyles = {
   class: string | undefined;
+  /** true when the class holds generated names only, nothing from the author or attrs */
+  generatedClass: boolean;
   style: StyleObject | undefined;
   attrs: Props | undefined;
 };
@@ -69,6 +71,8 @@ type ComputedStyles = {
  */
 type RenderMeta = {
   skip: (key: PropertyKey) => boolean;
+  /** the generated class of a static component, the writer's escape-free case */
+  staticClass?: string;
 } & (
   | { compute: undefined; classOf: (props: Props) => string | undefined; hasAttrs: false }
   | { compute: () => ComputedStyles; classOf: undefined; hasAttrs: boolean }
@@ -169,7 +173,7 @@ const createStaticComponent = (
     tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
       ? createChildrenRenderer(tag, staticClass)
       : undefined;
-  const meta: RenderMeta = { skip, classOf, compute: undefined, hasAttrs: false };
+  const meta: RenderMeta = { skip, staticClass, classOf, compute: undefined, hasAttrs: false };
   return (props) => {
     // a reactive spread can add props later and needs the full client binding
     // on the server props are read once so the proxy check does not matter
@@ -362,7 +366,11 @@ const serializeElement = (
       else if (children === undefined && closing) children = childContent(tag, key, attrs[key]);
     }
   }
-  if (className !== undefined) result += ` class="${ssrClassName(className)}"`;
+  // generated class names need no escaping, an author or attrs class does
+  if (className !== undefined) {
+    const generated = computed ? computed.generatedClass : className === meta.staticClass;
+    result += ` class="${generated ? className : ssrClassName(className)}"`;
+  }
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
   // Void tags need no child resolution; return Solid's server node directly.
   if (!closing) return { t: result + "/>" } as JSX.Element;
@@ -528,7 +536,8 @@ const computeStyles = (
   processor: StyleProcessor,
 ): ComputedStyles => {
   const attrs = attrsFn?.(propsWithTheme);
-  const classes = new Classes(normalizeClass(props.class));
+  const authorClass = normalizeClass(props.class);
+  const classes = new Classes(authorClass);
   const attrsClass = normalizeClass(attrs?.class);
   if (attrsClass) classes.add(attrsClass);
   // A static processor writes no style values, so the author's style object
@@ -544,6 +553,7 @@ const computeStyles = (
   );
   return {
     class: classes.value || undefined,
+    generatedClass: !authorClass && !attrsClass,
     style: style && hasKeys(style) ? style : undefined,
     attrs,
   };
