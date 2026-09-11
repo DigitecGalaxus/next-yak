@@ -296,18 +296,16 @@ const createChildrenRenderer = (
   className: string | undefined,
 ): ((props: Props, hasChildren: boolean) => JSX.Element) => {
   if (isServer) {
-    const parts = [
-      `<${tag}`,
-      `${className ? ` class="${ssrClassName(className)}"` : ""}>`,
-      `</${tag}>`,
-    ];
+    const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
+    const parts = [`<${tag}`, open, `</${tag}>`];
     return (props, hasChildren) => {
+      // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
-      return ssr(
-        parts,
-        hk,
-        resolveSSRNode(hasChildren ? escape(props.children) : undefined, undefined, true),
-      );
+      const children = hasChildren ? escape(props.children) : undefined;
+      // plain children join in place like in serializeElement
+      const text = plainContent(children);
+      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${parts[2]}` } as JSX.Element;
+      return ssr(parts, hk, resolveSSRNode(children, undefined, true));
     };
   }
   const create = createElementTemplate(tag, className);
