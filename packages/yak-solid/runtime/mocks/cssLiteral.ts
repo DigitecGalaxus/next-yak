@@ -1,4 +1,4 @@
-import type { css as cssInternal, NestedRuntimeStyleProcessor } from "../cssLiteral.js";
+import type { CSSFunction, NestedRuntimeStyleProcessor } from "../cssLiteral.js";
 
 /**
  * Allows to use CSS styles in a styled or css block
@@ -12,7 +12,7 @@ import type { css as cssInternal, NestedRuntimeStyleProcessor } from "../cssLite
  * `;
  * ```
  */
-export const css: typeof cssInternal = (styles: TemplateStringsArray, ...args: unknown[]) => {
+export const css: CSSFunction = (styles: TemplateStringsArray, ...args: unknown[]) => {
   // When called in yak files as a template tag (without SWC transformation),
   // return { __yak: rawCss } so the cross-file resolver can
   // extract the mixin value from evaluated .yak files.
