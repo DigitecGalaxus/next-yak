@@ -141,14 +141,10 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         )
       : createDynamicComponent(renderTarget, mergedAttrsFn, runtimeStyleProcessor, skip);
 
-    return Object.assign(Yak, {
-      [yakComponentSymbol]: [
-        Yak,
-        mergedAttrsFn,
-        runtimeStyleProcessor,
-        targetComponent,
-      ] satisfies ComponentMetadata,
-    });
+    // direct write instead of Object.assign, smaller and no extra object
+    const tagged = Yak as AnyComponent<Props> & { [yakComponentSymbol]: ComponentMetadata };
+    tagged[yakComponentSymbol] = [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent];
+    return tagged;
   };
 };
 
