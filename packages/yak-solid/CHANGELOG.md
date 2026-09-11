@@ -1,5 +1,18 @@
 # @yak/solid
 
+## 0.2.0
+
+### Minor Changes
+
+- 71b8d7b: Update dependencies and publish the direct dependencies with semver ranges instead of exact pins
+
+### Patch Changes
+
+- 5c80c54: Fix an issue where a css prop combined with a spread didn't hydrate on SolidJS.
+- Updated dependencies [5c80c54]
+- Updated dependencies [71b8d7b]
+  - yak-swc@9.10.0
+
 ## 0.1.0
 
 ### Minor Changes
