@@ -233,9 +233,8 @@ const createTargetRenderer = (target: AnyComponent<any> | string): TargetRendere
 
 /** Parse SVG and MathML children inside their namespace root. */
 const createElementTemplate = (tag: string, className?: string) => {
-  const classAttribute = className
-    ? ` class="${className.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`
-    : "";
+  // the class here is the compiler's generated name, safe inside the template
+  const classAttribute = className ? ` class="${className}"` : "";
   const opening = `<${tag}${classAttribute}>`;
   // flag 2 returns firstChild.firstChild
   // skips the <svg>/<math> wrapper we add so the child parses in its namespace
@@ -621,16 +620,9 @@ const hasKeys = (object: object): boolean => {
 };
 
 /** Run once and reuse the result. */
-const once = <T>(fn: () => T): (() => T) => {
-  let done = false;
-  let value: T;
-  return () => {
-    if (!done) {
-      value = fn();
-      done = true;
-    }
-    return value;
-  };
+const once = <T extends object>(fn: () => T): (() => T) => {
+  let value: T | undefined;
+  return () => (value ??= fn());
 };
 
 /** Collect static classes without reading props. */
