@@ -128,7 +128,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     const renderTarget = createTargetRenderer(targetComponent);
     const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
     const omitted = new Set(["class", "theme"]);
-    if (isTag) omitted.add("component");
     if (!isStatic) omitted.add("style");
     const skip = (key: PropertyKey) =>
       typeof key === "string" && (key.charCodeAt(0) === 36 /* $ */ || omitted.has(key));
@@ -352,7 +351,7 @@ const childContent = (tag: string, prop: string, value: unknown): unknown =>
 
 /**
  * the props the target sees: author props, attrs output, computed class and style
- * $-props and the provider theme are hidden, tags also lose `component`
+ * $-props and the provider theme are hidden
  *
  * plain copy when the keys can't change, proxy when attrs or a reactive
  * spread can add keys and downstream omit() has to notice
