@@ -40,8 +40,7 @@ import { useTheme } from "@yak/solid/context";
 import type { YakTheme } from "./context/index.js";
 import type { Accessor } from "solid-js";
 
-// Combine parent attrs and styles when a Yak component is defined. At render
-// time, keep class/style work beside props so the target controls getter reads.
+/** the props a styled component receives from its author */
 type Props = {
   class?: string;
   style?: StyleObject | string;
@@ -60,7 +59,11 @@ type ComputedStyles = {
   attrs: Props | undefined;
 };
 
-/** Render work kept separate from the author's props. */
+/**
+ * the information to build class and style for one render
+ * kept outside of the component props so solid never copies or filters
+ * it when it walks the props object
+ */
 type RenderMeta = {
   skip: (key: PropertyKey) => boolean;
 } & (
@@ -87,7 +90,7 @@ export type StyledInternal = <
   attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
 ) => StyledLiteral<Substitute<T, TAttrsIn>>;
 
-// These tags can be HTML or SVG. dynamic() chooses from the insertion parent.
+/** These tags can be HTML or SVG. dynamic() chooses from the insertion parent. */
 const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
 
 const VOID_ELEMENTS =
@@ -170,7 +173,8 @@ const createStaticComponent = (
       : undefined;
   const meta: RenderMeta = { skip, classOf, compute: undefined, hasAttrs: false };
   return (props) => {
-    // Reactive spreads can add props, so they need the full client binding.
+    // a reactive spread can add props later and needs the full client binding
+    // on the server props are read once so the proxy check does not matter
     if (renderChildren && (isServer || !($PROXY in props))) {
       const keys = Object.keys(props);
       if (!keys.length || (keys.length === 1 && keys[0] === "children")) {
@@ -191,12 +195,19 @@ const createDynamicComponent =
   (props) => {
     const theme = useTheme();
     const propsWithTheme = withTheme(props, theme);
+    // attrs and styles run in one memo on purpose
+    // a style-only prop change also reruns attrs, still cheaper than
+    // two memos per element
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
-    // SSR reads styles once. The client memo tracks updates without taking a hydration ID.
+    // the server has no updates so a run-once cache replaces the memo
+    // transparent memo: no hydration id is claimed for it
     const computed = isServer
       ? once(compute)
       : createMemo(compute, { transparent: true } as MemoOptions<ComputedStyles>);
-    // Forward a theme only when attrs replace the provider's accessor.
+    // theme rules
+    // style callbacks see an explicit theme prop before the provider theme
+    // the target only gets a theme when attrs replaced the provider accessor,
+    // otherwise it would end up on the dom element
     const allowTheme =
       attrsFn &&
       (() => {
@@ -231,12 +242,14 @@ const createTargetRenderer = (target: AnyComponent<any> | string): TargetRendere
   return (props, meta) => render(yakProps(props, meta));
 };
 
-// Parse SVG and MathML children inside their namespace root.
+/** Parse SVG and MathML children inside their namespace root. */
 const createElementTemplate = (tag: string, className?: string) => {
   const classAttribute = className
     ? ` class="${className.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`
     : "";
   const opening = `<${tag}${classAttribute}>`;
+  // flag 2 returns firstChild.firstChild
+  // skips the <svg>/<math> wrapper we add so the child parses in its namespace
   if (SVGElements.has(tag) && tag !== "svg") return template(`<svg>${opening}`, 2);
   if (MathMLElements.has(tag) && tag !== "math") return template(`<math>${opening}`, 2);
   return template(opening);
@@ -294,7 +307,11 @@ const createChildrenRenderer = (
   };
 };
 
-// Write SSR output directly to avoid a filtered props object and getter wrappers.
+/**
+ * writes the html string by hand instead of using ssrElement
+ * ssrElement needs a filtered props object with getters to keep the
+ * read order, that costs more than writing directly
+ */
 const serializeElement = (
   tag: string,
   props: Props,
@@ -327,6 +344,7 @@ const serializeElement = (
 const attribute = (prop: string, value: unknown): string => {
   if (prop === "style") return ` style="${ssrStyle(value as string)}"`;
   if (prop === "class") return ` class="${ssrClassName(value as string)}"`;
+  // refs, event handlers and prop: bindings only exist on the client
   if (value == undefined || prop === "ref" || prop.startsWith("on") || prop.startsWith("prop:")) {
     return "";
   }
@@ -339,9 +357,13 @@ const childContent = (tag: string, prop: string, value: unknown): unknown =>
   tag === "script" || tag === "style" || prop === "innerHTML" ? value : escape(value);
 
 /**
- * The props a styled element hands to its target: the author's props, the
- * attrs output, then the computed class and style. Hide $-props and the
- * provider theme. Only component targets receive a prop named `component`.
+ * the props the target sees: author props, attrs output, computed class and style
+ * $-props and the provider theme are hidden, tags also lose `component`
+ *
+ * plain copy when the keys can't change, proxy when attrs or a reactive
+ * spread can add keys and downstream omit() has to notice
+ * the copy stays unmarked on purpose, a $PROXY mark makes omit()/merge()
+ * wrap it again and every read gets slower
  */
 const yakProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   if (!meta.hasAttrs && !($PROXY in props)) return copyProps(props, meta);
@@ -349,8 +371,10 @@ const yakProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> 
 };
 
 /**
- * Copy fixed keys without reading getters: a getter can render a child and
- * consume hydration IDs. Solid's compiled getters do not depend on `this`.
+ * copies descriptors without reading them
+ * a getter like icon={<Icon />} renders a child and takes hydration ids,
+ * the target has to read it in its own order
+ * moving the getter is safe, solid's compiled getters do not depend on `this`
  */
 const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { compute, classOf } = meta;
@@ -489,9 +513,10 @@ const computeStyles = (
   };
 };
 
-// Share trap functions across instances; each proxy holds its props and theme.
+/** Backing object of a theme proxy; each proxy holds its own props and theme. */
 type ThemeProps = { props: Props; theme: Accessor<YakTheme> };
 
+/** Shared across instances so no trap functions are created per element. */
 const themeTraps: ProxyHandler<ThemeProps> = {
   get: ({ props, theme }, key) =>
     key === "theme" ? ("theme" in props ? props.theme : theme) : Reflect.get(props, key),
@@ -552,6 +577,7 @@ const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | und
   return result as StyleObject;
 };
 
+/** cheaper than Object.keys(object).length, no array for a yes/no answer */
 const hasKeys = (object: object): boolean => {
   for (const _ in object) return true;
   return false;
@@ -607,6 +633,9 @@ const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProce
 /** Attrs override props; class and style values combine. */
 const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
   if (!newProps) return props;
+  // shortcut when nothing needs merging
+  // an equal class counts as nothing: own attrs get the combined props and
+  // may hand the same class back, merging it again would duplicate it
   if (
     (props.class === newProps.class || !newProps.class) &&
     (props.style === newProps.style || !newProps.style)
@@ -620,7 +649,7 @@ const combineProps = (props: Props, newProps: Props | null | undefined): Props =
   };
 };
 
-// Join nonempty class names with a space.
+/** Join nonempty class names with a space. */
 const mergeClasses = (a?: string, b?: string) => {
   if (!a) return b || undefined;
   return b ? a + " " + b : a;
