@@ -315,7 +315,13 @@ const createChildrenRenderer = (
   const create = createElementTemplate(tag, className);
   return (props, hasChildren) => {
     const el = getNextElement(create);
-    if (hasChildren) insert(el, () => props.children);
+    if (hasChildren) {
+      // static text compiles to a data property: one insert, no effect node.
+      // a getter is dynamic and keeps the binding
+      const descriptor = Object.getOwnPropertyDescriptor(props, "children");
+      if (descriptor && "value" in descriptor) insert(el, descriptor.value);
+      else insert(el, () => props.children);
+    }
     runHydrationEvents();
     return el;
   };
