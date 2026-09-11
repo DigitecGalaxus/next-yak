@@ -1,5 +1,11 @@
 # eslint-plugin-yak
 
+## 1.4.0
+
+### Minor Changes
+
+- 71b8d7b: Update dependencies and publish the direct dependencies with semver ranges instead of exact pins
+
 ## 1.3.0
 
 ### Minor Changes
