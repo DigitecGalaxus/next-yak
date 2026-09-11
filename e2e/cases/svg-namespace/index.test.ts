@@ -28,5 +28,11 @@ test(
       await expect(dot).toHaveCSS("fill", "rgb(255, 0, 0)", { timeout: 1_000 });
     }).toPass({ timeout: 15_000 });
     expect(await dot.evaluate((el, original) => el === original, originalDot)).toBe(true);
+
+    // links mounted on the client after the toggle pick the parent's namespace
+    await expect(page.getByTestId("mounted-inner")).toBeAttached();
+    expect(await namespace("mounted-inner")).toBe(SVG);
+    expect(await namespace("mounted-outer")).toBe(HTML);
+    await expect(page.getByTestId("mounted-outer")).toHaveCSS("color", "rgb(0, 0, 255)");
   }),
 );

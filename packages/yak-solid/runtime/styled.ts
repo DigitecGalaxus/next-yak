@@ -13,16 +13,16 @@ import type {
   StaticStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
-import { $PROXY, createMemo, untrack } from "solid-js";
+import { $PROXY, createMemo, getOwner, runWithOwner, sharedConfig, untrack } from "solid-js";
 import {
   ChildProperties,
   createComponent,
-  dynamic,
   escape,
   getNextElement,
   insert,
   isServer,
   MathMLElements,
+  Namespaces,
   resolveSSRNode,
   runHydrationEvents,
   spread,
@@ -34,6 +34,10 @@ import {
   template,
   type JSX,
 } from "@solidjs/web";
+// the server build of @solidjs/web has no getInsertionParent export, and a
+// named import of a missing name fails at module load; the namespace read is
+// only reached on the client
+import * as solidWeb from "@solidjs/web";
 import { normalizeClass } from "./internals/mergeClasses.js";
 // Keep the runtime and app on the same theme context; Vite can alias this export.
 import { useTheme } from "@yak/solid/context";
@@ -221,18 +225,10 @@ const createTargetRenderer = (target: AnyComponent<any> | string): TargetRendere
     return (props, meta) => createComponent(target, yakProps(props, meta));
   }
   if (isServer) {
-    if (ambiguousSvgTags.has(target)) {
-      // Match the client dynamic() memo and hydration IDs. Read props after taking the key.
-      const render = dynamic(() => target) as (
-        props: Record<string, unknown> | (() => Record<string, unknown>),
-      ) => JSX.Element;
-      return (props, meta) => render(() => serverProps(props, meta));
-    }
     const isVoid = VOID_ELEMENTS.test(target);
     return (props, meta) => serializeElement(target, props, meta, isVoid);
   }
-  const render = createElementRenderer(target);
-  return (props, meta) => render(yakProps(props, meta));
+  return createElementRenderer(target);
 };
 
 /** Parse SVG and MathML children inside their namespace root. */
@@ -249,26 +245,48 @@ const createElementTemplate = (tag: string, className?: string) => {
 };
 
 /** Bind a fixed client tag without dynamic()'s per-element memo. */
-const createElementRenderer = (
-  tag: string,
-): ((props: Record<PropertyKey, unknown>) => JSX.Element) => {
-  if (ambiguousSvgTags.has(tag)) {
-    return dynamic(() => tag);
-  }
+const createElementRenderer = (tag: string): TargetRenderer => {
   const create = createElementTemplate(tag);
-  return (props) => {
+  if (!ambiguousSvgTags.has(tag)) {
     // Reuse SSR DOM during hydration; otherwise clone the cached template.
-    const el = getNextElement(create);
-    // A proxy can add children later, so it needs a child binding.
-    spread(
-      el,
-      props,
-      untrack(() => !($PROXY in props) && !("children" in props)),
-    );
-    // Replay events after the element's bindings are ready.
-    runHydrationEvents();
-    return el;
+    return (props, meta) => bindElement(getNextElement(create), props, meta);
+  }
+  // a, script, style and title exist in html and svg. hydration claims the
+  // node the server wrote. a fresh mount learns the namespace from the
+  // insertion parent, which solid sets only while the parent inserts, so
+  // creation waits for that call, the way solid's own dynamic() does
+  const createSvg = template(`<svg><${tag}>`, 2);
+  return (props, meta) => {
+    if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
+    const owner = getOwner();
+    let el: Element | undefined;
+    const lazy = () =>
+      (el ??= runWithOwner(owner, () => {
+        const parent = solidWeb.getInsertionParent() as Element | null;
+        const inSvg =
+          !!parent &&
+          parent.namespaceURI === Namespaces.svg &&
+          parent.localName !== "foreignObject";
+        return bindElement((inSvg ? createSvg : create)(), props, meta);
+      }));
+    // insert() accepts an accessor at runtime (dynamic() returns one), the
+    // JSX.Element type does not include it
+    return lazy as unknown as JSX.Element;
   };
+};
+
+/** apply the props to a created or claimed element */
+const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
+  const bound = yakProps(props, meta);
+  // A proxy can add children later, so it needs a child binding.
+  spread(
+    el,
+    bound,
+    untrack(() => !($PROXY in bound) && !("children" in bound)),
+  );
+  // Replay events after the element's bindings are ready.
+  runHydrationEvents();
+  return el;
 };
 
 /** Cache the tag and class; only children need a binding or serialization. */
@@ -444,26 +462,6 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
       return Reflect.getOwnPropertyDescriptor(target, key);
     },
   });
-};
-
-/**
- * Build the props Solid reads for tags rendered through dynamic().
- * copies descriptors, not values: ssrElement reads one child prop and leaves
- * the others unread, a children getter may render and take hydration ids
- */
-const serverProps = (props: Props, meta: RenderMeta): Record<string, unknown> => {
-  const out: Record<string, unknown> = {};
-  forEachProp(props, meta, meta.hasAttrs ? meta.compute().attrs : undefined, (key, source) => {
-    const descriptor = Reflect.getOwnPropertyDescriptor(source, key);
-    if (!descriptor || "value" in descriptor) out[key] = source[key];
-    else Object.defineProperty(out, key, descriptor);
-  });
-  // `ssrElement` writes `class=""` for an undefined class, so leave it out.
-  const className = classNameOf(props, meta);
-  if (className !== undefined) out.class = className;
-  const style = meta.compute?.().style;
-  if (style !== undefined) out.style = style;
-  return out;
 };
 
 /** the class for one render, from the memo or the static class function */
