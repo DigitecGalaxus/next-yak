@@ -17,3 +17,5 @@ Adjacent text children of a styled tag get the same separator marker on the serv
 A styled component target that merges its props with `merge()` keeps the generated class and never sees `$` props: yak no longer forwards Solid's private merge marker.
 
 Chained `.attrs()` layers no longer read the author's child and prop getters while combining attrs, so a child component renders once and hydration keys match.
+
+Object-form `.attrs()` with plain attribute values (strings, numbers, booleans) on a styled tag renders through the static path: the attributes are part of the tag's opening string and template, so such a component costs no memo or proxy per element. They appear before the author's attributes in the markup.

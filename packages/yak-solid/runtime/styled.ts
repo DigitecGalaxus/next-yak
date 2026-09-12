@@ -98,7 +98,7 @@ type DynamicMeta = {
 
 /** what a styled component built on another yak component inherits from it */
 type ComponentMetadata = readonly [
-  attrs: RuntimeAttrsFn | undefined,
+  attrs: RuntimeAttrs | undefined,
   styles: StyleProcessor,
   target: AnyComponent<any> | string,
 ];
@@ -117,6 +117,40 @@ export type StyledInternal = <
 
 /** these tags exist in html and svg; a fresh mount picks the namespace from the insertion parent */
 const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
+
+/** object attrs bake when every entry is a plain attribute with a primitive value */
+const bakeable = (attrs: Props): boolean =>
+  Object.getOwnPropertyNames(attrs).every((key) => {
+    // a getter is read at render time, not here
+    const descriptor = Object.getOwnPropertyDescriptor(attrs, key)!;
+    if (!("value" in descriptor)) return false;
+    const type = typeof descriptor.value;
+    return (
+      (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
+      key.charCodeAt(0) !== 36 &&
+      key !== "class" &&
+      key !== "style" &&
+      key !== "theme" &&
+      key !== "ref" &&
+      !ChildProperties.has(key) &&
+      !key.startsWith("on") &&
+      !key.startsWith("prop:")
+    );
+  });
+
+/** the attribute string of baked attrs, same rules as the server writer, built once */
+const attributes = (attrs: Props): string => {
+  let result = "";
+  for (const key of Object.keys(attrs)) {
+    const value = attrs[key];
+    if (value == null || value === false) continue;
+    result +=
+      value === true || value === "" ? ` ${key}` : ` ${key}="${escapeAttribute(String(value))}"`;
+  }
+  return result;
+};
+
+const escapeAttribute = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
 
 const VOID_ELEMENTS =
   /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
@@ -137,22 +171,28 @@ const yakStyled: StyledInternal = (Component, attrs) => {
 
   // parent attrs and styles run before this component's own
   // the public tuple type hides the shape, one cast at the read
-  const [parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
+  const [parentAttrs, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as ComponentMetadata)
     : [];
 
   // the chain renders its final target once, with all attrs and style processors combined
   const targetComponent = parentTarget ?? Component;
 
-  const mergedAttrsFn = composeAttrs(attrs as RuntimeAttrs | undefined, parentAttrsFn);
+  const mergedAttrs = composeAttrs(attrs as RuntimeAttrs | undefined, parentAttrs);
 
   return (styles, ...values) => {
     const runtimeStylesFn = css(styles, ...values);
     const runtimeStyleProcessor = composeStyles(runtimeStylesFn, parentRuntimeStylesFn);
 
     const isTag = typeof targetComponent === "string";
-    const renderTarget = createTargetRenderer(targetComponent);
-    const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
+    // object attrs with plain attribute values bake into the tag's opening
+    // string and template; the component stays static
+    const baked =
+      isTag && mergedAttrs && typeof mergedAttrs !== "function" && bakeable(mergedAttrs)
+        ? mergedAttrs
+        : undefined;
+    const renderTarget = createTargetRenderer(targetComponent, baked ? attributes(baked) : "");
+    const isStatic = (!mergedAttrs || !!baked) && !runtimeStyleProcessor.$dynamic;
     // the target never sees $-props, the provider theme, or the author class
     // (yak hands it the combined one); a dynamic component owns style too.
     // no symbol passes: solid's merge() flattens any object that answers its
@@ -163,17 +203,22 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       key.charCodeAt(0) === 36 /* $ */ ||
       key === "class" ||
       key === "theme" ||
-      (!isStatic && key === "style");
+      (!isStatic && key === "style") ||
+      // a baked attr wins over the author's prop of the same name
+      (baked !== undefined && Object.hasOwn(baked, key));
+    const attrsFn =
+      typeof mergedAttrs === "function" ? mergedAttrs : mergedAttrs && (() => mergedAttrs);
     const Yak = isStatic
       ? createStaticComponent(
           isTag ? targetComponent : undefined,
           renderTarget,
           runtimeStyleProcessor,
           skip,
+          baked ? attributes(baked) : "",
         )
-      : createDynamicComponent(renderTarget, mergedAttrsFn, runtimeStyleProcessor, skip);
+      : createDynamicComponent(renderTarget, attrsFn, runtimeStyleProcessor, skip);
 
-    const metadata: ComponentMetadata = [mergedAttrsFn, runtimeStyleProcessor, targetComponent];
+    const metadata: ComponentMetadata = [mergedAttrs, runtimeStyleProcessor, targetComponent];
     return Object.assign(Yak, { [yakComponentSymbol]: metadata });
   };
 };
@@ -183,6 +228,7 @@ const createStaticComponent = (
   renderTarget: TargetRenderer,
   processor: StaticStyleProcessor,
   skip: (key: PropertyKey) => boolean,
+  attrString: string,
 ): AnyComponent<Props> => {
   const collected = new Classes();
   processor(undefined, collected);
@@ -198,7 +244,7 @@ const createStaticComponent = (
   const renderChildren =
     // the namespace question of the four ambiguous tags exists only on a fresh client mount
     tag && (isServer || !ambiguousSvgTags.has(tag)) && !VOID_ELEMENTS.test(tag)
-      ? createChildrenRenderer(tag, staticClass)
+      ? createChildrenRenderer(tag, staticClass, attrString)
       : undefined;
   // the writer prints the class unescaped only when it is this exact string;
   // with an atom in it (author text) this stays undefined and the writer escapes
@@ -260,25 +306,27 @@ const createDynamicComponent =
   };
 
 /** the target's render path, chosen once per styled component */
-const createTargetRenderer = (target: AnyComponent<any> | string): TargetRenderer => {
+const createTargetRenderer = (
+  target: AnyComponent<any> | string,
+  attrString: string,
+): TargetRenderer => {
   if (typeof target !== "string") {
     return (props, meta) => createComponent(target, yakProps(props, meta));
   }
   if (isServer) {
-    // void tags close in the opening tag, others get a closing tag built once here
+    // the opening string with baked attrs and the closing tag are built once here
+    const open = `<${target}${attrString}`;
     const closing = VOID_ELEMENTS.test(target) ? undefined : `</${target}>`;
-    return (props, meta) => serializeElement(target, closing, props, meta);
+    return (props, meta) => serializeElement(target, open, closing, props, meta);
   }
-  return createElementRenderer(target);
+  return createElementRenderer(target, attrString);
 };
 
 /** Parse SVG and MathML children inside their namespace root. */
-const createElementTemplate = (tag: string, className?: string) => {
+const createElementTemplate = (tag: string, attrString: string, className?: string) => {
   // atoms can put author names into the static class, so the template escapes it
-  const classAttribute = className
-    ? ` class="${className.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`
-    : "";
-  const opening = `<${tag}${classAttribute}>`;
+  const classAttribute = className ? ` class="${escapeAttribute(className)}"` : "";
+  const opening = `<${tag}${attrString}${classAttribute}>`;
   // flag 2 returns firstChild.firstChild
   // skips the <svg>/<math> wrapper we add so the child parses in its namespace
   if (SVGElements.has(tag) && tag !== "svg") return template(`<svg>${opening}`, 2);
@@ -287,8 +335,8 @@ const createElementTemplate = (tag: string, className?: string) => {
 };
 
 /** bind a fixed client tag without dynamic()'s per-element memo */
-const createElementRenderer = (tag: string): TargetRenderer => {
-  const create = createElementTemplate(tag);
+const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
+  const create = createElementTemplate(tag, attrString);
   if (!ambiguousSvgTags.has(tag)) {
     // Reuse SSR DOM during hydration; otherwise clone the cached template.
     return (props, meta) => bindElement(getNextElement(create), props, meta);
@@ -297,7 +345,7 @@ const createElementRenderer = (tag: string): TargetRenderer => {
   // node the server wrote. a fresh mount learns the namespace from the
   // insertion parent, which solid sets only while the parent inserts, so
   // creation waits for that call, the way solid's own dynamic() does
-  const createSvg = template(`<svg><${tag}>`, 2);
+  const createSvg = template(`<svg><${tag}${attrString}>`, 2);
   return (props, meta) => {
     if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
     const owner = getOwner();
@@ -337,11 +385,13 @@ const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
 const createChildrenRenderer = (
   tag: string,
   className: string | undefined,
+  attrString: string,
 ): ((props: Props, hasChildren: boolean) => JSX.Element) => {
   if (isServer) {
+    const head = `<${tag}${attrString}`;
     const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
     const closing = `</${tag}>`;
-    const parts = [`<${tag}`, open, closing];
+    const parts = [head, open, closing];
     return (props, hasChildren): { t: string } => {
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
@@ -349,11 +399,11 @@ const createChildrenRenderer = (
       // plain children join in place like in serializeElement; the rest is
       // a hole for ssr(), as in compiled templates
       const text = plainContent(children);
-      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${closing}` };
+      if (text !== undefined) return { t: `${head}${hk}${open}${text}${closing}` };
       return ssr(parts, hk, children);
     };
   }
-  const create = createElementTemplate(tag, className);
+  const create = createElementTemplate(tag, attrString, className);
   return (props, hasChildren) => {
     const el = getNextElement(create);
     if (hasChildren) {
@@ -375,6 +425,7 @@ const createChildrenRenderer = (
  */
 const serializeElement = (
   tag: string,
+  open: string,
   closing: string | undefined,
   props: Props,
   meta: RenderMeta,
@@ -393,7 +444,7 @@ const serializeElement = (
   const attrs = computed?.attrs;
   const style = computed?.style;
   const skip = meta.skip;
-  let result = `<${tag}${hk}`;
+  let result = open + hk;
   let children: unknown;
   // author keys first, an attrs value wins; then the keys only attrs has.
   // two loops on purpose: one loop over both key sets costs more on the
@@ -685,16 +736,17 @@ const once = <T extends object>(fn: () => T): (() => T) => {
 };
 
 /** parent attrs first, then own attrs read and override that result */
-const composeAttrs = (
-  attrs?: RuntimeAttrs,
-  parentAttrsFn?: RuntimeAttrsFn,
-): RuntimeAttrsFn | undefined => {
-  const ownAttrsFn = attrs && (typeof attrs === "function" ? attrs : () => attrs);
-  if (!ownAttrsFn) return parentAttrsFn;
-  if (!parentAttrsFn) return ownAttrsFn;
+const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs | undefined => {
+  if (!attrs) return parent;
+  if (!parent) return attrs;
+  // two objects combine once here and stay an object
+  if (typeof attrs !== "function" && typeof parent !== "function")
+    return combineProps(parent, attrs);
+  const own = typeof attrs === "function" ? attrs : () => attrs;
+  const parentFn = typeof parent === "function" ? parent : () => parent;
   return (props) => {
-    const parentProps = parentAttrsFn(props);
-    return combineProps(parentProps, ownAttrsFn(combineProps(props, parentProps)));
+    const parentProps = parentFn(props);
+    return combineProps(parentProps, own(combineProps(props, parentProps)));
   };
 };
 
