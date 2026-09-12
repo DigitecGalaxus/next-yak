@@ -30,6 +30,11 @@ const FancyButton = styled(Button).attrs({ "data-fancy": "1" })`
   border: 2px solid blue;
 `;
 
+// boolean and number attrs values
+const BakedButton = styled.button.attrs({ type: "button", disabled: true, tabIndex: 0 })`
+  color: green;
+`;
+
 export default function App() {
   // per render: the server renders the page once per request
   childRenders = 0;
@@ -42,6 +47,7 @@ export default function App() {
       <FancyButton data-testid="fancy">
         <Child />
       </FancyButton>
+      <BakedButton data-testid="baked">baked</BakedButton>
     </>
   );
 }

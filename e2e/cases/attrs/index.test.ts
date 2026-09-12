@@ -38,6 +38,12 @@ test(
     await expect(fancy).toHaveAttribute("data-fancy", "1");
     await expect(fancy).toHaveCSS("color", "rgb(255, 0, 0)");
     await expect(fancy).toHaveCSS("border-color", "rgb(0, 0, 255)");
+    // boolean and number attrs values
+    const baked = page.getByTestId("baked");
+    await expect(baked).toHaveAttribute("type", "button");
+    await expect(baked).toHaveAttribute("disabled", "");
+    await expect(baked).toHaveAttribute("tabindex", "0");
+    await expect(baked).toHaveCSS("color", "rgb(0, 128, 0)");
     // the server rendered the child once, and so did the client. React's
     // strict mode double-invokes renders in dev, so the count holds for solid only
     if (testEnv.framework === "solid") {
