@@ -493,6 +493,13 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
       Object.defineProperty(out, key, descriptor);
     }
   }
+  if (isServer) {
+    // the values are final on the server: data properties take the value
+    // path in solid's omit() and merge() instead of a getter per read
+    out.class = classFn();
+    if (styleFn) out.style = styleFn();
+    return out;
+  }
   Object.defineProperty(out, "class", {
     get: classFn,
     enumerable: true,
