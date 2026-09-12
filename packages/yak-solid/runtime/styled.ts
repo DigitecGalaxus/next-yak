@@ -135,13 +135,16 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     const renderTarget = createTargetRenderer(targetComponent);
     const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
     // the target never sees $-props, the provider theme, or the author class
-    // (yak hands it the combined one); a dynamic component owns style too
+    // (yak hands it the combined one); a dynamic component owns style too.
+    // no symbol passes: solid's merge() flattens any object that answers its
+    // private $SOURCES key, which would hand a target's mergeProps() the
+    // unfiltered originals; solid's own omit() blocks that key the same way
     const skip = (key: PropertyKey) =>
-      typeof key === "string" &&
-      (key.charCodeAt(0) === 36 /* $ */ ||
-        key === "class" ||
-        key === "theme" ||
-        (!isStatic && key === "style"));
+      typeof key !== "string" ||
+      key.charCodeAt(0) === 36 /* $ */ ||
+      key === "class" ||
+      key === "theme" ||
+      (!isStatic && key === "style");
     const Yak = isStatic
       ? createStaticComponent(
           isTag ? targetComponent : undefined,
@@ -454,7 +457,8 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
   const classFn = compute ? () => compute().class : () => classOf(props);
   const styleFn = styleGetter(compute);
   const out: Record<PropertyKey, unknown> = {};
-  for (const key of Reflect.ownKeys(props)) {
+  // string keys only, like solid's omit(): a symbol never reaches the target
+  for (const key of Object.getOwnPropertyNames(props)) {
     if (meta.skip(key)) continue;
     const descriptor = Reflect.getOwnPropertyDescriptor(props, key)!;
     if ("value" in descriptor && descriptor.enumerable) {
