@@ -13,3 +13,7 @@ Styled `a`, `script`, `style` and `title` tags no longer read an unused child pr
 Those four tags render through the same path as every other tag instead of Solid's `dynamic()`: one server writer, and on the client a fresh mount picks the html or svg namespace from the element it is inserted into. Hydration keys change, so server and client must run the same `@yak/solid` version.
 
 Adjacent text children of a styled tag get the same separator marker on the server that compiled Solid templates emit, so the client claims them as separate text nodes during hydration.
+
+A styled component target that merges its props with `merge()` keeps the generated class and never sees `$` props: yak no longer forwards Solid's private merge marker.
+
+Chained `.attrs()` layers no longer read the author's child and prop getters while combining attrs, so a child component renders once and hydration keys match.
