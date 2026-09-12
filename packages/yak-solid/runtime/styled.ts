@@ -37,7 +37,7 @@ import {
 // named import of a missing name fails at module load; the namespace read is
 // only reached on the client
 import * as solidWeb from "@solidjs/web";
-import { normalizeClass } from "./internals/mergeClasses.js";
+import { mergeClasses, normalizeClass } from "./internals/mergeClasses.js";
 // Keep the runtime and app on the same theme context; Vite can alias this export.
 import { useTheme } from "@yak/solid/context";
 import type { YakTheme } from "./context/index.js";
@@ -78,8 +78,8 @@ type RenderMeta = {
   | { compute: () => ComputedStyles; classOf: undefined; hasAttrs: boolean }
 );
 
-type ComponentMetadata = [
-  component: AnyComponent<any>,
+/** what a styled component built on another yak component inherits from it */
+type ComponentMetadata = readonly [
   attrs: RuntimeAttrsFn | undefined,
   styles: StyleProcessor,
   target: AnyComponent<any> | string,
@@ -118,7 +118,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
 
   // Apply parent attrs and styles before this component's own.
-  const [, parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
+  // the public tuple type hides the shape, one cast at the read
+  const [parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as ComponentMetadata)
     : [];
 
@@ -154,10 +155,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         )
       : createDynamicComponent(renderTarget, mergedAttrsFn, runtimeStyleProcessor, skip);
 
-    // direct write instead of Object.assign, smaller and no extra object
-    const tagged = Yak as AnyComponent<Props> & { [yakComponentSymbol]: ComponentMetadata };
-    tagged[yakComponentSymbol] = [Yak, mergedAttrsFn, runtimeStyleProcessor, targetComponent];
-    return tagged;
+    const metadata: ComponentMetadata = [mergedAttrsFn, runtimeStyleProcessor, targetComponent];
+    return Object.assign(Yak, { [yakComponentSymbol]: metadata });
   };
 };
 
@@ -179,7 +178,8 @@ const createStaticComponent = (
     return classes.value || undefined;
   };
   const renderChildren =
-    tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
+    // the namespace question of the four ambiguous tags exists only on a fresh client mount
+    tag && (isServer || !ambiguousSvgTags.has(tag)) && !VOID_ELEMENTS.test(tag)
       ? createChildrenRenderer(tag, staticClass)
       : undefined;
   // the writer skips escaping by identity with this class; an atom in it is
@@ -287,7 +287,8 @@ const createElementRenderer = (tag: string): TargetRenderer => {
     const lazy = () =>
       (el ??= runWithOwner(owner, () =>
         untrack(() => {
-          const parent = solidWeb.getInsertionParent() as Element | null;
+          // declared as a Node; the namespace and local name live on Element
+          const parent = solidWeb.getInsertionParent() as Element | undefined;
           const inSvg =
             !!parent &&
             parent.namespaceURI === Namespaces.svg &&
@@ -321,14 +322,14 @@ const createChildrenRenderer = (
     const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
     const closing = `</${tag}>`;
     const parts = [`<${tag}`, open, closing];
-    return (props, hasChildren) => {
+    return (props, hasChildren): { t: string } => {
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
       const children = hasChildren ? escape(props.children) : undefined;
       // plain children join in place like in serializeElement; the rest is
       // a hole for ssr(), as in compiled templates
       const text = plainContent(children);
-      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${closing}` } as JSX.Element;
+      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${closing}` };
       return ssr(parts, hk, children);
     };
   }
@@ -357,7 +358,7 @@ const serializeElement = (
   closing: string | undefined,
   props: Props,
   meta: RenderMeta,
-): JSX.Element => {
+): { t: string } => {
   // Take the element's key before reading props; a getter may render a child.
   const hk = ssrHydrationKey();
   // one memo read for class, style and attrs
@@ -391,7 +392,7 @@ const serializeElement = (
   }
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
   // Void tags need no child resolution; return Solid's server node directly.
-  if (!closing) return { t: result + "/>" } as JSX.Element;
+  if (!closing) return { t: result + "/>" };
   // a function child goes to ssr() too: it runs the hole with the async
   // wrap and error boundary routing a direct call would skip
   // text and finished nodes join in place, which is what solid's own
@@ -399,7 +400,7 @@ const serializeElement = (
   // the way compiled templates pass children: it puts the separator marker
   // between adjacent text items so the client can claim two text nodes
   const text = plainContent(children);
-  if (text !== undefined) return { t: result + ">" + text + closing } as JSX.Element;
+  if (text !== undefined) return { t: result + ">" + text + closing };
   return ssr([result + ">", closing], children);
 };
 
@@ -685,7 +686,7 @@ const combineProps = (props: Props, newProps: Props | null | undefined): Props =
   // an equal class counts as nothing: own attrs get the combined props and
   // may hand the same class back, merging it again would duplicate it
   if (newProps.class && props.class !== newProps.class) {
-    define(out, "class", mergeClasses(props.class, newProps.class));
+    define(out, "class", mergeClasses(normalizeClass(props.class), newProps.class));
   }
   if (newProps.style && props.style !== newProps.style) {
     define(out, "style", { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) });
@@ -701,9 +702,3 @@ const define = (object: object, key: string, value: unknown) =>
     configurable: true,
     writable: true,
   });
-
-/** Join nonempty class names with a space. */
-const mergeClasses = (a?: string, b?: string) => {
-  if (!a) return b || undefined;
-  return b ? a + " " + b : a;
-};

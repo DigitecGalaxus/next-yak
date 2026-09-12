@@ -2,7 +2,9 @@ import type { YakTheme } from "./index.ts";
 import type { Accessor } from "solid-js";
 import { ClassCollector, CompiledStyleProcessor, StyleObject } from "./publicStyledApi.js";
 
-export const yakComponentSymbol = Symbol("yak");
+// registry symbol: the public and the internal bundle each carry this module,
+// and a component from one must be recognized by the other
+export const yakComponentSymbol = Symbol.for("yak");
 
 /** Collect class names in order, with membership and removal for atoms. */
 export class Classes implements ClassCollector {

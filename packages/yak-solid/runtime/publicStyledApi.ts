@@ -43,7 +43,7 @@ export interface StyledFn {
  */
 export interface YakComponent<T> extends AnyComponent<T> {
   // This is intentionally typed to hide the internal implementation details.
-  [yakComponentSymbol]: [unknown, unknown, unknown, unknown];
+  [yakComponentSymbol]: readonly [unknown, unknown, unknown];
 }
 
 /**
