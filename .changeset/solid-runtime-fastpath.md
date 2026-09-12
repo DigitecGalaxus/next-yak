@@ -18,4 +18,4 @@ A styled component target that merges its props with `merge()` keeps the generat
 
 Chained `.attrs()` layers no longer read the author's child and prop getters while combining attrs, so a child component renders once and hydration keys match.
 
-Object-form `.attrs()` with plain attribute values (strings, numbers, booleans) on a styled tag renders through the static path: the attributes are part of the tag's opening string and template, so such a component costs no memo or proxy per element. They appear before the author's attributes in the markup.
+Object-form `.attrs()` with plain attribute values (strings, numbers, booleans) on a styled tag renders through the static path: the attributes are read once when the component is defined and become part of the tag's opening string and template, so such a component costs no memo or proxy per element. They appear before the author's attributes in the markup. Keys Solid applies as DOM properties (`value`, `checked`, `selected`, `muted` and their `default*` forms), getters, and `class`, `style` or `theme` keep the dynamic path.

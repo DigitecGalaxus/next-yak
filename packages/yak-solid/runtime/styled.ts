@@ -17,6 +17,7 @@ import { $PROXY, createMemo, getOwner, runWithOwner, sharedConfig, untrack } fro
 import {
   ChildProperties,
   createComponent,
+  DOMWithState,
   escape,
   getNextElement,
   insert,
@@ -118,12 +119,19 @@ export type StyledInternal = <
 /** these tags exist in html and svg; a fresh mount picks the namespace from the insertion parent */
 const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
 
-/** object attrs bake when every entry is a plain attribute with a primitive value */
-const bakeable = (attrs: Props): boolean =>
-  Object.getOwnPropertyNames(attrs).every((key) => {
-    // a getter is read at render time, not here
+/**
+ * object attrs bake when every entry is a plain attribute with a primitive
+ * value: the union of what skip drops, what attribute() treats specially,
+ * and the keys solid applies as dom properties (value, checked, ...), which
+ * a template would turn into attributes. enumerable data keys only, so the
+ * three walks (here, attributes(), skip) see the same keys; a getter is
+ * read at render time, not here
+ */
+const bakeable = (tag: string, attrs: Props): boolean => {
+  const stateful = DOMWithState[tag.toUpperCase()];
+  return Object.getOwnPropertyNames(attrs).every((key) => {
     const descriptor = Object.getOwnPropertyDescriptor(attrs, key)!;
-    if (!("value" in descriptor)) return false;
+    if (!descriptor.enumerable || !("value" in descriptor)) return false;
     const type = typeof descriptor.value;
     return (
       (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
@@ -134,11 +142,17 @@ const bakeable = (attrs: Props): boolean =>
       key !== "ref" &&
       !ChildProperties.has(key) &&
       !key.startsWith("on") &&
-      !key.startsWith("prop:")
+      !key.startsWith("prop:") &&
+      !(stateful && key in stateful)
     );
   });
+};
 
-/** the attribute string of baked attrs, same rules as the server writer, built once */
+/**
+ * the attribute string of baked attrs, built once. the value rules follow
+ * attribute(); the escaping is local because the client build's escape is
+ * an empty stub, and attribute names are code constants
+ */
 const attributes = (attrs: Props): string => {
   let result = "";
   for (const key of Object.keys(attrs)) {
@@ -188,10 +202,14 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     // object attrs with plain attribute values bake into the tag's opening
     // string and template; the component stays static
     const baked =
-      isTag && mergedAttrs && typeof mergedAttrs !== "function" && bakeable(mergedAttrs)
+      isTag &&
+      mergedAttrs &&
+      typeof mergedAttrs !== "function" &&
+      bakeable(targetComponent, mergedAttrs)
         ? mergedAttrs
         : undefined;
-    const renderTarget = createTargetRenderer(targetComponent, baked ? attributes(baked) : "");
+    const attrString = baked ? attributes(baked) : "";
+    const renderTarget = createTargetRenderer(targetComponent, attrString);
     const isStatic = (!mergedAttrs || !!baked) && !runtimeStyleProcessor.$dynamic;
     // the target never sees $-props, the provider theme, or the author class
     // (yak hands it the combined one); a dynamic component owns style too.
@@ -214,9 +232,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
           renderTarget,
           runtimeStyleProcessor,
           skip,
-          baked ? attributes(baked) : "",
+          attrString,
         )
-      : createDynamicComponent(renderTarget, attrsFn, runtimeStyleProcessor, skip);
+      : createDynamicComponent(renderTarget, attrsFn, runtimeStyleProcessor, skip, !!baked);
 
     const metadata: ComponentMetadata = [mergedAttrs, runtimeStyleProcessor, targetComponent];
     return Object.assign(Yak, { [yakComponentSymbol]: metadata });
@@ -274,6 +292,7 @@ const createDynamicComponent =
     attrsFn: RuntimeAttrsFn | undefined,
     processor: StyleProcessor,
     skip: (key: PropertyKey) => boolean,
+    baked: boolean,
   ): AnyComponent<Props> =>
   (props) => {
     const theme = useTheme();
@@ -300,7 +319,8 @@ const createDynamicComponent =
       skip: allowTheme ? (key) => (key === "theme" ? !allowTheme() : skip(key)) : skip,
       compute: computed,
       classOf: undefined,
-      hasAttrs: !!attrsFn,
+      // baked attrs sit in the template and cannot add keys, the copy path serves them
+      hasAttrs: !!attrsFn && !baked,
       staticClass: undefined,
     });
   };
@@ -314,10 +334,10 @@ const createTargetRenderer = (
     return (props, meta) => createComponent(target, yakProps(props, meta));
   }
   if (isServer) {
-    // the opening string with baked attrs and the closing tag are built once here
-    const open = `<${target}${attrString}`;
+    // the head with baked attrs and the closing tag are built once here
+    const head = `<${target}${attrString}`;
     const closing = VOID_ELEMENTS.test(target) ? undefined : `</${target}>`;
-    return (props, meta) => serializeElement(target, open, closing, props, meta);
+    return (props, meta) => serializeElement(target, head, closing, props, meta);
   }
   return createElementRenderer(target, attrString);
 };
@@ -425,7 +445,7 @@ const createChildrenRenderer = (
  */
 const serializeElement = (
   tag: string,
-  open: string,
+  head: string,
   closing: string | undefined,
   props: Props,
   meta: RenderMeta,
@@ -444,7 +464,7 @@ const serializeElement = (
   const attrs = computed?.attrs;
   const style = computed?.style;
   const skip = meta.skip;
-  let result = open + hk;
+  let result = head + hk;
   let children: unknown;
   // author keys first, an attrs value wins; then the keys only attrs has.
   // two loops on purpose: one loop over both key sets costs more on the
@@ -739,9 +759,16 @@ const once = <T extends object>(fn: () => T): (() => T) => {
 const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs | undefined => {
   if (!attrs) return parent;
   if (!parent) return attrs;
-  // two objects combine once here and stay an object
-  if (typeof attrs !== "function" && typeof parent !== "function")
+  // two objects without getters combine once here and stay an object; a
+  // getter must run per render, inside the memo
+  if (
+    typeof attrs !== "function" &&
+    typeof parent !== "function" &&
+    !hasGetter(attrs) &&
+    !hasGetter(parent)
+  ) {
     return combineProps(parent, attrs);
+  }
   const own = typeof attrs === "function" ? attrs : () => attrs;
   const parentFn = typeof parent === "function" ? parent : () => parent;
   return (props) => {
@@ -769,24 +796,35 @@ const combineProps = (props: Props, newProps: Props | null | undefined): Props =
   // descriptors, not values: a spread would run every author getter here,
   // and a children getter renders (twice, and on the server with the
   // wrong hydration ids); the target reads it once, in its own order
-  const out = Object.defineProperties({}, Object.getOwnPropertyDescriptors(props)) as Props;
-  Object.defineProperties(out, Object.getOwnPropertyDescriptors(newProps));
+  const descriptors = {
+    ...Object.getOwnPropertyDescriptors(props),
+    ...Object.getOwnPropertyDescriptors(newProps),
+  };
   // an equal class counts as nothing: own attrs get the combined props and
   // may hand the same class back, merging it again would duplicate it
   if (newProps.class && props.class !== newProps.class) {
-    define(out, "class", mergeClasses(normalizeClass(props.class), newProps.class));
+    descriptors.class = valueDescriptor(mergeClasses(normalizeClass(props.class), newProps.class));
   }
   if (newProps.style && props.style !== newProps.style) {
-    define(out, "style", { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) });
+    descriptors.style = valueDescriptor({
+      ...unwrapStyle(props.style),
+      ...unwrapStyle(newProps.style),
+    });
   }
-  return out;
+  return Object.defineProperties({}, descriptors) as Props;
 };
 
-/** replace a copied prop, which may be a getter, with a value */
-const define = (object: object, key: string, value: unknown) =>
-  Object.defineProperty(object, key, {
-    value,
-    enumerable: true,
-    configurable: true,
-    writable: true,
-  });
+const valueDescriptor = (value: unknown): PropertyDescriptor => ({
+  value,
+  enumerable: true,
+  configurable: true,
+  writable: true,
+});
+
+/** true when any own property is an accessor */
+const hasGetter = (object: object): boolean => {
+  for (const key of Object.getOwnPropertyNames(object)) {
+    if (!("value" in Object.getOwnPropertyDescriptor(object, key)!)) return true;
+  }
+  return false;
+};

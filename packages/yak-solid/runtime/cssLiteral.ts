@@ -4,7 +4,7 @@ import { ClassCollector, CompiledStyleProcessor, StyleObject } from "./publicSty
 
 // registry symbol: the public and the internal bundle each carry this module,
 // and a component from one must be recognized by the other
-export const yakComponentSymbol = Symbol.for("yak");
+export const yakComponentSymbol = Symbol.for("@yak/solid:component");
 
 /** Collect class names in order, with membership and removal for atoms. */
 export class Classes implements ClassCollector {

@@ -18,15 +18,15 @@ const PasswordInput = styled(Input).attrs({
   border-color: green;
 `;
 
-// Two attrs layers combine their props without reading the author's
-// children: a child component renders once.
+// Two attrs layers, one of them a function, combine their props per render
+// without reading the author's children: a child component renders once.
 let childRenders = 0;
 const Child = () => {
   childRenders++;
   return <span data-testid="child-renders">{childRenders}</span>;
 };
 
-const FancyButton = styled(Button).attrs({ "data-fancy": "1" })`
+const FancyButton = styled(Button).attrs(() => ({ "data-fancy": "1" }))`
   border: 2px solid blue;
 `;
 
