@@ -69,14 +69,32 @@ type ComputedStyles = {
  * kept outside of the component props so solid never copies or filters
  * it when it walks the props object
  */
-type RenderMeta = {
+type RenderMeta = StaticMeta | DynamicMeta;
+
+/** static component: the class comes from classOf, one per component */
+type StaticMeta = {
   skip: (key: PropertyKey) => boolean;
-  /** the generated class of a static component, the writer's escape-free case */
-  staticClass?: string;
-} & (
-  | { compute: undefined; classOf: (props: Props) => string | undefined; hasAttrs: false }
-  | { compute: () => ComputedStyles; classOf: undefined; hasAttrs: boolean }
-);
+  compute: undefined;
+  classOf: (props: Props) => string | undefined;
+  hasAttrs: false;
+  /** the generated class, the writer's escape-free case */
+  staticClass: string | undefined;
+};
+
+/**
+ * dynamic component: one memo (run once on the server) holds class,
+ * style and attrs, one meta per element. hasAttrs stays a static flag:
+ * an attrs function may add keys later, so the copy-or-proxy choice
+ * cannot read the memo. both literals keep the same keys in the same
+ * order so every meta read sees one shape
+ */
+type DynamicMeta = {
+  skip: (key: PropertyKey) => boolean;
+  compute: () => ComputedStyles;
+  classOf: undefined;
+  hasAttrs: boolean;
+  staticClass: undefined;
+};
 
 /** what a styled component built on another yak component inherits from it */
 type ComponentMetadata = readonly [
@@ -186,10 +204,10 @@ const createStaticComponent = (
   // an author string, so the identity case is withheld and the writer escapes
   const meta: RenderMeta = {
     skip,
-    staticClass: collected.generated ? staticClass : undefined,
-    classOf,
     compute: undefined,
+    classOf,
     hasAttrs: false,
+    staticClass: collected.generated ? staticClass : undefined,
   };
   return (props) => {
     // a reactive spread can add props later and needs the full client binding
@@ -236,6 +254,7 @@ const createDynamicComponent =
       compute: computed,
       classOf: undefined,
       hasAttrs: !!attrsFn,
+      staticClass: undefined,
     });
   };
 
