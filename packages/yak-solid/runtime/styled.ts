@@ -355,9 +355,10 @@ const serializeElement = (
 ): JSX.Element => {
   // Take the element's key before reading props; a getter may render a child.
   const hk = ssrHydrationKey();
+  // one memo read for class, style and attrs
   const computed = meta.compute?.();
   const attrs = computed?.attrs;
-  const className = classNameOf(props, meta);
+  const className = meta.compute ? computed!.class : meta.classOf(props);
   const style = computed?.style;
   const skip = meta.skip;
   let result = `<${tag}${hk}`;
@@ -536,10 +537,6 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
     },
   });
 };
-
-/** the class for one render, from the memo or the static class function */
-const classNameOf = (props: Props, meta: RenderMeta): string | undefined =>
-  meta.compute ? meta.compute().class : meta.classOf(props);
 
 /** Resolve attrs, then run styles against that props view. */
 const computeStyles = (
