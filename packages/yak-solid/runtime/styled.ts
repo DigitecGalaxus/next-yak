@@ -134,10 +134,14 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     const isTag = typeof targetComponent === "string";
     const renderTarget = createTargetRenderer(targetComponent);
     const isStatic = !mergedAttrsFn && !runtimeStyleProcessor.$dynamic;
-    const omitted = new Set(["class", "theme"]);
-    if (!isStatic) omitted.add("style");
+    // the target never sees $-props, the provider theme, or the author class
+    // (yak hands it the combined one); a dynamic component owns style too
     const skip = (key: PropertyKey) =>
-      typeof key === "string" && (key.charCodeAt(0) === 36 /* $ */ || omitted.has(key));
+      typeof key === "string" &&
+      (key.charCodeAt(0) === 36 /* $ */ ||
+        key === "class" ||
+        key === "theme" ||
+        (!isStatic && key === "style"));
     const Yak = isStatic
       ? createStaticComponent(
           isTag ? targetComponent : undefined,
