@@ -572,24 +572,34 @@ const computeStyles = (
   };
 };
 
-/** Backing object of a theme proxy; each proxy holds its own props and theme. */
-type ThemeProps = { props: Props; theme: Accessor<YakTheme> };
+/**
+ * backing object of a props view: the author's props, a provider theme to
+ * fill in when props has none, and attrs whose values win over props.
+ * one shared handler serves both views, so a view costs one proxy and one
+ * small object per element and no trap closures
+ */
+type View = { props: Props; theme?: Accessor<YakTheme>; attrs?: Props };
 
-/** Shared across instances so no trap functions are created per element. */
-const themeTraps: ProxyHandler<ThemeProps> = {
-  get: ({ props, theme }, key) =>
-    key === "theme" ? ("theme" in props ? props.theme : theme) : Reflect.get(props, key),
-  has: ({ props }, key) => key === "theme" || Reflect.has(props, key),
-  ownKeys: ({ props }) => {
-    const keys = Reflect.ownKeys(props);
-    return keys.includes("theme") ? keys : [...keys, "theme"];
+const viewTraps: ProxyHandler<View> = {
+  get: ({ props, theme, attrs }, key) => {
+    if (key === "theme" && theme && !("theme" in props)) return theme;
+    if (attrs && key in attrs) return Reflect.get(attrs, key);
+    return Reflect.get(props, key);
   },
-  getOwnPropertyDescriptor: ({ props, theme }, key) => {
-    if (key === "theme" && !(key in props)) {
+  has: ({ props, theme, attrs }, key) =>
+    (key === "theme" && !!theme) || (!!attrs && key in attrs) || Reflect.has(props, key),
+  ownKeys: ({ props, theme, attrs }) => {
+    const keys = new Set(Reflect.ownKeys(props));
+    if (attrs) for (const key of Reflect.ownKeys(attrs)) keys.add(key);
+    if (theme) keys.add("theme");
+    return [...keys];
+  },
+  getOwnPropertyDescriptor: ({ props, theme, attrs }, key) => {
+    if (key === "theme" && theme && !("theme" in props)) {
       return { value: theme, enumerable: true, configurable: true };
     }
-    const descriptor = Reflect.getOwnPropertyDescriptor(props, key);
-    // These virtual props must stay configurable on the proxy's backing object.
+    const descriptor = Reflect.getOwnPropertyDescriptor(attrs && key in attrs ? attrs : props, key);
+    // a virtual prop must report configurable, the backing object has no such key
     return descriptor && { ...descriptor, configurable: true };
   },
 };
@@ -598,25 +608,11 @@ const themeTraps: ProxyHandler<ThemeProps> = {
 const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
   (!($PROXY in props) && "theme" in props
     ? props
-    : new Proxy({ props, theme }, themeTraps)) as Props;
+    : new Proxy({ props, theme }, viewTraps)) as Props;
 
-/**
- * Let style interpolations read attrs over author props. Read getters only
- * when the interpolation asks for that key.
- */
+/** Let style interpolations read attrs over author props, getters only on demand. */
 const withAttrs = (props: Props, attrs: Props): Props =>
-  new Proxy(
-    {},
-    {
-      get: (_, key) => (key in attrs ? Reflect.get(attrs, key) : Reflect.get(props, key)),
-      has: (_, key) => key in attrs || key in props,
-      ownKeys: () => [...new Set([...Reflect.ownKeys(props), ...Reflect.ownKeys(attrs)])],
-      getOwnPropertyDescriptor: (_, key) => {
-        const descriptor = Reflect.getOwnPropertyDescriptor(key in attrs ? attrs : props, key);
-        return descriptor && { ...descriptor, configurable: true };
-      },
-    },
-  );
+  new Proxy({ props, attrs }, viewTraps) as Props;
 
 /** Convert string styles before adding CSS variables. */
 const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | undefined => {
