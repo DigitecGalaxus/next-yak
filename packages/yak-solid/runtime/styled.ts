@@ -160,7 +160,8 @@ const createStaticComponent = (
   processor: StaticStyleProcessor,
   skip: (key: PropertyKey) => boolean,
 ): AnyComponent<Props> => {
-  const staticClass = collectStaticClass(processor);
+  const collected = collectStaticClass(processor);
+  const staticClass = collected.value || undefined;
   const classOf = (props: Props): string | undefined => {
     const userClass = normalizeClass(props.class);
     if (!userClass) return staticClass;
@@ -173,7 +174,15 @@ const createStaticComponent = (
     tag && !ambiguousSvgTags.has(tag) && !VOID_ELEMENTS.test(tag)
       ? createChildrenRenderer(tag, staticClass)
       : undefined;
-  const meta: RenderMeta = { skip, staticClass, classOf, compute: undefined, hasAttrs: false };
+  // the writer skips escaping by identity with this class; an atom in it is
+  // an author string, so the identity case is withheld and the writer escapes
+  const meta: RenderMeta = {
+    skip,
+    staticClass: collected.generated ? staticClass : undefined,
+    classOf,
+    compute: undefined,
+    hasAttrs: false,
+  };
   return (props) => {
     // a reactive spread can add props later and needs the full client binding
     // on the server props are read once so the proxy check does not matter
@@ -237,8 +246,10 @@ const createTargetRenderer = (target: AnyComponent<any> | string): TargetRendere
 
 /** Parse SVG and MathML children inside their namespace root. */
 const createElementTemplate = (tag: string, className?: string) => {
-  // the class here is the compiler's generated name, safe inside the template
-  const classAttribute = className ? ` class="${className}"` : "";
+  // atoms can put author names into the static class, so the template escapes it
+  const classAttribute = className
+    ? ` class="${className.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`
+    : "";
   const opening = `<${tag}${classAttribute}>`;
   // flag 2 returns firstChild.firstChild
   // skips the <svg>/<math> wrapper we add so the child parses in its namespace
@@ -286,11 +297,8 @@ const createElementRenderer = (tag: string): TargetRenderer => {
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
   const bound = yakProps(props, meta);
   // A proxy can add children later, so it needs a child binding.
-  spread(
-    el,
-    bound,
-    untrack(() => !($PROXY in bound) && !("children" in bound)),
-  );
+  // component bodies run untracked already, and the lazy mount untracks itself
+  spread(el, bound, !($PROXY in bound) && !("children" in bound));
   // Replay events after the element's bindings are ready.
   runHydrationEvents();
   return el;
@@ -374,7 +382,8 @@ const serializeElement = (
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
   // Void tags need no child resolution; return Solid's server node directly.
   if (!closing) return { t: result + "/>" } as JSX.Element;
-  if (typeof children === "function") children = children();
+  // a function child goes to ssr() too: it runs the hole with the async
+  // wrap and error boundary routing a direct call would skip
   // text and finished nodes join in place, which is what solid's own
   // resolver does with them. arrays and async holes go to ssr() as a hole,
   // the way compiled templates pass children: it puts the separator marker
@@ -553,7 +562,7 @@ const computeStyles = (
   );
   return {
     class: classes.value || undefined,
-    generatedClass: !authorClass && !attrsClass,
+    generatedClass: !authorClass && !attrsClass && classes.generated,
     style: style && hasKeys(style) ? style : undefined,
     attrs,
   };
@@ -636,10 +645,10 @@ const once = <T extends object>(fn: () => T): (() => T) => {
 };
 
 /** Collect static classes without reading props. */
-const collectStaticClass = (processor: StaticStyleProcessor): string | undefined => {
+const collectStaticClass = (processor: StaticStyleProcessor): Classes => {
   const classes = new Classes();
   processor(undefined, classes);
-  return classes.value || undefined;
+  return classes;
 };
 
 /** Apply parent attrs first, then let own attrs read and override that result. */

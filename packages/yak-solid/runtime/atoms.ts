@@ -33,7 +33,8 @@ export const atoms = <T>(
     staticClasses.length > 0
       ? [
           (_, classes) => {
-            staticClasses.forEach((cls) => classes.add(cls));
+            // author strings, not compiler names: the server writer must escape them
+            staticClasses.forEach((cls) => classes.add(cls, false));
           },
           ...dynamicFunctions,
         ]

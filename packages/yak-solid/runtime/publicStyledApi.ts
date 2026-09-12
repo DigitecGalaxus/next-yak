@@ -150,7 +150,8 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
  * a real Set<string> also satisfies this interface.
  */
 export type ClassCollector = {
-  add(name: string): void;
+  /** generated is false for an author string such as an atom; the server writer escapes those */
+  add(name: string, generated?: boolean): void;
   has(name: string): boolean;
   delete(name: string): void;
 };

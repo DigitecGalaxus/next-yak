@@ -7,10 +7,13 @@ export const yakComponentSymbol = Symbol("yak");
 /** Collect class names in order, with membership and removal for atoms. */
 export class Classes implements ClassCollector {
   value: string;
+  /** false once a name came from the author, such as an atom; the server writer escapes then */
+  generated = true;
   constructor(initial?: string) {
     this.value = initial || "";
   }
-  add(name: string) {
+  add(name: string, generated = true) {
+    if (!generated) this.generated = false;
     if (!this.value) {
       this.value = name;
     } else if (!this.has(name)) {
