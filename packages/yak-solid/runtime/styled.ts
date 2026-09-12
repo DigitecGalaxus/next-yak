@@ -677,21 +677,30 @@ const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProce
 /** Attrs override props; class and style values combine. */
 const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
   if (!newProps) return props;
-  // shortcut when nothing needs merging
+  // descriptors, not values: a spread would run every author getter here,
+  // and a children getter renders (twice, and on the server with the
+  // wrong hydration ids); the target reads it once, in its own order
+  const out = Object.defineProperties({}, Object.getOwnPropertyDescriptors(props)) as Props;
+  Object.defineProperties(out, Object.getOwnPropertyDescriptors(newProps));
   // an equal class counts as nothing: own attrs get the combined props and
   // may hand the same class back, merging it again would duplicate it
-  if (
-    (props.class === newProps.class || !newProps.class) &&
-    (props.style === newProps.style || !newProps.style)
-  )
-    return { ...props, ...newProps };
-  return {
-    ...props,
-    ...newProps,
-    class: mergeClasses(props.class, newProps.class),
-    style: { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) },
-  };
+  if (newProps.class && props.class !== newProps.class) {
+    define(out, "class", mergeClasses(props.class, newProps.class));
+  }
+  if (newProps.style && props.style !== newProps.style) {
+    define(out, "style", { ...unwrapStyle(props.style), ...unwrapStyle(newProps.style) });
+  }
+  return out;
 };
+
+/** replace a copied prop, which may be a getter, with a value */
+const define = (object: object, key: string, value: unknown) =>
+  Object.defineProperty(object, key, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
 
 /** Join nonempty class names with a space. */
 const mergeClasses = (a?: string, b?: string) => {
