@@ -362,9 +362,15 @@ const serializeElement = (
   // Take the element's key before reading props; a getter may render a child.
   const hk = ssrHydrationKey();
   // one memo read for class, style and attrs
-  const computed = meta.compute?.();
+  let computed: ComputedStyles | undefined;
+  let className: string | undefined;
+  if (meta.compute) {
+    computed = meta.compute();
+    className = computed.class;
+  } else {
+    className = meta.classOf(props);
+  }
   const attrs = computed?.attrs;
-  const className = meta.compute ? computed!.class : meta.classOf(props);
   const style = computed?.style;
   const skip = meta.skip;
   let result = `<${tag}${hk}`;
