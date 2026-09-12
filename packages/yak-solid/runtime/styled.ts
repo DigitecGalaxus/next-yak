@@ -38,7 +38,7 @@ import {
 // only reached on the client
 import * as solidWeb from "@solidjs/web";
 import { mergeClasses, normalizeClass } from "./internals/mergeClasses.js";
-// Keep the runtime and app on the same theme context; Vite can alias this export.
+// the runtime and the app share one theme context; vite can alias this export
 import { useTheme } from "@yak/solid/context";
 import type { YakTheme } from "./context/index.js";
 import type { Accessor } from "solid-js";
@@ -105,7 +105,7 @@ type ComponentMetadata = readonly [
 
 type TargetRenderer = (props: Props, meta: RenderMeta) => JSX.Element;
 
-/** Create a styled tag or component, with optional attrs. */
+/** create a styled tag or component, with optional attrs */
 export type StyledInternal = <
   T extends object,
   TAttrsIn extends object = {},
@@ -126,7 +126,7 @@ const styledFactory: StyledFn = (Component) =>
     attrs: (attrs: Attrs<any>) => yakStyled(Component, attrs),
   });
 
-/** Style a tag or a component that forwards its class prop. */
+/** style a tag or a component that forwards its class prop */
 export const styled = styledFactory as Styled;
 
 const yakStyled: StyledInternal = (Component, attrs) => {
@@ -135,13 +135,13 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     typeof Component === "function" &&
     (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
 
-  // Apply parent attrs and styles before this component's own.
+  // parent attrs and styles run before this component's own
   // the public tuple type hides the shape, one cast at the read
   const [parentAttrsFn, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as ComponentMetadata)
     : [];
 
-  // Render the chain's final target once, with all attrs and style processors combined.
+  // the chain renders its final target once, with all attrs and style processors combined
   const targetComponent = parentTarget ?? Component;
 
   const mergedAttrsFn = composeAttrs(attrs as RuntimeAttrs | undefined, parentAttrsFn);
@@ -190,7 +190,7 @@ const createStaticComponent = (
   const classOf = (props: Props): string | undefined => {
     const userClass = normalizeClass(props.class);
     if (!userClass) return staticClass;
-    // The collector skips generated classes the user already supplied.
+    // the collector skips generated names the author's class already holds
     const classes = new Classes(userClass);
     processor(props, classes);
     return classes.value || undefined;
@@ -200,8 +200,8 @@ const createStaticComponent = (
     tag && (isServer || !ambiguousSvgTags.has(tag)) && !VOID_ELEMENTS.test(tag)
       ? createChildrenRenderer(tag, staticClass)
       : undefined;
-  // the writer skips escaping by identity with this class; an atom in it is
-  // an author string, so the identity case is withheld and the writer escapes
+  // the writer prints the class unescaped only when it is this exact string;
+  // with an atom in it (author text) this stays undefined and the writer escapes
   const meta: RenderMeta = {
     skip,
     compute: undefined,
@@ -236,7 +236,8 @@ const createDynamicComponent =
     // a style-only prop change also reruns attrs, still cheaper than
     // two memos per element
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
-    // the server has no updates so a run-once cache replaces the memo
+    // the server has no updates, so a run-once closure replaces the memo:
+    // solid's server memo builds an owner and a computation record per element
     // transparent memo: no hydration id is claimed for it
     const computed = isServer ? once(compute) : createMemo(compute, { transparent: true });
     // theme rules
@@ -258,7 +259,7 @@ const createDynamicComponent =
     });
   };
 
-/** Choose the target's render path once per styled component. */
+/** the target's render path, chosen once per styled component */
 const createTargetRenderer = (target: AnyComponent<any> | string): TargetRenderer => {
   if (typeof target !== "string") {
     return (props, meta) => createComponent(target, yakProps(props, meta));
@@ -285,7 +286,7 @@ const createElementTemplate = (tag: string, className?: string) => {
   return template(opening);
 };
 
-/** Bind a fixed client tag without dynamic()'s per-element memo. */
+/** bind a fixed client tag without dynamic()'s per-element memo */
 const createElementRenderer = (tag: string): TargetRenderer => {
   const create = createElementTemplate(tag);
   if (!ambiguousSvgTags.has(tag)) {
@@ -324,15 +325,15 @@ const createElementRenderer = (tag: string): TargetRenderer => {
 /** apply the props to a created or claimed element */
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
   const bound = yakProps(props, meta);
-  // A proxy can add children later, so it needs a child binding.
+  // a proxy can add children later, so it keeps the child binding
   // component bodies run untracked already, and the lazy mount untracks itself
   spread(el, bound, !($PROXY in bound) && !("children" in bound));
-  // Replay events after the element's bindings are ready.
+  // replay events once the element's bindings are ready
   runHydrationEvents();
   return el;
 };
 
-/** Cache the tag and class; only children need a binding or serialization. */
+/** tag and class cached per component; only the children need a binding or serialization */
 const createChildrenRenderer = (
   tag: string,
   className: string | undefined,
@@ -378,7 +379,7 @@ const serializeElement = (
   props: Props,
   meta: RenderMeta,
 ): { t: string } => {
-  // Take the element's key before reading props; a getter may render a child.
+  // the key comes before any prop read: a getter may render a child and take keys
   const hk = ssrHydrationKey();
   // one memo read for class, style and attrs
   let computed: ComputedStyles | undefined;
@@ -395,6 +396,8 @@ const serializeElement = (
   let result = `<${tag}${hk}`;
   let children: unknown;
   // author keys first, an attrs value wins; then the keys only attrs has.
+  // two loops on purpose: one loop over both key sets costs more on the
+  // attrs path (the push and a second `in` per key).
   // only the first child prop is read, and none on a void tag: a child
   // getter may render and take hydration ids
   for (const key of Object.keys(props)) {
@@ -416,7 +419,7 @@ const serializeElement = (
     result += ` class="${generated ? className : ssrClassName(className)}"`;
   }
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
-  // Void tags need no child resolution; return Solid's server node directly.
+  // a void tag has no children; solid's server node is the string itself
   if (!closing) return { t: result + "/>" };
   // a function child goes to ssr() too: it runs the hole with the async
   // wrap and error boundary routing a direct call would skip
@@ -454,13 +457,14 @@ const attribute = (prop: string, value: unknown): string => {
   return value === "" ? ` ${escape(prop)}` : ` ${escape(prop)}="${escape(value, true)}"`;
 };
 
-/** Keep raw markup; escape other child values. */
+/** raw markup stays as is, every other child value is escaped */
 const childContent = (tag: string, prop: string, value: unknown): unknown =>
   tag === "script" || tag === "style" || prop === "innerHTML" ? value : escape(value);
 
 /**
  * the props the target sees: author props, attrs output, computed class and style
- * $-props and the provider theme are hidden
+ * $-props and the provider theme are hidden. solid's omit() takes fixed key
+ * names and $-props are open-ended, so the filter is hand-written
  *
  * plain copy when the keys can't change, proxy when attrs or a reactive
  * spread can add keys and downstream omit() has to notice
@@ -526,8 +530,8 @@ const styleGetter = (
 };
 
 /**
- * Attrs and reactive spreads can add or remove keys. $PROXY keeps downstream
- * omit() calls reactive.
+ * attrs and reactive spreads can add or remove keys; the $PROXY mark keeps
+ * downstream omit() calls reactive
  */
 const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { skip, compute, classOf } = meta;
@@ -559,7 +563,7 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
       const keys = new Set<string | symbol>();
       for (const key of Reflect.ownKeys(target)) if (!skip(key)) keys.add(key);
       for (const key of Object.keys(attrsProps() ?? {})) if (!skip(key)) keys.add(key);
-      // Class and computed style follow author props and attrs.
+      // class and the computed style follow the author props and attrs
       keys.add("class");
       if (styleFn) keys.add("style");
       return [...keys];
@@ -577,7 +581,7 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
   });
 };
 
-/** Resolve attrs, then run styles against that props view. */
+/** resolve attrs, then run the styles against that props view */
 const computeStyles = (
   props: Props,
   propsWithTheme: Props,
@@ -589,8 +593,8 @@ const computeStyles = (
   const classes = new Classes(authorClass);
   const attrsClass = normalizeClass(attrs?.class);
   if (attrsClass) classes.add(attrsClass);
-  // A static processor writes no style values, so the author's style object
-  // can pass through without a copy.
+  // a static processor writes no style values, so the author's style object
+  // passes through without a copy
   const style =
     processor.$dynamic || attrs?.style
       ? { ...unwrapStyle(props.style), ...unwrapStyle(attrs?.style) }
@@ -640,13 +644,13 @@ const viewTraps: ProxyHandler<View> = {
   },
 };
 
-/** Use the provider theme when props has no theme. Other reads stay reactive. */
+/** the provider theme when props has none; other reads stay reactive */
 const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
   (!($PROXY in props) && "theme" in props
     ? props
     : new Proxy({ props, theme }, viewTraps)) as Props;
 
-/** Let style interpolations read attrs over author props, getters only on demand. */
+/** style interpolations read attrs over author props, getters only on demand */
 const withAttrs = (props: Props, attrs: Props): Props =>
   new Proxy({ props, attrs }, viewTraps) as Props;
 
@@ -674,13 +678,13 @@ const hasKeys = (object: object): boolean => {
   return false;
 };
 
-/** Run once and reuse the result. */
+/** run once and reuse the result */
 const once = <T extends object>(fn: () => T): (() => T) => {
   let value: T | undefined;
   return () => (value ??= fn());
 };
 
-/** Apply parent attrs first, then let own attrs read and override that result. */
+/** parent attrs first, then own attrs read and override that result */
 const composeAttrs = (
   attrs?: RuntimeAttrs,
   parentAttrsFn?: RuntimeAttrsFn,
@@ -694,10 +698,10 @@ const composeAttrs = (
   };
 };
 
-/** Run parent styles before own styles, with one collector and style object. */
+/** parent styles before own styles, with one collector and one style object */
 const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
   if (!parent) return own;
-  // The flag covers both processors; neither needs a style object when it is false.
+  // the flag covers both processors; neither needs a style object when it is false
   return Object.assign(
     (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
       parent(props, classes, style);
@@ -707,7 +711,7 @@ const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProce
   ) as StyleProcessor;
 };
 
-/** Attrs override props; class and style values combine. */
+/** attrs override props; class and style values combine */
 const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
   if (!newProps) return props;
   // descriptors, not values: a spread would run every author getter here,
