@@ -164,7 +164,8 @@ const createStaticComponent = (
   processor: StaticStyleProcessor,
   skip: (key: PropertyKey) => boolean,
 ): AnyComponent<Props> => {
-  const collected = collectStaticClass(processor);
+  const collected = new Classes();
+  processor(undefined, collected);
   const staticClass = collected.value || undefined;
   const classOf = (props: Props): string | undefined => {
     const userClass = normalizeClass(props.class);
@@ -315,7 +316,8 @@ const createChildrenRenderer = (
 ): ((props: Props, hasChildren: boolean) => JSX.Element) => {
   if (isServer) {
     const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
-    const parts = [`<${tag}`, open, `</${tag}>`];
+    const closing = `</${tag}>`;
+    const parts = [`<${tag}`, open, closing];
     return (props, hasChildren) => {
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
@@ -323,7 +325,7 @@ const createChildrenRenderer = (
       // plain children join in place like in serializeElement; the rest is
       // a hole for ssr(), as in compiled templates
       const text = plainContent(children);
-      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${parts[2]}` } as JSX.Element;
+      if (text !== undefined) return { t: `<${tag}${hk}${open}${text}${closing}` } as JSX.Element;
       return ssr(parts, hk, children);
     };
   }
@@ -639,13 +641,6 @@ const hasKeys = (object: object): boolean => {
 const once = <T extends object>(fn: () => T): (() => T) => {
   let value: T | undefined;
   return () => (value ??= fn());
-};
-
-/** Collect static classes without reading props. */
-const collectStaticClass = (processor: StaticStyleProcessor): Classes => {
-  const classes = new Classes();
-  processor(undefined, classes);
-  return classes;
 };
 
 /** Apply parent attrs first, then let own attrs read and override that result. */
