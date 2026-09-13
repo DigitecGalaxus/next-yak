@@ -619,8 +619,9 @@ const serializeElement = (
     result += ` class="${generated ? className : ssrClassName(className)}"`;
   }
   if (style !== undefined) result += ` style="${ssrStyle(style as Record<string, string>)}"`;
-  // a void tag has no children: the finished string is the node, no ssr() call
-  if (!closing) return { t: result + "/>" };
+  // a void tag has no children: the finished string is the node, no ssr() call.
+  // the space keeps an unquoted hydration key from swallowing the slash
+  if (!closing) return { t: result + " />" };
   // a function child goes to ssr() too: it runs the hole with the async
   // wrap and error boundary routing a direct call would skip
   // text and finished nodes join in place, which is what solid's own
