@@ -36,6 +36,11 @@ const BakedButton = styled.button.attrs({ type: "button", disabled: true, tabind
   color: green;
 `;
 
+// a textarea's value renders as its content on the server
+const Note = styled.textarea`
+  color: blue;
+`;
+
 // a key solid applies as a dom property keeps its meaning on a fresh mount
 const PresetInput = styled.input.attrs({ type: "text", defaultValue: "preset" })`
   border: 1px solid red;
@@ -55,6 +60,7 @@ export default function App() {
         <Child />
       </FancyButton>
       <BakedButton data-testid="baked">baked</BakedButton>
+      <Note data-testid="note" value="preset" />
       <button data-testid="mount-input" onClick={() => setMounted(true)}>
         mount
       </button>

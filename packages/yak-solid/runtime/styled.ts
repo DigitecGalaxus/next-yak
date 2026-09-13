@@ -591,6 +591,8 @@ const serializeElement = (
   const skip = meta.skip;
   let result = head + hk;
   let children: unknown;
+  // a textarea's value is its content, like solid's ssrElement writes it
+  const textarea = tag === "textarea";
   // author keys first, an attrs value wins; then the keys only attrs has.
   // two loops on purpose: one loop over both key sets costs more on the
   // attrs path (the push and a second `in` per key).
@@ -599,13 +601,15 @@ const serializeElement = (
   for (const key of Object.keys(props)) {
     if (skip(key)) continue;
     const source = attrs && key in attrs ? attrs : props;
-    if (!ChildProperties.has(key)) result += attribute(key, source[key]);
+    if (!ChildProperties.has(key) && !(textarea && isValueKey(key)))
+      result += attribute(key, source[key]);
     else if (children === undefined && closing) children = childContent(tag, key, source[key]);
   }
   if (attrs) {
     for (const key of Object.keys(attrs)) {
       if (skip(key) || key in props) continue;
-      if (!ChildProperties.has(key)) result += attribute(key, attrs[key]);
+      if (!ChildProperties.has(key) && !(textarea && isValueKey(key)))
+        result += attribute(key, attrs[key]);
       else if (children === undefined && closing) children = childContent(tag, key, attrs[key]);
     }
   }
@@ -627,6 +631,8 @@ const serializeElement = (
   if (text !== undefined) return { t: result + ">" + text + closing };
   return ssr([result + ">", closing], children);
 };
+
+const isValueKey = (key: string) => key === "value" || key === "defaultValue";
 
 /** the string a child resolves to when it needs no resolver, else undefined */
 const plainContent = (node: unknown): string | undefined => {
@@ -677,7 +683,11 @@ const createElementTemplate = (tag: string, attrString: string, className?: stri
 /** bind a fixed client tag without dynamic()'s per-element memo */
 const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
   const create = createElementTemplate(tag, attrString);
-  if (!ambiguousSvgTags.has(tag)) {
+  // solid 2 rc.8 dropped the insertion parent; its own dynamic() then
+  // creates these tags as html, and so does this renderer
+  const getInsertionParent = (solidWeb as { getInsertionParent?: () => Node | undefined })
+    .getInsertionParent;
+  if (!ambiguousSvgTags.has(tag) || !getInsertionParent) {
     // hydration claims the server node by key; a fresh mount clones the cached template
     return (props, meta) => bindElement(getNextElement(create), props, meta);
   }
@@ -696,7 +706,7 @@ const createElementRenderer = (tag: string, attrString: string): TargetRenderer 
       (el ??= runWithOwner(owner, () =>
         untrack(() => {
           // declared as a Node; the namespace and local name live on Element
-          const parent = solidWeb.getInsertionParent() as Element | undefined;
+          const parent = getInsertionParent() as Element | undefined;
           const inSvg =
             !!parent &&
             parent.namespaceURI === Namespaces.svg &&
@@ -807,8 +817,10 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
     return attrs && key in attrs ? attrs : undefined;
   };
   return new Proxy(props, {
-    get(target, key) {
-      if (key === $PROXY) return true;
+    get(target, key, receiver) {
+      // the receiver, like solid's own props proxies: solid's spread walks
+      // a proxy's keys through its traps only when props[$PROXY] === props
+      if (key === $PROXY) return receiver;
       const getter = contributed(key);
       if (getter) return getter();
       if (skip(key)) return undefined;

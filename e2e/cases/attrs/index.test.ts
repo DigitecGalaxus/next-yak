@@ -44,6 +44,9 @@ test(
     await expect(baked).toHaveAttribute("disabled", "");
     await expect(baked).toHaveAttribute("tabindex", "0");
     await expect(baked).toHaveCSS("color", "rgb(0, 128, 0)");
+    // the server wrote the textarea value as content
+    await expect(page.getByTestId("note")).toHaveValue("preset");
+    await expect(page.getByTestId("note")).toHaveCSS("color", "rgb(0, 0, 255)");
     // a fresh mount applies defaultValue as a property, not as a dead attribute
     await page.getByTestId("mount-input").click();
     await expect(page.getByTestId("preset-input")).toHaveValue("preset");
