@@ -146,8 +146,9 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
  * Set-like collector for class names.
  *
  * Implemented as a string builder in the runtime (a Set<string>
- * split → Set → Array.from → join round-trip dominates render cost);
- * a real Set<string> also satisfies this interface.
+ * split → Set → Array.from → join round-trip dominates render cost).
+ * Classes in cssLiteral.ts is the only implementation; the generated
+ * flag has no Set equivalent.
  */
 export type ClassCollector = {
   /** generated is false for an author string such as an atom; the server writer escapes those */

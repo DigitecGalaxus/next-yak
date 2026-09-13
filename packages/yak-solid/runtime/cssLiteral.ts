@@ -6,10 +6,10 @@ import { ClassCollector, CompiledStyleProcessor, StyleObject } from "./publicSty
 // and a component from one must be recognized by the other
 export const yakComponentSymbol = Symbol.for("@yak/solid:component");
 
-/** Collect class names in order, with membership and removal for atoms. */
+/** collect class names in order, with membership and removal for atoms */
 export class Classes implements ClassCollector {
   value: string;
-  /** false once a name came from the author, such as an atom; the server writer escapes then */
+  /** false once a name came from the author, such as an atom; serializeElement in styled.ts escapes then */
   generated = true;
   constructor(initial?: string) {
     this.value = initial || "";
@@ -81,28 +81,28 @@ export type NestedRuntimeStyleProcessor = (
   | number
   | NestedRuntimeStyleProcessor;
 
-/** Combine compiled classes, conditional styles and CSS variables. */
+/** combine compiled classes, conditional styles and css variables */
 export function css<TProps>(...args: Array<any>): CompiledStyleProcessor<TProps> {
-  // The compiler supplies class names, style callbacks and CSS-variable maps.
+  // the compiler supplies class names, style callbacks and css-variable maps
   let staticClass: string | undefined;
   const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
   for (const arg of args as Array<string | NestedRuntimeStyleProcessor | CSSStyles<any>>) {
-    // Static CSS becomes a CSS-module class name.
+    // static css becomes a css-module class name
     if (typeof arg === "string") {
       staticClass = arg;
     }
-    // Conditional CSS stays a callback, such as props => props.active && css("yak31e4").
+    // conditional css stays a callback, such as props => props.active && css("yak31e4")
     else if (typeof arg === "function") {
       dynamicCssFunctions.push(arg);
     }
-    // Dynamic CSS values become variables, such as { style: { "--yakX": props => props.x } }.
+    // dynamic css values become variables, such as { style: { "--yakX": props => props.x } }
     else if (typeof arg === "object" && "style" in arg) {
       dynamicCssFunctions.push((props, _, style) => {
         for (const key in arg.style) {
           const value = arg.style[key];
           if (typeof value === "function") {
             style[key as keyof StyleObject] = String(
-              // A callback can return another callback before it yields the CSS value.
+              // a callback can return another callback before it yields the css value
               recursivePropExecution(props, value),
             ) as never;
           } else {
@@ -113,7 +113,7 @@ export function css<TProps>(...args: Array<any>): CompiledStyleProcessor<TProps>
     }
   }
 
-  // Static processors need neither a theme lookup nor a style object.
+  // static processors need neither a theme lookup nor a style object
   if (dynamicCssFunctions.length === 0) {
     return Object.assign(
       (_: unknown, classes: ClassCollector) => {
@@ -131,15 +131,15 @@ export function css<TProps>(...args: Array<any>): CompiledStyleProcessor<TProps>
         classes.add(staticClass);
       }
       for (let i = 0; i < dynamicCssFunctions.length; i++) {
-        unwrapProps(props, dynamicCssFunctions[i], classes, allStyles);
+        runProcessor(props, dynamicCssFunctions[i], classes, allStyles);
       }
     },
     { $dynamic: true as const },
   ) satisfies CompiledStyleProcessor<TProps>;
 }
 
-// Resolve callbacks and merge any returned classes and styles.
-const unwrapProps = (
+/** run one processor and fold what it returns into the collector and the style object */
+const runProcessor = (
   props: unknown,
   fn: NestedRuntimeStyleProcessor,
   classes: ClassCollector,
@@ -157,7 +157,7 @@ const unwrapProps = (
       }
       if ("style" in result && result.style) {
         for (const key in result.style) {
-          // Both objects use StyleObject; TypeScript loses the key/value relation in this loop.
+          // both objects use StyleObject; typescript loses the key/value relation in this loop
           style[key as keyof StyleObject] = result.style[key as keyof StyleObject] as any;
         }
       }
