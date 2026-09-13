@@ -120,55 +120,6 @@ export type StyledInternal = <
 /** solid's AmbiguousSVGElements (not exported): html and svg tags; a fresh mount picks the namespace from the insertion parent */
 const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
 
-/**
- * object attrs bake when every entry is a plain attribute with a primitive
- * value. rejected keys are the union of what skip drops, what attribute()
- * treats specially, and what solid sets as a dom property (DOMWithState:
- * value, checked, ...), which a template would turn into a content
- * attribute. enumerable data keys only, so the three walks (here,
- * bakeAttributes, skip) see the same keys; a getter is read at render
- * time, not here
- */
-const bakeable = (tag: string, attrs: Props): boolean => {
-  const stateful = DOMWithState[tag.toUpperCase()];
-  return Object.getOwnPropertyNames(attrs).every((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(attrs, key)!;
-    if (!descriptor.enumerable || !("value" in descriptor)) return false;
-    const type = typeof descriptor.value;
-    return (
-      (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
-      key.charCodeAt(0) !== 36 &&
-      key !== "class" &&
-      key !== "style" &&
-      key !== "theme" &&
-      key !== "ref" &&
-      !ChildProperties.has(key) &&
-      !key.startsWith("on") &&
-      !key.startsWith("prop:") &&
-      !(stateful && key in stateful)
-    );
-  });
-};
-
-/**
- * the attribute string of baked attrs, built once at definition. the value
- * rules follow attribute(), the per-prop server writer; the escaping is
- * local because the client build's escape is an empty stub, and attribute
- * names are code constants. `<` stays unescaped, harmless in a quoted value
- */
-const bakeAttributes = (attrs: Props): string => {
-  let result = "";
-  for (const key of Object.keys(attrs)) {
-    const value = attrs[key];
-    if (value == null || value === false) continue;
-    result +=
-      value === true || value === "" ? ` ${key}` : ` ${key}="${escapeAttribute(String(value))}"`;
-  }
-  return result;
-};
-
-const escapeAttribute = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
-
 /** solid's server regex (not exported); its VoidElements set lacks keygen and menuitem */
 const VOID_ELEMENTS =
   /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
@@ -245,6 +196,129 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   };
 };
 
+/**
+ * object attrs bake when every entry is a plain attribute with a primitive
+ * value. rejected keys are the union of what skip drops, what attribute()
+ * treats specially, and what solid sets as a dom property (DOMWithState:
+ * value, checked, ...), which a template would turn into a content
+ * attribute. enumerable data keys only, so the three walks (here,
+ * bakeAttributes, skip) see the same keys; a getter is read at render
+ * time, not here
+ */
+const bakeable = (tag: string, attrs: Props): boolean => {
+  const stateful = DOMWithState[tag.toUpperCase()];
+  return Object.getOwnPropertyNames(attrs).every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(attrs, key)!;
+    if (!descriptor.enumerable || !("value" in descriptor)) return false;
+    const type = typeof descriptor.value;
+    return (
+      (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
+      key.charCodeAt(0) !== 36 &&
+      key !== "class" &&
+      key !== "style" &&
+      key !== "theme" &&
+      key !== "ref" &&
+      !ChildProperties.has(key) &&
+      !key.startsWith("on") &&
+      !key.startsWith("prop:") &&
+      !(stateful && key in stateful)
+    );
+  });
+};
+
+/**
+ * the attribute string of baked attrs, built once at definition. the value
+ * rules follow attribute(), the per-prop server writer; the escaping is
+ * local because the client build's escape is an empty stub, and attribute
+ * names are code constants. `<` stays unescaped, harmless in a quoted value
+ */
+const bakeAttributes = (attrs: Props): string => {
+  let result = "";
+  for (const key of Object.keys(attrs)) {
+    const value = attrs[key];
+    if (value == null || value === false) continue;
+    result +=
+      value === true || value === "" ? ` ${key}` : ` ${key}="${escapeAttribute(String(value))}"`;
+  }
+  return result;
+};
+
+const escapeAttribute = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+
+/** parent attrs first, then own attrs read and override that result */
+const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs | undefined => {
+  if (!attrs) return parent;
+  if (!parent) return attrs;
+  // two objects without getters combine once here and stay an object; a
+  // getter must run per render, inside the memo
+  if (
+    typeof attrs !== "function" &&
+    typeof parent !== "function" &&
+    !hasGetter(attrs) &&
+    !hasGetter(parent)
+  ) {
+    return combineProps(parent, attrs);
+  }
+  const own = typeof attrs === "function" ? attrs : () => attrs;
+  const parentFn = typeof parent === "function" ? parent : () => parent;
+  return (props) => {
+    const parentProps = parentFn(props);
+    return combineProps(parentProps, own(combineProps(props, parentProps)));
+  };
+};
+
+/** parent styles before own styles, with one collector and one style object */
+const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
+  if (!parent) return own;
+  // the flag covers both processors; neither needs a style object when it is false
+  return Object.assign(
+    (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
+      parent(props, classes, style);
+      own(props, classes, style);
+    },
+    { $dynamic: own.$dynamic || parent.$dynamic },
+  ) as StyleProcessor;
+};
+
+/** attrs override props; class and style values combine */
+const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
+  if (!newProps) return props;
+  // descriptors, not values: a spread would run every author getter here,
+  // and a children getter renders (twice, and on the server with the
+  // wrong hydration ids); the target reads it once, in its own order
+  const descriptors = {
+    ...Object.getOwnPropertyDescriptors(props),
+    ...Object.getOwnPropertyDescriptors(newProps),
+  };
+  // an equal class counts as nothing: own attrs get the combined props and
+  // may hand the same class back, merging it again would duplicate it
+  if (newProps.class && props.class !== newProps.class) {
+    descriptors.class = valueDescriptor(mergeClasses(normalizeClass(props.class), newProps.class));
+  }
+  if (newProps.style && props.style !== newProps.style) {
+    descriptors.style = valueDescriptor({
+      ...unwrapStyle(props.style),
+      ...unwrapStyle(newProps.style),
+    });
+  }
+  return Object.defineProperties({}, descriptors) as Props;
+};
+
+const valueDescriptor = (value: unknown): PropertyDescriptor => ({
+  value,
+  enumerable: true,
+  configurable: true,
+  writable: true,
+});
+
+/** true when any own property is an accessor */
+const hasGetter = (object: object): boolean => {
+  for (const key of Object.getOwnPropertyNames(object)) {
+    if (!("value" in Object.getOwnPropertyDescriptor(object, key)!)) return true;
+  }
+  return false;
+};
+
 /** static: no theme, no memo; one class per component, a children-only fast path for a tag */
 const createStaticComponent = (
   tag: string | undefined,
@@ -291,6 +365,43 @@ const createStaticComponent = (
   };
 };
 
+/** tag and class cached per component; only the children need a binding or serialization */
+const createChildrenOnlyRenderer = (
+  tag: string,
+  className: string | undefined,
+  attrString: string,
+): ((props: Props, hasChildren: boolean) => JSX.Element) => {
+  if (isServer) {
+    const head = `<${tag}${attrString}`;
+    const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
+    const closing = `</${tag}>`;
+    const parts = [head, open, closing];
+    return (props, hasChildren): { t: string } => {
+      // the key comes before the child getter runs, it may render
+      const hk = ssrHydrationKey();
+      const children = hasChildren ? escape(props.children) : undefined;
+      // plain children join in place like in serializeElement; the rest is
+      // a hole for ssr(), as in compiled templates
+      const text = plainContent(children);
+      if (text !== undefined) return { t: `${head}${hk}${open}${text}${closing}` };
+      return ssr(parts, hk, children);
+    };
+  }
+  const create = createElementTemplate(tag, attrString, className);
+  return (props, hasChildren) => {
+    const el = getNextElement(create);
+    if (hasChildren) {
+      // static text compiles to a data property: one insert, no effect node.
+      // a getter is dynamic and keeps the binding
+      const descriptor = Object.getOwnPropertyDescriptor(props, "children");
+      if (descriptor && "value" in descriptor) insert(el, descriptor.value);
+      else insert(el, () => props.children);
+    }
+    runHydrationEvents();
+    return el;
+  };
+};
+
 /** dynamic: the provider theme plus one memo per element for attrs, class and style */
 const createDynamicComponent =
   (
@@ -331,6 +442,109 @@ const createDynamicComponent =
     });
   };
 
+/** resolve attrs, then run the styles against that props view */
+const computeStyles = (
+  props: Props,
+  propsWithTheme: Props,
+  attrsFn: RuntimeAttrsFn | undefined,
+  processor: StyleProcessor,
+): ComputedStyles => {
+  const attrs = attrsFn?.(propsWithTheme);
+  const authorClass = normalizeClass(props.class);
+  const classes = new Classes(authorClass);
+  const attrsClass = normalizeClass(attrs?.class);
+  if (attrsClass) classes.add(attrsClass);
+  // a static processor writes no style values, so the author's style object
+  // passes through without a copy
+  const style =
+    processor.$dynamic || attrs?.style
+      ? { ...unwrapStyle(props.style), ...unwrapStyle(attrs?.style) }
+      : unwrapStyle(props.style);
+  processor(
+    attrs ? withAttrs(propsWithTheme, attrs) : propsWithTheme,
+    classes,
+    style as StyleObject,
+  );
+  return {
+    class: classes.value || undefined,
+    generatedClass: !authorClass && !attrsClass && classes.generated,
+    style: style && hasKeys(style) ? style : undefined,
+    attrs,
+  };
+};
+
+/**
+ * backing object of a props view: the author's props, a provider theme to
+ * fill in when props has none, and attrs whose values win over props.
+ * one shared handler serves both views, so a view costs one proxy and one
+ * small object per element and no trap closures
+ */
+type View = { props: Props; theme?: Accessor<YakTheme>; attrs?: Props };
+
+const viewTraps: ProxyHandler<View> = {
+  get: ({ props, theme, attrs }, key) => {
+    if (key === "theme" && theme && !("theme" in props)) return theme;
+    if (attrs && key in attrs) return Reflect.get(attrs, key);
+    return Reflect.get(props, key);
+  },
+  has: ({ props, theme, attrs }, key) =>
+    (key === "theme" && !!theme) || (!!attrs && key in attrs) || Reflect.has(props, key),
+  ownKeys: ({ props, theme, attrs }) => {
+    const keys = new Set(Reflect.ownKeys(props));
+    if (attrs) for (const key of Reflect.ownKeys(attrs)) keys.add(key);
+    if (theme) keys.add("theme");
+    return [...keys];
+  },
+  getOwnPropertyDescriptor: ({ props, theme, attrs }, key) => {
+    if (key === "theme" && theme && !("theme" in props)) {
+      return { value: theme, enumerable: true, configurable: true };
+    }
+    const descriptor = Reflect.getOwnPropertyDescriptor(attrs && key in attrs ? attrs : props, key);
+    // a virtual prop must report configurable, the backing object has no such key
+    return descriptor && { ...descriptor, configurable: true };
+  },
+};
+
+/** the provider theme when props has none; other reads stay reactive */
+const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
+  (!($PROXY in props) && "theme" in props
+    ? props
+    : new Proxy({ props, theme }, viewTraps)) as Props;
+
+/** style interpolations read attrs over author props, getters only on demand */
+const withAttrs = (props: Props, attrs: Props): Props =>
+  new Proxy({ props, attrs }, viewTraps) as Props;
+
+/** run once and reuse the result */
+const once = <T extends object>(fn: () => T): (() => T) => {
+  let value: T | undefined;
+  return () => (value ??= fn());
+};
+
+/** string styles become objects before css variables are added */
+const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | undefined => {
+  if (typeof style !== "string") {
+    return style;
+  }
+  const result: Record<string, string> = {};
+  for (const declaration of style.split(";")) {
+    const colonIndex = declaration.indexOf(":");
+    if (colonIndex === -1) continue;
+    const property = declaration.slice(0, colonIndex).trim();
+    const value = declaration.slice(colonIndex + 1).trim();
+    if (property && value) {
+      result[property] = value;
+    }
+  }
+  return result as StyleObject;
+};
+
+/** cheaper than Object.keys(object).length, no array for a yes/no answer */
+const hasKeys = (object: object): boolean => {
+  for (const _ in object) return true;
+  return false;
+};
+
 /** the target's render path, chosen once per styled component */
 const createTargetRenderer = (
   target: AnyComponent<any> | string,
@@ -346,102 +560,6 @@ const createTargetRenderer = (
     return (props, meta) => serializeElement(target, head, closing, props, meta);
   }
   return createElementRenderer(target, attrString);
-};
-
-/** the cached template for a fixed tag; svg and mathml tags parse inside their namespace root */
-const createElementTemplate = (tag: string, attrString: string, className?: string) => {
-  // atoms can put author names into the static class, so the template escapes it
-  const classAttribute = className ? ` class="${escapeAttribute(className)}"` : "";
-  const opening = `<${tag}${attrString}${classAttribute}>`;
-  // flag 2 returns firstChild.firstChild
-  // skips the <svg>/<math> wrapper we add so the child parses in its namespace
-  if (SVGElements.has(tag) && tag !== "svg") return template(`<svg>${opening}`, 2);
-  if (MathMLElements.has(tag) && tag !== "math") return template(`<math>${opening}`, 2);
-  return template(opening);
-};
-
-/** bind a fixed client tag without dynamic()'s per-element memo */
-const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
-  const create = createElementTemplate(tag, attrString);
-  if (!ambiguousSvgTags.has(tag)) {
-    // hydration claims the server node by key; a fresh mount clones the cached template
-    return (props, meta) => bindElement(getNextElement(create), props, meta);
-  }
-  // a, script, style and title exist in html and svg. hydration claims the
-  // node the server wrote. a fresh mount learns the namespace from the
-  // insertion parent, which solid sets only while the parent inserts, so
-  // creation waits for that call, the way solid's own dynamic() does
-  const createSvg = template(`<svg><${tag}${attrString}>`, 2);
-  return (props, meta) => {
-    if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
-    const owner = getOwner();
-    let el: Element | undefined;
-    // the thunk runs inside the parent's insert effect with tracking on;
-    // untrack keeps that effect from subscribing to the prop reads here
-    const lazy = () =>
-      (el ??= runWithOwner(owner, () =>
-        untrack(() => {
-          // declared as a Node; the namespace and local name live on Element
-          const parent = solidWeb.getInsertionParent() as Element | undefined;
-          const inSvg =
-            !!parent &&
-            parent.namespaceURI === Namespaces.svg &&
-            parent.localName !== "foreignObject";
-          return bindElement((inSvg ? createSvg : create)(), props, meta);
-        }),
-      ));
-    // insert() accepts an accessor at runtime (dynamic() returns one), the
-    // JSX.Element type does not include it
-    return lazy as unknown as JSX.Element;
-  };
-};
-
-/** apply the props to a created or claimed element */
-const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
-  const bound = targetProps(props, meta);
-  // a proxy can add children later, so it keeps the child binding.
-  // no untrack here: a component body runs untracked, and the lazy svg mount wraps its own call
-  spread(el, bound, !($PROXY in bound) && !("children" in bound));
-  // replay events once the element's bindings are ready
-  runHydrationEvents();
-  return el;
-};
-
-/** tag and class cached per component; only the children need a binding or serialization */
-const createChildrenOnlyRenderer = (
-  tag: string,
-  className: string | undefined,
-  attrString: string,
-): ((props: Props, hasChildren: boolean) => JSX.Element) => {
-  if (isServer) {
-    const head = `<${tag}${attrString}`;
-    const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
-    const closing = `</${tag}>`;
-    const parts = [head, open, closing];
-    return (props, hasChildren): { t: string } => {
-      // the key comes before the child getter runs, it may render
-      const hk = ssrHydrationKey();
-      const children = hasChildren ? escape(props.children) : undefined;
-      // plain children join in place like in serializeElement; the rest is
-      // a hole for ssr(), as in compiled templates
-      const text = plainContent(children);
-      if (text !== undefined) return { t: `${head}${hk}${open}${text}${closing}` };
-      return ssr(parts, hk, children);
-    };
-  }
-  const create = createElementTemplate(tag, attrString, className);
-  return (props, hasChildren) => {
-    const el = getNextElement(create);
-    if (hasChildren) {
-      // static text compiles to a data property: one insert, no effect node.
-      // a getter is dynamic and keeps the binding
-      const descriptor = Object.getOwnPropertyDescriptor(props, "children");
-      if (descriptor && "value" in descriptor) insert(el, descriptor.value);
-      else insert(el, () => props.children);
-    }
-    runHydrationEvents();
-    return el;
-  };
 };
 
 /**
@@ -543,6 +661,65 @@ const attribute = (prop: string, value: unknown): string => {
 /** raw markup stays as is, every other child value is escaped */
 const childContent = (tag: string, prop: string, value: unknown): unknown =>
   tag === "script" || tag === "style" || prop === "innerHTML" ? value : escape(value);
+
+/** the cached template for a fixed tag; svg and mathml tags parse inside their namespace root */
+const createElementTemplate = (tag: string, attrString: string, className?: string) => {
+  // atoms can put author names into the static class, so the template escapes it
+  const classAttribute = className ? ` class="${escapeAttribute(className)}"` : "";
+  const opening = `<${tag}${attrString}${classAttribute}>`;
+  // flag 2 returns firstChild.firstChild
+  // skips the <svg>/<math> wrapper we add so the child parses in its namespace
+  if (SVGElements.has(tag) && tag !== "svg") return template(`<svg>${opening}`, 2);
+  if (MathMLElements.has(tag) && tag !== "math") return template(`<math>${opening}`, 2);
+  return template(opening);
+};
+
+/** bind a fixed client tag without dynamic()'s per-element memo */
+const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
+  const create = createElementTemplate(tag, attrString);
+  if (!ambiguousSvgTags.has(tag)) {
+    // hydration claims the server node by key; a fresh mount clones the cached template
+    return (props, meta) => bindElement(getNextElement(create), props, meta);
+  }
+  // a, script, style and title exist in html and svg. hydration claims the
+  // node the server wrote. a fresh mount learns the namespace from the
+  // insertion parent, which solid sets only while the parent inserts, so
+  // creation waits for that call, the way solid's own dynamic() does
+  const createSvg = template(`<svg><${tag}${attrString}>`, 2);
+  return (props, meta) => {
+    if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
+    const owner = getOwner();
+    let el: Element | undefined;
+    // the thunk runs inside the parent's insert effect with tracking on;
+    // untrack keeps that effect from subscribing to the prop reads here
+    const lazy = () =>
+      (el ??= runWithOwner(owner, () =>
+        untrack(() => {
+          // declared as a Node; the namespace and local name live on Element
+          const parent = solidWeb.getInsertionParent() as Element | undefined;
+          const inSvg =
+            !!parent &&
+            parent.namespaceURI === Namespaces.svg &&
+            parent.localName !== "foreignObject";
+          return bindElement((inSvg ? createSvg : create)(), props, meta);
+        }),
+      ));
+    // insert() accepts an accessor at runtime (dynamic() returns one), the
+    // JSX.Element type does not include it
+    return lazy as unknown as JSX.Element;
+  };
+};
+
+/** apply the props to a created or claimed element */
+const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
+  const bound = targetProps(props, meta);
+  // a proxy can add children later, so it keeps the child binding.
+  // no untrack here: a component body runs untracked, and the lazy svg mount wraps its own call
+  spread(el, bound, !($PROXY in bound) && !("children" in bound));
+  // replay events once the element's bindings are ready
+  runHydrationEvents();
+  return el;
+};
 
 /**
  * the props the target sees: author props, attrs output, computed class and style
@@ -664,181 +841,4 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
       return Reflect.getOwnPropertyDescriptor(target, key);
     },
   });
-};
-
-/** resolve attrs, then run the styles against that props view */
-const computeStyles = (
-  props: Props,
-  propsWithTheme: Props,
-  attrsFn: RuntimeAttrsFn | undefined,
-  processor: StyleProcessor,
-): ComputedStyles => {
-  const attrs = attrsFn?.(propsWithTheme);
-  const authorClass = normalizeClass(props.class);
-  const classes = new Classes(authorClass);
-  const attrsClass = normalizeClass(attrs?.class);
-  if (attrsClass) classes.add(attrsClass);
-  // a static processor writes no style values, so the author's style object
-  // passes through without a copy
-  const style =
-    processor.$dynamic || attrs?.style
-      ? { ...unwrapStyle(props.style), ...unwrapStyle(attrs?.style) }
-      : unwrapStyle(props.style);
-  processor(
-    attrs ? withAttrs(propsWithTheme, attrs) : propsWithTheme,
-    classes,
-    style as StyleObject,
-  );
-  return {
-    class: classes.value || undefined,
-    generatedClass: !authorClass && !attrsClass && classes.generated,
-    style: style && hasKeys(style) ? style : undefined,
-    attrs,
-  };
-};
-
-/**
- * backing object of a props view: the author's props, a provider theme to
- * fill in when props has none, and attrs whose values win over props.
- * one shared handler serves both views, so a view costs one proxy and one
- * small object per element and no trap closures
- */
-type View = { props: Props; theme?: Accessor<YakTheme>; attrs?: Props };
-
-const viewTraps: ProxyHandler<View> = {
-  get: ({ props, theme, attrs }, key) => {
-    if (key === "theme" && theme && !("theme" in props)) return theme;
-    if (attrs && key in attrs) return Reflect.get(attrs, key);
-    return Reflect.get(props, key);
-  },
-  has: ({ props, theme, attrs }, key) =>
-    (key === "theme" && !!theme) || (!!attrs && key in attrs) || Reflect.has(props, key),
-  ownKeys: ({ props, theme, attrs }) => {
-    const keys = new Set(Reflect.ownKeys(props));
-    if (attrs) for (const key of Reflect.ownKeys(attrs)) keys.add(key);
-    if (theme) keys.add("theme");
-    return [...keys];
-  },
-  getOwnPropertyDescriptor: ({ props, theme, attrs }, key) => {
-    if (key === "theme" && theme && !("theme" in props)) {
-      return { value: theme, enumerable: true, configurable: true };
-    }
-    const descriptor = Reflect.getOwnPropertyDescriptor(attrs && key in attrs ? attrs : props, key);
-    // a virtual prop must report configurable, the backing object has no such key
-    return descriptor && { ...descriptor, configurable: true };
-  },
-};
-
-/** the provider theme when props has none; other reads stay reactive */
-const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
-  (!($PROXY in props) && "theme" in props
-    ? props
-    : new Proxy({ props, theme }, viewTraps)) as Props;
-
-/** style interpolations read attrs over author props, getters only on demand */
-const withAttrs = (props: Props, attrs: Props): Props =>
-  new Proxy({ props, attrs }, viewTraps) as Props;
-
-/** string styles become objects before css variables are added */
-const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | undefined => {
-  if (typeof style !== "string") {
-    return style;
-  }
-  const result: Record<string, string> = {};
-  for (const declaration of style.split(";")) {
-    const colonIndex = declaration.indexOf(":");
-    if (colonIndex === -1) continue;
-    const property = declaration.slice(0, colonIndex).trim();
-    const value = declaration.slice(colonIndex + 1).trim();
-    if (property && value) {
-      result[property] = value;
-    }
-  }
-  return result as StyleObject;
-};
-
-/** cheaper than Object.keys(object).length, no array for a yes/no answer */
-const hasKeys = (object: object): boolean => {
-  for (const _ in object) return true;
-  return false;
-};
-
-/** run once and reuse the result */
-const once = <T extends object>(fn: () => T): (() => T) => {
-  let value: T | undefined;
-  return () => (value ??= fn());
-};
-
-/** parent attrs first, then own attrs read and override that result */
-const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs | undefined => {
-  if (!attrs) return parent;
-  if (!parent) return attrs;
-  // two objects without getters combine once here and stay an object; a
-  // getter must run per render, inside the memo
-  if (
-    typeof attrs !== "function" &&
-    typeof parent !== "function" &&
-    !hasGetter(attrs) &&
-    !hasGetter(parent)
-  ) {
-    return combineProps(parent, attrs);
-  }
-  const own = typeof attrs === "function" ? attrs : () => attrs;
-  const parentFn = typeof parent === "function" ? parent : () => parent;
-  return (props) => {
-    const parentProps = parentFn(props);
-    return combineProps(parentProps, own(combineProps(props, parentProps)));
-  };
-};
-
-/** parent styles before own styles, with one collector and one style object */
-const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
-  if (!parent) return own;
-  // the flag covers both processors; neither needs a style object when it is false
-  return Object.assign(
-    (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
-      parent(props, classes, style);
-      own(props, classes, style);
-    },
-    { $dynamic: own.$dynamic || parent.$dynamic },
-  ) as StyleProcessor;
-};
-
-/** attrs override props; class and style values combine */
-const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
-  if (!newProps) return props;
-  // descriptors, not values: a spread would run every author getter here,
-  // and a children getter renders (twice, and on the server with the
-  // wrong hydration ids); the target reads it once, in its own order
-  const descriptors = {
-    ...Object.getOwnPropertyDescriptors(props),
-    ...Object.getOwnPropertyDescriptors(newProps),
-  };
-  // an equal class counts as nothing: own attrs get the combined props and
-  // may hand the same class back, merging it again would duplicate it
-  if (newProps.class && props.class !== newProps.class) {
-    descriptors.class = valueDescriptor(mergeClasses(normalizeClass(props.class), newProps.class));
-  }
-  if (newProps.style && props.style !== newProps.style) {
-    descriptors.style = valueDescriptor({
-      ...unwrapStyle(props.style),
-      ...unwrapStyle(newProps.style),
-    });
-  }
-  return Object.defineProperties({}, descriptors) as Props;
-};
-
-const valueDescriptor = (value: unknown): PropertyDescriptor => ({
-  value,
-  enumerable: true,
-  configurable: true,
-  writable: true,
-});
-
-/** true when any own property is an accessor */
-const hasGetter = (object: object): boolean => {
-  for (const key of Object.getOwnPropertyNames(object)) {
-    if (!("value" in Object.getOwnPropertyDescriptor(object, key)!)) return true;
-  }
-  return false;
 };
