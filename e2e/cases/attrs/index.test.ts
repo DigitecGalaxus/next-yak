@@ -44,6 +44,9 @@ test(
     await expect(baked).toHaveAttribute("disabled", "");
     await expect(baked).toHaveAttribute("tabindex", "0");
     await expect(baked).toHaveCSS("color", "rgb(0, 128, 0)");
+    // a fresh mount applies defaultValue as a property, not as a dead attribute
+    await page.getByTestId("mount-input").click();
+    await expect(page.getByTestId("preset-input")).toHaveValue("preset");
     // the server rendered the child once, and so did the client. React's
     // strict mode double-invokes renders in dev, so the count holds for solid only
     if (testEnv.framework === "solid") {

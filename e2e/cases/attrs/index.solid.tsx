@@ -1,4 +1,5 @@
 import { styled } from "@yak/solid";
+import { createSignal } from "solid-js";
 
 const Button = styled.button.attrs({ type: "button" })`
   color: red;
@@ -35,9 +36,15 @@ const BakedButton = styled.button.attrs({ type: "button", disabled: true, tabind
   color: green;
 `;
 
+// a key solid applies as a dom property keeps its meaning on a fresh mount
+const PresetInput = styled.input.attrs({ type: "text", defaultValue: "preset" })`
+  border: 1px solid red;
+`;
+
 export default function App() {
   // per render: the server renders the page once per request
   childRenders = 0;
+  const [mounted, setMounted] = createSignal(false);
   return (
     <>
       <Button data-testid="button">Click me</Button>
@@ -48,6 +55,10 @@ export default function App() {
         <Child />
       </FancyButton>
       <BakedButton data-testid="baked">baked</BakedButton>
+      <button data-testid="mount-input" onClick={() => setMounted(true)}>
+        mount
+      </button>
+      {mounted() && <PresetInput data-testid="preset-input" />}
     </>
   );
 }
