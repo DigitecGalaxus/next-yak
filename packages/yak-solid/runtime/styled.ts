@@ -213,6 +213,9 @@ const bakeable = (tag: string, attrs: Props): boolean => {
     const type = typeof descriptor.value;
     return (
       (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
+      // the name goes into the template and the opening string unescaped; anything
+      // else (a computed key with markup in it) takes the writer, which escapes names
+      ATTRIBUTE_NAME.test(key) &&
       key.charCodeAt(0) !== 36 &&
       key !== "class" &&
       key !== "style" &&
@@ -244,6 +247,9 @@ const bakeAttributes = (attrs: Props): string => {
 };
 
 const escapeAttribute = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+
+/** an attribute name that needs no escaping in markup */
+const ATTRIBUTE_NAME = /^[A-Za-z_:][\w:.-]*$/;
 
 /** parent attrs first, then own attrs read and override that result */
 const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs | undefined => {
@@ -376,10 +382,12 @@ const createChildrenOnlyRenderer = (
     const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
     const closing = `</${tag}>`;
     const parts = [head, open, closing];
+    // the same raw-text rule as the writer: script and style content is not escaped
+    const raw = tag === "script" || tag === "style";
     return (props, hasChildren): { t: string } => {
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
-      const children = hasChildren ? escape(props.children) : undefined;
+      const children = hasChildren ? (raw ? props.children : escape(props.children)) : undefined;
       // plain children join in place like in serializeElement; the rest is
       // a hole for ssr(), as in compiled templates
       const text = plainContent(children);

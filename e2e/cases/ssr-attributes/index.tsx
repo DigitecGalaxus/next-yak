@@ -1,5 +1,9 @@
 import { css, styled } from "next-yak";
 
+// a style tag whose content stays raw (react needs dangerouslySetInnerHTML for that)
+const RawStyle = styled.style``;
+const rawCss = '[data-testid="raw-target"]::before { content: "<&"; }';
+
 // React twin of the Solid case: the same props on a styled div and a styled a,
 // once static and once with attrs and a dynamic style.
 const StaticDiv = styled.div`
@@ -61,6 +65,8 @@ export default function App() {
       <StyledSpread data-testid="spread-target" $green>
         text
       </StyledSpread>
+      <RawStyle dangerouslySetInnerHTML={{ __html: rawCss }} />
+      <span data-testid="raw-target">raw</span>
       <DynamicDiv
         data-testid="unread-div"
         $tone="rgb(0, 0, 0)"

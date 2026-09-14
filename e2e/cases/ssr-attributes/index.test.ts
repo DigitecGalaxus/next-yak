@@ -21,9 +21,13 @@ function serverAttributes(html: string, testId: string): Record<string, string |
 
 /** attributes of the element with this test id in the hydrated dom */
 async function domAttributes(page: Page, testId: string): Promise<Record<string, string>> {
-  const attributes = await page.getByTestId(testId).evaluate((element) =>
-    Object.fromEntries(element.getAttributeNames().map((name) => [name, element.getAttribute(name)!])),
-  );
+  const attributes = await page
+    .getByTestId(testId)
+    .evaluate((element) =>
+      Object.fromEntries(
+        element.getAttributeNames().map((name) => [name, element.getAttribute(name)!]),
+      ),
+    );
   for (const name of IGNORED) delete attributes[name];
   return attributes;
 }
@@ -61,7 +65,9 @@ test(
       // innerHTML won over the unread textContent getter (which throws on the server)
       for (const id of ["unread-div", "unread-a"]) {
         expect(html).toMatch(
-          new RegExp(`<(?:div|a)\\b(?:[^>"]|"[^"]*")*data-testid="${id}"(?:[^>"]|"[^"]*")*><b>raw</b></(?:div|a)>`),
+          new RegExp(
+            `<(?:div|a)\\b(?:[^>"]|"[^"]*")*data-testid="${id}"(?:[^>"]|"[^"]*")*><b>raw</b></(?:div|a)>`,
+          ),
         );
       }
     }
@@ -73,7 +79,9 @@ test(
       // the refs run during hydration, so their attribute marks the dom as ready
       await expect(div).toHaveAttribute("data-ref", "1");
       await expect(anchor).toHaveAttribute("data-ref", "1");
-      expect(await domAttributes(page, `${pair}-a`)).toEqual(await domAttributes(page, `${pair}-div`));
+      expect(await domAttributes(page, `${pair}-a`)).toEqual(
+        await domAttributes(page, `${pair}-div`),
+      );
       for (const element of [div, anchor]) {
         await expect(element).toHaveText("text");
         await expect(element).toHaveAttribute("data-on");
@@ -91,7 +99,10 @@ test(
         await expect(element).toHaveCSS("padding-top", "1px");
         await expect(element).toHaveCSS("margin-top", "4px");
         await expect(element).toHaveCSS("background-color", "rgb(1, 2, 3)");
-        await expect(element).toHaveCSS("color", pair === "dynamic" ? "rgb(255, 0, 0)" : "rgb(0, 0, 0)");
+        await expect(element).toHaveCSS(
+          "color",
+          pair === "dynamic" ? "rgb(255, 0, 0)" : "rgb(0, 0, 0)",
+        );
       }
       if (pair === "dynamic") {
         await expect(div).toHaveAttribute("data-attrs", "yes");
@@ -103,5 +114,15 @@ test(
     }
     await expect(page.getByTestId("spread-target")).toHaveCSS("color", "rgb(0, 128, 0)");
     await expect(page.getByTestId("spread-target")).not.toHaveAttribute("$green");
+    // style content is raw on the server (the react vite app renders on the client) and applies
+    if (testEnv.framework === "solid") {
+      const rawHtml = await (await page.request.get(testEnv.url)).text();
+      expect(rawHtml).toContain('content: "<&"');
+    }
+    expect(
+      await page
+        .getByTestId("raw-target")
+        .evaluate((el) => getComputedStyle(el, "::before").content),
+    ).toBe('"<&"');
   }),
 );

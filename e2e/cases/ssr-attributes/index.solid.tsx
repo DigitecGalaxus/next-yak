@@ -1,6 +1,10 @@
 import { css, styled } from "@yak/solid";
 import { isServer } from "@solidjs/web";
 
+// a style tag with only children takes the children-only path; its content stays raw
+const RawStyle = styled.style``;
+const rawCss = '[data-testid="raw-target"]::before { content: "<&"; }';
+
 // the server reads only the first child prop; a second one must stay unread,
 // it may render a component and take hydration ids the client will not take
 const unreadChildProp = () => {
@@ -76,6 +80,8 @@ export default function App() {
       <StyledSpread data-testid="spread-target" $green>
         text
       </StyledSpread>
+      <RawStyle>{rawCss}</RawStyle>
+      <span data-testid="raw-target">raw</span>
       <DynamicDiv
         data-testid="unread-div"
         $tone="rgb(0, 0, 0)"
