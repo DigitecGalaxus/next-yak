@@ -13,13 +13,21 @@
 // spreads onto a cloned template, a component target gets targetProps
 // (a copy or a proxy).
 //
+// the one rule every path keeps: a prop getter may render a child and take
+// hydration keys of its own, so the element takes its key first and reads
+// each getter once, in the target's order.
+//
 // words: author = the app code that writes the css block, renders the
 // component and passes props; target = the tag or component under the
 // styled layer; attrs = the .attrs() values, an object or a function of
 // props; baked = object attrs printed into the tag at definition; view = a
-// proxy over props that adds the theme or attrs; atom = a class name the
-// author passes into a css block (atoms("...")), which makes the class
-// author text that is escaped
+// proxy over props that adds the theme or attrs; collector = the Classes
+// instance a css block adds its names to; atom = a class name the author
+// passes into a css block via atoms("..."), author text that needs
+// escaping; reactive spread = a {...props} in jsx, which solid compiles to
+// a proxy marked with $PROXY; hole = a slot in a server template that
+// ssr() fills, possibly async; hydration key = the id the server prints on
+// an element so the client can claim the same node
 import { css, Classes, yakComponentSymbol } from "./cssLiteral.js";
 import type {
   AnyComponent,
@@ -36,7 +44,7 @@ import type {
   StyleObject,
 } from "./publicStyledApi.js";
 import { $PROXY, createMemo } from "solid-js";
-// solid's compiled-jsx helpers: this file hand-writes what the compiler emits for a tag
+// the helpers solid's compiled jsx calls; this file hand-writes what the compiler would emit for a tag
 import {
   ChildProperties,
   createComponent,
@@ -97,7 +105,7 @@ type RenderMeta = StaticMeta | DynamicMeta;
 
 /** static component (fixed class, no attrs function, no style values at render time): one meta per component, the class comes from classOf */
 type StaticMeta = {
-  /** keys the target must never see; the rule is built once in yakStyled */
+  /** keys the target must never see; the rule is `skip` in yakStyled */
   skip: (key: PropertyKey) => boolean;
   compute: undefined;
   classOf: (props: Props) => string | undefined;
@@ -110,8 +118,7 @@ type StaticMeta = {
  * dynamic component: one memo (run once on the server) holds class,
  * style and attrs, one meta per element. the two meta literals (in
  * createStaticComponent and createDynamicComponent) keep the same keys in
- * the same order so every meta read sees one shape; a flat shape with
- * accessors instead of the direct compute field measured slower
+ * the same order so every meta read sees one shape
  */
 type DynamicMeta = {
   skip: (key: PropertyKey) => boolean;
@@ -168,7 +175,6 @@ const yakStyled: StyledInternal = (Component, attrs) => {
     typeof Component === "function" &&
     (Component as Partial<YakComponent<unknown>>)[yakComponentSymbol] !== undefined;
 
-  // parent attrs and styles run before this component's own
   // the public tuple type hides the shape, one cast at the read
   const [parentAttrs, parentRuntimeStylesFn, parentTarget] = isYakComponent
     ? ((Component as YakComponent<unknown>)[yakComponentSymbol] as ComponentMetadata)
@@ -214,6 +220,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
       (!isStatic && key === "style") ||
       // a baked attr wins over the author's prop of the same name, even when its value is null
       (baked !== undefined && Object.hasOwn(baked, key));
+    // baked attrs still run inside a dynamic component's memo: style callbacks
+    // read them through withAttrs
     const attrsFn =
       typeof mergedAttrs === "function" ? mergedAttrs : mergedAttrs && (() => mergedAttrs);
     const Yak = isStatic
@@ -235,8 +243,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
  * object attrs bake when every entry is a plain attribute with a primitive
  * value. rejected keys are the union of what skip drops, what attribute()
  * treats specially, and what solid sets as a dom property (DOMWithState:
- * value, checked, ...), which a template would turn into a content
- * attribute. enumerable data keys only, so the three walks (here,
+ * value, checked, ...), which a template would turn into a markup
+ * attribute. enumerable value keys only, so the three walks (here,
  * bakeAttributes, skip) see the same keys; a getter blocks baking and runs
  * at render time
  */
@@ -266,9 +274,9 @@ const bakeable = (tag: string, attrs: Props): boolean => {
 
 /**
  * the attribute string of baked attrs, built once at definition. the value
- * rules follow attribute(), the per-prop server writer; the escaping is
- * local because the client build's escape is an empty stub, and attribute
- * names are code constants. `<` stays unescaped, harmless in a quoted value
+ * rules follow attribute(), which prints one prop on the server; the escaping
+ * is local because the client build's escape is an empty stub, and the names
+ * passed the ATTRIBUTE_NAME check. `<` stays unescaped, harmless in a quoted value
  */
 const bakeAttributes = (attrs: Props): string => {
   let result = "";
@@ -311,7 +319,6 @@ const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs
 /** parent styles before own styles, with one collector and one style object */
 const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
   if (!parent) return own;
-  // when $dynamic is false no processor touches the style object
   return Object.assign(
     (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
       parent(props, classes, style);
@@ -325,8 +332,7 @@ const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProce
 const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
   if (!newProps) return props;
   // descriptors, not values: a spread would run every author getter here,
-  // and a children getter renders (twice, and on the server with the
-  // wrong hydration ids); the target reads it once, in its own order
+  // and a children getter renders (twice, and with the wrong hydration keys)
   const descriptors = {
     ...Object.getOwnPropertyDescriptors(props),
     ...Object.getOwnPropertyDescriptors(newProps),
@@ -419,7 +425,7 @@ const createChildrenOnlyRenderer = (
     // as in childContent: script and style content is not escaped
     const raw = tag === "script" || tag === "style";
     return (props, hasChildren): { t: string } => {
-      // the key comes before the child getter runs, it may render
+      // key first: the child getter may render
       const hk = ssrHydrationKey();
       const children = hasChildren ? (raw ? props.children : escape(props.children)) : undefined;
       // text joins in place; anything else goes through ssr() like a compiled
@@ -433,7 +439,7 @@ const createChildrenOnlyRenderer = (
   return (props, hasChildren) => {
     const el = getNextElement(create);
     if (hasChildren) {
-      // static text compiles to a data property: one insert, no effect node.
+      // static text arrives as a plain value, not a getter: one insert, no effect.
       // a getter is dynamic and keeps the binding
       const descriptor = Object.getOwnPropertyDescriptor(props, "children");
       if (descriptor && "value" in descriptor) insert(el, descriptor.value);
@@ -462,8 +468,8 @@ const createDynamicComponent =
     // two memos per element
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
     // the server has no updates, so a run-once closure replaces the memo:
-    // solid's server memo builds an owner and a computation record per element.
-    // on the client the memo is transparent: it claims no hydration id
+    // solid's server createMemo still builds an owner and a node per element.
+    // on the client the memo is transparent: it claims no hydration key
     const computed = isServer ? once(compute) : createMemo(compute, { transparent: true });
     // theme reaches the target only when attrs set their own; the provider
     // accessor must not land on the dom element. identity, not `in`: an attrs
@@ -543,7 +549,7 @@ const viewTraps: ProxyHandler<View> = {
       return { value: theme, enumerable: true, configurable: true };
     }
     const descriptor = Reflect.getOwnPropertyDescriptor(attrs && key in attrs ? attrs : props, key);
-    // a virtual prop must report configurable, the backing object has no such key
+    // a prop the view adds must report configurable, the backing object has no such key
     return descriptor && { ...descriptor, configurable: true };
   },
 };
@@ -562,7 +568,7 @@ const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
 const withAttrs = (props: Props, attrs: Props): Props =>
   new Proxy({ props, attrs }, viewTraps) as Props;
 
-/** server stand-in for createMemo: run once, no owner or computation record */
+/** server stand-in for createMemo: run once, no owner and no node */
 const once = <T extends object>(fn: () => T): (() => T) => {
   let value: T | undefined;
   return () => (value ??= fn());
@@ -586,7 +592,7 @@ const unwrapStyle = (style: StyleObject | string | undefined): StyleObject | und
   return result as StyleObject;
 };
 
-/** cheaper than Object.keys(object).length, no array for a yes/no answer */
+/** no array for a yes/no answer */
 const hasKeys = (object: object): boolean => {
   for (const _ in object) return true;
   return false;
@@ -620,10 +626,10 @@ const serializeElement = (
   props: Props,
   meta: RenderMeta,
 ): { t: string } => {
-  // the key comes before any prop read: a getter may render a child and take keys
+  // key first: a prop getter may render a child and take keys
   const hk = ssrHydrationKey();
-  // one memo read for class, style and attrs. branch on the meta field, not
-  // on computed: an optional call here costs 20-30 ns on the static writer
+  // one memo read for class, style and attrs. branch on meta.compute, not
+  // on computed, so the static writer makes no call here
   let computed: ComputedStyles | undefined;
   let className: string | undefined;
   if (meta.compute) {
@@ -640,10 +646,10 @@ const serializeElement = (
   // a textarea's value is its content, like solid's ssrElement writes it
   const textarea = tag === "textarea";
   // author keys first, an attrs value wins; then the keys only attrs has.
-  // two loops on purpose: one loop over both key sets costs more on the
-  // attrs path (the push and a second `in` per key).
+  // two loops on purpose: one loop over both key sets is slower on the
+  // attrs path, it needs a push and a second `in` per key.
   // only the first child prop is read, and none on a void tag: a child
-  // getter may render and take hydration ids
+  // getter may render and take hydration keys
   for (const key of Object.keys(props)) {
     if (skip(key)) continue;
     const source = attrs && key in attrs ? attrs : props;
@@ -700,8 +706,8 @@ const plainContent = (node: unknown): string | undefined => {
  */
 const attribute = (prop: string, value: unknown): string => {
   if (prop === "style") return ` style="${ssrStyle(value as string)}"`;
-  // class never reaches here, skip drops it. kept on purpose: re-measure
-  // the static writer before removing it (code layout)
+  // class never reaches here, skip drops it; the branch stays, the static
+  // writer is slower without it (jit code placement)
   if (prop === "class") return ` class="${ssrClassName(value as string)}"`;
   // refs, event handlers and prop: bindings only exist on the client
   if (value == undefined || prop === "ref" || prop.startsWith("on") || prop.startsWith("prop:")) {
@@ -766,10 +772,9 @@ const targetProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknow
 };
 
 /**
- * copies descriptors without reading them
- * a getter like icon={<Icon />} renders a child and takes hydration ids,
- * the target has to read it in its own order
- * moving the getter is safe, solid's compiled getters do not depend on `this`
+ * copies descriptors without reading them: a getter like icon={<Icon />}
+ * renders a child and takes hydration keys, the target reads it in its own
+ * order. moving the getter is safe, solid's compiled getters do not depend on `this`
  */
 const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { compute, classOf } = meta;
@@ -785,8 +790,8 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
     }
   }
   if (isServer) {
-    // the values are final on the server: data properties take the value
-    // path in solid's omit() and merge() instead of a getter per read
+    // the values are final on the server: plain values take the value path
+    // in solid's omit() and merge() instead of a getter per read
     if (compute) {
       const computed = compute();
       out.class = computed.class;
@@ -827,7 +832,8 @@ const styleGetter = (
  */
 const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   // trap closures per element on purpose, not shared with viewTraps: solid's
-  // for-in hits two traps per key, and the indirection of a backing object showed
+  // for-in hits two traps per key, so a backing object would add an
+  // indirection to each
   const { skip, compute, classOf } = meta;
   // meta.attrsAddKeys, not the destructured copy: the read narrows meta.compute
   const attrsProps = () => (meta.attrsAddKeys ? meta.compute().attrs : undefined);
