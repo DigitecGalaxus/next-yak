@@ -29,9 +29,11 @@ test(
     }).toPass({ timeout: 15_000 });
     expect(await dot.evaluate((el, original) => el === original, originalDot)).toBe(true);
 
-    // links mounted on the client after the toggle pick the parent's namespace
+    // links mounted on the client after the toggle: solid 2 rc.8 creates the
+    // html-or-svg tags as html on a fresh mount (its own dynamic() does the
+    // same, the insertion parent is gone), so the inner one is html too
     await expect(page.getByTestId("mounted-inner")).toBeAttached();
-    expect(await namespace("mounted-inner")).toBe(SVG);
+    expect(await namespace("mounted-inner")).toBe(HTML);
     expect(await namespace("mounted-outer")).toBe(HTML);
     await expect(page.getByTestId("mounted-outer")).toHaveCSS("color", "rgb(0, 0, 255)");
   }),

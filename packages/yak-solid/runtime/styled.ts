@@ -13,7 +13,7 @@ import type {
   StaticStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
-import { $PROXY, createMemo, getOwner, runWithOwner, sharedConfig, untrack } from "solid-js";
+import { $PROXY, createMemo } from "solid-js";
 import {
   ChildProperties,
   createComponent,
@@ -23,7 +23,6 @@ import {
   insert,
   isServer,
   MathMLElements,
-  Namespaces,
   runHydrationEvents,
   spread,
   ssr,
@@ -34,10 +33,6 @@ import {
   template,
   type JSX,
 } from "@solidjs/web";
-// the server build of @solidjs/web has no getInsertionParent export, and a
-// named import of a missing name fails at module load; the namespace read is
-// only reached on the client
-import * as solidWeb from "@solidjs/web";
 import { mergeClasses, normalizeClass } from "./internals/mergeClasses.js";
 // the runtime and the app share one theme context; vite can alias this export
 import { useTheme } from "@yak/solid/context";
@@ -116,9 +111,6 @@ export type StyledInternal = <
   Component: AnyComponent<T> | YakComponent<T> | HtmlTags | string,
   attrs?: Attrs<T, TAttrsIn, TAttrsOut>,
 ) => StyledLiteral<Substitute<T, TAttrsIn>>;
-
-/** solid's AmbiguousSVGElements (not exported): html and svg tags; a fresh mount picks the namespace from the insertion parent */
-const ambiguousSvgTags = new Set(["a", "script", "style", "title"]);
 
 /** solid's server regex (not exported); its VoidElements set lacks keygen and menuitem */
 const VOID_ELEMENTS =
@@ -345,8 +337,7 @@ const createStaticComponent = (
     return classes.value || undefined;
   };
   const renderChildrenOnly =
-    // the namespace question of the four ambiguous tags exists only on a fresh client mount
-    tag && (isServer || !ambiguousSvgTags.has(tag)) && !VOID_ELEMENTS.test(tag)
+    tag && !VOID_ELEMENTS.test(tag)
       ? createChildrenOnlyRenderer(tag, staticClass, attrString)
       : undefined;
   // the writer prints the class unescaped only when it is this exact string;
@@ -688,51 +679,22 @@ const createElementTemplate = (tag: string, attrString: string, className?: stri
   return template(opening);
 };
 
-/** bind a fixed client tag without dynamic()'s per-element memo */
+/**
+ * bind a fixed client tag without dynamic()'s per-element memo. hydration
+ * claims the server node by key; a fresh mount clones the cached template.
+ * a, script, style and title are html elements on a fresh mount, as in
+ * solid's own dynamic() since 2.0.0-rc.8
+ */
 const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
   const create = createElementTemplate(tag, attrString);
-  // solid 2 rc.8 dropped the insertion parent; its own dynamic() then
-  // creates these tags as html, and so does this renderer
-  const getInsertionParent = (solidWeb as { getInsertionParent?: () => Node | undefined })
-    .getInsertionParent;
-  if (!ambiguousSvgTags.has(tag) || !getInsertionParent) {
-    // hydration claims the server node by key; a fresh mount clones the cached template
-    return (props, meta) => bindElement(getNextElement(create), props, meta);
-  }
-  // a, script, style and title exist in html and svg. hydration claims the
-  // node the server wrote. a fresh mount learns the namespace from the
-  // insertion parent, which solid sets only while the parent inserts, so
-  // creation waits for that call, the way solid's own dynamic() does
-  const createSvg = template(`<svg><${tag}${attrString}>`, 2);
-  return (props, meta) => {
-    if (sharedConfig.hydrating) return bindElement(getNextElement(create), props, meta);
-    const owner = getOwner();
-    let el: Element | undefined;
-    // the thunk runs inside the parent's insert effect with tracking on;
-    // untrack keeps that effect from subscribing to the prop reads here
-    const lazy = () =>
-      (el ??= runWithOwner(owner, () =>
-        untrack(() => {
-          // declared as a Node; the namespace and local name live on Element
-          const parent = getInsertionParent() as Element | undefined;
-          const inSvg =
-            !!parent &&
-            parent.namespaceURI === Namespaces.svg &&
-            parent.localName !== "foreignObject";
-          return bindElement((inSvg ? createSvg : create)(), props, meta);
-        }),
-      ));
-    // insert() accepts an accessor at runtime (dynamic() returns one), the
-    // JSX.Element type does not include it
-    return lazy as unknown as JSX.Element;
-  };
+  return (props, meta) => bindElement(getNextElement(create), props, meta);
 };
 
 /** apply the props to a created or claimed element */
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
   const bound = targetProps(props, meta);
   // a proxy can add children later, so it keeps the child binding.
-  // no untrack here: a component body runs untracked, and the lazy svg mount wraps its own call
+  // no untrack here: a component body runs untracked
   spread(el, bound, !($PROXY in bound) && !("children" in bound));
   // replay events once the element's bindings are ready
   runHydrationEvents();
