@@ -1,3 +1,14 @@
+// the map, for a reader who lands in the middle:
+// styled() flattens a chain of styled components and picks one of two
+// component shapes at definition. static: the class is fixed, there is no
+// attrs function and the css block writes no style values at render time,
+// so no memo and no theme read. dynamic: one memo per element resolves
+// attrs, class and style. both hand the target a RenderMeta and a props
+// view: on the server serializeElement (the writer) prints a tag, on the
+// client bindElement spreads onto a cloned template, a component target
+// gets targetProps (a copy or a proxy). an atom is a class name the author
+// passes into a css block (atoms("...")); a class with one in it counts as
+// author text and is escaped
 import { css, Classes, yakComponentSymbol } from "./cssLiteral.js";
 import type {
   AnyComponent,
@@ -39,13 +50,17 @@ import { useTheme } from "@yak/solid/context";
 import type { YakTheme } from "./context/index.js";
 import type { Accessor } from "solid-js";
 
-/** the props a styled component receives from its author */
+/** the props a styled component receives from its author; theme is an accessor (the provider's or the author's) */
 type Props = {
   class?: string;
   style?: StyleObject | string;
   theme?: Accessor<YakTheme>;
 } & Record<PropertyKey, unknown>;
 
+/**
+ * the compiled css block: adds its class names to the collector and, when
+ * $dynamic, style values for the props; the css itself is extracted at build time
+ */
 type StyleProcessor = CompiledStyleProcessor<unknown>;
 
 type RuntimeAttrsFn = (props: Props) => Props;
@@ -54,7 +69,7 @@ type RuntimeAttrs = Props | RuntimeAttrsFn;
 
 type ComputedStyles = {
   class: string | undefined;
-  /** true when the class holds generated names only, nothing from the author or attrs */
+  /** true when the class holds generated names only, nothing from the author or attrs; the writer prints it unescaped then */
   generatedClass: boolean;
   style: StyleObject | undefined;
   attrs: Props | undefined;
@@ -67,13 +82,13 @@ type ComputedStyles = {
  */
 type RenderMeta = StaticMeta | DynamicMeta;
 
-/** static component: one meta per component; the class comes from classOf */
+/** static component (fixed class, no attrs function, no style values at render time): one meta per component, the class comes from classOf */
 type StaticMeta = {
   skip: (key: PropertyKey) => boolean;
   compute: undefined;
   classOf: (props: Props) => string | undefined;
   attrsAddKeys: false;
-  /** the generated class the writer prints without escaping; undefined when an atom put author text in it */
+  /** the static class when every name in it is generated, so the writer prints it unescaped; undefined when an atom put author text in it */
   unescapedClass: string | undefined;
 };
 
@@ -157,9 +172,11 @@ const yakStyled: StyledInternal = (Component, attrs) => {
         : undefined;
     const attrString = baked ? bakeAttributes(baked) : "";
     const renderTarget = createTargetRenderer(targetComponent, attrString);
+    // static: attrs are none or baked, and the css block writes no style values
     const isStatic = (!mergedAttrs || !!baked) && !runtimeStyleProcessor.$dynamic;
     // the target never sees $-props, the provider theme, or the author class
-    // (yak hands it the combined one); a dynamic component owns style too.
+    // (yak hands it the combined one); a dynamic component merges style in its
+    // memo, so the author's style key is dropped here and handed over combined.
     // no symbol passes: solid's merge() flattens any object that answers its
     // private $SOURCES key, which would hand a target's mergeProps() the
     // unfiltered originals; solid's own omit() blocks that key the same way
@@ -194,8 +211,8 @@ const yakStyled: StyledInternal = (Component, attrs) => {
  * treats specially, and what solid sets as a dom property (DOMWithState:
  * value, checked, ...), which a template would turn into a content
  * attribute. enumerable data keys only, so the three walks (here,
- * bakeAttributes, skip) see the same keys; a getter is read at render
- * time, not here
+ * bakeAttributes, skip) see the same keys; a getter blocks baking and runs
+ * at render time
  */
 const bakeable = (tag: string, attrs: Props): boolean => {
   const stateful = DOMWithState[tag.toUpperCase()];
@@ -206,7 +223,7 @@ const bakeable = (tag: string, attrs: Props): boolean => {
     return (
       (type === "string" || type === "number" || type === "boolean" || descriptor.value == null) &&
       // the name goes into the template and the opening string unescaped; anything
-      // else (a computed key with markup in it) takes the writer, which escapes names
+      // else (a computed key with markup in it) takes the writer, whose attribute() escapes names
       ATTRIBUTE_NAME.test(key) &&
       key.charCodeAt(0) !== 36 &&
       key !== "class" &&
@@ -268,7 +285,8 @@ const composeAttrs = (attrs?: RuntimeAttrs, parent?: RuntimeAttrs): RuntimeAttrs
 /** parent styles before own styles, with one collector and one style object */
 const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProcessor => {
   if (!parent) return own;
-  // the flag covers both processors; neither needs a style object when it is false
+  // $dynamic (writes style values at render time) is true when either
+  // processor's is; when false nobody touches the style object
   return Object.assign(
     (props: unknown, classes: Parameters<StyleProcessor>[1], style: StyleObject) => {
       parent(props, classes, style);
@@ -309,7 +327,6 @@ const valueDescriptor = (value: unknown): PropertyDescriptor => ({
   writable: true,
 });
 
-/** true when any own property is an accessor */
 const hasGetter = (object: object): boolean => {
   for (const key of Object.getOwnPropertyNames(object)) {
     if (!("value" in Object.getOwnPropertyDescriptor(object, key)!)) return true;
@@ -326,6 +343,7 @@ const createStaticComponent = (
   attrString: string,
 ): AnyComponent<Props> => {
   const collected = new Classes();
+  // a static processor never reads props, it only adds its class names
   processor(undefined, collected);
   const staticClass = collected.value || undefined;
   const classOf = (props: Props): string | undefined => {
@@ -341,7 +359,7 @@ const createStaticComponent = (
       ? createChildrenOnlyRenderer(tag, staticClass, attrString)
       : undefined;
   // the writer prints the class unescaped only when it is this exact string;
-  // with an atom in it (author text) this stays undefined and the writer escapes
+  // with an atom in it (author text) this stays undefined and it escapes
   const meta: RenderMeta = {
     skip,
     compute: undefined,
@@ -350,7 +368,8 @@ const createStaticComponent = (
     unescapedClass: collected.generated ? staticClass : undefined,
   };
   return (props) => {
-    // a reactive spread can add props later and needs the full client binding
+    // no props or only children: no skip walk, no props copy, no spread.
+    // a reactive spread can add props later and needs the full client binding;
     // on the server props are read once so the proxy check does not matter
     if (renderChildrenOnly && (isServer || !($PROXY in props))) {
       const keys = Object.keys(props);
@@ -373,14 +392,14 @@ const createChildrenOnlyRenderer = (
     const open = `${className ? ` class="${ssrClassName(className)}"` : ""}>`;
     const closing = `</${tag}>`;
     const parts = [head, open, closing];
-    // the same raw-text rule as the writer: script and style content is not escaped
+    // as in childContent: script and style content is not escaped
     const raw = tag === "script" || tag === "style";
     return (props, hasChildren): { t: string } => {
       // the key comes before the child getter runs, it may render
       const hk = ssrHydrationKey();
       const children = hasChildren ? (raw ? props.children : escape(props.children)) : undefined;
-      // plain children join in place like in serializeElement; the rest is
-      // a hole for ssr(), as in compiled templates
+      // text joins in place; anything else goes through ssr() like a compiled
+      // template's hole, which handles async children and text separators
       const text = plainContent(children);
       if (text !== undefined) return { t: `${head}${hk}${open}${text}${closing}` };
       return ssr(parts, hk, children);
@@ -412,19 +431,18 @@ const createDynamicComponent =
   ): AnyComponent<Props> =>
   (props) => {
     const theme = useTheme();
+    // style callbacks see an explicit theme prop before the provider theme
     const propsWithTheme = withTheme(props, theme);
     // attrs and styles run in one memo on purpose
     // a style-only prop change also reruns attrs, still cheaper than
     // two memos per element
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);
     // the server has no updates, so a run-once closure replaces the memo:
-    // solid's server memo builds an owner and a computation record per element
-    // transparent memo: no hydration id is claimed for it
+    // solid's server memo builds an owner and a computation record per element.
+    // on the client the memo is transparent: it claims no hydration id
     const computed = isServer ? once(compute) : createMemo(compute, { transparent: true });
-    // theme rules
-    // style callbacks see an explicit theme prop before the provider theme
-    // the target only gets a theme when attrs replaced the provider accessor,
-    // otherwise it would end up on the dom element
+    // theme reaches the target only when attrs set their own; the provider
+    // accessor must not land on the dom element
     const allowTheme =
       attrsFn &&
       (() => {
@@ -486,6 +504,7 @@ const viewTraps: ProxyHandler<View> = {
     if (attrs && key in attrs) return Reflect.get(attrs, key);
     return Reflect.get(props, key);
   },
+  // no props check for theme here: when props has one, Reflect.has says so anyway
   has: ({ props, theme, attrs }, key) =>
     (key === "theme" && !!theme) || (!!attrs && key in attrs) || Reflect.has(props, key),
   ownKeys: ({ props, theme, attrs }) => {
@@ -504,7 +523,11 @@ const viewTraps: ProxyHandler<View> = {
   },
 };
 
-/** the provider theme when props has none; other reads stay reactive */
+/**
+ * the provider theme when props has none. a props proxy (a reactive spread)
+ * can gain or lose its theme key later, so it always gets the view; a plain
+ * object with a theme is used as is
+ */
 const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
   (!($PROXY in props) && "theme" in props
     ? props
@@ -514,7 +537,6 @@ const withTheme = (props: Props, theme: Accessor<YakTheme>): Props =>
 const withAttrs = (props: Props, attrs: Props): Props =>
   new Proxy({ props, attrs }, viewTraps) as Props;
 
-/** run once and reuse the result */
 const once = <T extends object>(fn: () => T): (() => T) => {
   let value: T | undefined;
   return () => (value ??= fn());
@@ -553,7 +575,6 @@ const createTargetRenderer = (
     return (props, meta) => createComponent(target, targetProps(props, meta));
   }
   if (isServer) {
-    // the head with baked attrs and the closing tag are built once here
     const head = `<${target}${attrString}`;
     const closing = VOID_ELEMENTS.test(target) ? undefined : `</${target}>`;
     return (props, meta) => serializeElement(target, head, closing, props, meta);
@@ -562,7 +583,7 @@ const createTargetRenderer = (
 };
 
 /**
- * writes the html string by hand instead of using ssrElement
+ * the server writer: writes the html string by hand instead of using ssrElement.
  * ssrElement needs a filtered props object with getters to keep the
  * read order, that costs more than writing directly
  */
@@ -634,7 +655,10 @@ const serializeElement = (
 const isChildKey = (key: string, textarea: boolean) =>
   ChildProperties.has(key) || (textarea && (key === "value" || key === "defaultValue"));
 
-/** the string a child resolves to when it needs no resolver, else undefined */
+/**
+ * the string a child resolves to without ssr(), else undefined. a server
+ * node is { t: html, h?: pending async holes }; one with holes needs ssr()
+ */
 const plainContent = (node: unknown): string | undefined => {
   if (typeof node === "string") return node;
   if (typeof node === "number") return String(node);
@@ -652,8 +676,8 @@ const plainContent = (node: unknown): string | undefined => {
  */
 const attribute = (prop: string, value: unknown): string => {
   if (prop === "style") return ` style="${ssrStyle(value as string)}"`;
-  // class never reaches here, skip drops it; the branch stays, removing it
-  // costs 10-30 ns on the static writer (code layout)
+  // class never reaches here, skip drops it; the branch stays because
+  // removing it measured slower on the static writer (code layout)
   if (prop === "class") return ` class="${ssrClassName(value as string)}"`;
   // refs, event handlers and prop: bindings only exist on the client
   if (value == undefined || prop === "ref" || prop.startsWith("on") || prop.startsWith("prop:")) {
@@ -683,14 +707,13 @@ const createElementTemplate = (tag: string, attrString: string, className?: stri
  * bind a fixed client tag without dynamic()'s per-element memo. hydration
  * claims the server node by key; a fresh mount clones the cached template.
  * a, script, style and title are html elements on a fresh mount, as in
- * solid's own dynamic() since 2.0.0-rc.8
+ * solid's own dynamic()
  */
 const createElementRenderer = (tag: string, attrString: string): TargetRenderer => {
   const create = createElementTemplate(tag, attrString);
   return (props, meta) => bindElement(getNextElement(create), props, meta);
 };
 
-/** apply the props to a created or claimed element */
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
   const bound = targetProps(props, meta);
   // a proxy can add children later, so it keeps the child binding.
@@ -780,6 +803,7 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
   // trap closures per element on purpose: solid's for-in calls two traps per
   // key, and a shared handler over a backing object costs about 1% here
   const { skip, compute, classOf } = meta;
+  // baked attrs sit in the template and skip drops them; only an attrs function adds keys
   const attrsProps = () => (meta.attrsAddKeys ? meta.compute().attrs : undefined);
   const classFn = compute ? () => compute().class : () => classOf(props);
   const styleFn = styleGetter(compute);
@@ -810,7 +834,7 @@ const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown
       const keys = new Set<string | symbol>();
       for (const key of Reflect.ownKeys(target)) if (!skip(key)) keys.add(key);
       for (const key of Object.keys(attrsProps() ?? {})) if (!skip(key)) keys.add(key);
-      // class and the computed style follow the author props and attrs
+      // class and style are always own keys, listed after the author keys and attrs
       keys.add("class");
       if (styleFn) keys.add("style");
       return [...keys];
