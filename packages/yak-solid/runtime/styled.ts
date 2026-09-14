@@ -601,15 +601,13 @@ const serializeElement = (
   for (const key of Object.keys(props)) {
     if (skip(key)) continue;
     const source = attrs && key in attrs ? attrs : props;
-    if (!ChildProperties.has(key) && !(textarea && isValueKey(key)))
-      result += attribute(key, source[key]);
+    if (!isChildKey(key, textarea)) result += attribute(key, source[key]);
     else if (children === undefined && closing) children = childContent(tag, key, source[key]);
   }
   if (attrs) {
     for (const key of Object.keys(attrs)) {
       if (skip(key) || key in props) continue;
-      if (!ChildProperties.has(key) && !(textarea && isValueKey(key)))
-        result += attribute(key, attrs[key]);
+      if (!isChildKey(key, textarea)) result += attribute(key, attrs[key]);
       else if (children === undefined && closing) children = childContent(tag, key, attrs[key]);
     }
   }
@@ -633,7 +631,9 @@ const serializeElement = (
   return ssr([result + ">", closing], children);
 };
 
-const isValueKey = (key: string) => key === "value" || key === "defaultValue";
+/** a prop that becomes the element's content: solid's child properties, and a textarea's value */
+const isChildKey = (key: string, textarea: boolean) =>
+  ChildProperties.has(key) || (textarea && (key === "value" || key === "defaultValue"));
 
 /** the string a child resolves to when it needs no resolver, else undefined */
 const plainContent = (node: unknown): string | undefined => {
@@ -644,7 +644,6 @@ const plainContent = (node: unknown): string | undefined => {
   const server = node as { t?: unknown; h?: unknown[] };
   if (server.h && server.h.length > 0) return undefined;
   if (typeof server.t === "string") return server.t;
-  if (Array.isArray(server.t) && server.t.length === 1) return server.t[0] as string;
   return undefined;
 };
 
@@ -755,8 +754,6 @@ const targetProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknow
  */
 const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { compute, classOf } = meta;
-  const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = styleGetter(compute);
   const out: Record<PropertyKey, unknown> = {};
   // string keys only, like solid's omit(): a symbol never reaches the target
   for (const key of Object.getOwnPropertyNames(props)) {
@@ -771,10 +768,15 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
   if (isServer) {
     // the values are final on the server: data properties take the value
     // path in solid's omit() and merge() instead of a getter per read
-    out.class = classFn();
-    if (styleFn) out.style = styleFn();
+    if (compute) {
+      const computed = compute();
+      out.class = computed.class;
+      if (computed.style !== undefined) out.style = computed.style;
+    } else out.class = classOf(props);
     return out;
   }
+  const classFn = compute ? () => compute().class : () => classOf(props);
+  const styleFn = styleGetter(compute);
   Object.defineProperty(out, "class", {
     get: classFn,
     enumerable: true,
