@@ -856,6 +856,27 @@ importers:
         specifier: catalog:dev
         version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
+  examples/vite-qwik:
+    devDependencies:
+      '@qwik.dev/core':
+        specifier: catalog:core
+        version: 2.0.0-beta.43(prettier@3.9.4)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)))
+      '@qwik.dev/router':
+        specifier: catalog:core
+        version: 2.0.0-beta.43(patch_hash=12b03140a8503505a67e8079e1e0f40ec871bd0cc000cc29cc249efd72f4042d)(@qwik.dev/core@2.0.0-beta.43(prettier@3.9.4)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))))(rollup@4.54.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+      '@types/node':
+        specifier: catalog:dev
+        version: 26.4.1
+      '@yak/qwik':
+        specifier: workspace:*
+        version: link:../../packages/yak-qwik
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+      vite:
+        specifier: catalog:dev
+        version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
+
   examples/vite-solid:
     dependencies:
       '@solidjs/web':

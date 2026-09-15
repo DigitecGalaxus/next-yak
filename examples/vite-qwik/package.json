@@ -1,0 +1,22 @@
+{
+  "name": "vite-qwik-yak-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --mode ssr",
+    "build": "vite build && vite build --ssr src/entry.preview.tsx",
+    "build:yak": "pnpm run --filter @yak/qwik build",
+    "build:swc": "pnpm run --filter yak-swc build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@qwik.dev/core": "catalog:core",
+    "@qwik.dev/router": "catalog:core",
+    "@types/node": "catalog:dev",
+    "@yak/qwik": "workspace:*",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev"
+  },
+  "packageManager": "pnpm@12.3.1"
+}
