@@ -92,4 +92,4 @@ catalogs:
     vitest: 4.1.11
 
 patchedDependencies:
-  '@qwik.dev/router@2.0.0-beta.43': patches/@qwik.dev__router@2.0.0-beta.43.patch
+  "@qwik.dev/router@2.0.0-beta.43": patches/@qwik.dev__router@2.0.0-beta.43.patch
