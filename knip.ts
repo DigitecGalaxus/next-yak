@@ -73,6 +73,15 @@ const config: KnipConfig = {
     "examples/tanstack-start": { entry: ["yak.context.ts"] },
     "examples/vite": { entry: ["yak.context.ts"] },
     "examples/vite-solid": { entry: ["yak.context.ts"] },
+    "examples/vite-qwik": {
+      // a qwik router app: the server entries and the routes are the roots
+      entry: [
+        "yak.context.ts",
+        "src/entry.ssr.tsx",
+        "src/entry.preview.tsx",
+        "src/routes/**/*.tsx",
+      ],
+    },
     e2e: {
       // Copied into each bundler's `.tmp/` next to its playwright.config.ts
       entry: ["playwright-base.ts"],
