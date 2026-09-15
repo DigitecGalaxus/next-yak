@@ -1,0 +1,19 @@
+diff --git a/lib/vite/index.mjs b/lib/vite/index.mjs
+index 53d378977914f79ce750ba33ed7e3f82787c7d6c..4267882fb887abe41d6a19e2a89beb2cf9305854 100644
+--- a/lib/vite/index.mjs
++++ b/lib/vite/index.mjs
+@@ -2034,8 +2034,12 @@ var isCssPath = (url) => CSS_EXTENSIONS.some((ext) => url.endsWith(ext));
+ 				return importerPath && JS_EXTENSIONS.test(importerPath);
+ 			});
+ 			if ((isEntryCSS || hasJSImporter) && !hasCSSImporter && !cssImportedByCSS.has(mod.url)) {
+-				cssModules.add(`${mod.url}${mod.lastHMRTimestamp ? `?t=${mod.lastHMRTimestamp}` : ""}`);
+-				if (mod.file) server.watcher.add(mod.file);
++				// a virtual css module (a \0-prefixed id from a plugin) has no file to watch and is
++				// served under /@id/__x00__ rather than under its bare url
++				const isVirtual = typeof mod.id === "string" && mod.id.startsWith("\0");
++				const url = isVirtual ? `/@id/__x00__${mod.id.slice(1)}` : mod.url;
++				cssModules.add(`${url}${mod.lastHMRTimestamp ? `?t=${mod.lastHMRTimestamp}` : ""}`);
++				if (mod.file && !isVirtual) server.watcher.add(mod.file);
+ 			}
+ 		}
+ 	}
