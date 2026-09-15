@@ -170,6 +170,9 @@ catalogs:
     '@oxlint/plugins':
       specifier: ^1.88.0
       version: 1.88.0
+    '@qwik.dev/core':
+      specifier: 2.0.0-beta.43
+      version: 2.0.0-beta.43
     '@solidjs/web':
       specifier: ^2.0.0-rc.15
       version: 2.0.0-rc.15
@@ -971,6 +974,37 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 5.0.5(@types/node@26.6.5)(jsdom@30.1.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+
+  packages/yak-qwik:
+    dependencies:
+      '@babel/parser':
+        specifier: catalog:core
+        version: 8.0.7
+      '@swc/core':
+        specifier: ~1.16.18
+        version: 1.16.18(@swc/helpers@0.5.23)
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../yak-swc
+    devDependencies:
+      '@qwik.dev/core':
+        specifier: catalog:core
+        version: 2.0.0-beta.43(prettier@3.9.10)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      '@types/node':
+        specifier: catalog:dev
+        version: 26.6.5
+      tsdown:
+        specifier: catalog:dev
+        version: 0.23.1(oxc-resolver@11.24.2)(typescript@6.0.3)
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+      vite:
+        specifier: catalog:dev
+        version: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+      yak-internals:
+        specifier: workspace:*
+        version: link:../yak-internals
 
   packages/yak-react:
     dependencies:
@@ -3085,6 +3119,24 @@ packages:
 
   '@quansync/fs@1.1.0':
     resolution: {integrity: sha512-qAPG/t3HqML1TlN7sY/pTbEjzFVAKsMjNNMGheyDosro+kT4iw2KCUoHcVdmliwWjorm4elZbgNQyU2eD97eDg==}
+
+  '@qwik.dev/core@2.0.0-beta.43':
+    resolution: {integrity: sha512-B/l74Cosp/t4F+pYeQO+sszd1YUn1lqSjE5nDg2C/2e7s0pYs9ofhU/WL3K2gfSGAlQxjxWle20lWWg0PZqeng==}
+    engines: {node: ^20.3.0 || >=21.0.0}
+    hasBin: true
+    peerDependencies:
+      prettier: '*'
+      vite: '>=8 <9'
+      vitest: '>=2 <5'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
+      vitest:
+        optional: true
+
+  '@qwik.dev/optimizer@2.1.0-beta.8':
+    resolution: {integrity: sha512-UlxnV+sARxYCV+nKxHVRQpyRTrVn2g+Q4yRkxrGd75hmZG9R2aFiDUgmXpynwa0WnPK2tAg1Lu3ws6Ss7ej68w==}
+    engines: {node: ^20.3.0 || >=21.0.0}
 
   '@resvg/resvg-wasm@2.4.1':
     resolution: {integrity: sha512-yi6R0HyHtsoWTRA06Col4WoDs7SvlXU3DLMNP2bdAgs7HK18dTEVl1weXgxRzi8gwLteGUbIg29zulxIB3GSdg==}
@@ -9388,6 +9440,18 @@ snapshots:
   '@quansync/fs@1.1.0':
     dependencies:
       quansync: 1.0.0
+
+  '@qwik.dev/core@2.0.0-beta.43(prettier@3.9.10)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))':
+    dependencies:
+      '@qwik.dev/optimizer': 2.1.0-beta.8
+      csstype: 3.2.3
+      launch-editor: 2.14.2
+      magic-string: 0.30.21
+      vite: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+    optionalDependencies:
+      prettier: 3.9.10
+
+  '@qwik.dev/optimizer@2.1.0-beta.8': {}
 
   '@resvg/resvg-wasm@2.4.1': {}
 
