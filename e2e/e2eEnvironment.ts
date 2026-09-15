@@ -365,6 +365,14 @@ export async function readPort(bundler: string): Promise<number> {
   return config.webServer.port;
 }
 
+/** Read the URL pattern ("/[case-name]") from the bundler's playwright.config.ts. */
+export async function readUrlPattern(bundler: string): Promise<string> {
+  const configPath = join(e2eRoot, "bundlers", bundler, "playwright.config.ts");
+  const configModule = await import(configPath);
+  const config = configModule.default;
+  return config.projects[0].metadata.urlPattern;
+}
+
 /** Read the framework from the bundler's playwright.config.ts (default "react"). */
 export async function readFramework(bundler: string): Promise<Framework> {
   const configPath = join(e2eRoot, "bundlers", bundler, "playwright.config.ts");
@@ -456,6 +464,38 @@ export function killServer(child: ChildProcess): Promise<void> {
 
     killTree(child.pid);
   });
+}
+
+/**
+ * Request every case page once, one after another, so a dev server compiles
+ * them all before Playwright opens any of them.
+ *
+ * A dev server compiles a page on its first request and rewrites the shared
+ * manifests when the compile finishes. Next.js with turbopack serves the
+ * pages manifest from disk and sizes the response before it opens the file,
+ * so a browser that fetches the manifest while another worker's page finishes
+ * compiling can receive it cut short and fail with a syntax error. With every
+ * page compiled up front nothing is rewritten while the tests run.
+ */
+export async function warmPages(
+  bundler: string,
+  port: number,
+  urlPattern: string,
+  caseNames: string[],
+  discoveredBundlers: string[],
+): Promise<void> {
+  const color = COLORS[discoveredBundlers.indexOf(bundler) % COLORS.length];
+  const prefix = styleText(color, `[${bundler}/warm-up]`);
+  const start = Date.now();
+  for (const caseName of caseNames) {
+    const url = `http://localhost:${port}${urlPattern.replaceAll("[case-name]", caseName)}`;
+    // The status does not matter here: a failing page still compiles, and
+    // the test for that case reports the failure.
+    const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
+    await response.arrayBuffer();
+  }
+  const seconds = ((Date.now() - start) / 1000).toFixed(1);
+  console.log(`${prefix} compiled ${caseNames.length} pages in ${seconds}s`);
 }
 
 /** Run a pnpm script (e.g. "build") and wait for it to complete. */
@@ -607,6 +647,8 @@ export interface RunOptions {
   script: string;
   /** Optional build script to run before starting the server (e.g. "build") */
   buildScript?: string;
+  /** Request every case page before Playwright starts (dev servers compile on request) */
+  warmPages?: boolean;
 }
 
 /**
@@ -649,6 +691,11 @@ export async function runBundlerCases(
     const results: Result[] = [];
     const hmrCases = frameworkCases.filter((c) => c.startsWith("hmr-"));
     const nonHmrCases = frameworkCases.filter((c) => !c.startsWith("hmr-"));
+
+    if (options.warmPages) {
+      const urlPattern = await readUrlPattern(bundler);
+      await warmPages(bundler, port, urlPattern, nonHmrCases, discoveredBundlers);
+    }
 
     // Batch all non-HMR cases in one Playwright process (parallel workers)
     if (nonHmrCases.length > 0) {
