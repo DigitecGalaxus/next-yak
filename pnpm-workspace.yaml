@@ -30,6 +30,8 @@ catalogs:
     "@babel/parser": ^8.0.4
     "@oxlint/plugins": ^1.81.0
     "@solidjs/web": ^2.0.0-rc.8
+    # qwik 2 beta: pinned, the betas move every one to three weeks
+    "@qwik.dev/core": 2.0.0-beta.43
     # Keep in sync with swc_core in packages/yak-swc/Cargo.toml and next.js version of bundled SWC
     "@swc/core": ~1.15.47
     "@swc/counter": ^0.1.3

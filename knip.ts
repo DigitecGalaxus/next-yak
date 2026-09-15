@@ -36,6 +36,7 @@ const config: KnipConfig = {
         "@testing-library/jest-dom",
       ],
     },
+    "packages/yak-qwik": { ignoreDependencies: ["@babel/parser", ...yakSwc] },
     "packages/yak-swc": {
       // Rust fixture inputs/snapshots for the SWC plugin tests
       ignore: ["yak_swc/tests/fixture/**"],

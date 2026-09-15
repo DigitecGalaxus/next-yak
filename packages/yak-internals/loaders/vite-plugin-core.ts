@@ -299,11 +299,18 @@ async function viteYakImpl(
       // (via {{__MODULE_PATH__}}), so we must match that format.
       const relativePath = normalizePath(relative(basePath, file));
       const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
-      const mod = this.environment.moduleGraph.getModuleById(virtualId);
-      if (mod) {
-        this.environment.moduleGraph.invalidateModule(mod);
-        return [...modules, mod];
+      // a browser that fetches the css through a <link> (a framework without a
+      // client module import, such as qwik) registers the module under the
+      // id plus "?direct", so every variant of the id is invalidated. such a
+      // linked stylesheet may also depend on this file through a cross-file
+      // import that vite cannot see, so every linked yak stylesheet goes stale
+      const stale = [];
+      for (const [id, mod] of this.environment.moduleGraph.idToModuleMap) {
+        const linked = id.startsWith("\0virtual:yak-css:") && id.includes("?direct");
+        if (id === virtualId || id.startsWith(virtualId + "?") || linked) stale.push(mod);
       }
+      for (const mod of stale) this.environment.moduleGraph.invalidateModule(mod);
+      if (stale.length) return [...modules, ...stale];
     },
   };
 }
