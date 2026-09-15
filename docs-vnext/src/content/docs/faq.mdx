@@ -1,0 +1,203 @@
+---
+title: FAQ
+---
+
+import { Callout } from "../../components/mdx/callout";
+import { Tab, Tabs } from "../../components/mdx/tabs";
+
+## General questions
+
+### Is next-yak production ready?
+
+Yes, `next-yak` is production ready and battle-tested at scale.
+
+[Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors next-yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
+
+### What frameworks and bundlers does next-yak support?
+
+next-yak has first-class support for multiple frameworks and bundlers:
+
+- **Next.js** with both **Webpack** and **Turbopack**
+- **[Vite](/documentation/vite)** 7+ (including Vite 8 with OXC/Rolldown), since v9.1.0. Any vite-based framework works: react-router, tanstack start, and more
+- **[Storybook](/documentation/storybook)** 10+ with both Vite and Webpack builders via the `storybook-addon-yak` addon
+
+Feel free to ask for adding support for other frameworks in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we will give it a thought.
+
+### Can I mix/combine next-yak with other CSS-in-JS libraries?
+
+Yes, you can use next-yak with other CSS-in-JS libraries.
+
+You can use it with styled-components, emotion, tailwind or any other library that adds css classes to your components.
+
+```tsx title="my-component.tsx"
+import { styled, atoms } from "next-yak";
+
+const Button = styled.button`
+  background: #bf4f74;
+  /* Target classes from other libraries */
+  & .my-class-from-another-library {
+    color: white;
+  }
+  /* use tailwind classes */
+  ${atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")}
+`;
+```
+
+<Callout type="info">
+  If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See
+  the [Migration to native CSS](/documentation/migration-to-native-css) guide for details.
+</Callout>
+
+### Can I reference a component in another component?
+
+Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
+
+```jsx title="my-component.tsx"
+import { styled } from "next-yak";
+
+const Button = styled.button`
+  background: #bf4f74;
+`;
+
+const Nav = styled.nav`
+  background: #bf4f74;
+  ${Button} {
+    color: white;
+  }
+`;
+```
+
+### Why does next-yak always generate CSS variables when the values are static references that are known at build time?
+
+It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
+and add errors if we detect that a value is static but a CSS variable is used.
+
+### Can I use next-yak with TypeScript?
+
+Yes, `next-yak` is fully type safe.
+
+### Can I contribute to next-yak?
+
+Yes.
+
+We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/DigitecGalaxus/next-yak)
+
+## Troubleshooting
+
+### I get a compile time error in my app router page
+
+This is a known issue with Webpack when styles are used in files that also use the [metadata API](https://nextjs.org/docs/app/building-your-application/optimizing/metadata) of Next.js. See the [open Next.js issue](https://github.com/vercel/next.js/issues/67591) for details.
+
+If you are using Webpack, switching to Turbopack resolves this issue. With Turbopack enabled, styled components and the metadata API work together without problems.
+
+If it's not this issue, please read the error carefully as it should indicate how to fix the problem.
+
+### I get an error about selector that are not pure
+
+If you see an error like `Selector "h1" is not pure (pure selectors must contain at least one local class or id)`, this is coming from PostCSS and CSS Modules, not from next-yak directly.
+
+This error occurs when you use element selectors (like `h1`, `div`, `p`) without scoping them properly. There are two ways to fix this:
+
+**Option 1: Use the nesting selector (&)**
+
+Add `&` before your selector to properly scope it:
+
+```tsx
+const Container = styled.div`
+  & h1 {
+    color: red;
+  }
+`;
+```
+
+**Option 2: Enable native CSS transpilation mode**
+
+Switch to native CSS transpilation mode, which doesn't require CSS Modules scoping:
+
+```js title="next.config.js"
+export default withYak(
+  {
+    experiments: {
+      transpilationMode: "Css",
+    },
+  },
+  nextConfig,
+);
+```
+
+See the [Migration to native CSS](/documentation/migration-to-native-css) guide for more details.
+
+### My styles are not applied
+
+If your styles are not applied, the first thing you should check is the transformed output of your component.
+In order to do that, you can enable the `debug` option in the `withYak` function.
+
+<Tabs title="Next.js config" items={['next.config.ts', 'next.config.js', 'next.config.mjs']}>
+<Tab value="next.config.ts">
+```ts
+export default withYak({
+  experiments: {
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
+
+},
+}, nextConfig);
+
+````
+</Tab>
+<Tab value="next.config.js">
+```js
+module.exports = withYak({
+  experiments: {
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
+  },
+}, nextConfig);
+````
+
+</Tab>
+<Tab value="next.config.mjs">
+```js
+export default withYak({
+  experiments: {
+    // Enable for all files
+    debug: true,
+
+    // Or filter by regex pattern
+    debug: { pattern: "myPage" },
+
+    // Or filter by output type only
+    debug: { types: ["css"] },
+
+    // Or combine pattern + types
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
+
+},
+}, nextConfig);
+
+```
+</Tab>
+</Tabs>
+
+This will log the transformed output of your component to the console.
+
+It could be a specificity issue, a wrong selector, or a wrong usage of the library and if you don't know why your styles are not applied, feel free to [open an issue](https://github.com/DigitecGalaxus/next-yak/issues/new/choose).
+```
