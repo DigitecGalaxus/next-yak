@@ -21,12 +21,16 @@ test(
       window.__hmr = true;
     });
 
-    // Add a second styled component via HMR (the JSX below is framework-neutral,
-    // only the import source differs per framework)
-    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "next-yak";
+    // Add a second styled component via HMR (the JSX below is framework-neutral;
+    // the import source differs per framework, and qwik's app root is a component$
+    // so its hmr has a boundary to re-render)
+    const qwik = testEnv.framework === "qwik";
+    const yakPackage = { react: "next-yak", solid: "@yak/solid", qwik: "@yak/qwik" }[
+      testEnv.framework
+    ];
     await testEnv.writeFile(
       "index.tsx",
-      `import { styled } from "${yakPackage}";
+      `${qwik ? 'import { component$ } from "@qwik.dev/core";\n' : ""}import { styled } from "${yakPackage}";
 
 const First = styled.div\`
   color: red;
@@ -36,14 +40,14 @@ const Second = styled.div\`
   color: blue;
 \`;
 
-export default function App() {
+export default ${qwik ? "component$(() => {" : "function App() {"}
   return (
     <div>
       <First data-testid="first">First</First>
       <Second data-testid="second">Second</Second>
     </div>
   );
-}
+}${qwik ? ")" : ""}
 `,
     );
 
