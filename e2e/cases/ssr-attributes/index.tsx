@@ -12,11 +12,15 @@ const StaticDiv = styled.div`
 const StaticAnchor = styled.a`
   padding: 1px;
 `;
-const DynamicDiv = styled.div.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
+const DynamicDiv = styled.div.attrs<{ "data-attrs"?: string }>({ "data-attrs": "yes" })<{
+  $tone: string;
+}>`
   padding: 1px;
   color: ${(props) => props.$tone};
 `;
-const DynamicAnchor = styled.a.attrs({ "data-attrs": "yes" })<{ $tone: string }>`
+const DynamicAnchor = styled.a.attrs<{ "data-attrs"?: string }>({ "data-attrs": "yes" })<{
+  $tone: string;
+}>`
   padding: 1px;
   color: ${(props) => props.$tone};
 `;
@@ -45,7 +49,7 @@ const special = {
   lang: "de",
   ref: (el: HTMLElement | null) => el?.setAttribute("data-ref", "1"),
   onClick: () => {},
-} as Record<string, never>;
+} as unknown as Record<string, never>;
 
 export default function App() {
   return (

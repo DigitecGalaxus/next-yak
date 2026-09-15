@@ -21,7 +21,7 @@ const Link = styled.a`
 `;
 
 // attrs keep this one on the runtime path in both fold modes, like the Solid twin
-const MountedLink = styled.a.attrs({ "data-mounted": "yes" })`
+const MountedLink = styled.a.attrs<{ "data-mounted"?: string }>({ "data-mounted": "yes" })`
   color: blue;
 `;
 

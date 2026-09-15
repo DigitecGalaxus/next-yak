@@ -20,14 +20,12 @@ const PasswordInput = styled(Input).attrs({
 `;
 
 // Two attrs layers, one of them a function, combine their props per render
-// without reading the author's children: a child component renders once.
-let childRenders = 0;
-const Child = () => {
-  childRenders++;
-  return <span data-testid="child-renders">{childRenders}</span>;
-};
+// without reading the author's children. The Solid twin counts the child's
+// renders; React strict mode double-invokes renders in dev, so this twin
+// renders fixed text.
+const Child = () => <span data-testid="child-renders">child</span>;
 
-const FancyButton = styled(Button).attrs(() => ({ "data-fancy": "1" }))`
+const FancyButton = styled(Button).attrs<{ "data-fancy"?: string }>(() => ({ "data-fancy": "1" }))`
   border: 2px solid blue;
 `;
 
@@ -47,8 +45,6 @@ const PresetInput = styled.input.attrs({ type: "text", defaultValue: "preset" })
 `;
 
 export default function App() {
-  // per render: the server renders the page once per request
-  childRenders = 0;
   const [mounted, setMounted] = useState(false);
   return (
     <>
