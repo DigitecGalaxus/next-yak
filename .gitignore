@@ -4,6 +4,7 @@ node_modules
 **/yak-solid/dist
 **/yak-eslint-plugin/dist
 **/yak-storybook/dist
+**/yak-qwik/dist
 examples/**/dist
 storybook-static
 target

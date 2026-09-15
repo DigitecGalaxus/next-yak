@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@yak/qwik": ["./runtime/index.ts"],
+      "@yak/qwik/context/baseContext": ["./runtime/context/baseContext.ts"],
+      "@yak/qwik/context": ["./runtime/context/index.ts"]
+    },
+    "target": "ES2022",
+    "lib": ["DOM", "ESNext"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "@qwik.dev/core",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["**/node_modules/**/*", "**/__tests__/**/*"],
+  "include": ["runtime/**/*", "loaders/**/*", "tsdown.config.ts"]
+}
