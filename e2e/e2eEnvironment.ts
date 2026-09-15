@@ -90,7 +90,7 @@ const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".mjs", ".js", ".jsx", ".html", 
 const CASE_NAME_PLACEHOLDER = "[case-name]";
 
 /** UI framework a bundler app renders with (see playwright-base.ts) */
-export type Framework = "react" | "solid";
+export type Framework = "react" | "solid" | "qwik";
 
 // ---------------------------------------------------------------------------
 // Discovery
@@ -207,7 +207,7 @@ async function copyCase(srcDir: string, destDir: string, framework: Framework): 
     if (entry.name.includes(`.${framework}.`)) {
       // Variant for this framework — strip the marker so it replaces the react file
       await cp(join(srcDir, entry.name), join(destDir, entry.name.replace(`.${framework}.`, ".")));
-    } else if (/\.(react|solid)\./.test(entry.name)) {
+    } else if (/\.(react|solid|qwik)\./.test(entry.name)) {
       // Variant for another framework — never ship it
     } else if (framework === "react" || !names.has(frameworkVariantName(entry.name, framework))) {
       // Default (react) file — ship unless this framework replaces it
