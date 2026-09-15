@@ -32,6 +32,12 @@ export default defineConfig({
 });
 ```
 
+For server rendering, bundle Solid together with `@yak/solid` or keep both external. Solid 2 ships a `development` export condition, so an app that lists only `@yak/solid` under `ssr.noExternal` ends up with two copies of Solid on the server and context lookups fail:
+
+```ts
+ssr: { noExternal: ["@yak/solid", "solid-js", "@solidjs/web", "@solidjs/signals"] },
+```
+
 Then write styled components the way you'd write them anywhere else. Prop-based interpolations are tracked reactively:
 
 ```tsx

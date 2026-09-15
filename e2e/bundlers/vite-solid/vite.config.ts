@@ -26,7 +26,9 @@ export default defineConfig(({ isSsrBuild }) => ({
   plugins: [yak(yakOptions), solid({ ssr: true })],
   // one copy of Solid on the server, or its hydration keys drift apart
   resolve: { dedupe: ["solid-js", "@solidjs/web", "@solidjs/signals"] },
-  ssr: { noExternal: ["@yak/solid"] },
+  // one copy of Solid on the server: rc.8 resolves the "development" condition to
+  // dist/server.dev.js when bundled and to dist/server.js when externalized
+  ssr: { noExternal: ["@yak/solid", "solid-js", "@solidjs/web", "@solidjs/signals"] },
   build: isSsrBuild
     ? { ssr: true, outDir: "dist/server", rollupOptions: { input: serverEntries } }
     : { outDir: "dist/client", rollupOptions: { input: htmlEntries } },

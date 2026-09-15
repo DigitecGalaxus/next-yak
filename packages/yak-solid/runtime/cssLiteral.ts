@@ -1,22 +1,33 @@
 import type { YakTheme } from "./index.ts";
 import type { Accessor } from "solid-js";
-import { ClassCollector, RuntimeStyleProcessor, StyleObject } from "./publicStyledApi.js";
+import { ClassCollector, CompiledStyleProcessor, StyleObject } from "./publicStyledApi.js";
 
-export const yakComponentSymbol = Symbol("yak");
+// Symbol.for, not Symbol(): the package ships two bundles (the public entry
+// and the internal one the compiler imports) and both contain this module. a
+// styled component created through one must be recognized by the other
+export const yakComponentSymbol = Symbol.for("@yak/solid:component");
 
 /**
- * Collects class names as a single space-separated string.
- *
- * `add` is the render hot path and stays a plain string append;
- * `has`/`delete` keep a Set-like contract for the rare runtime
- * functions that remove classes again (e.g. atoms).
+ * the class names of one render, kept as one space-separated string in the
+ * order the style block adds them. add() is the hot path: an append, and a
+ * duplicate check only once a second name arrives. has() and delete() exist
+ * for runtime processors that take a name back out, such as an atom that
+ * reverts a class. a Set would need a split and a join per render for the
+ * same string
  */
 export class Classes implements ClassCollector {
   value: string;
+  /**
+   * false once a name came from the author, such as an atom. compiler names
+   * are safe to print as they are; serializeElement in styled.ts escapes the
+   * class once this is false
+   */
+  generated = true;
   constructor(initial?: string) {
     this.value = initial || "";
   }
-  add(name: string) {
+  add(name: string, generated = true) {
+    if (!generated) this.generated = false;
     if (!this.value) {
       this.value = name;
     } else if (!this.has(name)) {
@@ -61,9 +72,9 @@ type CSSStyles<TProps = {}> = {
   style: { [key: string]: string | ((props: TProps) => string) };
 };
 
-type CSSFunction = <TProps = {}>(
+export type CSSFunction = <TProps>(
   styles: TemplateStringsArray,
-  ...values: CSSInterpolation<TProps & { theme: Accessor<YakTheme> }>[]
+  ...values: CSSInterpolation<NoInfer<TProps> & { theme: Accessor<YakTheme> }>[]
 ) => ComponentStyles<TProps>;
 
 export type NestedRuntimeStyleProcessor = (
@@ -76,59 +87,52 @@ export type NestedRuntimeStyleProcessor = (
       style?: StyleObject;
     }
   | void
+  | false
+  | null
+  | string
+  | number
   | NestedRuntimeStyleProcessor;
 
 /**
- * css() runtime factory of css``
+ * the runtime behind css``. the compiler rewrites every css`` and styled``
+ * call, so what arrives here is never the template the author wrote but its
+ * compiled form: class names, callbacks and css-variable maps (examples in
+ * the loop below). the public typings describe the call before compilation,
+ * which is why this function is internal: mocks/cssLiteral.ts exports the
+ * css the author sees, cast to the public type.
  *
- * /!\ @yak/solid transpiles css`` and styled``
- *
- * This changes the typings of the css`` and styled`` functions.
- * During development the user of @yak/solid wants to work with the
- * typings BEFORE compilation.
- *
- * Therefore this is only an internal function only and it must be cast to any
- * before exported to the user.
- *
- * The internal functioning of css`` is to return a single callback function that runs all functions
- * (or creates new ones if needed) that are passed as arguments. These functions receive the props, classes, and style object as arguments
- * and operate directly on the classes and style objects.
+ * it returns one processor, (props, classes, style) => void, that runs every
+ * compiled piece: class names go into the collector, css values into the
+ * style object
  */
-export function css<TProps>(
-  styles: TemplateStringsArray,
-  ...values: CSSInterpolation<NoInfer<TProps> & { theme: Accessor<YakTheme> }>[]
-): ComponentStyles<TProps>;
-export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> {
-  // Normally this  could be an array of strings passed, but as we transpile the usage of css`` ourselves, we control the arguments
-  // and ensure that only the first argument is a string (class name of the non-dynamic styles)
+export function css<TProps>(...args: Array<any>): CompiledStyleProcessor<TProps> {
   let staticClass: string | undefined;
   const dynamicCssFunctions: NestedRuntimeStyleProcessor[] = [];
-  for (const arg of args as Array<string | CSSFunction | CSSStyles<any>>) {
-    // A CSS-module class name which got auto generated during build from static css
-    // e.g. css`color: red;`
-    // compiled -> css("yak31e4")
+  for (const arg of args as Array<string | NestedRuntimeStyleProcessor | CSSStyles<any>>) {
+    // static css became a css-module class name at build time:
+    //   css`color: red;`  ->  css("yak31e4")
     if (typeof arg === "string") {
       staticClass = arg;
     }
-    // Dynamic CSS e.g.
-    // css`${props => props.active && css`color: red;`}`
-    // compiled -> css((props: { active: boolean }) => props.active && css("yak31e4"))
+    // conditional css stays a callback that returns another compiled css():
+    //   css`${props => props.active && css`color: red;`}`
+    //   ->  css(props => props.active && css("yak31e4"))
     else if (typeof arg === "function") {
-      dynamicCssFunctions.push(arg as unknown as NestedRuntimeStyleProcessor);
+      dynamicCssFunctions.push(arg);
     }
-    // Dynamic CSS with css variables e.g.
-    // css`transform: translate(${props => props.x}, ${props => props.y});`
-    // compiled -> css("yak31e4", { style: { "--yakVarX": props => props.x }, "--yakVarY": props => props.y }})
+    // a css value became a variable the callback fills at render time:
+    //   css`transform: translate(${props => props.x});`
+    //   ->  css("yak31e4", { style: { "--yakVarX": props => props.x } })
     else if (typeof arg === "object" && "style" in arg) {
       dynamicCssFunctions.push((props, _, style) => {
         for (const key in arg.style) {
           const value = arg.style[key];
           if (typeof value === "function") {
             style[key as keyof StyleObject] = String(
-              // The value for a css value can be a theme dependent function e.g.:
-              // const borderColor = (props: { theme: { mode: "dark" | "light" } }) => props.theme === "dark" ? "black" : "white";
-              // css`border-color: ${borderColor};`
-              // Therefore the value has to be extracted recursively
+              // a callback may return another callback before it yields the
+              // value, such as a theme-dependent one:
+              //   const color = (props) => props.theme().mode === "dark" ? "black" : "white";
+              //   css`border-color: ${color};`
               recursivePropExecution(props, value),
             ) as never;
           } else {
@@ -139,10 +143,8 @@ export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> 
     }
   }
 
-  // Non Dynamic CSS
-  // This is just an optimization for the common case where there are no dynamic css functions
-  // `$dynamic: false` lets the styled runtime skip theme lookup and
-  // style-object allocation entirely for static components
+  // no dynamic parts, the common case: $dynamic false lets styled() skip the
+  // theme lookup and the style object for the component
   if (dynamicCssFunctions.length === 0) {
     return Object.assign(
       (_: unknown, classes: ClassCollector) => {
@@ -150,8 +152,8 @@ export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> 
           classes.add(staticClass);
         }
       },
-      { $dynamic: false },
-    );
+      { $dynamic: false as const },
+    ) satisfies CompiledStyleProcessor<TProps>;
   }
 
   return Object.assign(
@@ -160,15 +162,15 @@ export function css<TProps>(...args: Array<any>): RuntimeStyleProcessor<TProps> 
         classes.add(staticClass);
       }
       for (let i = 0; i < dynamicCssFunctions.length; i++) {
-        unwrapProps(props, dynamicCssFunctions[i], classes, allStyles);
+        runProcessor(props, dynamicCssFunctions[i], classes, allStyles);
       }
     },
-    { $dynamic: true },
-  );
+    { $dynamic: true as const },
+  ) satisfies CompiledStyleProcessor<TProps>;
 }
 
-// Dynamic CSS with runtime logic
-const unwrapProps = (
+/** run one processor and fold what it returns into the collector and the style object */
+const runProcessor = (
   props: unknown,
   fn: NestedRuntimeStyleProcessor,
   classes: ClassCollector,
@@ -186,7 +188,7 @@ const unwrapProps = (
       }
       if ("style" in result && result.style) {
         for (const key in result.style) {
-          // This is hard for typescript to infer
+          // both objects use StyleObject; typescript loses the key/value relation in this loop
           style[key as keyof StyleObject] = result.style[key as keyof StyleObject] as any;
         }
       }

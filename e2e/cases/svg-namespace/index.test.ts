@@ -28,5 +28,13 @@ test(
       await expect(dot).toHaveCSS("fill", "rgb(255, 0, 0)", { timeout: 1_000 });
     }).toPass({ timeout: 15_000 });
     expect(await dot.evaluate((el, original) => el === original, originalDot)).toBe(true);
+
+    // links mounted on the client after the toggle: react creates the inner
+    // one in its parent's svg namespace; solid 2 creates the html-or-svg tags
+    // as html on a fresh mount, like its own dynamic()
+    await expect(page.getByTestId("mounted-inner")).toBeAttached();
+    expect(await namespace("mounted-inner")).toBe(testEnv.framework === "solid" ? HTML : SVG);
+    expect(await namespace("mounted-outer")).toBe(HTML);
+    await expect(page.getByTestId("mounted-outer")).toHaveCSS("color", "rgb(0, 0, 255)");
   }),
 );

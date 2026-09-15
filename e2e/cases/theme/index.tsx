@@ -1,19 +1,35 @@
-import { styled, YakThemeProvider } from "next-yak";
+import { css, styled, YakThemeProvider } from "next-yak";
+import { useState } from "react";
 
-// The theme reaches dynamic style functions and attrs functions through the
-// provider, and the `theme` prop itself never lands on the element.
-type Theme = { accent: string; mode: string };
-const theme: Theme = { accent: "rgb(0, 128, 0)", mode: "dark" };
+type Theme = { brandName: "brandA" | "brandB" };
 
 const Panel = styled.div.attrs(({ theme }) => ({
-  title: (theme as Theme).mode,
+  title: (theme as Theme).brandName,
 }))`
-  color: ${({ theme }) => (theme as Theme).accent};
+  ${({ theme }) =>
+    (theme as Theme).brandName === "brandA"
+      ? css`
+          color: red;
+        `
+      : css`
+          color: blue;
+        `}
 `;
 
 export default function App() {
+  const [theme, setTheme] = useState<Theme>({ brandName: "brandA" });
   return (
     <YakThemeProvider theme={theme}>
+      <button
+        data-testid="toggle-brand"
+        onClick={() =>
+          setTheme((current) => ({
+            brandName: current.brandName === "brandA" ? "brandB" : "brandA",
+          }))
+        }
+      >
+        Switch brand
+      </button>
       <Panel data-testid="panel">Themed</Panel>
     </YakThemeProvider>
   );
