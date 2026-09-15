@@ -479,7 +479,8 @@ impl FoldVisitor<'_> {
           // Solid components run once, so an element-wrap would freeze its
           // bound values (only the other shapes stay inside the class
           // attribute, which Solid compiles to an effect) -> keep the
-          // runtime component instead
+          // runtime component instead. React and Qwik re-run the render
+          // function, so the element-wrap keeps its values live there
           if self.runtime == YakRuntime::Solid {
             return None;
           }
