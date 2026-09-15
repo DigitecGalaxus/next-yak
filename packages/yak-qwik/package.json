@@ -1,0 +1,96 @@
+{
+  "name": "@yak/qwik",
+  "version": "0.0.0",
+  "description": "Qwik runtime for yak: styled-components syntax, compiled to plain CSS at build time. Targets Qwik 2.",
+  "keywords": [
+    "css-in-js",
+    "qwik",
+    "styled-components",
+    "typescript",
+    "vite"
+  ],
+  "homepage": "https://yak.js.org/",
+  "bugs": {
+    "url": "https://github.com/DigitecGalaxus/next-yak/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Jan Nicklas"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DigitecGalaxus/next-yak.git"
+  },
+  "files": [
+    "dist",
+    "loaders",
+    "runtime",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./internal": {
+      "import": {
+        "types": "./dist/internal.d.ts",
+        "default": "./dist/internal.js"
+      }
+    },
+    "./context": {
+      "import": {
+        "types": "./dist/context/index.d.ts",
+        "default": "./dist/context/index.js"
+      }
+    },
+    "./context/baseContext": {
+      "import": {
+        "types": "./dist/context/baseContext.d.ts",
+        "default": "./dist/context/baseContext.js"
+      }
+    },
+    "./vite": {
+      "import": {
+        "types": "./dist/loaders/vite-plugin.d.ts",
+        "default": "./dist/loaders/vite-plugin.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test:types": "tsc -p tsconfig.json",
+    "prepublishOnly": "pnpm build && pnpm test:types"
+  },
+  "dependencies": {
+    "@babel/parser": "catalog:core",
+    "@swc/core": "catalog:core",
+    "yak-swc": "workspace:*"
+  },
+  "devDependencies": {
+    "@qwik.dev/core": "catalog:core",
+    "@types/node": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev",
+    "yak-internals": "workspace:*"
+  },
+  "peerDependencies": {
+    "@qwik.dev/core": ">=2.0.0-beta.43 <3",
+    "vite": ">=8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  }
+}

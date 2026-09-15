@@ -3,6 +3,7 @@ node_modules
 **/docs/dist
 **/next-yak/dist
 **/yak-solid/dist
+**/yak-qwik/dist
 **/eslint-plugin-yak/dist
 **/storybook-addon-yak/dist
 examples/**/dist

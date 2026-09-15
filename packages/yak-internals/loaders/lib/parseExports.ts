@@ -26,7 +26,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
     const importYak = ast.program.body.some(
       (node) =>
         node.type === "ImportDeclaration" &&
-        ["next-yak", "@yak/react", "@yak/solid"].includes(node.source.value),
+        ["next-yak", "@yak/react", "@yak/solid", "@yak/qwik"].includes(node.source.value),
     );
 
     const moduleExports: ModuleExports = {
