@@ -186,7 +186,9 @@ const yakStyled: StyledInternal = (Component, attrs) => {
   const mergedAttrs = composeAttrs(attrs as RuntimeAttrs | undefined, parentAttrs);
 
   return (styles, ...values) => {
-    // after compilation styles and values hold class names, style callbacks
+    // the interpolations of the style block, e.g.
+    //   styled.button`color: ${props => props.color}; margin: ${props => props.margin};`
+    // arrive compiled: styles and values hold class names, style callbacks
     // and css-variable maps, no css text
     const runtimeStylesFn = css(styles, ...values);
     const runtimeStyleProcessor = composeStyles(runtimeStylesFn, parentRuntimeStylesFn);
@@ -328,7 +330,10 @@ const composeStyles = (own: StyleProcessor, parent?: StyleProcessor): StyleProce
   ) as StyleProcessor;
 };
 
-/** attrs override props; class and style values combine */
+/**
+ * attrs override props; class and style values combine, e.g.
+ *   { class: "a", foo: 1 } and { class: "b", bar: 2 }  ->  { class: "a b", foo: 1, bar: 2 }
+ */
 const combineProps = (props: Props, newProps: Props | null | undefined): Props => {
   if (!newProps) return props;
   // descriptors, not values: a spread would run every author getter here,
@@ -463,7 +468,10 @@ const createDynamicComponent =
     const theme = useTheme();
     // style callbacks see an explicit theme prop before the provider theme
     const propsWithTheme = withTheme(props, theme);
-    // attrs and styles run in one memo on purpose
+    // one memo per element runs the attrs function and every interpolation
+    // of the style block, e.g. styled.button`color: ${props => props.color}`.
+    // only reads inside it re-run it; the element is never re-created.
+    // attrs and styles share the memo on purpose:
     // a style-only prop change also reruns attrs, still cheaper than
     // two memos per element
     const compute = () => computeStyles(props, propsWithTheme, attrsFn, processor);

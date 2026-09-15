@@ -40,6 +40,7 @@ export const atoms = <T>(
         ]
       : dynamicFunctions;
 
-  // The public interpolation type describes the code before compilation.
+  // css() is typed for its compiled arguments; the public type describes the
+  // interpolation the author writes before compilation
   return css(...runtimeFunctions) as unknown as ComponentStyles<T>;
 };
