@@ -1,0 +1,38 @@
+import { component$ } from "@qwik.dev/core";
+import { css, styled, useTheme } from "@yak/qwik";
+import { toggleHighContrast } from "./theme.ts";
+
+const Button = styled.button<{ $primary?: boolean }>`
+  ${(props) =>
+    props.theme.highContrast
+      ? css`
+          color: #000;
+        `
+      : css`
+          color: #009688;
+        `}
+  background: #fff;
+  border: 1px solid currentColor;
+  font-size: 17px;
+  padding: 7px 12px;
+  font-weight: normal;
+  margin: 6px 0;
+  margin-right: 12px;
+  display: inline-block;
+  font-family: "Open Sans", sans-serif;
+  min-width: 120px;
+  ${(props) =>
+    props.$primary &&
+    css`
+      border-width: 2px;
+    `}
+`;
+
+export const HighContrastToggle = component$(() => {
+  const theme = useTheme();
+  return (
+    <Button onClick$={() => toggleHighContrast(theme)}>
+      {theme.highContrast ? "Disable" : "Enable"} High Contrast
+    </Button>
+  );
+});

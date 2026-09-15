@@ -26,7 +26,7 @@ export interface TestEnv {
   /** Directory name under bundlers/ identifying the bundler being tested */
   bundlerDirName: string;
   /** UI framework the bundler renders with (see playwright-base.ts) */
-  framework: "react" | "solid";
+  framework: "react" | "solid" | "qwik";
   readFile(rel: string): Promise<string>;
   writeFile(rel: string, content: string): Promise<void>;
   /** Restore a file from the original case source */
@@ -57,7 +57,7 @@ export function withTestEnv(caseName: string, fn: (testEnv: TestEnv, page: Page)
   return async ({ page }: { page: Page }, testInfo: TestInfo) => {
     const metadata = testInfo.project.metadata as {
       bundlerDirName?: string;
-      framework?: "react" | "solid";
+      framework?: "react" | "solid" | "qwik";
     };
     const bundlerDirName = metadata.bundlerDirName ?? testInfo.project.name;
     const framework = metadata.framework ?? "react";

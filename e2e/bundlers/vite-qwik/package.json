@@ -1,0 +1,17 @@
+{
+  "name": "e2e-vite-qwik",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd .tmp && vite --mode ssr --port 5374 --strictPort",
+    "build": "cd .tmp && vite build && vite build --ssr src/entry.preview.tsx",
+    "start": "cd .tmp && vite preview --port 5374 --strictPort"
+  },
+  "devDependencies": {
+    "@qwik.dev/core": "catalog:core",
+    "@qwik.dev/router": "catalog:core",
+    "@yak/qwik": "workspace:*",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev"
+  }
+}

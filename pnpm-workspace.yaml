@@ -32,6 +32,7 @@ catalogs:
     "@solidjs/web": ^2.0.0-rc.8
     # qwik 2 beta: pinned, the betas move every one to three weeks
     "@qwik.dev/core": 2.0.0-beta.43
+    "@qwik.dev/router": 2.0.0-beta.43
     # Keep in sync with swc_core in packages/yak-swc/Cargo.toml and next.js version of bundled SWC
     "@swc/core": ~1.15.47
     "@swc/counter": ^0.1.3
@@ -116,3 +117,6 @@ catalogs:
     "@solidjs/vite-plugin": 3.0.0-next.38
     vitest: 4.1.11
     wasm-pack: 0.15.0
+
+patchedDependencies:
+  "@qwik.dev/router@2.0.0-beta.43": patches/@qwik.dev__router@2.0.0-beta.43.patch
