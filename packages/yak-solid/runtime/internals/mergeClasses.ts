@@ -27,6 +27,7 @@ export const normalizeClass = (value: unknown): string => {
  * ```tsx
  * <div class={__yak_mergeClassNames("yX", active() && "active")} />
  * ```
+ * combineProps in styled.ts uses it for two attrs layers' classes as well.
  */
 export const mergeClasses = (yakClass: string, userClass: unknown): string | undefined => {
   const user = normalizeClass(userClass);

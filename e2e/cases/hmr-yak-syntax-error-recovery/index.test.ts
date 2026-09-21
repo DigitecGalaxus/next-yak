@@ -16,6 +16,7 @@ test(
     });
 
     // Introduce a syntax error in the .yak.ts file
+    testEnv.expectConsoleErrors("a syntax error is written into tokens.yak.ts, then repaired");
     await testEnv.writeFile(
       "tokens.yak.ts",
       "export const spacing = 5 * 8;\nexport const brand = <<<BROKEN>>>;\n",

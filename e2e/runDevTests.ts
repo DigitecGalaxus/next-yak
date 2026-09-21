@@ -11,7 +11,9 @@ import {
   runBundlerCases,
   printSummary,
 } from "./e2eEnvironment.ts";
+import { checkCaseLayout } from "./checkCaseLayout.ts";
 
+checkCaseLayout();
 const discoveredBundlers = await discoverBundlers();
 const allCases = await discoverCases();
 const { bundlers, cases } = parseCLIArgs(discoveredBundlers, allCases);
@@ -22,12 +24,21 @@ if (isCI) {
   // Run sequentially in CI to avoid resource contention
   results = [];
   for (const bundler of bundlers) {
-    results.push(...(await runBundlerCases(bundler, cases, { script: "dev" }, discoveredBundlers)));
+    results.push(
+      ...(await runBundlerCases(
+        bundler,
+        cases,
+        { script: "dev", warmPages: true },
+        discoveredBundlers,
+      )),
+    );
   }
 } else {
   results = (
     await Promise.all(
-      bundlers.map((b) => runBundlerCases(b, cases, { script: "dev" }, discoveredBundlers)),
+      bundlers.map((b) =>
+        runBundlerCases(b, cases, { script: "dev", warmPages: true }, discoveredBundlers),
+      ),
     )
   ).flat();
 }

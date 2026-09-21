@@ -6,10 +6,12 @@ import { atoms } from "../atoms";
 
 it("forwards foreign props alongside the merged className", async () => {
   const onClick = () => {};
-  const result = mergeCssProp(
-    { onClick, "aria-label": "Save", disabled: true, className: "btn" },
-    css("yakCss1"),
-  );
+  const result = mergeCssProp(css("yakCss1"), {
+    onClick,
+    "aria-label": "Save",
+    disabled: true,
+    className: "btn",
+  });
   // toEqual (not toMatchObject) also pins that no stray keys leak, e.g. an empty style
   expect(result).toEqual({
     onClick,
@@ -22,10 +24,10 @@ it("forwards foreign props alongside the merged className", async () => {
 it("merge properties when className is set", async () => {
   expect(
     mergeCssProp(
-      { className: "btn btn-primary" },
       css("yakCss1", () => ({
         style: { "--yak-var1": "0.5rem" },
       })),
+      { className: "btn btn-primary" },
     ),
   ).toMatchObject({
     className: "btn btn-primary yakCss1",
@@ -36,11 +38,11 @@ it("merge properties when className is set", async () => {
 it("merge properties when style is set", async () => {
   expect(
     mergeCssProp(
-      { style: { padding: "8px", margin: "4px" } },
       css(() => ({
         className: "yakClass1",
         style: { "--yak-var1": "#ffffff" },
       })),
+      { style: { padding: "8px", margin: "4px" } },
     ),
   ).toMatchObject({
     className: "yakClass1",
@@ -51,11 +53,11 @@ it("merge properties when style is set", async () => {
 it("merge properties when spreaded property is set", async () => {
   expect(
     mergeCssProp(
-      { className: "container mx-auto" },
       css(() => ({
         className: "yakClass1 yakClass2",
         style: { "--yak-var1": "1200px" },
       })),
+      { className: "container mx-auto" },
     ),
   ).toMatchObject({
     className: "container mx-auto yakClass1 yakClass2",
@@ -66,11 +68,11 @@ it("merge properties when spreaded property is set", async () => {
 it("merge properties when class name and style is set", async () => {
   expect(
     mergeCssProp(
-      { className: "text-lg font-semibold", style: { lineHeight: "1.6" } },
       css(() => ({
         className: "yakClass1 yakClass2",
         style: { "--yak-var1": "#1f2937" },
       })),
+      { className: "text-lg font-semibold", style: { lineHeight: "1.6" } },
     ),
   ).toMatchObject({
     className: "text-lg font-semibold yakClass1 yakClass2",
@@ -81,11 +83,11 @@ it("merge properties when class name and style is set", async () => {
 it("merge properties when class name, style and spreaded property is set", async () => {
   expect(
     mergeCssProp(
-      { className: "flex items-center", style: { gap: "1rem" } },
       css(() => ({
         className: "yakClass1 yakClass2",
         style: { "--yak-var1": "4rem" },
       })),
+      { className: "flex items-center", style: { gap: "1rem" } },
     ),
   ).toMatchObject({
     className: "flex items-center yakClass1 yakClass2",
@@ -95,10 +97,9 @@ it("merge properties when class name, style and spreaded property is set", async
 
 it("merge properties with atoms using conditional classes", async () => {
   expect(
-    mergeCssProp(
-      { className: "w-full" },
-      atoms("p-4 rounded-md", false && "hidden", true && "bg-white shadow-sm"),
-    ),
+    mergeCssProp(atoms("p-4 rounded-md", false && "hidden", true && "bg-white shadow-sm"), {
+      className: "w-full",
+    }),
   ).toMatchObject({
     className: "w-full p-4 rounded-md bg-white shadow-sm",
   });
@@ -107,7 +108,6 @@ it("merge properties with atoms using conditional classes", async () => {
 it("merge properties with atoms using callback and conditional classes", async () => {
   expect(
     mergeCssProp(
-      { className: "relative" },
       atoms(
         "border border-gray-200",
         true && "hover:border-gray-300",
@@ -117,6 +117,7 @@ it("merge properties with atoms using callback and conditional classes", async (
           style["--ring-offset"] = "2px";
         },
       ),
+      { className: "relative" },
     ),
   ).toMatchObject({
     className:
@@ -128,12 +129,12 @@ it("merge properties with atoms using callback and conditional classes", async (
 it("merge properties with atoms callback only", async () => {
   expect(
     mergeCssProp(
-      { className: "grid" },
       atoms((_, classNames, style) => {
         classNames.add("grid-cols-3 gap-4");
         classNames.add("md:grid-cols-6");
         style["--grid-gap"] = "1rem";
       }),
+      { className: "grid" },
     ),
   ).toMatchObject({
     className: "grid grid-cols-3 gap-4 md:grid-cols-6",
@@ -144,7 +145,6 @@ it("merge properties with atoms callback only", async () => {
 it("merge properties with css wrapping atoms", async () => {
   expect(
     mergeCssProp(
-      { className: "card" },
       css(
         "yakClass1",
         atoms("bg-white rounded-lg shadow-md", (_, classNames, style) => {
@@ -152,6 +152,7 @@ it("merge properties with css wrapping atoms", async () => {
           style["--card-transition"] = "all 0.2s ease";
         }),
       ),
+      { className: "card" },
     ),
   ).toMatchObject({
     className: "card yakClass1 bg-white rounded-lg shadow-md p-6 hover:shadow-lg",
@@ -162,7 +163,6 @@ it("merge properties with css wrapping atoms", async () => {
 it("merge properties with css, atoms, and function combination", async () => {
   expect(
     mergeCssProp(
-      { className: "btn", style: { cursor: "pointer" } },
       css(
         "yakClass1",
         atoms("px-4 py-2 rounded-md", true && "text-white bg-blue-600", (_, classNames, style) => {
@@ -174,6 +174,7 @@ it("merge properties with css, atoms, and function combination", async () => {
           style: { "--yak-var1": "500" },
         }),
       ),
+      { className: "btn", style: { cursor: "pointer" } },
     ),
   ).toMatchObject({
     className:
@@ -189,7 +190,6 @@ it("merge properties with css, atoms, and function combination", async () => {
 it("merge properties with nested css and atoms removing classes", async () => {
   expect(
     mergeCssProp(
-      { className: "input base-input" },
       css(
         "yakClass1",
         atoms("border border-gray-300 rounded-md", (_, classNames, style) => {
@@ -200,6 +200,7 @@ it("merge properties with nested css and atoms removing classes", async () => {
         }),
         () => ({ style: { "--yak-var1": "1rem" } }),
       ),
+      { className: "input base-input" },
     ),
   ).toMatchObject({
     className:
@@ -214,7 +215,6 @@ it("merge properties with nested css and atoms removing classes", async () => {
 it("merge properties with complex atoms manipulation", async () => {
   expect(
     mergeCssProp(
-      { className: "modal" },
       atoms(
         "fixed inset-0 z-50",
         true && "bg-black bg-opacity-50",
@@ -226,6 +226,7 @@ it("merge properties with complex atoms manipulation", async () => {
           style.backdropFilter = "blur(4px)";
         },
       ),
+      { className: "modal" },
     ),
   ).toMatchObject({
     className:
@@ -240,7 +241,6 @@ it("merge properties with complex atoms manipulation", async () => {
 it("merge properties with responsive design classes", async () => {
   expect(
     mergeCssProp(
-      { className: "w-full" },
       atoms(
         "sm:w-1/2 md:w-1/3 lg:w-1/4",
         true && "p-4",
@@ -250,6 +250,7 @@ it("merge properties with responsive design classes", async () => {
           style["--responsive-padding"] = "clamp(0.5rem, 2vw, 1rem)";
         },
       ),
+      { className: "w-full" },
     ),
   ).toMatchObject({
     className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-4 xl:w-1/5 2xl:w-1/6",
@@ -260,7 +261,6 @@ it("merge properties with responsive design classes", async () => {
 it("merge properties with form styling", async () => {
   expect(
     mergeCssProp(
-      { className: "form-control", style: { minHeight: "40px" } },
       css(
         "yakClass1",
         atoms(
@@ -275,6 +275,7 @@ it("merge properties with form styling", async () => {
         ),
         () => ({ style: { "--yak-var1": "1.5" } }),
       ),
+      { className: "form-control", style: { minHeight: "40px" } },
     ),
   ).toMatchObject({
     className:
@@ -290,7 +291,6 @@ it("merge properties with form styling", async () => {
 it("merge properties with dark mode and state variants", async () => {
   expect(
     mergeCssProp(
-      { className: "theme-card" },
       css(
         "yakClass1",
         atoms(
@@ -308,6 +308,7 @@ it("merge properties with dark mode and state variants", async () => {
           },
         ),
       ),
+      { className: "theme-card" },
     ),
   ).toMatchObject({
     className:
@@ -327,11 +328,11 @@ it.each([
   ["null", null],
   ["undefined", undefined],
 ])("applies no styles for a %s css prop", (_label, cssProp) => {
-  expect(mergeCssProp({}, cssProp)).toEqual({});
+  expect(mergeCssProp(cssProp, {})).toEqual({});
 });
 
 it("keeps the relevant props when the css prop is falsy", async () => {
-  expect(mergeCssProp({ className: "btn", style: { padding: "8px" } }, false)).toMatchObject({
+  expect(mergeCssProp(false, { className: "btn", style: { padding: "8px" } })).toMatchObject({
     className: "btn",
     style: { padding: "8px" },
   });
@@ -350,21 +351,42 @@ describe("a css prop which can not apply styles", () => {
   });
 
   it("throws for an array instead of calling it", () => {
-    expect(() => mergeCssProp({}, [css("yakCss1")])).toThrowError(/but received an array/);
+    expect(() => mergeCssProp([css("yakCss1")], {})).toThrowError(/but received an array/);
   });
 
   it("throws for an object instead of calling it", () => {
-    expect(() => mergeCssProp({}, { color: "red" })).toThrowError(
+    expect(() => mergeCssProp({ color: "red" }, {})).toThrowError(
       /but received a value of type object/,
     );
   });
 
   it("throws for a plain string instead of calling it", () => {
-    expect(() => mergeCssProp({}, "yakCss1")).toThrowError(/but received a value of type string/);
+    expect(() => mergeCssProp("yakCss1", {})).toThrowError(/but received a value of type string/);
   });
 
   it("renders unstyled in production instead of taking the page down", () => {
     process.env.NODE_ENV = "production";
-    expect(mergeCssProp({ className: "btn" }, [css("yakCss1")])).toEqual({ className: "btn" });
+    expect(mergeCssProp([css("yakCss1")], { className: "btn" })).toEqual({ className: "btn" });
+  });
+});
+
+describe("sources in JSX order", () => {
+  it("lets a later source win and appends the css classes", () => {
+    expect(mergeCssProp(css("yakCss1"), { className: "a" }, { className: "b" })).toEqual({
+      className: "b yakCss1",
+    });
+  });
+
+  it("keeps the order across a spread and forwards its other props", () => {
+    const onClick = () => {};
+    const spread = { className: "b", onClick };
+    expect(mergeCssProp(css("yakCss1"), { className: "a" }, spread, { className: "c" })).toEqual({
+      className: "c yakCss1",
+      onClick,
+    });
+  });
+
+  it("works without any source", () => {
+    expect(mergeCssProp(css("yakCss1"))).toEqual({ className: "yakCss1" });
   });
 });

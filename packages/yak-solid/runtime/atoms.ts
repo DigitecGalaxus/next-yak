@@ -33,12 +33,14 @@ export const atoms = <T>(
     staticClasses.length > 0
       ? [
           (_, classes) => {
-            staticClasses.forEach((cls) => classes.add(cls));
+            // author strings, not compiler names: the server writer must escape them
+            staticClasses.forEach((cls) => classes.add(cls, false));
           },
           ...dynamicFunctions,
         ]
       : dynamicFunctions;
 
-  // @ts-expect-error the internal implementation of css is not typed
-  return css(...runtimeFunctions);
+  // css() is typed for its compiled arguments; the public type describes the
+  // interpolation the author writes before compilation
+  return css(...runtimeFunctions) as unknown as ComponentStyles<T>;
 };

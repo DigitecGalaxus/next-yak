@@ -11,19 +11,28 @@ import { RuntimeStyleProcessor } from "../publicStyledApi.js";
  *  css={css`
  *   color: green;
  * `}
- * {...{ style: { padding: "30px" }}}
+ *  {...{ style: { padding: "30px" }}}
  * />
+ * ```
+ * compiles to
+ * ```tsx
+ * <p {...__yak_mergeCssProp(css("yakCss1"), { className: "foo" }, { style: { padding: "30px" } })} />
+ * ```
+ * The css value comes first, then every merged source in JSX order, so a
+ * later source wins as it would in one object literal.
  */
 export const mergeCssProp = (
-  relevantProps: {
+  cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
+  ...sources: (Record<string, unknown> | null | undefined)[]
+) => {
+  // React props are plain values, so the sources are merged up front
+  const result: Record<string, unknown> & {
     className?: string;
     style?: Record<string, string>;
-  } & Record<string, unknown>,
-  cssProp: RuntimeStyleProcessor<unknown> | false | null | undefined,
-) => {
-  const classNames = new ClassNames(relevantProps.className);
+  } = Object.assign({}, ...sources);
 
-  const existingStyle = relevantProps.style;
+  const classNames = new ClassNames(result.className);
+  const existingStyle = result.style;
   const style = existingStyle ? { ...existingStyle } : {};
 
   // only a style function applies styles. A falsy css prop applies none,
@@ -44,13 +53,7 @@ export const mergeCssProp = (
   }
 
   // Forward all other props (onClick, aria-*, id, …) untouched and only
-  // override className/style with the merged result — the transform already
-  // built `relevantProps` in JSX attribute order, so this preserves overrides.
-  const result: Record<string, unknown> & {
-    className?: string;
-    style?: Record<string, string>;
-  } = { ...relevantProps };
-
+  // override className/style with the merged result
   if (Object.keys(style).length > 0) {
     result.style = style;
   } else {

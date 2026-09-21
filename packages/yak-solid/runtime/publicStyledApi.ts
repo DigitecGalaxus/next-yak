@@ -43,7 +43,7 @@ export interface StyledFn {
  */
 export interface YakComponent<T> extends AnyComponent<T> {
   // This is intentionally typed to hide the internal implementation details.
-  [yakComponentSymbol]: [unknown, unknown, unknown, unknown];
+  [yakComponentSymbol]: readonly [unknown, unknown, unknown];
 }
 
 /**
@@ -143,14 +143,14 @@ export type FastOmit<T extends object, U extends string | number | symbol> = {
 };
 
 /**
- * Set-like collector for class names.
- *
- * Implemented as a string builder in the runtime (a Set<string>
- * split → Set → Array.from → join round-trip dominates render cost);
- * a real Set<string> also satisfies this interface.
+ * Collects the class names of one render. The runtime keeps them in one
+ * space-separated string (Classes in cssLiteral.ts, the only implementation):
+ * add() appends, has() and delete() let a runtime processor take a name back
+ * out. A Set would need a split and a join on every render for the same string.
  */
 export type ClassCollector = {
-  add(name: string): void;
+  /** generated is false for an author string such as an atom; the server writer escapes those */
+  add(name: string, generated?: boolean): void;
   has(name: string): boolean;
   delete(name: string): void;
 };
@@ -167,6 +167,18 @@ export type RuntimeStyleProcessor<T> = ((
   classes: ClassCollector,
   style: StyleObject,
 ) => void) & { $dynamic?: boolean };
+
+/** A class-only processor ignores props and needs no style object. */
+export type StaticStyleProcessor = ((
+  props: unknown,
+  classes: ClassCollector,
+  style?: StyleObject,
+) => void) & { $dynamic: false };
+
+/** css() marks its output so styled() can select the static render path. */
+export type CompiledStyleProcessor<T> =
+  | StaticStyleProcessor
+  | (RuntimeStyleProcessor<T> & { $dynamic: true });
 
 /**
  * Utility type to keep the generic API of a component while still being able to use it in a selector

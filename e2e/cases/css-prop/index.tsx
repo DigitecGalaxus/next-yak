@@ -76,6 +76,42 @@ export default function App({ dummyBool = true }) {
       <SpreadButton data-testid="spread-button" onClick={() => setCount((c) => c + 1)}>
         clicks: {count}
       </SpreadButton>
+      {/* a class from a spread source merges with the css prop's class */}
+      <div
+        data-testid="spread-class"
+        {...{ className: "from-spread" }}
+        css={css`
+          color: blue;
+        `}
+      >
+        spread class
+      </div>
+      {/* the later source wins: the spread's class replaces the attribute before it */}
+      <div
+        data-testid="later-wins"
+        className="early"
+        {...{ className: "late" }}
+        css={css`
+          color: blue;
+        `}
+      >
+        later wins
+      </div>
+      {/* a css prop interpolation reading state stays live */}
+      <div
+        data-testid="live"
+        css={css`
+          color: blue;
+          ${
+            count > 0 &&
+            css`
+              color: red;
+            `
+          }
+        `}
+      >
+        live
+      </div>
     </>
   );
 }

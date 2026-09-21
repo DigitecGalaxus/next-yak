@@ -22,13 +22,13 @@ export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:input_FlexConta
 }), {
     "displayName": "FlexContainer"
 });
-export const Elem = ()=><div {...__yak_mergeCssProp({
+export const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
+:global(.input_Elem_m7uBBu) {
+  color: blue;
+}
+*/ /*#__PURE__*/ css("input_Elem_m7uBBu"), {
         class: "test-class",
         style: {
             padding: "5px"
         }
-    }, /*YAK Extracted CSS:
-:global(.input_Elem_m7uBBu) {
-  color: blue;
-}
-*/ /*#__PURE__*/ css("input_Elem_m7uBBu"))}/>;
+    })}/>;

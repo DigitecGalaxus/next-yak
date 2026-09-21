@@ -52,7 +52,7 @@ export type YakViteLibrary = {
   name: string;
   /**
    * Register components with $RefreshReg$ for React Fast Refresh in dev mode.
-   * Disable for runtimes where another plugin owns HMR (e.g. vite-plugin-solid).
+   * Disable for runtimes where another plugin owns HMR (e.g. @solidjs/vite-plugin).
    */
   reactRefreshReg: boolean;
   /** Transform-filter exclusion for the runtime package itself */

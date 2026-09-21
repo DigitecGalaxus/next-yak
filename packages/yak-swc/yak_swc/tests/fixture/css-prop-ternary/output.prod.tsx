@@ -37,7 +37,7 @@ const Elem3 = ({ active, width }: {
     active: boolean;
     width: number;
 })=>{
-    return <div {...__yak_mergeCssProp({}, active ? /*YAK Extracted CSS:
+    return <div {...__yak_mergeCssProp(active ? /*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   width: var(--ym7uBBu6);
 }

@@ -16,7 +16,7 @@ Most CSS-in-JS libraries assume a re-rendering component model. `@yak/solid` doe
 
 ```bash
 pnpm add @yak/solid
-pnpm add -D vite-plugin-solid@next
+pnpm add -D @solidjs/vite-plugin@next
 ```
 
 Add the yak plugin before `solid()` in your Vite config:
@@ -24,12 +24,18 @@ Add the yak plugin before `solid()` in your Vite config:
 ```ts
 // vite.config.ts
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 import { yak } from "@yak/solid/vite";
 
 export default defineConfig({
   plugins: [yak(), solid()],
 });
+```
+
+For server rendering, bundle Solid together with `@yak/solid` or keep both external. Solid 2 ships a `development` export condition, so an app that lists only `@yak/solid` under `ssr.noExternal` ends up with two copies of Solid on the server and context lookups fail:
+
+```ts
+ssr: { noExternal: ["@yak/solid", "solid-js", "@solidjs/web", "@solidjs/signals"] },
 ```
 
 Then write styled components the way you'd write them anywhere else. Prop-based interpolations are tracked reactively:
@@ -126,8 +132,8 @@ Like `next-yak`, the yak SWC compiler extracts your CSS at build time. At runtim
 
 ## Requirements
 
-- `solid-js` >= 2.0.0-rc.5 and `@solidjs/web` >= 2.0.0-rc.5
-- `vite-plugin-solid` >= 3.0.0-next (the Solid 2 line, npm tag `next`)
+- `solid-js` >= 2.0.0-rc.6 and `@solidjs/web` >= 2.0.0-rc.6
+- `@solidjs/vite-plugin` >= 3.0.0-next (the Solid 2 line, npm tag `next`)
 - `yak-swc` with yak-package auto-detection (bundled as a dependency, version released together with this package or newer)
 
 See the [`examples/vite-solid`](https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite-solid) app for a full setup.
