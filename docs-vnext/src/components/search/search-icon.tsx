@@ -10,7 +10,12 @@ export function SearchIcon(props: SVGProps<SVGSVGElement> & { size?: number | st
         strokeWidth="2.2"
         strokeLinecap="round"
       />
-      <path d="M14 14L11.1333 11.1333" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M14 14L11.1333 11.1333"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </Icon>
   );
 }
