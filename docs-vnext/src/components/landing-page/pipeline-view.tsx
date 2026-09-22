@@ -1,11 +1,11 @@
 "use client";
 
 import { css, keyframes, styled } from "next-yak";
-import { useState, type CSSProperties, type ReactNode } from "react";
-import { container, fonts, fontWeight, ink, light, dark } from "@/tokens";
+import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { container, fonts, fontWeight, ink, shadow, light, dark } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/editor-surface";
 import { overlineSmall } from "@/lib/mixins";
-import { tourTimeline, tourWindow } from "@/lib/scroll-tour";
+import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 import { SegmentedTabs } from "./segmented-tabs";
 import Step from "./step";
 
@@ -23,7 +23,8 @@ const CODE_LINE_HEIGHT = 1.7;
  * level with the removed lines it became; the bundler config hangs under the input,
  * the CSS pane under a single elbow from the chip, and the steps sit beneath their
  * column. Narrow sections stack everything in reading order. The scroll tour (see
- * lib/scroll-tour) walks three turns of matching lines across the panes.
+ * lib/scroll-tour) walks three turns of matching lines across the panes. A mouse or a
+ * pen takes it over: resting on a band holds its turn lit in every pane.
  */
 export default function PipelineView({
   hosts,
@@ -47,6 +48,16 @@ export default function PipelineView({
 }) {
   const [hostId, setHostId] = useState(hosts[0].id);
   const host = hosts.find((h) => h.id === hostId) ?? hosts[0];
+  // the turn the pointer rests on; while it is set, it drives the tour instead of scrolling
+  const [turn, setTurn] = useState<number | null>(null);
+  const tour: Tour = {
+    active: turn,
+    // a touch tap would latch a turn with no way to leave it, so only mouse and pen take over
+    enter: (t) => (event) => {
+      if (event.pointerType !== "touch") setTurn(t);
+    },
+    leave: () => setTurn(null),
+  };
 
   return (
     <div className={className} style={style}>
@@ -61,6 +72,7 @@ export default function PipelineView({
       </Switch>
 
       <Diagram
+        data-tour-hover={turn !== null || undefined}
         style={
           {
             "--n": turns,
@@ -82,7 +94,7 @@ export default function PipelineView({
           config.
         </Step>
         <Yours>
-          <Pane title="Button.tsx" html={input.html} bands={bands.input} />
+          <Pane title="Button.tsx" html={input.html} bands={bands.input} tour={tour} />
           <Pane title={host.file} html={host.configHtml} />
         </Yours>
         <Step
@@ -97,14 +109,16 @@ export default function PipelineView({
         </Step>
         <Node aria-hidden>
           <LineIn />
-          <Chip>🦀 yak-swc</Chip>
-          <ChipCaption>inside {host.label}</ChipCaption>
+          <Plugin>
+            <PluginTitle>🦀 yak-swc</PluginTitle>
+            <PluginCaption>inside {host.label}</PluginCaption>
+          </Plugin>
           <LineOut />
           <ElbowDown />
         </Node>
         <Outputs>
-          <Pane title="Button.js" html={js.html} bands={bands.js} />
-          <Pane title="Button.css" html={stylesheet.html} bands={bands.css} />
+          <Pane title="Button.js" html={js.html} bands={bands.js} tour={tour} />
+          <Pane title="Button.css" html={stylesheet.html} bands={bands.css} tour={tour} />
         </Outputs>
         <Step
           n={3}
@@ -121,16 +135,25 @@ export default function PipelineView({
   );
 }
 
+/** The turn the pointer holds, and the handlers that let a band take or release it. */
+type Tour = {
+  active: number | null;
+  enter: (turn: number) => (event: PointerEvent) => void;
+  leave: () => void;
+};
+
 function Pane({
   title,
   html,
   bands = [],
+  tour,
   className,
   style,
 }: {
   title: string;
   html: string;
   bands?: Band[];
+  tour?: Tour;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -143,6 +166,9 @@ function Pane({
           <TourBand
             key={`${band.line}-${band.turn}`}
             aria-hidden
+            data-active={tour?.active === band.turn || undefined}
+            onPointerEnter={tour?.enter(band.turn)}
+            onPointerLeave={tour?.leave}
             style={{ "--line": band.line, "--span": band.span, "--i": band.turn } as CSSProperties}
           />
         ))}
@@ -177,10 +203,22 @@ const Diagram = styled.div`
   --css-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--css-lines) * var(--line-h));
   --js-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--js-lines) * var(--line-h));
   --axis: calc(var(--in-offset) * var(--line-h) + var(--in-h) / 2);
-  --chip-w: 116px;
+  --plugin-w: 188px;
+  --plugin-h: 84px;
   --col-gap: 32px;
   /* how far a connector reaches into the column gap: up to 6px short of the pane */
   --reach: calc(var(--col-gap) - 6px);
+
+  /* The wire. It used to be a 1px hairline two lightness steps off the paper, which made
+     the one idea of this section the faintest thing in it. Now it is 2px of dashes in a
+     tone mixed halfway to the accent, and the dashes travel, so the direction reads
+     without the reader tracing a line. */
+  --wire: light-dark(
+    color-mix(in oklch, ${light.violetSoft} 55%, ${light.beige2}),
+    color-mix(in oklch, ${dark.fog} 55%, ${dark.navy2})
+  );
+  --wire-dash: 7px;
+  --wire-period: 13px;
 
   display: grid;
   gap: 20px;
@@ -209,9 +247,15 @@ const Diagram = styled.div`
 
   @supports (animation-timeline: view()) {
     ${tourTimeline};
-    /* three quick turns while the row is in view, not spread over the whole trip */
-    --tour-start: 25%;
-    --tour-span: 40%;
+    /* This block is the last one on the page: only about 480px of scroll follow it, and
+       the default tour needs more than that on a tall viewport. Two corrections. First,
+       cap how far the reading line sits above the bottom of the screen, so a tall
+       viewport cannot push the start of the tour past the point where the page stops
+       scrolling. Second, run the three turns off early, while the block travels from the
+       reading line up to the top of the screen. */
+    view-timeline-inset: 30% min(60%, 520px);
+    --tour-start: 2%;
+    --tour-span: 38%;
   }
 `;
 
@@ -328,18 +372,35 @@ const TourBand = styled.div`
   opacity: 0;
   pointer-events: none;
 
+  @media (prefers-reduced-motion: no-preference) {
+    transition: opacity 0.15s ease;
+  }
+
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
       animation: ${bandReveal} linear both;
       ${tourWindow};
     }
   }
+
+  /* with a mouse the bands are also the targets: resting on one lines up the same code
+     in every pane. They cover the lines they mark, so this costs selecting those lines. */
+  @media (hover: hover) and (pointer: fine) {
+    pointer-events: auto;
+  }
+
+  ${tourPointerOverride};
+
+  &[data-active] {
+    opacity: 1;
+  }
 `;
 
-/* the plugin between input and outputs, with its connectors. Stacked (arrow in from
-   above, chip, arrow out below) until the section is wide enough for the row. In the
-   row everything is pinned to the axis: arrow in from the input, chip, arrow out to the
-   JS pane, and one elbow down to the CSS pane. */
+/* The plugin between input and outputs, with its wires. Stacked (wire in from above,
+   the plugin card, wire out below) until the section is wide enough for the row. In the
+   row everything is pinned to the axis: the wire in from the input lands on the card's
+   input port, the wire out leaves the output port for the JS pane, and one elbow drops
+   from under the card to the CSS pane. */
 const Node = styled.div`
   grid-area: node;
   display: flex;
@@ -354,125 +415,172 @@ const Node = styled.div`
   }
 `;
 
-const Chip = styled.span`
+/* One period of travel makes the dash pattern land back on itself, so the loop is seamless. */
+const flowX = keyframes`
+  to {
+    background-position-x: var(--wire-period);
+  }
+`;
+
+const flowY = keyframes`
+  to {
+    background-position-y: var(--wire-period);
+  }
+`;
+
+/* down the left edge first, then right along the bottom */
+const flowElbow = keyframes`
+  to {
+    background-position:
+      0 calc(100% + var(--wire-period)),
+      var(--wire-period) 100%;
+  }
+`;
+
+/* A dashed border cannot move, and a background can, so the dashes are a repeating
+   gradient. The element carries the 2px of height itself. */
+const dashesRight = css`
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--wire) 0 var(--wire-dash),
+    transparent var(--wire-dash) var(--wire-period)
+  );
+  background-size: var(--wire-period) 2px;
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ${flowX} 900ms linear infinite;
+  }
+`;
+
+const dashesDown = css`
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--wire) 0 var(--wire-dash),
+    transparent var(--wire-dash) var(--wire-period)
+  );
+  background-size: 2px var(--wire-period);
+  background-repeat: repeat-y;
+  background-position: 50% 0;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ${flowY} 900ms linear infinite;
+  }
+`;
+
+/* The plugin is the subject of this section, so it is a card with two ports, not a tag.
+   The old chip filled three percent of its column and read as a label on the empty gap. */
+const Plugin = styled.div`
   box-sizing: border-box;
-  width: var(--chip-w);
-  padding: 8px 12px;
+  width: var(--plugin-w);
+  padding: 12px 14px;
   border: 1px solid ${ink.border};
-  border-radius: 10px;
+  border-radius: 14px;
   background: ${ink.card};
+  box-shadow: ${shadow.card};
   color: ${ink.fg};
-  font-family: ${fonts.mono};
-  font-size: 13px;
-  font-weight: ${fontWeight.bold};
-  text-align: center;
-  white-space: nowrap;
+  /* the column belongs to both layouts: stacked, a block box ran the title and the
+     caption together on one line and pushed the caption past the card */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 
   @container section (min-width: ${container.section.flow}) {
     position: absolute;
     top: var(--axis);
     left: 50%;
     transform: translate(-50%, -50%);
+    min-height: var(--plugin-h);
+    justify-content: center;
+
+    /* the two ports the horizontal wires land on, centred on the axis */
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      box-sizing: border-box;
+      border: 2px solid var(--wire);
+      border-radius: 50%;
+      background: ${ink.card};
+      transform: translateY(-50%);
+    }
+
+    &::before {
+      left: -5px;
+    }
+
+    &::after {
+      right: -5px;
+    }
   }
 `;
 
-const ChipCaption = styled.span`
+const PluginTitle = styled.span`
   font-family: ${fonts.mono};
-  font-size: 13px;
-  letter-spacing: 0.44px;
-  color: light-dark(${light.violetSoft}, ${dark.fog});
+  font-size: 14px;
+  font-weight: ${fontWeight.bold};
   white-space: nowrap;
-
-  @container section (min-width: ${container.section.flow}) {
-    position: absolute;
-    top: calc(var(--axis) + 26px);
-    left: 50%;
-    transform: translateX(-50%);
-  }
 `;
 
-const arrowhead = css`
-  content: "";
-  position: absolute;
-  border: 4px solid transparent;
+const PluginCaption = styled.span`
+  font-family: ${fonts.mono};
+  font-size: 12px;
+  letter-spacing: 0.44px;
+  color: ${ink.fgMuted};
+  white-space: nowrap;
 `;
 
-/* stacked: a short vertical hairline with an arrowhead pointing down */
-const verticalArrow = css`
+/* stacked: a short vertical run. The dashes travel, and that is the direction cue. */
+const verticalWire = css`
   position: relative;
-  width: 100%;
-  height: 28px;
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 6px;
-    width: 1px;
-    background: light-dark(${light.beige6}, ${dark.navy6});
-  }
-
-  &::after {
-    ${arrowhead};
-    left: 50%;
-    bottom: 0;
-    transform: translateX(-50%);
-    border-top: 6px solid light-dark(${light.beige6}, ${dark.navy6});
-    border-bottom: 0;
-  }
+  width: 2px;
+  height: 30px;
+  ${dashesDown};
 `;
 
-/* row: a horizontal hairline on the axis with an arrowhead pointing right */
-const horizontalArrow = css`
+/* row: a horizontal run on the axis */
+const horizontalWire = css`
   position: absolute;
   top: var(--axis);
   width: auto;
-  height: 0;
-  border-top: 1px solid light-dark(${light.beige6}, ${dark.navy6});
-
-  &::before {
-    content: none;
-  }
+  height: 2px;
+  transform: translateY(-50%);
+  ${dashesRight};
 
   &::after {
-    ${arrowhead};
-    right: 0;
-    top: -1px;
-    bottom: auto;
-    left: auto;
-    transform: translateY(-50%);
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-    border-left: 6px solid light-dark(${light.beige6}, ${dark.navy6});
-    /* no right border: the tip sits exactly on the element's edge, where the line ends */
-    border-right: 0;
+    content: none;
   }
 `;
 
 const LineIn = styled.div`
-  ${verticalArrow};
+  ${verticalWire};
 
   @container section (min-width: ${container.section.flow}) {
-    ${horizontalArrow};
-    /* the connectors reach across the column gap to just short of the panes */
+    ${horizontalWire};
+    /* the wires reach across the column gap to just short of the panes */
     left: calc(-1 * var(--reach));
-    right: calc(50% + var(--chip-w) / 2 + 8px);
+    right: calc(50% + var(--plugin-w) / 2 + 5px);
   }
 `;
 
 const LineOut = styled.div`
-  ${verticalArrow};
+  ${verticalWire};
 
   @container section (min-width: ${container.section.flow}) {
-    ${horizontalArrow};
-    left: calc(50% + var(--chip-w) / 2 + 8px);
+    ${horizontalWire};
+    left: calc(50% + var(--plugin-w) / 2 + 5px);
     right: calc(-1 * var(--reach));
   }
 `;
 
-/* from under the chip's caption down to the CSS pane's middle, then across to it.
-   Row only. */
+/* From under the plugin down to the CSS pane's middle, then across to it. One element
+   paints both runs, the left edge and the bottom edge, so the dashes travel around the
+   corner in one animation. Row only. */
 const ElbowDown = styled.div`
   display: none;
 
@@ -481,19 +589,32 @@ const ElbowDown = styled.div`
     position: absolute;
     left: 50%;
     right: calc(-1 * var(--reach));
-    top: calc(var(--axis) + 50px);
+    top: calc(var(--axis) + var(--plugin-h) / 2 + 6px);
     bottom: calc(var(--css-h) / 2);
-    border-left: 1px solid light-dark(${light.beige6}, ${dark.navy6});
-    border-bottom: 1px solid light-dark(${light.beige6}, ${dark.navy6});
-    border-bottom-left-radius: 14px;
 
-    &::after {
-      ${arrowhead};
-      right: -1px;
-      bottom: -1px;
-      transform: translateY(50%);
-      border-left: 6px solid light-dark(${light.beige6}, ${dark.navy6});
-      border-right: 0;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        var(--wire) 0 var(--wire-dash),
+        transparent var(--wire-dash) var(--wire-period)
+      ),
+      repeating-linear-gradient(
+        to right,
+        var(--wire) 0 var(--wire-dash),
+        transparent var(--wire-dash) var(--wire-period)
+      );
+    background-size:
+      2px var(--wire-period),
+      var(--wire-period) 2px;
+    background-repeat: repeat-y, repeat-x;
+    /* both runs are anchored to the bottom edge, so a dash always lands on the corner
+       instead of a gap falling there */
+    background-position:
+      0 100%,
+      0 100%;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: ${flowElbow} 900ms linear infinite;
     }
   }
 `;
