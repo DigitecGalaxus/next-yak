@@ -1,48 +1,117 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { css, styled } from "next-yak";
 import { fontWeight } from "@/tokens";
 import { iconButton } from "./button";
 
-type Theme = "light" | "dark" | "system";
-type SettableTheme = Exclude<Theme, "system">;
-const ORDER: SettableTheme[] = ["light", "dark"];
-const LABELS: Record<SettableTheme, string> = { light: "Light", dark: "Dark" };
+type Theme = "system" | "light" | "dark";
 
-// Default is "system" (follows the OS); "light"/"dark" force a theme. Forcing sets data-theme on <html>
-function applyTheme(theme: SettableTheme) {
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+const LABELS: Record<Theme, string> = { system: "System", light: "Light", dark: "Dark" };
+
+/**
+ * "system" follows the OS: it drops `data-theme` and the stored key, which returns the
+ * page to the `color-scheme: light dark` default in tokens.tsx. "light" and "dark" force
+ * a side. The pre-paint script in app/layout.tsx reads the same key before the first
+ * paint, so a forced theme survives a reload without a flash.
+ */
+function applyTheme(theme: Theme) {
   const el = document.documentElement;
-  el.dataset.theme = theme;
+  try {
+    if (theme === "system") {
+      delete el.dataset.theme;
+      localStorage.removeItem("theme");
+    } else {
+      el.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    }
+  } catch {}
+  for (const notify of listeners) notify();
 }
 
-export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
-  const [theme, setTheme] = useState<Theme>("system");
-  const nextTheme = theme === "light" ? "dark" : "light";
+/**
+ * The `<html>` attribute is the one source of truth, not React state: the header and the
+ * mobile drawer each render a toggle, and two `useState` copies drift apart the moment
+ * one of them is clicked. The pre-paint script sets the attribute before React starts, so
+ * the first client snapshot is already the stored choice.
+ */
+const listeners = new Set<() => void>();
 
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark") setTheme(stored);
-  }, []);
+function subscribe(notify: () => void) {
+  listeners.add(notify);
+  return () => {
+    listeners.delete(notify);
+  };
+}
+
+function readTheme(): Theme {
+  const forced = document.documentElement.dataset.theme;
+  return forced === "light" || forced === "dark" ? forced : "system";
+}
+
+/** The server has no OS preference to read, so it renders the automatic face. */
+const serverTheme = (): Theme => "system";
+
+// The OS preference is the second store. The cycle has two stops, not three, so the one
+// forced side has to be the side the OS is NOT giving. Reading it needs its own
+// subscription, because the reader can change it while the page is open.
+function subscribeOs(notify: () => void) {
+  const query = window.matchMedia(DARK_QUERY);
+  query.addEventListener("change", notify);
+  return () => {
+    query.removeEventListener("change", notify);
+  };
+}
+
+function readOs(): "light" | "dark" {
+  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+}
+
+const serverOs = (): "light" | "dark" => "light";
+
+export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
+  const theme = useSyncExternalStore(subscribe, readTheme, serverTheme);
+  const os = useSyncExternalStore(subscribeOs, readOs, serverOs);
+  // System, then the other side, then System again. From System a click forces the side
+  // the OS is not giving, so the click always changes what the reader sees.
+  const next: Theme = theme === "system" ? (os === "dark" ? "light" : "dark") : "system";
 
   function cycle() {
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    try {
-      localStorage.setItem("theme", nextTheme);
-    } catch {}
+    applyTheme(next);
   }
 
   return (
     <Toggle
       type="button"
       onClick={cycle}
-      aria-label={`Theme: ${theme}. Click to switch.`}
+      aria-label={`Theme: ${LABELS[theme]}. Switch to ${LABELS[next]}.`}
       $withLabel={showLabel}
     >
-      {nextTheme === "light" ? <SunIcon /> : <MoonIcon />}
-      {showLabel ? <span>{LABELS[nextTheme]}</span> : null}
+      {/* The face is the next stop, and CSS picks it, not React. The server cannot read
+          the OS preference, so a JS-picked face would paint the wrong one and then flip
+          on every load. All three ship, and one rule shows one of them. */}
+      <AutoFace aria-hidden>
+        <AutoIcon />
+      </AutoFace>
+      <SunFace aria-hidden>
+        <SunIcon />
+      </SunFace>
+      <MoonFace aria-hidden>
+        <MoonIcon />
+      </MoonFace>
+      {showLabel ? <span>{LABELS[next]}</span> : null}
     </Toggle>
+  );
+}
+
+/** Automatic: one circle, one half filled, so it reads apart from the sun and the moon. */
+function AutoIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="9" r="6.4" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M9 2.6a6.4 6.4 0 0 0 0 12.8z" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -82,6 +151,42 @@ function MoonIcon() {
     </svg>
   );
 }
+
+/**
+ * The three faces. In system mode the next stop is the side the OS does not give, so the
+ * media query picks the sun or the moon. Once a theme is forced, `data-theme` sits on
+ * <html> and the next stop is System, so the automatic face wins over both.
+ */
+const Face = styled.span`
+  display: none;
+  line-height: 0;
+`;
+
+const AutoFace = styled(Face)`
+  [data-theme] & {
+    display: block;
+  }
+`;
+
+const SunFace = styled(Face)`
+  @media (prefers-color-scheme: dark) {
+    display: block;
+  }
+
+  [data-theme] & {
+    display: none;
+  }
+`;
+
+const MoonFace = styled(Face)`
+  @media (prefers-color-scheme: light) {
+    display: block;
+  }
+
+  [data-theme] & {
+    display: none;
+  }
+`;
 
 const Toggle = styled.button<{ $withLabel?: boolean }>`
   ${iconButton};
