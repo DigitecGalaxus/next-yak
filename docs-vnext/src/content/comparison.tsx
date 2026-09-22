@@ -355,68 +355,68 @@ export const ComparisonTable = () => {
     <Frame>
       <MaxWidth>
         <Table>
-        <thead>
-          <tr>
-            <ColumnHead style={{ borderBottomWidth: 0 }} $active={false} />
-            {categories.map((category) => (
-              <ColumnHead
-                $newCategory
-                $active={false}
-                key={category}
-                colSpan={Object.keys(libraries[category]).length}
-              >
-                {category}
-              </ColumnHead>
-            ))}
-          </tr>
-          <tr>
-            <ColumnHead $active={false} />
-            {categories.map((category) =>
-              Object.keys(libraries[category]).map((lib, i) => (
+          <thead>
+            <tr>
+              <ColumnHead style={{ borderBottomWidth: 0 }} $active={false} />
+              {categories.map((category) => (
                 <ColumnHead
-                  key={lib}
-                  $newCategory={i === 0}
-                  {...columnHoverEvents(lib)}
-                  $active={activeLibrary === lib}
+                  $newCategory
+                  $active={false}
+                  key={category}
+                  colSpan={Object.keys(libraries[category]).length}
                 >
-                  {lib}
+                  {category}
                 </ColumnHead>
-              )),
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {Object.keys(features).map((feature) => (
-            <tr key={feature}>
-              <ColumnFeatureName {...columnHoverEvents("")}>
-                {feature}
-                {sups.includes(feature as any) && (
-                  <sup style={{ marginLeft: "4px" }}>{sups.indexOf(feature as any) + 1})</sup>
-                )}
-              </ColumnFeatureName>
+              ))}
+            </tr>
+            <tr>
+              <ColumnHead $active={false} />
               {categories.map((category) =>
-                Object.values(libraries[category]).map((lib, i) => (
-                  <Column
-                    key={Object.keys(libraries[category])[i]}
+                Object.keys(libraries[category]).map((lib, i) => (
+                  <ColumnHead
+                    key={lib}
                     $newCategory={i === 0}
-                    {...columnHoverEvents(Object.keys(libraries[category])[i])}
-                    $active={activeLibrary === Object.keys(libraries[category])[i]}
+                    {...columnHoverEvents(lib)}
+                    $active={activeLibrary === lib}
                   >
-                    {lib[feature] ? (
-                      <IconYes
-                        title={titleText(feature, Object.keys(libraries[category])[i], true)}
-                      />
-                    ) : (
-                      <IconNo
-                        title={titleText(feature, Object.keys(libraries[category])[i], false)}
-                      />
-                    )}
-                  </Column>
+                    {lib}
+                  </ColumnHead>
                 )),
               )}
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {Object.keys(features).map((feature) => (
+              <tr key={feature}>
+                <ColumnFeatureName {...columnHoverEvents("")}>
+                  {feature}
+                  {sups.includes(feature as any) && (
+                    <sup style={{ marginLeft: "4px" }}>{sups.indexOf(feature as any) + 1})</sup>
+                  )}
+                </ColumnFeatureName>
+                {categories.map((category) =>
+                  Object.values(libraries[category]).map((lib, i) => (
+                    <Column
+                      key={Object.keys(libraries[category])[i]}
+                      $newCategory={i === 0}
+                      {...columnHoverEvents(Object.keys(libraries[category])[i])}
+                      $active={activeLibrary === Object.keys(libraries[category])[i]}
+                    >
+                      {lib[feature] ? (
+                        <IconYes
+                          title={titleText(feature, Object.keys(libraries[category])[i], true)}
+                        />
+                      ) : (
+                        <IconNo
+                          title={titleText(feature, Object.keys(libraries[category])[i], false)}
+                        />
+                      )}
+                    </Column>
+                  )),
+                )}
+              </tr>
+            ))}
+          </tbody>
         </Table>
       </MaxWidth>
     </Frame>
