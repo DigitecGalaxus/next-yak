@@ -1,5 +1,10 @@
 {
+  // oxfmt reflows the children of an MDX JSX element as inline text, which folds a
+  // fenced code block inside one onto a single line and breaks the docs build. It hits
+  // every <Tab>```bash ...``` </Tab> block, so .mdx is off limits. .md has no JSX and
+  // stays formatted.
   "ignorePatterns": [
+    "**/*.mdx",
     "**/dist/",
     "**/.next/",
     "**/.swc/",
@@ -16,7 +21,6 @@
     "docs/.source/",
     "docs/playground-wasm/out/",
     "docs/public/types/",
-    "docs/content/docs/eslint-plugin.mdx",
     "packages/eslint-plugin-yak/README.md",
     "packages/eslint-plugin-yak/docs/"
   ]
