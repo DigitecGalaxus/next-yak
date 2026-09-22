@@ -1,14 +1,14 @@
 "use client";
 
 import { css, keyframes, styled } from "next-yak";
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { container, fonts, fontSize, ink, light, dark } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/editor-surface";
 import { subsectionHeading } from "@/lib/mixins";
 import { cardStyles } from "./card";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { EditorDots } from "./editor-dots";
-import { tourTimeline, tourWindow } from "@/lib/scroll-tour";
+import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 
 export type Callout = {
   title: string;
@@ -40,6 +40,8 @@ const ROWS_BEFORE_CODE = 2;
  * `annotateOne` they queue in one compact column. Scrolling tours the callouts: each has
  * a highlight band on its rows, and a view timeline on the grid (lib/scroll-tour) gives band
  * and card consecutive windows of the scroll range. Pure CSS, progressive enhancement.
+ * A mouse or a pen takes the tour over: resting on a card shows that callout's lines for
+ * as long as the pointer stays there, whatever the scroll position.
  *
  * Narrower sections drop the editor and each card shows its own slice of the code
  * instead; a card picks stacked or copy-beside-code from its own width.
@@ -65,14 +67,22 @@ export default function FeatureShowcaseView({
   style?: CSSProperties;
 }) {
   const [active, setActive] = useState(tabs[0].value);
+  // the callout the pointer rests on; while it is set, it drives the tour instead of scrolling
+  const [hovered, setHovered] = useState<number | null>(null);
 
   // grid rows of a callout's lines, plus its index in the scroll tour
   const placement = (c: Callout, i: number) =>
     ({ "--row": c.line + ROWS_BEFORE_CODE, "--span": c.span, "--i": i }) as CSSProperties;
 
+  // a touch tap would latch a callout with no way to leave it, so only mouse and pen take over
+  const enter = (i: number) => (event: PointerEvent) => {
+    if (event.pointerType !== "touch") setHovered(i);
+  };
+
   return (
     <Grid
       className={className}
+      data-tour-hover={hovered !== null || undefined}
       style={
         {
           ...style,
@@ -113,7 +123,14 @@ export default function FeatureShowcaseView({
       </Editor>
 
       {callouts.map((callout, i) => (
-        <Card key={callout.title} data-side={callout.side} style={placement(callout, i)}>
+        <Card
+          key={callout.title}
+          data-side={callout.side}
+          data-active={hovered === i || undefined}
+          onPointerEnter={enter(i)}
+          onPointerLeave={() => setHovered(null)}
+          style={placement(callout, i)}
+        >
           <CardBody>
             <CardText>
               <h3
@@ -142,7 +159,12 @@ export default function FeatureShowcaseView({
       ))}
 
       {callouts.map((callout, i) => (
-        <LineHighlight key={callout.title} aria-hidden style={placement(callout, i)} />
+        <LineHighlight
+          key={callout.title}
+          aria-hidden
+          data-active={hovered === i || undefined}
+          style={placement(callout, i)}
+        />
       ))}
     </Grid>
   );
@@ -271,11 +293,21 @@ const LineHighlight = styled.div`
     background: ${ink.hover};
     opacity: 0;
 
+    @media (prefers-reduced-motion: no-preference) {
+      transition: opacity 0.15s ease;
+    }
+
     @supports (animation-timeline: view()) {
       @media (prefers-reduced-motion: no-preference) {
         animation: ${bandReveal} linear both;
         ${tourWindow};
       }
+    }
+
+    ${tourPointerOverride};
+
+    &[data-active] {
+      opacity: 1;
     }
   }
 
@@ -348,6 +380,13 @@ const Card = styled.div`
         animation: ${leaderAccent} linear both;
         ${tourWindow};
       }
+    }
+
+    ${tourPointerOverride};
+
+    /* the pointer picks a callout directly and holds it for as long as it rests there */
+    &[data-active] {
+      --leader: var(--leader-on);
     }
   }
 
