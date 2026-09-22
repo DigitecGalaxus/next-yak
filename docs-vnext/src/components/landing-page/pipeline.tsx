@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { highlighterPromise, yakTheme } from "@/lib/shiki";
 import PipelineView, { type Band, type Host } from "./pipeline-view";
-import { NextIcon, RspackIcon, ViteIcon } from "./framework-icons";
+import { NextIcon, RsbuildIcon, ViteIcon } from "./framework-icons";
 import { StorybookIcon } from "./tool-icons";
 
 const INPUT = `const Button = styled.button\`
@@ -64,7 +64,7 @@ export default defineConfig({
   {
     id: "rsbuild",
     label: "Rsbuild",
-    Icon: RspackIcon,
+    Icon: RsbuildIcon,
     file: "rsbuild.config.ts",
     code: `import { pluginYak } from "@yak/react/rsbuild";
 
@@ -147,7 +147,9 @@ export default async function Pipeline({
     file: h.file,
     tab: (
       <>
-        <h.Icon mono />
+        {/* the brand marks run in colour here: two of the four (Rsbuild, Vite) lose
+            their identity in one colour, and this row sits on paper, not on ink */}
+        <h.Icon />
         {h.label}
       </>
     ),
