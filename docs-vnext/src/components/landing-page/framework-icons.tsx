@@ -31,22 +31,23 @@ const SOLID_RIBBONS =
 
 export function SolidIcon({ mono, ...props }: FrameworkIconProps) {
   if (mono) {
-    // The mask paints the shape, then strokes the same path in black. The stroke lands on
-    // every edge, so each ribbon comes back inset by half a stroke and the seams open into
-    // visible gaps. Without it the four ribbons read as one blob at 15px.
+    // Drawn as an outline, not a fill: filled, the four ribbons touch along their seams
+    // and weld into one blob at 15px. The stroke traces each ribbon instead, which keeps
+    // them apart. 2.2 matches the weight of the React atom beside it in the same row.
+    //
+    // An SVG mask would also open the seams, and it was the first thing I tried. It needs
+    // an id, two switchers render this icon, and the browser resolves a duplicate id to
+    // the first match. Once that first match sat in a display:none subtree the mask came
+    // back empty and the icon painted as a solid square.
     return (
       <Icon viewBox="0 0 24 24" {...props}>
-        <mask id="yak-solid-mono" maskUnits="userSpaceOnUse">
-          <path d={SOLID_RIBBONS} fill="#fff" />
-          <path
-            d={SOLID_RIBBONS}
-            fill="none"
-            stroke="#000"
-            strokeWidth="1"
-            strokeLinejoin="round"
-          />
-        </mask>
-        <rect width="24" height="24" fill="currentColor" mask="url(#yak-solid-mono)" />
+        <path
+          d={SOLID_RIBBONS}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinejoin="round"
+        />
       </Icon>
     );
   }
