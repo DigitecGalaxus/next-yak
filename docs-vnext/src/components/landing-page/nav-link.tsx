@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { styled, css } from "next-yak";
 import { light, dark } from "@/tokens";
+import { externalLinkProps } from "@/lib/external-link";
+import ExternalMark from "@/components/external-mark";
 
 export default function NavLink({
   href,
@@ -34,7 +36,31 @@ export default function NavLink({
   );
 }
 
-const StyledNavLink = styled(Link)<{ $active: boolean }>`
+/**
+ * A link off the site, styled as a top-bar entry. It carries no active state, because no
+ * route ever matches it. The arrow says where the click goes before the click: Benchmarks
+ * sits in a row of four words, and it is the only one that leaves the site.
+ */
+export function NavExternalLink({
+  href,
+  children,
+  className,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <StyledExternalLink href={href} {...externalLinkProps} className={className} onClick={onClick}>
+      {children}
+      <ExternalMark />
+    </StyledExternalLink>
+  );
+}
+
+const navLinkStyles = css`
   text-decoration: none;
   text-underline-offset: 6px;
   text-decoration-thickness: 2px;
@@ -42,21 +68,38 @@ const StyledNavLink = styled(Link)<{ $active: boolean }>`
   @media (prefers-reduced-motion: no-preference) {
     transition: color 0.15s ease;
   }
+`;
 
-  &:hover {
-    color: light-dark(${light.violet}, ${dark.white});
+/* The hover comes after the active rule on purpose. It sat before it, so the active link
+   answered a pointer with nothing: it already carried the colour the hover asked for.
+   Red is the answer every link on this site gives. */
+const navLinkHover = css`
+  &:hover,
+  &:focus-visible {
+    color: light-dark(${light.red}, ${dark.red});
   }
 
   &:focus-visible {
     outline: none;
-    color: light-dark(${light.violet}, ${dark.white});
     text-decoration-line: underline;
   }
+`;
 
+const StyledNavLink = styled(Link)<{ $active: boolean }>`
+  ${navLinkStyles};
+
+  /* the active page keeps the violet and the underline that mark it */
   ${({ $active }) =>
     $active &&
     css`
       color: light-dark(${light.violet}, ${dark.white});
       text-decoration-line: underline;
     `}
+
+  ${navLinkHover};
+`;
+
+const StyledExternalLink = styled.a`
+  ${navLinkStyles};
+  ${navLinkHover};
 `;

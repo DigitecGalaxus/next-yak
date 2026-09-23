@@ -118,7 +118,16 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   cursor: pointer;
 
   @media (prefers-reduced-motion: no-preference) {
-    transition: color 0.2s ease;
+    transition:
+      color 0.2s ease,
+      background 0.16s ease;
+  }
+
+  /* the same answer as the bundler row: a surface, not the link red. The active tab
+     carries the sliding pill already. */
+  &:hover:not([data-active]) {
+    background: ${ink.hover};
+    color: ${ink.fg};
   }
 
   &[data-active] {

@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css } from "next-yak";
 import { radii, light, dark } from "@/tokens";
 
 export const cardStyles = css`
@@ -6,9 +6,3 @@ export const cardStyles = css`
   border: 1px solid light-dark(${light.violet}, ${dark.white});
   border-radius: ${radii.card};
 `;
-
-const Card = styled.div`
-  ${cardStyles};
-`;
-
-export default Card;

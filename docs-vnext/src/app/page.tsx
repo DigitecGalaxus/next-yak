@@ -1,10 +1,9 @@
-import { css, keyframes } from "next-yak";
+import { css, keyframes, styled } from "next-yak";
 import CtaButton from "../components/landing-page/cta-button";
 import HeroEditor from "../components/landing-page/hero-editor";
 import Badge from "../components/landing-page/badge";
 import FeatureShowcase from "../components/landing-page/feature-showcase";
 import Pipeline from "../components/landing-page/pipeline";
-import Footer from "../components/landing-page/footer";
 import Eyebrow from "../components/landing-page/eyebrow";
 import SectionIntro, { SectionHeading, SubHeading } from "../components/landing-page/section-intro";
 import { Container, Section } from "../components/landing-page/section";
@@ -18,16 +17,18 @@ import {
   fontSize,
   fontWeight,
   headerHeight,
+  ink,
   maxContentWidth,
   light,
   dark,
-  ink,
 } from "@/tokens";
 import Yak from "../components/landing-page/yak";
 import Link from "next/link";
 import Image from "next/image";
 import { asset } from "@/lib/site";
-import { Fragment } from "react";
+import { externalLinkProps } from "@/lib/external-link";
+import ExternalMark from "@/components/external-mark";
+import { Fragment, type CSSProperties } from "react";
 
 export default async function Home() {
   const version = await getReleasedVersion();
@@ -136,8 +137,7 @@ export default async function Home() {
                 <span>
                   <Link
                     href="https://npmx.dev/package/next-yak"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    {...externalLinkProps}
                     title={`next-yak${version ? ` v${version}` : ""} on npm`}
                     css={css`
                       display: inline-block;
@@ -206,10 +206,10 @@ export default async function Home() {
                   gap: 16px;
                 `}
               >
-                <CtaButton href="/documentation/getting-started" $primary>
+                <CtaButton href="/docs/getting-started" $primary>
                   Get started <ArrowRightIcon />
                 </CtaButton>
-                <CtaButton href="https://github.com/digitecgalaxus/next-yak">
+                <CtaButton href="https://github.com/digitecgalaxus/next-yak" {...externalLinkProps}>
                   <GitHubIcon />
                   Github
                 </CtaButton>
@@ -268,18 +268,23 @@ export default async function Home() {
                   <b>Yak pairs unmatched render performance with the most flexible API.</b> It is
                   always faster than runtime solutions like styled-components or emotion.
                 </SubHeading>
-                {/* TODO: point at a dedicated benchmark-results page once it exists */}
+                {/* The count comes from the benchmark site's own heading. Read it there before
+                    you change this line, or the two stop agreeing. */}
                 <a
-                  href="https://github.com/DigitecGalaxus/next-yak/tree/main/benchmarks"
+                  href="https://jantimon.github.io/css-in-js-bench"
+                  {...externalLinkProps}
                   css={css`
                     margin-top: 10px;
                     font-family: ${fonts.mono};
                     font-size: ${fontSize.small};
                     font-weight: ${fontWeight.bold};
-                    /*color: light-dark(${light.red}, ${dark.red});*/
-                    text-decoration: underline;
-                    text-decoration-thickness: 1.5px;
-                    text-underline-offset: 7px;
+                    /* A border rather than text-decoration: Chrome does not draw an
+                       ancestor underline under an atomic inline box, so the line stopped
+                       short of the arrow. The link is a flex item at flex-start, so the
+                       border spans exactly the content, arrow included. */
+                    text-decoration: none;
+                    border-bottom: 1.5px solid currentColor;
+                    padding-bottom: 1px;
 
                     &:hover,
                     &:focus-visible {
@@ -287,7 +292,8 @@ export default async function Home() {
                     }
                   `}
                 >
-                  See all 14 benchmark results →
+                  See all 22 styling techniques
+                  <ExternalMark />
                 </a>
               </div>
 
@@ -332,11 +338,13 @@ export default async function Home() {
                     css={css`
                       font-family: ${fonts.mono};
                       font-size: 13px;
-                      white-space: nowrap;
+                      /* The note is 289px wide and ran past the card below 375px, which
+                         is an iPhone SE. It wraps onto two even lines instead. */
+                      text-wrap: balance;
                       color: light-dark(${light.violetSoft}, ${dark.fog});
                     `}
                   >
-                    renders / second · higher is better ↑
+                    requests / second · higher is better ↑
                   </span>
                 </figcaption>
                 <div
@@ -360,51 +368,33 @@ export default async function Home() {
                     `}
                   >
                     yak
+                    <Version>{YAK_BENCH.version}</Version>
                   </span>
-                  <div
-                    css={css`
-                      position: relative;
-                      display: flex;
-                      align-items: center;
-                      justify-content: flex-end;
-                      height: clamp(32px, 4.5cqi, 40px);
-                      padding-inline: clamp(12px, 2cqi, 18px);
-                      background: light-dark(${light.red}, ${dark.redDeep});
-                      border: var(--card-bw) solid var(--frame);
-                      border-radius: 10px;
-                    `}
-                  >
-                    <span
-                      css={css`
-                        /* keep the number clear of the rider parked on the bar tip */
-                        font-family: ${fonts.mono};
-                        font-size: 15px;
-                        font-weight: ${fontWeight.bold};
-                        white-space: nowrap;
-                        color: ${ink.fg};
-                      `}
-                    >
-                      216,856
-                    </span>
-                    {/* the mascot rides the bar tip; % offsets are relative to the bar
-                        height so the pose scales with it — bottom is tuned so the
-                        yak straddles the bar's top edge with its leg draping over
-                        the face */}
-                    <Image
-                      src={asset("/yak-riding-2.png")}
-                      alt=""
-                      width="810"
-                      height="647"
-                      css={css`
-                        position: absolute;
-                        right: -6px;
-                        bottom: 66%;
-                        height: 170%;
-                        width: auto;
-                      `}
-                    />
-                  </div>
-                  {BENCH_ROWS.map(({ label, value, percent }) => (
+                  <BarRow>
+                    <Track style={{ "--pct": 100 } as CSSProperties}>
+                      <YakBar>
+                        {/* Inside the bar, so the rider keeps to the bar tip in both
+                            states. % offsets are relative to the bar height, so the pose
+                            scales with it. `bottom` is tuned so the yak straddles the
+                            bar's top edge with its leg draping over the face. */}
+                        <Image
+                          src={asset("/yak-riding-2.png")}
+                          alt=""
+                          width="810"
+                          height="647"
+                          css={css`
+                            position: absolute;
+                            right: -6px;
+                            bottom: 66%;
+                            height: 170%;
+                            width: auto;
+                          `}
+                        />
+                      </YakBar>
+                      <YakValue>{YAK_BENCH.value}</YakValue>
+                    </Track>
+                  </BarRow>
+                  {BENCH_ROWS.map(({ label, version, value, percent }) => (
                     <Fragment key={label}>
                       <span
                         css={css`
@@ -414,34 +404,14 @@ export default async function Home() {
                         `}
                       >
                         {label}
+                        <Version>{version}</Version>
                       </span>
-                      <div
-                        style={{ width: `${percent}%` }}
-                        css={css`
-                          display: flex;
-                          align-items: center;
-                          justify-content: flex-end;
-                          height: clamp(32px, 4.5cqi, 40px);
-                          padding-inline: clamp(8px, 1.5cqi, 14px);
-                          border-radius: 10px;
-                          background: light-dark(${light.beige6}, ${dark.navy6});
-                          /* deliberate: Emotion's bar is too short for its number, so
-                             the leading digits clip away — just like in the mock */
-                          overflow: hidden;
-                        `}
-                      >
-                        <span
-                          css={css`
-                            font-family: ${fonts.mono};
-                            font-size: 13px;
-                            font-weight: ${fontWeight.semibold};
-                            white-space: nowrap;
-                            color: light-dark(${light.violet}, ${dark.white});
-                          `}
-                        >
-                          {value}
-                        </span>
-                      </div>
+                      <BarRow>
+                        <Track style={{ "--pct": percent } as CSSProperties}>
+                          <Bar />
+                          <Value>{value}</Value>
+                        </Track>
+                      </BarRow>
                     </Fragment>
                   ))}
                 </div>
@@ -498,7 +468,6 @@ export default async function Home() {
           <Pipeline />
         </Container>
       </Section>
-      <Footer />
     </>
   );
 }
@@ -519,15 +488,132 @@ async function getReleasedVersion(): Promise<string | null> {
   }
 }
 
-// Renders/second from the SSR benchmark suite. `percent` is the library's share of
-// yak's 216,856; yak's own bar spans the full chart column, so the bar-to-bar
-// ratios are data-accurate.
+// "SSR throughput under load" from jantimon.github.io/css-in-js-bench, the "whole shop
+// page" workload (400 product tiles). Requests per second, not renders per second: the
+// numbers are two digits instead of six, and a reader can hold them in their head.
+//
+// yak is the styled API lane, which is the API this site documents. The css prop lane
+// scores higher (218 req/s). Versions come from each lane's package.json in the
+// benchmark repo. Read both off the site before you change a number here.
+//
+// `percent` is the library's share of yak's 205 req/s. yak's own bar spans the full
+// chart column, so the bar-to-bar ratios are data-accurate.
+const YAK_BENCH = { version: "9.10.0", value: "205" };
+
+/**
+ * The chart flips as one, not row by row: when the shortest bar can no longer hold its
+ * number, every number steps out to a single column on the right.
+ *
+ * Every Track is the same width, so one container query on the Track answers for all six
+ * rows. The container sits on the Track and not on the row or the grid, because `cqi`
+ * inside a container resolves against that container. The row height and the grid gaps
+ * stay measured against the section, where they were tuned.
+ *
+ * 178px is the track width at which the shortest bar, Emotion at 28.3 percent, reaches
+ * the 50px its number needs. Work it out again when the data changes.
+ */
+const TRACK_HOLDS_NUMBERS = "178px";
+
+/** The column the numbers stand in while they are outside the bars. */
+const VALUE_COLUMN = "34px";
+
+const BarRow = styled.div`
+  position: relative;
+  height: clamp(32px, 4.5cqi, 40px);
+`;
+
+const Track = styled.div`
+  position: relative;
+  height: 100%;
+  container: benchtrack / inline-size;
+`;
+
+/**
+ * The bars measure against the track minus the number column, so they share one scale in
+ * both states and the ratios between them never move. `--pct` comes from the row data.
+ */
+const barBox = css`
+  position: relative;
+  --value-column: ${VALUE_COLUMN};
+  width: calc((100% - var(--value-column)) * var(--pct) / 100);
+  height: 100%;
+  border-radius: 10px;
+
+  @container benchtrack (min-width: ${TRACK_HOLDS_NUMBERS}) {
+    --value-column: 0px;
+  }
+`;
+
+const Bar = styled.div`
+  ${barBox};
+  background: light-dark(${light.beige6}, ${dark.navy6});
+`;
+
+const YakBar = styled.div`
+  ${barBox};
+  background: light-dark(${light.red}, ${dark.redDeep});
+  border: var(--card-bw) solid var(--frame);
+`;
+
+/** Right-aligned at the track's edge, which is where the numbers line up as a column. */
+const valueText = css`
+  position: absolute;
+  top: 50%;
+  right: 0;
+  translate: 0 -50%;
+  font-family: ${fonts.mono};
+  font-size: 13px;
+  white-space: nowrap;
+`;
+
+const Value = styled.span`
+  ${valueText};
+  font-weight: ${fontWeight.semibold};
+  color: light-dark(${light.violet}, ${dark.white});
+
+  /* inside, at the bar's own right edge */
+  @container benchtrack (min-width: ${TRACK_HOLDS_NUMBERS}) {
+    right: auto;
+    left: calc(100% * var(--pct) / 100);
+    translate: -100% -50%;
+    margin-left: -11px;
+  }
+`;
+
+const YakValue = styled.span`
+  ${valueText};
+  font-weight: ${fontWeight.bold};
+  color: light-dark(${light.red}, ${dark.red});
+
+  @container benchtrack (min-width: ${TRACK_HOLDS_NUMBERS}) {
+    right: auto;
+    left: calc(100% * var(--pct) / 100);
+    translate: -100% -50%;
+    /* clear of the rider parked on the bar tip */
+    margin-left: -16px;
+    color: ${ink.fg};
+  }
+`;
+
+/**
+ * The version each library ran at, under its name rather than beside it. On one line
+ * "styled-components 6.5.3" is 150px wide, which pushes the label column past its
+ * 140px cap and takes the room the bars need on a narrow card.
+ */
+const Version = styled.span`
+  display: block;
+  font-family: ${fonts.mono};
+  font-size: 11px;
+  font-weight: 400;
+  color: light-dark(${light.violetSoft}, ${dark.fog});
+`;
+
 const BENCH_ROWS = [
-  { label: "StyleX", value: "197,008", percent: 90.8 },
-  { label: "Panda", value: "144,635", percent: 66.7 },
-  { label: "tailwind-merge", value: "114,708", percent: 52.9 },
-  { label: "styled-components", value: "55,753", percent: 25.7 },
-  { label: "Emotion", value: "31,789", percent: 14.7 },
+  { label: "StyleX", version: "0.19.0", value: "167", percent: 81.5 },
+  { label: "tailwind-merge", version: "3.7.0", value: "105", percent: 51.2 },
+  { label: "styled-components", version: "6.5.3", value: "80", percent: 39 },
+  { label: "Panda", version: "2.0.0-beta.17", value: "76", percent: 37.1 },
+  { label: "Emotion", version: "11.14.1", value: "58", percent: 28.3 },
 ];
 
 const recede = keyframes`

@@ -2,6 +2,7 @@ import { css, styled } from "next-yak";
 import Link from "next/link";
 import { fonts, fontSize, fontWeight, maxContentWidth, light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
+import { externalLinkProps } from "@/lib/external-link";
 import Yak from "./yak";
 import Code from "./code";
 
@@ -9,18 +10,18 @@ const COLUMNS = [
   {
     title: "docs",
     links: [
-      { label: "Getting started", href: "/documentation/getting-started" },
-      { label: "Features", href: "/documentation/features" },
-      { label: "How it works", href: "/documentation/how-does-it-work" },
-      { label: "FAQ", href: "/documentation/faq" },
+      { label: "Getting started", href: "/docs/getting-started" },
+      { label: "Features", href: "/docs/features" },
+      { label: "How it works", href: "/docs/how-does-it-work" },
+      { label: "FAQ", href: "/docs/faq" },
     ],
   },
   {
     title: "migrate",
     links: [
-      { label: "From styled-components", href: "/documentation/migration-from-styled-components" },
-      { label: "To native CSS", href: "/documentation/migration-to-native-css" },
-      { label: "Comparison", href: "/documentation/comparison" },
+      { label: "From styled-components", href: "/docs/migration-from-styled-components" },
+      { label: "To native CSS", href: "/docs/migration-to-native-css" },
+      { label: "Comparison", href: "/docs/comparison" },
     ],
   },
   {
@@ -88,8 +89,7 @@ export default function Footer() {
             <b>yak</b>, formerly <Code>next-yak</Code>. Same library, same team, broader home: the
             package is now <Code>@yak/react</Code>, with <Code>@yak/solid</Code> and{" "}
             <Code>@yak/qwik</Code> beside it.{" "}
-            {/* TODO: point at a dedicated rename/story page once it exists */}
-            <StoryLink href="/documentation/getting-started">Read the story →</StoryLink>
+            <StoryLink href="/blog/renaming-next-yak-to-yak">Read the story →</StoryLink>
           </p>
         </Brand>
 
@@ -108,9 +108,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <FooterLink
                     href={link.href}
-                    {...("external" in link && link.external
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
+                    {...("external" in link && link.external ? externalLinkProps : {})}
                   >
                     {link.label}
                   </FooterLink>
@@ -164,6 +162,14 @@ const StoryLink = styled(Link)`
   color: light-dark(${light.red}, ${dark.red});
   font-weight: ${fontWeight.bold};
   white-space: nowrap;
+
+  /* it rests red already, so the hover deepens the red instead of reaching for it */
+  &:hover,
+  &:focus-visible {
+    color: light-dark(${light.redDeep}, ${dark.redDeep});
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 `;
 
 const Column = styled.div`
