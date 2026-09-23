@@ -70,6 +70,18 @@ const Tab = styled(BaseTabs.Tab)`
   color: light-dark(${light.violet}, ${dark.white});
   cursor: pointer;
 
+  @media (prefers-reduced-motion: no-preference) {
+    transition: background 0.16s ease;
+  }
+
+  /* A control in a group answers with its own surface, not with the link red. The
+     active tab already carries the sliding pill, and a surface under that pill reads as
+     a mistake, so it stays out. Base UI marks the active tab with data-active, which is
+     also the attribute the editor switcher reads. */
+  &:hover:not([data-active]) {
+    background: light-dark(${light.beige4}, ${dark.navy4});
+  }
+
   &:focus-visible {
     ${focusRing};
   }
