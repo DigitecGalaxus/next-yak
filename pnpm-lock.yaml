@@ -348,6 +348,9 @@ catalogs:
     wasm-pack:
       specifier: 0.15.0
       version: 0.15.0
+    zod:
+      specifier: 4.4.3
+      version: 4.4.3
 
 overrides:
   yak-swc: workspace:*
@@ -557,6 +560,9 @@ importers:
       yak-swc:
         specifier: workspace:*
         version: link:../packages/yak-swc
+      zod:
+        specifier: catalog:dev
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: catalog:dev
@@ -13700,8 +13706,8 @@ snapshots:
     dependencies:
       '@tanstack/history': 1.162.0
       cookie-es: 3.1.1
-      seroval: 1.6.4
-      seroval-plugins: 1.6.4(seroval@1.6.4)
+      seroval: 1.6.7
+      seroval-plugins: 1.6.7(seroval@1.6.7)
     optional: true
 
   '@tanstack/router-core@1.171.27':
