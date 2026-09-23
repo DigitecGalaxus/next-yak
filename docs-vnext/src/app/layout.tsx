@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Header from "../components/landing-page/header";
+import PageFrame from "../components/page-frame";
 import { SearchProvider } from "../components/search/search-provider";
 import { NextProvider } from "fumadocs-core/framework/next";
 import { styled } from "next-yak";
@@ -15,20 +16,34 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  // every other route sets its own in pageMetadata()
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
     url: SITE_URL,
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [{ url: "/yak-hero.png", width: 1248, height: 832, alt: SITE_NAME }],
+    images: [{ url: "/og/home.png", width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/yak-hero.png"],
+    images: ["/og/home.png"],
   },
+};
+
+/**
+ * The colour the browser paints around the page, mostly the address bar on a phone. It is
+ * the one head tag that reads the colour scheme, so it takes the same two page backgrounds
+ * the Html element uses.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf5ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#2b273b" },
+  ],
 };
 
 export default function RootLayout({
@@ -52,7 +67,7 @@ export default function RootLayout({
           />
           <SearchProvider>
             <Header />
-            {children}
+            <PageFrame>{children}</PageFrame>
           </SearchProvider>
         </body>
       </NextProvider>
@@ -71,4 +86,10 @@ const Html = styled.html`
   ${initVars};
   background: light-dark(${light.beige2}, ${dark.navy2});
   color: light-dark(${light.violetSoft}, ${dark.fog});
+
+  /* Hold the scrollbar's lane open at all times. Without it the page is 15px wider on a
+     short route than on a long one, and every centred thing slides sideways as the reader
+     moves between them. It also holds the page still when a dialog locks the scroll.
+     A browser that draws an overlay scrollbar reserves nothing, so this costs it nothing. */
+  scrollbar-gutter: stable;
 `;

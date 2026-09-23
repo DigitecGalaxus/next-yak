@@ -4,11 +4,15 @@ import CtaButton from "@/components/landing-page/cta-button";
 import { light, dark } from "@/tokens";
 import { MessagePage, MessageActions } from "@/components/message-page";
 import { overline } from "@/lib/mixins";
+import { externalLinkProps } from "@/lib/external-link";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Playground",
   description: "An interactive yak playground is on the way.",
-};
+  path: "/playground",
+  card: "playground",
+});
 
 export default function PlaygroundPage() {
   return (
@@ -19,10 +23,12 @@ export default function PlaygroundPage() {
         An interactive playground is on the way. Until then, the docs cover the full API end to end.
       </Text>
       <MessageActions>
-        <CtaButton href="/documentation/getting-started" $primary>
+        <CtaButton href="/docs/getting-started" $primary>
           Read the docs
         </CtaButton>
-        <CtaButton href="https://github.com/digitecgalaxus/next-yak">GitHub</CtaButton>
+        <CtaButton href="https://github.com/digitecgalaxus/next-yak" {...externalLinkProps}>
+          GitHub
+        </CtaButton>
       </MessageActions>
     </MessagePage>
   );

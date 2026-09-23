@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "pnpm run og && next dev",
+    "build": "pnpm run og && next build",
     "start": "next start",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "fumadocs-mdx",
+    "og": "node scripts/generate-og.mjs"
   },
   "dependencies": {
     "@base-ui/react": "catalog:dev",
@@ -19,7 +20,8 @@
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "shiki": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "yak-swc": "workspace:*",
+    "zod": "catalog:dev"
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
