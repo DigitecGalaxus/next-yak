@@ -16,6 +16,10 @@ export default function DocumentationLayout({ children }: { children: ReactNode 
 }
 
 const Shell = styled.div`
+  /* grows, so the footer below it sits at the bottom of a short page. The width is
+     explicit: an auto inline margin turns off the stretch a flex item would otherwise get. */
+  flex: 1 0 auto;
+  width: 100%;
   display: flex;
   align-items: flex-start;
   max-width: ${maxContentWidth};
