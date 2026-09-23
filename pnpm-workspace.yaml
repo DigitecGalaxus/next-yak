@@ -90,3 +90,5 @@ catalogs:
     vite: 8.2.2
     "@solidjs/vite-plugin": 3.0.0-next.46
     vitest: 4.1.11
+    wasm-pack: 0.15.0
+    zod: 4.4.3
