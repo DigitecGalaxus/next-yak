@@ -33,6 +33,7 @@ See: [yak-swc](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak
 The SWC plugin takes in the source code and transforms the tagged template literals into `next-yak` runtime function
 calls with the imported styles (from the final css module output) as arguments. It also transforms the dynamic parts of the
 tagged template literals into function calls with the properties as argument and adds it as css value to the style object.
+On top of that it resolves the `css` prop and folds static JSX usages of styled components directly into DOM elements.
 
 #### Change import
 
@@ -55,7 +56,7 @@ import "./page.yak.module.css!=!./page?./page.yak.module.css";
 ```
 
 This strange looking import string is a poorly documented feature of webpack. It uses the [Inline matchResource](https://webpack.js.org/api/loaders/#inline-matchresource) to instrument webpack to use the loaders as if it was a normal `.module.css` file
-that points to the current file (`./page`). In order that this import statement works in Next.js, we need to add
+that points to the current file (`./page`). For this import statement to work in Next.js, we need to add
 a query parameter that ends with `.module.css`, as this is the way Next.js recognizes CSS modules.
 
 This recognition is not always working correctly as seen with the various issues and PRs we created on the Next.js repository like [this one](https://github.com/vercel/next.js/pull/51115),
@@ -182,6 +183,74 @@ const Button = __yak.__yak_button(
 </div>
 </SideBySide>
 
+#### Transform the css prop
+
+The [css prop](/docs/features#css-prop) is resolved at compile time as well. The styles are extracted like all other styles and the prop itself is replaced with a plain `className` attribute:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+import { css } from "next-yak";
+
+const Elem = () => (
+  <div
+    css={css`
+      color: red;
+    `}
+  />
+);
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Elem = () => <div className="input_Elem_m7uBBu" />;
+```
+
+</div>
+</SideBySide>
+
+Conditional styles stay conditional, the condition just toggles class names instead of css blocks:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+const Elem = ({ on }) => (
+  <div
+    css={
+      on
+        ? css`
+            color: red;
+          `
+        : css`
+            color: blue;
+          `
+    }
+  />
+);
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Elem = ({ on }) => <div className={on ? "input_Elem_m7uBBu" : "input_Elem_m7uBBu-01"} />;
+```
+
+</div>
+</SideBySide>
+
+Only if the element has an existing `className` attribute or spread attributes the class names have to be merged at render time. In that case the plugin hands the attributes to the small `__yak_mergeCssProp` runtime helper: the css value first, then one argument per merged source in JSX order.
+
+```tsx title="output"
+const Elem = (props) => (
+  <div {...__yak_mergeCssProp(css("input_Elem_m7uBBu"), { className: "card" }, props)} />
+);
+```
+
 #### Transform CSS
 
 The next step is to extract the CSS to a comment in the source code. This is useful because the transformation should happen
@@ -238,6 +307,37 @@ const Button = styled.button`
 The comment gets marked with `/*YAK Extracted CSS:` so that the loader can easily find it and extract the CSS.
 Additionally, the comment is marked with `/*#__PURE__*/` so that the minifier knows that behind the runtime function call there is no side effect and can move it around.
 
+#### Fold static JSX usages
+
+A styled component is itself a React component: when it renders it computes its class name, merges it with the received props and renders the actual DOM element. That is one extra component in the render tree for every usage. When a styled component is declared and used in the same file, the plugin already knows what it will render and folds the usage directly into the DOM element:
+
+<SideBySide>
+<div>
+
+```tsx title="input"
+import { styled } from "next-yak";
+
+const Card = styled.div`
+  color: red;
+`;
+
+const Page = () => <Card>Hello</Card>;
+```
+
+</div>
+<div>
+
+```tsx title="output"
+const Card = __yak.__yak_div("input_Card_m7uBBu");
+
+const Page = () => <div className="input_Card_m7uBBu">Hello</div>;
+```
+
+</div>
+</SideBySide>
+
+React now renders one component less for this usage. Folding reaches further than fully static components: it inlines class-toggling props, collapses `styled(Component)` chains and folds the static `css` prop, and it keeps the runtime wrapper whenever it cannot prove the result is safe. See [Folding](/docs/folding) for the full rules.
+
 ### The bundler loaders/plugins
 
 Each bundler has a dedicated loader or plugin that takes the SWC plugin output, resolves cross-module dependencies, and delivers the final CSS through the bundler's native CSS pipeline.
@@ -252,9 +352,11 @@ See: [styled.tsx](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/
 
 Despite being called "zero-runtime", next-yak does ship a small runtime. What "zero-runtime" means here is that there is no code that manipulates the DOM or CSSOM. No `<style>` or `<link>` elements are injected at runtime.
 
+Folded JSX usages from the compile time step skip this runtime completely, they are plain DOM elements. The runtime only handles the usages that could not be folded.
+
 The runtime is essentially a type-safe `classnames` utility. It takes the generated class name strings and the component's props, evaluates the dynamic functions (conditionals, CSS variable values), and returns:
 
-- The final `className` string (merging base classes and conditional classes)
+- The final `className` string (merging any incoming `className`, base classes and conditional classes)
 - An optional `style` object (setting CSS variable values from props)
 
 Since it has no side effects, it works in both server and client components.
@@ -265,7 +367,8 @@ Here is a simplified version of what `__yak.__yak_button` does:
 function __yak_button(className, ...dynamicParts) {
   // returns a React component
   return (props) => {
-    const classNames = new Set([className]);
+    const classNames = new ClassNames(props.className);
+    classNames.add(className);
     const style = {};
 
     for (const part of dynamicParts) {
@@ -273,7 +376,7 @@ function __yak_button(className, ...dynamicParts) {
         // conditional css block, e.g.:
         // (props) => props.$primary && css("Button_primary")
         // css("Button_primary") returns a function that
-        // adds "Button_primary" to the classNames set
+        // adds "Button_primary" to the class names
         const result = part(props);
         if (result) result(props, classNames, style);
       } else if (part?.style) {
@@ -285,12 +388,12 @@ function __yak_button(className, ...dynamicParts) {
       }
     }
 
-    return <button className={[...classNames].join(" ")} style={style} />;
+    return <button className={classNames.value} style={style} />;
   };
 }
 ```
 
-When the component is rendered, the runtime passes the received props through all the dynamic functions, collects the resulting class names into a `Set` and CSS variable values into a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
+When the component is rendered, the runtime passes the received props through all the dynamic functions, collects the resulting class names into a single string and CSS variable values into a `style` object, and forwards them as `className` and `style` props to the underlying DOM element.
 
 ## Context
 
