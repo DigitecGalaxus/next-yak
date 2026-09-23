@@ -1,5 +1,6 @@
 import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
-import { defineConfig, defineDocs } from "fumadocs-mdx/config";
+import { defineConfig, defineDocs, frontmatterSchema } from "fumadocs-mdx/config";
+import { z } from "zod";
 import { transformerTwoslash } from "fumadocs-twoslash";
 import { createFileSystemTypesCache } from "fumadocs-twoslash/cache-fs";
 import { yakTheme } from "./src/lib/yak-theme";
@@ -8,6 +9,25 @@ import styled from "./src/lib/langs/styled";
 
 export const docs = defineDocs({
   dir: "src/content/docs",
+});
+
+/**
+ * The blog. It shares the docs pipeline, so a post gets the same MDX components, the same
+ * shiki grammars and the same twoslash cache as a docs page.
+ *
+ * A post carries two fields a docs page does not. `date` decides the order of the index,
+ * so it is required: a post with no date would sort as if it had none, and the newest
+ * post is the one a reader wants first. It parses as an ISO date, so a typo fails the
+ * build instead of shipping an unreadable byline.
+ */
+export const blog = defineDocs({
+  dir: "src/content/blog",
+  docs: {
+    schema: frontmatterSchema.extend({
+      date: z.iso.date(),
+      author: z.string().optional(),
+    }),
+  },
 });
 
 export default defineConfig({
