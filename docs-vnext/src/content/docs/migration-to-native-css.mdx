@@ -148,7 +148,7 @@ const Wrapper = styled.div`
 ### Styling body or html elements
 
 ```tsx title="Before"
-const GlobalStyles = styled.div`
+globalStyle`
   :global(html) {
     font-size: 16px;
   }
@@ -161,7 +161,7 @@ const GlobalStyles = styled.div`
 ```
 
 ```tsx title="After (with transpilationMode: 'Css')"
-const GlobalStyles = styled.div`
+globalStyle`
   html {
     font-size: 16px;
   }

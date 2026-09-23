@@ -52,6 +52,44 @@ const myDiv = styled.div`
 // ^ eslint: Nesting selector missing. Did you forget the &?
 ```
 
+## Other linters (oxlint & rslint)
+
+`eslint-plugin-yak` fully supports oxlint and rslint. A good starting configuration for each:
+
+<Tabs items={['oxlint', 'rslint']}>
+<Tab value="oxlint">
+```json title=".oxlintrc.json"
+{
+  "jsPlugins": ["eslint-plugin-yak"],
+  "rules": {
+    "yak/css-nesting-operator": "error",
+    "yak/css-global-deprecated": "warn",
+    "yak/enforce-semicolon": "error",
+    "yak/style-conditions": "warn"
+  }
+}
+```
+</Tab>
+<Tab value="rslint">
+```ts title="rslint.config.ts"
+import { defineConfig } from "@rslint/core";
+import yak from "eslint-plugin-yak";
+
+export default defineConfig([
+  {
+    plugins: { yak },
+    rules: {
+      "yak/css-nesting-operator": "error",
+      "yak/css-global-deprecated": "warn",
+      "yak/enforce-semicolon": "error",
+      "yak/style-conditions": "warn",
+    },
+  },
+]);
+```
+</Tab>
+</Tabs>
+
 ## Rules
 
 ### css-nesting-operator
@@ -108,7 +146,7 @@ To migrate, enable native CSS transpilation in your `next.config.js`:
 experiments: { transpilationMode: 'Css' }
 ```
 
-See the [migration guide](/documentation/migration-to-native-css) for more details.
+See the [migration guide](/docs/migration-to-native-css) for more details.
 
 ### enforce-semicolon
 
@@ -159,6 +197,8 @@ styled.div`
 
 Warns if runtime performance could be improved by using css literals.
 
+The rule checks arrow functions used as CSS declaration values, where next-yak creates runtime CSS variables. Arrow functions outside declarations are runtime class expressions and may return local or imported css mixins.
+
 Example:
 
 ```tsx title="example.tsx"
@@ -196,6 +236,18 @@ styled.button`
       `; // [!code ++]
     }
   }};
+`;
+```
+
+Extracted css literals can also be reused as conditional classes:
+
+```tsx title="example.tsx"
+const activeStyles = css`
+  opacity: 1;
+`;
+
+styled.button`
+  ${({$active}) => $active && activeStyles}
 `;
 ```
 

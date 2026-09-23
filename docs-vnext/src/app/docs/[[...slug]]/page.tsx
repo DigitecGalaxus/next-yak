@@ -1,10 +1,11 @@
 import { source } from "@/lib/source";
+import { pageMetadata } from "@/lib/page-metadata";
 import { findNeighbour } from "fumadocs-core/page-tree";
 import { styled } from "next-yak";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { screen, headerHeight, light, dark } from "@/tokens";
-import { inlineCode } from "@/lib/mixins";
+import { proseStyles } from "@/lib/prose";
 import PageFooter from "@/components/docs/page-footer";
 import Toc from "@/components/docs/toc";
 import { getMDXComponents } from "@/mdx-components";
@@ -42,7 +43,7 @@ export default async function DocumentationPage(props: PageProps) {
 }
 
 export function generateStaticParams() {
-  // `{ slug: [] }` keeps the bare `/documentation` route (→ Getting started) in the static export
+  // `{ slug: [] }` keeps the bare `/docs` route (→ Getting started) in the static export
   return [{ slug: [] as string[] }, ...source.generateParams()];
 }
 
@@ -52,12 +53,14 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const page = source.getPage(isIndex ? ["getting-started"] : slug);
   if (!page) return {};
 
-  return {
+  // `/docs` duplicates Getting started, so both point at the real URL and its card.
+  const file = isIndex ? "getting-started" : slug.join("-");
+  return pageMetadata({
     title: page.data.title,
     description: page.data.description,
-    // `/documentation` duplicates Getting started, so point canonical at the real URL.
-    ...(isIndex ? { alternates: { canonical: "/documentation/getting-started" } } : {}),
-  };
+    path: `/docs/${isIndex ? "getting-started" : slug.join("/")}`,
+    card: `docs-${file}`,
+  });
 }
 
 const Layout = styled.div`
@@ -114,67 +117,5 @@ const TocInner = styled.div`
 // Typographic styles for rendered MDX. The page title/description sit above this
 // block; everything here targets elements produced by the MDX body.
 const Prose = styled.div`
-  h2,
-  h3,
-  h4 {
-    color: light-dark(${light.violet}, ${dark.white});
-    line-height: 1.25;
-  }
-  /* Hierarchy comes from size + weight + generous top margin rather than a rule,
-     so stacked sections don't read like ledger lines. */
-  h2 {
-    font-size: 26px;
-    margin-top: 52px;
-  }
-  h3 {
-    font-size: 20px;
-    margin-top: 32px;
-  }
-  p {
-    margin: 12px 0;
-  }
-  p a,
-  li a,
-  td a,
-  blockquote a {
-    color: light-dark(${light.red}, ${dark.red});
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  /* Heading anchor links stay clean even inside <li> (e.g. Steps), where the
-     li-a rule above would otherwise recolor + underline them. */
-  h2 a,
-  h3 a,
-  h4 a {
-    color: inherit;
-    text-decoration: none;
-  }
-  ul,
-  ol {
-    margin: 12px 0;
-    padding-left: 22px;
-  }
-  li {
-    margin: 4px 0;
-  }
-  /* Inline code only; fenced blocks are rendered by <CodeBlock>. */
-  :not(pre) > code {
-    ${inlineCode};
-  }
-  table {
-    width: 100%;
-    margin: 16px 0;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  th,
-  td {
-    padding: 6px 10px;
-    text-align: left;
-  }
-  blockquote {
-    margin: 16px 0;
-    padding-left: 14px;
-    border-left: 3px solid light-dark(${light.violet}, ${dark.white});
-  }
+  ${proseStyles};
 `;

@@ -273,7 +273,7 @@ const Header = styled.nav('.Header',
 
 ## Animations
 
-In order to create CSS animations, you can use the `keyframes` API and specify the keyframes for the animation
+To create CSS animations, use the `keyframes` API and specify the keyframes for the animation
 you want to create. This can be used in your animation declarations within the same file.
 
 ```jsx title="my-component.tsx"
@@ -341,6 +341,129 @@ animation: 1s var(--yakVar1) ease-out;
 </Tabs>
 </details>
 
+## Global styles [#globalstyle]
+
+For styles that don't belong to a single component like CSS resets, `@font-face` declarations, `:root` variables or view transitions, you can use the `globalStyle` API. The styles are extracted at build time like all other yak styles and applied as soon as the file declaring them is imported, typically from your root layout or page entry.
+
+```jsx title="globals.tsx"
+import { globalStyle, keyframes } from "next-yak";
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+`;
+
+globalStyle`
+  :root {
+    --spacing: 4px;
+  }
+
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  ::view-transition-new(root) {
+    animation: ${fadeIn} 200ms ease;
+  }
+`;
+```
+
+```jsx title="layout.tsx"
+import "./globals";
+```
+
+Global styles are part of the stylesheet, not part of the render tree. Unlike styled-components `createGlobalStyle` there is no component to mount or unmount.
+
+If you need conditional styling, you can use CSS native functionality for that like `@media`, `@supports`, `:root[data-theme]` or `:has()`.
+
+You can interpolate everything that is known at build time like constants, `keyframes`, static `css` mixins and even references to your styled components:
+
+```jsx title="my-dialog.tsx"
+import { globalStyle, styled } from "next-yak";
+
+export const Dialog = styled.dialog`
+  padding: var(--spacing);
+`;
+
+globalStyle`
+  /* prevent scrolling while the dialog is open */
+  body:has(${Dialog}[open]) {
+    overflow: hidden;
+  }
+`;
+```
+
+Runtime values (`${(props) => ...}`) are not supported inside `globalStyle` as a global rule has no element to attach them to. Declare a CSS custom property instead and toggle it via an attribute or class on the root element:
+
+```jsx title="globals.tsx"
+import { globalStyle } from "next-yak";
+
+globalStyle`
+  :root {
+    --sidebar-width: 280px;
+  }
+
+  :root[data-collapsed] {
+    --sidebar-width: 64px;
+  }
+`;
+```
+
+<Callout type="info">
+  `globalStyle` must be declared at module scope — using it inside a component or function is a
+  compile error, because the styles exist independently of any render.
+</Callout>
+
+<details>
+<summary>See transformed output</summary>
+
+<Tabs title="Mixins" items={["input", "output javascript", "output CSS"]}>
+<Tab value="input">
+```jsx
+globalStyle`
+  body {
+    margin: 0;
+  }
+`;
+```
+</Tab>
+<Tab value="output javascript">
+```jsx
+globalStyle();
+```
+</Tab>
+<Tab value="output CSS">
+```css
+body {
+  margin: 0;
+}
+```
+</Tab>
+</Tabs>
+</details>
+
+<Callout type="info">
+  When your CSS targets markup you don't control — say a third-party widget that renders
+  `<div class="maps">` — the selector has to keep its literal name to match. If next-yak rewrote
+  `.maps` to `.maps_a4f5e`, it would no longer match the real element and your styles would silently
+  do nothing.
+
+  Vite, Turbopack, and rsbuild keep such classes literal automatically. Next.js with **webpack** is
+  the exception: it defaults to CSS Modules, which rewrites every class name. Two ways to keep `.maps`
+  intact:
+
+  1. **Recommended**: set [`transpilationMode: 'Css'`](/docs/migration-to-native-css). next-yak then
+     emits plain global CSS instead of CSS Modules, so class names are left as-is — same as the
+     native-CSS bundlers.
+  2. **Deprecated**: wrap the selector as `:global(.maps)`. Still works, but `:global()` is being
+     removed; prefer option 1.
+
+  The same rules for referencing external styles apply here as well. For further documentation visit:
+  [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
+</Callout>
+
 ## Mixins
 
 Mixins are declarations of the `css` utility function. You can declare a variable which holds the css declaration and
@@ -379,7 +502,7 @@ During build time the CSS literal is converted to a class name (or multiple clas
 <details>
 <summary>See transformed output</summary>
 
-<Tabs title="Mixins" items={["input", "output javascript", "output CSS"]}>
+<Tabs items={["input", "output javascript", "output CSS"]}>
 <Tab value="input">
 ```jsx
 const mixin = css`
@@ -492,8 +615,7 @@ const Box = styled.div('.Box', {
 
 <Callout type="info">
   As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak
-  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs
-  seamlessly.
+  supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs.
 </Callout>
 
 As your application grows, theming becomes increasingly important as a shortcut to pass the same values to components.
@@ -531,7 +653,7 @@ This approach has better performance because these values can be extracted and o
 
 ### Dynamic Theming with Context
 
-Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it in a hassle free manner that works for both Server Components and Client Components without a difference in usage for you. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
+Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it for both Server Components and Client Components, with no difference in usage. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
 
 ```tsx twoslash title="yak.context.ts"
 // @noErrors
@@ -616,7 +738,7 @@ const Button = styled.button`
 
 ### Using Async Server Functions in Next.js 15.0.0+
 
-Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs seamlessly:
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs:
 
 ```tsx
 import { cookies } from "next/headers";
@@ -660,6 +782,35 @@ const Component = () => {
 It's meant for simple styling requirements, where you don't have to think about a name for a specialized component.
 
 The `css` prop is allowed on any element that can accept `className` and `style`.
+
+Its value has to be styles written in place: a `css` template or an `atoms()` call and logical combinations of them.
+Everything else fails the build, because next-yak only compiles the styles it sees on the element.
+To combine several styles, nest them in one template instead of passing an array:
+
+```jsx title="my-component.tsx"
+const base = css`
+  color: red;
+`;
+const highlight = css`
+  font-weight: bold;
+`;
+
+const Component = () => {
+  return (
+    <div
+      css={css`
+        ${base};
+        ${highlight};
+      `}
+    >
+      Hello there!
+    </div>
+  );
+};
+```
+
+Set the `strictCssProp` option to `false` to leave unsupported values untouched instead, for
+example when another library on the same element owns the `css` prop.
 
 If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
 

@@ -3,13 +3,12 @@ title: FAQ
 ---
 
 import { Callout } from "../../components/mdx/callout";
-import { Tab, Tabs } from "../../components/mdx/tabs";
 
 ## General questions
 
 ### Is next-yak production ready?
 
-Yes, `next-yak` is production ready and battle-tested at scale.
+Yes, `next-yak` is production ready and used in production at scale.
 
 [Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors next-yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
 
@@ -18,8 +17,8 @@ Yes, `next-yak` is production ready and battle-tested at scale.
 next-yak has first-class support for multiple frameworks and bundlers:
 
 - **Next.js** with both **Webpack** and **Turbopack**
-- **[Vite](/documentation/vite)** 7+ (including Vite 8 with OXC/Rolldown), since v9.1.0. Any vite-based framework works: react-router, tanstack start, and more
-- **[Storybook](/documentation/storybook)** 10+ with both Vite and Webpack builders via the `storybook-addon-yak` addon
+- **[Vite](/docs/vite)** 7+ (including Vite 8 with OXC/Rolldown), since v9.1.0. Any vite-based framework works: react-router, tanstack start, and more
+- **[Storybook](/docs/storybook)** 10+ with both Vite and Webpack builders via the `storybook-addon-yak` addon
 
 Feel free to ask for adding support for other frameworks in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we will give it a thought.
 
@@ -45,7 +44,7 @@ const Button = styled.button`
 
 <Callout type="info">
   If you're using the older `:global()` syntax, please migrate to native CSS transpilation mode. See
-  the [Migration to native CSS](/documentation/migration-to-native-css) guide for details.
+  the [Migration to native CSS](/docs/migration-to-native-css) guide for details.
 </Callout>
 
 ### Can I reference a component in another component?
@@ -125,12 +124,35 @@ export default withYak(
 );
 ```
 
-See the [Migration to native CSS](/documentation/migration-to-native-css) guide for more details.
+See the [Migration to native CSS](/docs/migration-to-native-css) guide for more details.
+
+### My styled components don't show up in React DevTools
+
+next-yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used:
+
+```tsx
+const Button = styled.button`
+  color: red;
+`;
+
+const App = () => <Button type="submit">Save</Button>;
+
+// compiles to
+const App = () => (
+  <button type="submit" className="Button_c1d2e3">
+    Save
+  </button>
+);
+```
+
+This skips a component and its rendering work for every element. Your styles are unaffected, but `<Button>` is gone from the React tree, so it no longer appears in React DevTools or in component stacks. It also disappears in development, so that development and production behave the same, and for the same reason `displayNames` has no effect on an inlined usage.
+
+This is folding, controlled by the `foldStatic` option, which also folds a static `css` prop into a plain `className`. See [Folding](/docs/folding) for what folds, how to turn it off, and the rest of the caveats.
 
 ### My styles are not applied
 
 If your styles are not applied, the first thing you should check is the transformed output of your component.
-In order to do that, you can enable the `debug` option in the `withYak` function.
+To do that, enable the `debug` option in the `withYak` function.
 
 <Tabs title="Next.js config" items={['next.config.ts', 'next.config.js', 'next.config.mjs']}>
 <Tab value="next.config.ts">
