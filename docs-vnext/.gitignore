@@ -42,3 +42,6 @@ next-env.d.ts
 
 # fumadocs-mdx generated source
 .source
+
+# share cards, written by scripts/generate-og.mjs at build time
+/public/og/
