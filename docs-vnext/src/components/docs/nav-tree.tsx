@@ -6,6 +6,7 @@ import type { Node, Root } from "fumadocs-core/page-tree";
 import { css, styled } from "next-yak";
 import { fontSize, fontWeight, light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
+import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
 export default function NavTree({
   tree,
@@ -76,9 +77,11 @@ function PageLink({
   pathname: string;
   onNavigateAction?: () => void;
 }) {
-  if (node.external) {
+  // The url decides, not the flag: fumadocs leaves `external` unset on a markdown link
+  // item in meta.json, which sent the sidebar GitHub entry down the internal branch.
+  if (node.external || isExternalHref(node.url)) {
     return (
-      <ExternalItemLink href={node.url} target="_blank" rel="noreferrer" onClick={onNavigateAction}>
+      <ExternalItemLink href={node.url} {...externalLinkProps} onClick={onNavigateAction}>
         {node.name}
       </ExternalItemLink>
     );

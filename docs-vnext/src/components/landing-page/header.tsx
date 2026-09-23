@@ -4,7 +4,8 @@ import Search from "./search";
 import ThemeToggle from "./theme-toggle";
 import ButtonLink from "./button-link";
 import Link from "next/link";
-import NavLink from "./nav-link";
+import NavLink, { NavExternalLink } from "./nav-link";
+import { EXTERNAL_LINK_HINT, externalLinkProps } from "@/lib/external-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
 import {
@@ -17,6 +18,7 @@ import {
   dark,
   headerBg,
 } from "@/tokens";
+import { visuallyHidden } from "@/lib/mixins";
 import Yak from "./yak";
 
 export default function Header({
@@ -63,43 +65,36 @@ export default function Header({
             gap: 28px;
           `}
         >
-          <Link
-            href="/"
-            css={css`
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            `}
-          >
+          <Brand href="/">
             <Yak
               css={css`
                 width: 32px;
               `}
             />
-            <span
-              css={css`
-                font-family: ${fonts.title};
-                font-size: ${typography.display};
-                letter-spacing: -0.44px;
-                color: light-dark(${light.violet}, ${dark.white});
-              `}
-            >
-              yak
-            </span>
+            <BrandName>yak</BrandName>
             <RenameNote>
               yak, formerly next-yak. Same library, same team, broader home: the package is now
               @yak/react, with @yak/solid and @yak/qwik beside it.
             </RenameNote>
-          </Link>
+          </Brand>
           <DesktopLinks>
-            <NavLink href="/documentation/getting-started">Documentation</NavLink>
+            <NavLink href="/docs/getting-started">Documentation</NavLink>
             <NavLink href="/playground">Playground</NavLink>
+            <NavLink href="/blog">Blog</NavLink>
+            <NavExternalLink href="https://jantimon.github.io/css-in-js-bench">
+              Benchmarks
+            </NavExternalLink>
           </DesktopLinks>
         </nav>
         <DesktopActions>
           <Search />
           <ThemeToggle />
-          <ButtonLink href="https://github.com/digitecgalaxus/next-yak">
+          {/* The icon carries no text, so the name and the new-tab hint go on the link. */}
+          <ButtonLink
+            href="https://github.com/digitecgalaxus/next-yak"
+            aria-label={`GitHub${EXTERNAL_LINK_HINT}`}
+            {...externalLinkProps}
+          >
             <svg
               width="16"
               height="16"
@@ -140,14 +135,32 @@ const DesktopActions = styled.div`
   }
 `;
 
+/** The wordmark. It navigates, so it answers like a link: the name takes the red. */
+const Brand = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const BrandName = styled.span`
+  font-family: ${fonts.title};
+  font-size: ${typography.display};
+  letter-spacing: -0.44px;
+  color: light-dark(${light.violet}, ${dark.white});
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: color 0.16s ease;
+  }
+
+  ${Brand}:hover &,
+  ${Brand}:focus-visible & {
+    color: light-dark(${light.red}, ${dark.red});
+  }
+`;
+
 /* The rename, for screen readers, crawlers and language models rather than for eyes:
-   visually hidden but in the accessibility tree and the HTML of every page, so the old
-   name stays associated with the new one. */
+   hidden from the eye, but in the accessibility tree and in the HTML of every page, so
+   the old name stays associated with the new one. */
 const RenameNote = styled.span`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  ${visuallyHidden};
 `;

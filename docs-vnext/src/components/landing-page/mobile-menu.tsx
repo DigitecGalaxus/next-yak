@@ -8,7 +8,7 @@ import { css, styled } from "next-yak";
 import { screen, light, dark } from "@/tokens";
 import { iconButton } from "./button";
 import { backdropStyles } from "@/lib/mixins";
-import NavLink from "./nav-link";
+import NavLink, { NavExternalLink } from "./nav-link";
 import Search from "./search";
 import ThemeToggle from "./theme-toggle";
 import NavTree from "../docs/nav-tree";
@@ -53,10 +53,10 @@ export default function MobileMenu({ tree }: { tree: Root }) {
 
             <PrimaryNav>
               <Section>
-                <NavLink href="/documentation/getting-started" onClick={close}>
+                <NavLink href="/docs/getting-started" onClick={close}>
                   Documentation
                 </NavLink>
-                {pathname.startsWith("/documentation") && (
+                {pathname.startsWith("/docs") && (
                   <SubNav>
                     <NavTree tree={tree} onNavigateAction={close} />
                   </SubNav>
@@ -65,14 +65,15 @@ export default function MobileMenu({ tree }: { tree: Root }) {
               <NavLink href="/playground" onClick={close}>
                 Playground
               </NavLink>
-              <ExternalLink
-                href="https://github.com/digitecgalaxus/next-yak"
-                target="_blank"
-                rel="noreferrer"
-                onClick={close}
-              >
+              <NavLink href="/blog" onClick={close}>
+                Blog
+              </NavLink>
+              <NavExternalLink href="https://jantimon.github.io/css-in-js-bench" onClick={close}>
+                Benchmarks
+              </NavExternalLink>
+              <NavExternalLink href="https://github.com/digitecgalaxus/next-yak" onClick={close}>
                 GitHub
-              </ExternalLink>
+              </NavExternalLink>
             </PrimaryNav>
 
             <ThemeFoot>
@@ -175,19 +176,6 @@ const SubNav = styled.div`
   margin-left: 4px;
   padding-left: 10px;
   border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
-`;
-
-const ExternalLink = styled.a`
-  color: light-dark(${light.violetSoft}, ${dark.fog});
-  text-decoration: none;
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition: color 0.15s ease;
-  }
-
-  &:hover {
-    color: light-dark(${light.violet}, ${dark.white});
-  }
 `;
 
 // Pinned to the bottom of the drawer (margin-top: auto) when content is short;

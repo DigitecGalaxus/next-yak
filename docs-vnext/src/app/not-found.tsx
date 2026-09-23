@@ -13,7 +13,7 @@ export default function NotFound() {
         <CtaButton href="/" $primary>
           Back home
         </CtaButton>
-        <CtaButton href="/documentation/getting-started">Documentation</CtaButton>
+        <CtaButton href="/docs/getting-started">Documentation</CtaButton>
       </MessageActions>
     </MessagePage>
   );

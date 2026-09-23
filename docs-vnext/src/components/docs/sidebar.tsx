@@ -16,7 +16,10 @@ const Aside = styled.aside`
   position: sticky;
   top: ${headerHeight};
   align-self: flex-start;
-  height: calc(100vh - ${headerHeight});
+  /* max-height, not height: a full-viewport rail sets the floor for the flex row, so a
+     short page left an empty band between its content and the footer. Capped this way the
+     rail is as tall as its list and still scrolls when the list is longer. */
+  max-height: calc(100vh - ${headerHeight});
   overflow-y: auto;
   padding: 28px 16px;
 

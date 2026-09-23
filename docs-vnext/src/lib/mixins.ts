@@ -94,3 +94,17 @@ export const inlineCode = css`
   padding: 2px 5px;
   border-radius: 5px;
 `;
+
+/**
+ * Off the screen, but in the accessibility tree and in the HTML. For text that a
+ * screen reader needs and an eye does not: the rename note in the header, the
+ * "opens in a new tab" hint after an external link.
+ */
+export const visuallyHidden = css`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+`;

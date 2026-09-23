@@ -8,6 +8,7 @@ import { SideBySide } from "@/components/mdx/sideBySide";
 import { Step, Steps } from "@/components/mdx/steps";
 import { Tab, Tabs } from "@/components/mdx/tabs";
 import { Popup, PopupContent, PopupTrigger } from "@/components/mdx/twoslash";
+import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
 type MDXComponents = Record<string, ComponentType<any>>;
 
@@ -46,10 +47,9 @@ export function getMDXComponents(
 
 function makeAnchor(pageUrl?: string) {
   return function Anchor({ href = "", children, ...props }: ComponentPropsWithoutRef<"a">) {
-    const external = /^(https?:)?\/\//.test(href) || href.startsWith("mailto:");
-    if (external) {
+    if (isExternalHref(href)) {
       return (
-        <a href={href} target="_blank" rel="noreferrer" {...props}>
+        <a href={href} {...externalLinkProps} {...props}>
           {children}
         </a>
       );
