@@ -12,16 +12,6 @@ import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
 type MDXComponents = Record<string, ComponentType<any>>;
 
-/**
- * Component map passed to rendered MDX (`<MDX components={...} />`).
- *
- * - `pre` → CodeBlock (title bar, copy button, theme-aware syntax colors)
- * - `a` → client-navigating Link for internal/relative links, plain anchor for
- *   external; relative links are resolved against the current page's URL
- * - `h2`/`h3`/`h4` → headings with hover anchor links
- * - `img` → plain image that also takes the static image object fumadocs imports
- * - custom components are exposed globally so MDX files don't each need to import them
- */
 export function getMDXComponents(
   { pageUrl }: { pageUrl?: string } = {},
   components?: MDXComponents,
@@ -39,7 +29,6 @@ export function getMDXComponents(
     Steps,
     Step,
     SideBySide,
-    // twoslash hover popups (base-ui PreviewCard adapter)
     Popup,
     PopupTrigger,
     PopupContent,
@@ -49,12 +38,8 @@ export function getMDXComponents(
 
 type StaticImage = { src: string; width: number; height: number };
 
-/**
- * fumadocs turns `![alt](/img/x.svg)` into an image import, so `src` is an object with the
- * URL and the size, not a string. A plain <img> would print it as "[object Object]": the
- * browser then requests /docs/[object Object], and the static export fails on that path.
- * The object's URL already carries the base path.
- */
+// fumadocs turns `![alt](/img/x.svg)` into an image import, so `src` is a static image
+// object rather than a string. Its URL already carries the base path.
 function MdxImage({ src, width, height, alt = "", ...props }: ComponentPropsWithoutRef<"img">) {
   const image = typeof src === "object" && src !== null ? (src as unknown as StaticImage) : null;
   return (
@@ -68,7 +53,6 @@ function MdxImage({ src, width, height, alt = "", ...props }: ComponentPropsWith
   );
 }
 
-/* the width and height attributes reserve the box; the height follows the column width */
 const Image = styled.img`
   max-width: 100%;
   height: auto;
@@ -92,8 +76,7 @@ function makeAnchor(pageUrl?: string) {
       );
     }
 
-    // Internal link: absolute paths pass through; relative ones (./x, ../x) are
-    // resolved against the current page so they still get client-side nav.
+    // resolve relative links against the page so they still get client-side navigation
     const resolved =
       href.startsWith("/") || !pageUrl ? href : new URL(href, `https://h${pageUrl}`).pathname;
 

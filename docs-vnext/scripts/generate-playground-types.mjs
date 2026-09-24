@@ -1,13 +1,4 @@
-/**
- * Write the type files the playground editor needs to public/playground/types.json.
- *
- * Monaco checks the code in the browser, so it needs the React and yak declarations as text.
- * A JSON file in public/ keeps them out of every JavaScript bundle: only the playground
- * fetches it, and a static host serves it under the base path like any other asset.
- *
- * Each key is the path Monaco sees. The yak declarations go in twice, once for `next-yak`
- * and once for its new name `@yak/react`, so both imports get types.
- */
+/** Writes the React and yak declarations for the playground's Monaco editor to public/playground/types.json. */
 import { createRequire } from "node:module";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";

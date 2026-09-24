@@ -5,11 +5,8 @@ import type { ReactNode } from "react";
 import { styled } from "next-yak";
 import { fonts, shadow, light, dark, ink } from "@/tokens";
 
-/**
- * Maps the `<Popup>/<PopupTrigger>/<PopupContent>` hover popups emitted by fumadocs'
- * twoslash transformer onto base-ui `PreviewCard`, so the popup portals out of the code
- * block (no clipping by the panel's `overflow`) and stays on base-ui + next-yak.
- */
+// Renders the twoslash hover popups as a portaled PreviewCard, so the code block's
+// `overflow` does not clip them.
 export function Popup({ children }: { children: ReactNode }) {
   return <PreviewCard.Root>{children}</PreviewCard.Root>;
 }
@@ -22,7 +19,7 @@ export function PopupContent({ children }: { children: ReactNode }) {
   return (
     <PreviewCard.Portal>
       <Positioner side="bottom" align="start" sideOffset={6}>
-        <Content data-ink>{children}</Content>
+        <Content>{children}</Content>
       </Positioner>
     </PreviewCard.Portal>
   );
@@ -42,8 +39,6 @@ const Content = styled(PreviewCard.Popup)`
   max-height: 320px;
   overflow: auto;
   padding: 10px 12px;
-  /* violetLight (not violet): in light mode violet == the navy code fill, so the border would
-     vanish. popover bg sits a step above the code so the panel reads as floating. */
   border: 1.5px solid light-dark(${light.violetSoft}, ${dark.fog});
   border-radius: 8px;
   background: ${ink.popover};
@@ -58,8 +53,7 @@ const Content = styled(PreviewCard.Popup)`
     word-break: break-word;
   }
 
-  /* Portaled out of <Pre>, so re-apply the shiki token colors (each span has its own
-     --shiki-light/-dark). */
+  /* portaled out of <Pre>, so the shiki token colors must be applied again */
   & .twoslash-popup-code span {
     color: light-dark(var(--shiki-light), var(--shiki-dark));
   }

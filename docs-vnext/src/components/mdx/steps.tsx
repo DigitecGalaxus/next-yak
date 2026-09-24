@@ -9,8 +9,7 @@ export const Steps = styled.ol`
   margin: 20px 0;
   list-style: none;
 
-  /* Beat Prose's \`ol { padding-left: 22px }\` (via && specificity) so the number badges
-     align with the heading instead of being indented. */
+  /* && outranks the prose \`ol\` padding */
   && {
     padding-left: 0;
   }
@@ -19,8 +18,6 @@ export const Steps = styled.ol`
 export const Step = styled.li`
   counter-increment: step;
 
-  /* Heading as a flex row so the number badge sits inline with the title; the body stays
-     flush-left with the surrounding page text. */
   & > :first-child {
     display: flex;
     align-items: center;

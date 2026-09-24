@@ -13,19 +13,11 @@ import Search from "./search";
 import ThemeToggle from "./theme-toggle";
 import NavTree from "../docs/nav-tree";
 
-/**
- * The site's single mobile navigation. A hamburger in the header opens a base-ui
- * Dialog drawer holding the primary links, search + theme, and — on docs routes —
- * the documentation page tree. Hidden on desktop, where the header bar and the
- * sticky sidebar take over. This replaces the old docs-only MobileNav so there is
- * only ever one level of navigation on small screens.
- */
 export default function MobileMenu({ tree }: { tree: Root }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const close = () => setOpen(false);
 
-  // A completed navigation changes the pathname; close the drawer when it does.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
@@ -99,9 +91,6 @@ function MenuIcon() {
   );
 }
 
-// Only present on narrow screens. The container query matches the one the header
-// uses to hide its desktop nav, so the bar and the drawer trigger swap in at
-// exactly the same width.
 const Bar = styled.div`
   display: none;
 
@@ -113,7 +102,6 @@ const Bar = styled.div`
 
 const Trigger = styled(Dialog.Trigger)`
   ${iconButton};
-  color: light-dark(${light.violet}, ${dark.white});
 `;
 
 const Backdrop = styled(Dialog.Backdrop)`
@@ -178,8 +166,6 @@ const SubNav = styled.div`
   border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
 `;
 
-// Pinned to the bottom of the drawer (margin-top: auto) when content is short;
-// flows after the nav and scrolls into view when the docs tree makes it tall.
 const ThemeFoot = styled.div`
   margin-top: auto;
   padding-top: 18px;

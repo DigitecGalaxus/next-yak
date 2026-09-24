@@ -1,15 +1,7 @@
 import { styled } from "next-yak";
 import { fonts, fontWeight, light, dark, ink, status, screen } from "@/tokens";
-import { editorSurface, editorHeader, codeReset } from "@/lib/editor-surface";
-import { overline } from "@/lib/mixins";
+import { overline, editorSurface, editorHeader, codeReset } from "@/lib/mixins";
 
-/**
- * The panel layout of the playground, shared by the playground and its loading skeleton
- * (skeleton.tsx). One source for the sizes keeps the two the same, so the page does not
- * jump when the skeleton turns into the playground.
- */
-
-/* one column on a phone and a tablet, editor beside preview and output from 1100px */
 export const Workspace = styled.div`
   display: grid;
   gap: 20px;
@@ -20,10 +12,6 @@ export const Workspace = styled.div`
   }
 `;
 
-/* Stacked, each panel has its own height: the preview holds a small demo, and the output
-   gets most of the window, like the editor, so more compiled code reads at once. Beside the
-   editor, the two panels split the editor's height, and long output scrolls inside its
-   panel instead of stretching the row. */
 export const Column = styled.div`
   display: grid;
   grid-template-rows: 320px clamp(460px, 80vh, 900px);
@@ -32,8 +20,7 @@ export const Column = styled.div`
 
   @media (min-width: ${screen.toc}) {
     grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-    /* the column reports no size of its own, so the editor alone sets the row height and
-       the column stretches to it */
+    /* the editor alone sets the row height, the column stretches to it */
     contain: size;
   }
 `;
@@ -61,7 +48,6 @@ export const EditorBody = styled.div`
   height: clamp(420px, 72vh, 760px);
 `;
 
-/* the preview is the user's page, so it sits on a page-coloured card, not the dark editor */
 export const PreviewCard = styled.section`
   display: flex;
   flex-direction: column;
