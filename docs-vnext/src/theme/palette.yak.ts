@@ -32,7 +32,7 @@ export const dark = {
   edge: brand(0.148, 0.032),
 };
 
-// The always-dark editor/code surface stays the same in both themes, so these aren't light/dark pairs.
+// The editor/code surface is dark in both themes, so these are not light/dark pairs.
 export const ink = {
   fg: inkTint,
   fgMuted: alpha(inkTint, 0.7),
@@ -42,7 +42,6 @@ export const ink = {
   hover: alpha(inkTint, 0.1),
   fill: alpha(inkTint, 0.08),
   underline: alpha(inkTint, 0.4),
-  base: brand(0.195, 0.088),
   card: brand(0.241, 0.083),
   terminal: brand(0.271, 0.088),
   track: brand(0.3, 0.085),

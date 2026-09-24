@@ -28,8 +28,6 @@ export default function Step({
     >
       <div
         css={css`
-          /* the number badge only earns its place in the multi-column flow diagram;
-             in the single-column narrative the steps read fine without it */
           display: none;
           align-items: center;
           justify-content: center;

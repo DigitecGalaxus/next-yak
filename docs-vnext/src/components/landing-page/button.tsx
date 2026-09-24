@@ -1,5 +1,6 @@
+import Link from "next/link";
+import { css, styled } from "next-yak";
 import { radii, light, dark } from "@/tokens";
-import { css } from "next-yak";
 
 export const buttonStyles = css`
   --btn-offset: 3px;
@@ -35,7 +36,7 @@ export const buttonStyles = css`
   }
 `;
 
-export const centeredButton = css`
+const centeredButton = css`
   ${buttonStyles};
   display: flex;
   align-items: center;
@@ -46,4 +47,19 @@ export const iconButton = css`
   ${centeredButton};
   width: 40px;
   height: 40px;
+`;
+
+export const CtaButton = styled(Link)<{ $primary?: boolean }>`
+  ${centeredButton};
+  --btn-offset: 4px;
+  padding: 14px 26px;
+  gap: 9px;
+  font-weight: 700;
+
+  ${({ $primary }) =>
+    $primary &&
+    css`
+      background: light-dark(${light.red}, ${dark.redDeep});
+      color: white;
+    `}
 `;

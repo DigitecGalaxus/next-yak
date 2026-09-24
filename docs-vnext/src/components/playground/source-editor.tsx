@@ -2,38 +2,22 @@
 
 import MonacoEditor, { type Monaco, type OnMount } from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
-import { createHighlighterCore } from "shiki/core";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import css from "shiki/langs/css.mjs";
-import tsx from "shiki/langs/tsx.mjs";
 import * as prettier from "prettier";
 import * as typescriptParser from "prettier/plugins/typescript";
 import * as estreePlugin from "prettier/plugins/estree";
 import { use, useEffect, useRef } from "react";
-import styled from "@/lib/langs/styled";
-import cssStyled from "@/lib/langs/css-styled";
 import { syntax, yakTheme } from "@/lib/yak-theme";
+import { highlighterPromise as sharedHighlighter } from "@/lib/shiki";
 import { asset } from "@/lib/site";
 import type { PlaygroundFile } from "@/lib/playground/types";
 
-/**
- * Monaco checks types only for the `typescript` language, and shiki colours JSX only with the
- * `tsx` grammar. So the tsx grammar registers here under the name `typescript`: the editor
- * gets type checks and the same colours as every code block on the site.
- */
-const tsxGrammar = tsx.find((grammar) => grammar.scopeName === "source.tsx")!;
-
-/** ink.card (oklch(0.241 0.083 293)) as hex, because Monaco reads hex colors only. */
+/** ink.card as hex, Monaco reads hex colors only */
 const CARD_FILL = "#221442";
 
-/**
- * The site's code theme plus the editor chrome that only Monaco has. The editor paints the
- * card's own fill, so the editor and its title bar read as one surface, like the docs code
- * blocks. It must be opaque: Monaco draws the sticky scroll header over the code with the
- * editor background, and a transparent one lets the scrolled lines show through it.
- */
+/** The background must be opaque: Monaco paints the sticky scroll header with it. */
 const editorTheme = {
   ...yakTheme,
+  name: "yak-editor",
   colors: {
     "editor.background": CARD_FILL,
     "editorGutter.background": CARD_FILL,
@@ -61,23 +45,16 @@ const editorTheme = {
   },
 };
 
-const highlighterPromise = createHighlighterCore({
-  themes: [editorTheme],
-  langs: [{ ...tsxGrammar, name: "typescript", aliases: [] }, css, styled, cssStyled],
-  engine: createJavaScriptRegexEngine({ forgiving: true }),
+const highlighterPromise = sharedHighlighter.then(async (highlighter) => {
+  await highlighter.loadTheme(editorTheme);
+  return highlighter;
 });
 
 const uriFor = (monaco: Monaco, name: string) => monaco.Uri.parse(`file:///${name}.tsx`);
 
 /**
- * The source editor. It holds one Monaco model per file, so undo history and type checks
- * work across tabs, and the parent only switches which model shows.
- *
- * `path` picks the model to show, so switching tabs needs no code here.
- *
- * `files` seeds the models once. After that the editor owns the text and reports each
- * change through `onChange`. A new `resetKey` (reset, or a loaded share link) drops the
- * models and seeds them again.
+ * One Monaco model per file. `files` seeds the models only on mount and when `resetKey`
+ * changes; after that the editor owns the text and reports edits through `onChange`.
  */
 export function SourceEditor({
   files,
@@ -94,21 +71,18 @@ export function SourceEditor({
   onShortcutShare: () => void;
   editorRef: React.RefObject<Parameters<OnMount>[0] | null>;
 }) {
-  // suspends until shiki is ready, so beforeMount can register the theme synchronously:
-  // @monaco-editor/react does not wait for a promise from beforeMount
+  // suspend here: @monaco-editor/react does not wait for a promise from beforeMount
   const highlighter = use(highlighterPromise);
   const monacoRef = useRef<Monaco | null>(null);
-  // the Monaco callbacks register once, so they read the latest props through refs
+  // Monaco callbacks register once, so they read the latest props through refs
   const shareRef = useRef(onShortcutShare);
   shareRef.current = onShortcutShare;
   const changeRef = useRef(onChange);
   changeRef.current = onChange;
-  // Monaco can finish loading after a share link replaced the files, and beforeMount may
-  // run with the props of an older render, so seeding reads the files from here
+  // beforeMount can run with the props of an older render
   const filesRef = useRef(files);
   filesRef.current = files;
 
-  // seed the models on mount and on every reset
   useEffect(() => {
     const monaco = monacoRef.current;
     if (!monaco) return;
@@ -121,7 +95,7 @@ export function SourceEditor({
   return (
     <MonacoEditor
       height="100%"
-      theme={yakTheme.name}
+      theme={editorTheme.name}
       defaultLanguage="typescript"
       path={`${activeFile}.tsx`}
       options={{
@@ -144,11 +118,10 @@ export function SourceEditor({
       beforeMount={(monaco) => {
         monacoRef.current = monaco;
         shikiToMonaco(highlighter, monaco);
-        // every file model reports its edits, not only the one on screen: a format or a
-        // find-and-replace can change a file that is not the active tab
+        // listen on every model, an edit can change a file that is not the active tab
         monaco.editor.onDidCreateModel((model) => {
-          const name = model.uri.path.replace(/^\//, "").replace(/\.tsx$/, "");
           if (model.uri.path.includes("node_modules")) return;
+          const name = model.uri.path.replace(/^\//, "").replace(/\.tsx$/, "");
           model.onDidChangeContent(() => changeRef.current(name, model.getValue()));
         });
         seedModels(monaco, filesRef.current);
@@ -168,12 +141,10 @@ export function SourceEditor({
           },
         });
 
-        // Cmd/Ctrl+S formats and copies a share link, as in the old playground
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
           await editor.getAction("editor.action.formatDocument")?.run();
           shareRef.current();
         });
-
       }}
     />
   );
@@ -181,8 +152,7 @@ export function SourceEditor({
 
 function seedModels(monaco: Monaco, files: PlaygroundFile[]) {
   for (const model of monaco.editor.getModels()) model.dispose();
-  // dependencies first: a model that imports a file created after it shows a red
-  // squiggle for a moment, until the imported model exists
+  // dependencies first, or an import shows a brief error until its model exists
   for (const file of [...files].reverse()) {
     monaco.editor.createModel(file.content, "typescript", uriFor(monaco, file.name));
   }
@@ -204,13 +174,12 @@ async function addTypes(monaco: Monaco) {
   });
   ts.typescriptDefaults.setEagerModelSync(true);
 
-  // types.json comes from scripts/generate-playground-types.mjs
   typesPromise ??= fetch(asset("/playground/types.json")).then((r) => r.json());
   try {
     for (const [path, content] of Object.entries(await typesPromise)) {
       ts.typescriptDefaults.addExtraLib(content, `file:///${path}`);
     }
   } catch {
-    // without the types the editor still works, it only shows no type errors or hovers
+    // the editor still works without types
   }
 }

@@ -1,13 +1,5 @@
-/**
- * Render one share card per page into public/og/.
- *
- * Why a script and not app/opengraph-image.tsx: under `output: "export"` the file
- * convention writes an extensionless file, and a plain static host serves that as
- * application/octet-stream. A social crawler then skips the card. Real .png files carry
- * the right content type on any host.
- *
- * `next/og` ships with Next, so this adds no dependency. It is CommonJS, hence createRequire.
- */
+// A script instead of app/opengraph-image.tsx: under `output: "export"` that convention
+// writes an extensionless file, which static hosts serve as application/octet-stream.
 import { createRequire } from "node:module";
 import { readFile, readdir, writeFile, mkdir, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -21,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const OUT = join(root, "public/og");
 
-/** The frontmatter is plain YAML scalars, so a line reader is enough. No parser needed. */
+// The frontmatter holds only plain YAML scalars.
 function frontmatter(text) {
   const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
   if (!block) return {};

@@ -1,33 +1,25 @@
-// The code-highlight palette. Raw hex (not CSS vars): shiki bakes these into token
-// colors at build time. This file is the leaf home for them because it's imported by
-// source.config.ts, which runs outside Next — so it must stay free of `var(--…)`,
-// `next/font`, and next-yak. `@/tokens` re-exports this as `syntax` for runtime use.
+// Raw hex, not CSS vars: shiki bakes these in at build time. source.config.ts imports this
+// file outside Next, so it must not import next-yak or next/font.
 export const syntax = {
   fg: "#ece3d2",
   bg: "#231442",
   comment: "#8a7daf",
   keyword: "#f178b6",
   string: "#f5a973",
-  // Numbers, booleans, hex colors and CSS units. Kept apart from strings so `8px` and `"8px"` differ.
+  // numbers, booleans, hex colors and CSS units
   constant: "#c9a2ff",
-  // Types, components and tags: the nouns of the code.
+  // types, components and tags
   type: "#7fdcc5",
-  // Functions and tagged templates (`styled`, `css`): the verbs of the code.
+  // functions and tagged templates (`styled`, `css`)
   func: "#ece27c",
-  // Object keys, JSX attributes and CSS property names.
+  // object keys, JSX attributes and CSS property names
   property: "#8bbcf0",
-  // Also used for operators, so `=`, `=>` and `&&` recede instead of reading as keywords.
+  // also operators
   punctuation: "#a99fc4",
 } as const;
 
-// Brand-matched code theme (navy editor background), shared by the landing-page
-// highlighter (lib/shiki.ts) and the docs MDX pipeline (source.config.ts) so
-// code blocks look the same everywhere. Kept side-effect free for import from
-// the build config.
-//
-// Each group has one role. When a scope matches more than one group, the more specific
-// selector wins (`keyword.operator` beats `keyword`), which is how operators leave the
-// keyword color and CSS units leave it too.
+// When a scope matches several groups, the more specific selector wins
+// (`keyword.operator` beats `keyword`).
 export const yakTheme = {
   name: "yak-night",
   type: "dark" as const,

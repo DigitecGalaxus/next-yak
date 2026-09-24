@@ -7,12 +7,7 @@ import { container, fonts, radii, shadow, ink } from "@/tokens";
 import { focusRing, slidingIndicator } from "@/lib/mixins";
 import type { ReactNode } from "react";
 
-/**
- * The dark editor's framework switcher, shared by the hero editor and docs code-block
- * tabs. Fully controlled (drive via `value`/`onValueChange`). The tab group swaps to a
- * compact dropdown when narrow, driven by an `editor` query container — so consumers must
- * set `container: editor / inline-size` on an ancestor.
- */
+/** Needs an ancestor with `container: editor / inline-size`. It shows a dropdown when narrow. */
 export function EditorSwitcher({
   value,
   onValueChange,
@@ -28,7 +23,7 @@ export function EditorSwitcher({
 
   return (
     <>
-      <SwitcherRoot data-ink value={value} onValueChange={handleChange}>
+      <SwitcherRoot value={value} onValueChange={handleChange}>
         <SwitcherList activateOnFocus>
           <SwitcherIndicator />
           {items.map((item) => (
@@ -40,7 +35,7 @@ export function EditorSwitcher({
       </SwitcherRoot>
 
       <Select.Root value={value} onValueChange={handleChange}>
-        <SelectTrigger data-ink aria-label={ariaLabel}>
+        <SelectTrigger aria-label={ariaLabel}>
           <SelectValue>{items.find((i) => i.value === value)?.node}</SelectValue>
           <SelectIcon>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -56,7 +51,7 @@ export function EditorSwitcher({
         </SelectTrigger>
         <Select.Portal>
           <SelectPositioner sideOffset={6} alignItemWithTrigger={false}>
-            <SelectPopup data-ink>
+            <SelectPopup>
               {items.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
                   {item.node}
@@ -123,8 +118,6 @@ const SwitcherTab = styled(BaseTabs.Tab)`
       background 0.16s ease;
   }
 
-  /* the same answer as the bundler row: a surface, not the link red. The active tab
-     carries the sliding pill already. */
   &:hover:not([data-active]) {
     background: ${ink.hover};
     color: ${ink.fg};

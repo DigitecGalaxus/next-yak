@@ -1,20 +1,9 @@
 import type { CSSProperties } from "react";
-import { highlighterPromise, yakTheme } from "@/lib/shiki";
+import { highlightPromise } from "@/lib/shiki";
 import HeroEditorView from "./hero-editor-view";
-import { frameworks } from "./frameworks";
-import { FRAMEWORK_TABS as TABS } from "./framework-tabs";
+import { frameworks, type Framework } from "./frameworks";
 
-// The same component per framework. Only the import and the prop interpolation change:
-// React destructures its props, Solid reads them off the reactive `props` object.
-const PROP_ACCESS: Record<string, { params: string; read: string }> = {
-  react: { params: "({ $primary })", read: "$primary" },
-  solid: { params: "(props)", read: "props.$primary" },
-  qwik: { params: "({ $primary })", read: "$primary" },
-};
-
-const codeFor = (id: string) => {
-  const { params, read } = PROP_ACCESS[id];
-  return `import { styled, css } from "${frameworks.find((f) => f.id === id)?.pkg}";
+const codeFor = ({ pkg, params, read }: Framework) => `import { styled, css } from "${pkg}";
 
 const Button = styled.button<{ $primary?: boolean }>\`
   font-size: 1.5em;
@@ -32,7 +21,6 @@ const Button = styled.button<{ $primary?: boolean }>\`
     \`}
   \`;
 `;
-};
 
 export default async function HeroEditor({
   className,
@@ -41,15 +29,8 @@ export default async function HeroEditor({
   className?: string;
   style?: CSSProperties;
 }) {
-  const highlighter = await highlighterPromise;
-  // Highlight each framework variant once on the server, then hand the HTML to the
-  // client view, which swaps between them without shipping the highlighter.
-  const codeByTab: Record<string, string> = Object.fromEntries(
-    TABS.map((tab) => [
-      tab.value,
-      highlighter.codeToHtml(codeFor(tab.value), { lang: "tsx", theme: yakTheme.name }),
-    ]),
-  );
+  const highlight = await highlightPromise;
+  const codeByTab = Object.fromEntries(frameworks.map((f) => [f.id, highlight(codeFor(f), "tsx")]));
 
-  return <HeroEditorView tabs={TABS} codeByTab={codeByTab} className={className} style={style} />;
+  return <HeroEditorView codeByTab={codeByTab} className={className} style={style} />;
 }
