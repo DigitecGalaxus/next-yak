@@ -34,5 +34,7 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "spikes"]
+  // out/ is the static export. Turbopack copies the playground worker source into it as an
+  // asset, and that copy must not be type-checked.
+  "exclude": ["node_modules", "spikes", "out"]
 }
