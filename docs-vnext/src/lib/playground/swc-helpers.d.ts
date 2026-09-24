@@ -1,4 +1,3 @@
-// @swc/helpers ships these interop helpers without types. The compiled playground code
-// requires them, and run-module.ts hands them over as they are.
+// @swc/helpers ships these without types
 declare module "@swc/helpers/_/_interop_require_wildcard";
 declare module "@swc/helpers/_/_interop_require_default";

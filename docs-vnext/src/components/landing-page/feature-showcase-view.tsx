@@ -1,43 +1,33 @@
 "use client";
 
 import { css, keyframes, styled } from "next-yak";
-import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { useState, type CSSProperties, type PointerEvent } from "react";
 import { container, fonts, fontSize, ink, light, dark } from "@/tokens";
-import { editorSurface, codeReset } from "@/lib/editor-surface";
-import { subsectionHeading } from "@/lib/mixins";
-import { cardStyles } from "./card";
+import { subsectionHeading, editorSurface, codeReset } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { EditorDots } from "./editor-dots";
 import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
+import { frameworks, FRAMEWORK_TABS } from "./frameworks";
 
 export type Callout = {
   title: string;
   description: string;
-  /** Which side of the editor the card sits on once the layout is wide enough. */
   side: "left" | "right";
-  /** 1-based first code line the card annotates. */
+  /** 1-based code lines the card annotates. */
   line: number;
-  /** How many code lines it covers; the card is centered on that block. */
   span: number;
-  /** Pre-highlighted HTML of the lines the card shows on its own when the editor is hidden. */
   snippetHtml: string;
 };
 
 const CODE_FONT_SIZE = "13px";
 const CODE_LINE_HEIGHT = 1.7;
 
-/** Grid rows in front of the first code line: the title bar and the code padding. */
+/** Title bar and code padding rows before the first code line. */
 const ROWS_BEFORE_CODE = 2;
 
 /**
- * One hand-drawn arrow for each callout, drawn pointing left. Six paths, not one mirrored
- * six times: a repeated stroke reads as a stamp, and the point of a drawn arrow is that no
- * two are the same. The viewBox starts at the ink, so the tip lands where the CSS puts it.
- *
- * Judge a change to this set in page order, not in array order. The callouts alternate
- * sides, so the left column shows 0, 2 and 4 mirrored while the right shows 1, 3 and 5 as
- * drawn. Two paths that differ on paper can land as the same stroke once half of them
- * flip. Each one here differs in drift, in curve and in length.
+ * Hand-drawn arrows pointing left, one per callout. Left-side callouts (0, 2, 4) render
+ * mirrored. The viewBox starts at the ink, so the tip lands where the CSS puts it.
  */
 const ARROWS = [
   { shaft: "M58 10C45 8 24 11 9 20", head: "M9 20L21 19M9 20L13 11" },
@@ -49,25 +39,11 @@ const ARROWS = [
 ] as const;
 
 /**
- * The "why teams pick it" showcase. Highlighting happens on the server
- * (feature-showcase.tsx); this client half tracks the framework tab and lays things out.
- *
- * Wide sections show the editor with the cards snapped to the code they describe. The
- * trick is one grid whose rows mirror the editor (title bar, padding, one row per code
- * line, padding): the editor spans all rows, so a card on `grid-row: line + 2 / span n`
- * lands level with its lines. From `annotate` the cards sit three a side, from
- * `annotateOne` they queue in one compact column. Scrolling tours the callouts: each has
- * a highlight band on its rows, and a view timeline on the grid (lib/scroll-tour) gives band
- * and card consecutive windows of the scroll range. Pure CSS, progressive enhancement.
- * A mouse or a pen takes the tour over: resting on a card shows that callout's lines for
- * as long as the pointer stays there, whatever the scroll position.
- *
- * Narrower sections drop the editor and each card shows its own slice of the code
- * instead; a card picks stacked or copy-beside-code from its own width.
+ * Wide layouts use one grid whose rows mirror the editor (title bar, padding, one row per
+ * code line, padding), so a card on `grid-row: line + 2 / span n` lands level with its
+ * lines. Narrow layouts hide the editor and each card shows its own slice of the code.
  */
 export default function FeatureShowcaseView({
-  title,
-  tabs,
   codeByTab,
   lineCount,
   codeCols,
@@ -75,8 +51,6 @@ export default function FeatureShowcaseView({
   className,
   style,
 }: {
-  title: string;
-  tabs: readonly { value: string; node: ReactNode }[];
   codeByTab: Record<string, string>;
   lineCount: number;
   /** Widest card snippet line, in characters. */
@@ -85,15 +59,13 @@ export default function FeatureShowcaseView({
   className?: string;
   style?: CSSProperties;
 }) {
-  const [active, setActive] = useState(tabs[0].value);
-  // the callout the pointer rests on; while it is set, it drives the tour instead of scrolling
+  const [active, setActive] = useState<string>(frameworks[0].id);
   const [hovered, setHovered] = useState<number | null>(null);
 
-  // grid rows of a callout's lines, plus its index in the scroll tour
   const placement = (c: Callout, i: number) =>
     ({ "--row": c.line + ROWS_BEFORE_CODE, "--span": c.span, "--i": i }) as CSSProperties;
 
-  // a touch tap would latch a callout with no way to leave it, so only mouse and pen take over
+  // a touch tap would latch a callout with no way to leave it
   const enter = (i: number) => (event: PointerEvent) => {
     if (event.pointerType !== "touch") setHovered(i);
   };
@@ -111,7 +83,7 @@ export default function FeatureShowcaseView({
         } as CSSProperties
       }
     >
-      <Editor data-ink>
+      <Editor>
         <TitleBar>
           <div
             css={css`
@@ -128,13 +100,13 @@ export default function FeatureShowcaseView({
                 font-size: 13px;
               `}
             >
-              {title}
+              Button.tsx
             </span>
           </div>
           <EditorSwitcher
             value={active}
             onValueChange={setActive}
-            items={tabs}
+            items={FRAMEWORK_TABS}
             ariaLabel="Framework"
           />
         </TitleBar>
@@ -179,7 +151,7 @@ export default function FeatureShowcaseView({
               </p>
             </CardText>
             <CardCode>
-              <CardCodeBox data-ink dangerouslySetInnerHTML={{ __html: callout.snippetHtml }} />
+              <CardCodeBox dangerouslySetInnerHTML={{ __html: callout.snippetHtml }} />
             </CardCode>
           </CardBody>
         </Card>
@@ -197,7 +169,6 @@ export default function FeatureShowcaseView({
   );
 }
 
-/* fades in over the first fifth of its turn and out over the last fifth */
 const bandReveal = keyframes`
   0%,
   100% {
@@ -209,9 +180,6 @@ const bandReveal = keyframes`
   }
 `;
 
-/* the marker stroke sweeps across the title over the first fifth of the turn, holds,
-   then draws back out. `background-size` is the only part of a gradient that animates
-   smoothly, so the stroke is a gradient and not a border. */
 const markerSweep = keyframes`
   0% {
     background-size: 0% 60%;
@@ -225,8 +193,7 @@ const markerSweep = keyframes`
   }
 `;
 
-/* an unregistered custom property animates discretely: the arrow flips to accent a
-   twentieth into the window and back a twentieth before its end */
+/* an unregistered custom property animates discretely */
 const leaderAccent = keyframes`
   0%,
   100% {
@@ -254,15 +221,8 @@ const Grid = styled.div`
   }
 
   @container section (min-width: ${container.section.annotateOne}) {
-    /* Editor left, one compact card column right. The editor sits between 400px and
-       480px: its title bar needs ~460px for the framework pills (the switcher collapses
-       to a dropdown below that), and wider than 480px is just empty ink past the longest
-       code line. The card column is fixed at 360px so the longest one-line description
-       fits without wrapping. The annotateOne breakpoint is 400 + 360 + the column gap. */
-    /* Wide enough for a drawn arrow to live between a note and the editor without
-       touching either. Stepped, and not a cqi clamp: the arrow reads this variable from
-       inside a card, which is its own container, so a cqi unit in the stored value would
-       resolve against the card and hand the arrow a third of the width it needs. */
+    /* annotateOne breakpoint = 400 + 360 + column gap. Stepped, not cqi: the arrow reads
+       --col-gap inside a card, which is its own container. */
     --col-gap: 44px;
     grid-template-columns: minmax(400px, 480px) 360px;
     grid-template-rows:
@@ -272,7 +232,6 @@ const Grid = styled.div`
     column-gap: var(--col-gap);
     row-gap: 0;
 
-    /* the scroll tour that walks the callouts (lib/scroll-tour) */
     ${tourTimeline};
   }
 
@@ -285,17 +244,13 @@ const Grid = styled.div`
   }
 
   @container section (min-width: ${container.section.annotate}) {
-    /* Three a side. The card columns take between 250px and 300px: below 250px the
-       longest card title wraps and the taller cards start crowding their neighbours. The
-       annotate breakpoint is 400 + 2 * 250 + the column gaps. */
+    /* annotate breakpoint = 400 + 2 * 250 + column gaps */
     grid-template-columns: minmax(250px, 300px) minmax(400px, 480px) minmax(250px, 300px);
   }
 `;
 
-/* only rendered visibly in the wide layout, where the cards annotate it */
 const Editor = styled.div`
   ${editorSurface};
-  /* the switcher flips pills ↔ dropdown with the editor's own width */
   container: editor / inline-size;
   display: none;
   flex-direction: column;
@@ -332,9 +287,6 @@ const CodeArea = styled.div`
   }
 `;
 
-/* one per callout: a band over its lines, a grid item on the same rows as its card,
-   inset to the code area and painted above the editor (it comes later in the DOM).
-   Invisible unless the scroll tour reveals it. */
 const LineHighlight = styled.div`
   display: none;
   pointer-events: none;
@@ -372,15 +324,13 @@ const LineHighlight = styled.div`
 `;
 
 const Card = styled.div`
-  ${cardStyles};
   --leader-off: light-dark(${light.beige6}, ${dark.navy6});
   --leader-on: light-dark(${light.red}, ${dark.red});
   --leader: var(--leader-off);
-  border-color: light-dark(${light.beige5}, ${dark.navy5});
+  background: light-dark(${light.beige1}, ${dark.navy1});
+  border: 1px solid light-dark(${light.beige5}, ${dark.navy5});
   border-radius: 16px;
-  /* the card picks its inner layout from its own width, wherever the grid puts it. An
-     element can't query its own container, so the switching happens one level down in
-     CardBody. */
+  /* an element cannot query its own container, so CardBody switches the layout */
   container: card / inline-size;
   padding: 20px 22px;
 
@@ -389,9 +339,6 @@ const Card = styled.div`
     grid-column: 2;
     grid-row: var(--row) / span var(--span);
     align-self: center;
-    /* Beside the editor the frame comes off. Six boxes around one editor made the
-       section read as a form, and the drawn arrow already says which lines a note is
-       about. The padding stays, because it is the pointer's target. */
     background: none;
     border: none;
     box-shadow: none;
@@ -400,7 +347,6 @@ const Card = styled.div`
     --desc-size: 13px;
     --desc-lh: 18px;
 
-    /* the arrow turns accent while the scroll tour is on this card's lines */
     @supports (animation-timeline: view()) {
       @media (prefers-reduced-motion: no-preference) {
         animation: ${leaderAccent} linear both;
@@ -410,7 +356,6 @@ const Card = styled.div`
 
     ${tourPointerOverride};
 
-    /* the pointer picks a callout directly and holds it for as long as it rests there */
     &[data-active] {
       --leader: var(--leader-on);
     }
@@ -433,14 +378,6 @@ const Card = styled.div`
   }
 `;
 
-/**
- * The drawn arrow from a note to the lines it is about. It sizes to the column gap and
- * stops 5px short of the editor, so it never lands on the code.
- *
- * It points left by default, because every note sits right of the editor until the
- * two-sided layout exists. `data-side` is on the card at every width, so the mirror
- * belongs to the same container query that moves a card into column 1.
- */
 const Arrow = styled.svg`
   display: none;
 
@@ -469,17 +406,12 @@ const Arrow = styled.svg`
   }
 `;
 
-/**
- * The note's title, with the highlighter stroke that marks the callout the tour is on.
- *
- * `inline-block` is the point: a block title stretches to the column, and the stroke
- * would paint the whole width instead of the words.
- */
 const CardTitle = styled.h3`
   ${subsectionHeading};
   line-height: 22px;
 
   @container section (min-width: ${container.section.annotateOne}) {
+    /* so the marker stroke covers the words, not the column */
     display: inline-block;
     --marker: light-dark(
       color-mix(in oklch, ${light.red} 24%, transparent),
@@ -489,7 +421,6 @@ const CardTitle = styled.h3`
     background-repeat: no-repeat;
     background-position: 0 82%;
     background-size: 0% 60%;
-    /* four unequal radii, so the stroke reads as a pen and not as a rectangle */
     border-radius: 0.7em 0.25em 0.6em 0.3em;
     padding-inline: 0.2em;
     margin-inline: -0.2em;
@@ -519,7 +450,6 @@ const CardBody = styled.div`
   display: flex;
   flex-direction: column;
 
-  /* wide enough for copy beside code: a text column and a shared code column */
   @container card (min-width: ${container.card.row}) {
     flex-direction: row;
     align-items: flex-start;
@@ -534,18 +464,14 @@ const CardText = styled.div`
   }
 `;
 
-/* the card's own slice of the code; stands in for the editor while that is hidden */
 const CardCode = styled.div`
   padding-top: 14px;
-  /* mono metrics so the \`ch\`-based width below matches the code inside. One width for
-     every card: the longest slice (plus half a character of slack) and the box padding,
-     so the boxes line up instead of each hugging its own line. */
+  /* mono metrics so the \`ch\` width matches the code. One width for every card. */
   font-family: ${fonts.mono};
   font-size: ${CODE_FONT_SIZE};
   --code-w: calc((var(--code-cols) + 0.5) * 1ch + 24px);
 
   @container card (min-width: ${container.card.row}) {
-    /* the shared code column of the row layout */
     flex: 0 0 var(--code-w);
     padding-top: 0;
   }
@@ -555,8 +481,6 @@ const CardCode = styled.div`
   }
 `;
 
-/* the dark ink box around the slice; the shared code reset keeps the <pre> itself
-   transparent, so the surface lives on this wrapper */
 const CardCodeBox = styled.div`
   box-sizing: border-box;
   width: var(--code-w);

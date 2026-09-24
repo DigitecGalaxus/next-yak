@@ -1,19 +1,19 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OnMount } from "@monaco-editor/react";
 import { styled } from "next-yak";
 import { fonts, fontSize, light, dark, ink, status } from "@/tokens";
 import { focusRing } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { useCopy } from "@/lib/use-copy";
+import { highlightPromise } from "@/lib/shiki";
 import { compressWithDictionary, decompressWithDictionary } from "@/lib/playground/compress";
 import { defaultFiles } from "@/lib/playground/examples";
 import { useCompiler } from "@/lib/playground/use-compiler";
 import type { PlaygroundFile, TransformOptions } from "@/lib/playground/types";
 import { SourceEditor } from "./source-editor";
 import { Preview } from "./preview";
-import { OutputView } from "./output-view";
 import { OptionsMenu } from "./options-menu";
 import {
   Card,
@@ -33,22 +33,13 @@ import {
 /** the old playground allowed three files beside the main one, and share links rely on it */
 const MAX_EXTRA_FILES = 3;
 
-/** CSS: the extracted styles. JSX: the yak transform with the JSX kept. JS: the JSX compiled too. */
 const OUTPUT_KINDS = ["css", "jsx", "js"] as const;
 type OutputKind = (typeof OUTPUT_KINDS)[number];
 
 const defaultOptions: TransformOptions = { minify: false, showComments: true, foldStatic: true };
 
-/**
- * The playground: a Monaco editor, a live preview and the compiled output, all in the
- * browser. Nothing needs a server, so the page works on a static host such as GitHub Pages.
- *
- * A share link keeps the files in `?q=`. The page is static, so the link is read here in the
- * browser, not on the server.
- */
 export default function Playground() {
-  // this component renders in the browser only (see playground-loader), so the first
-  // state can read the share link straight from the URL
+  // the page is a static export, so the share link is read here in the browser
   const [initial] = useState(readShareLink);
   const [files, setFiles] = useState<PlaygroundFile[]>(initial.files);
   const [resetKey, setResetKey] = useState(0);
@@ -60,13 +51,6 @@ export default function Playground() {
   const { copied, copy } = useCopy(2000);
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
-  const load = useCallback((next: PlaygroundFile[]) => {
-    setFiles(next);
-    setActiveFile(next[0].name);
-    setResetKey((key) => key + 1);
-  }, []);
-
-  // compile after a short pause in typing
   useEffect(() => {
     const timer = setTimeout(() => compile(files, options), 200);
     return () => clearTimeout(timer);
@@ -79,7 +63,6 @@ export default function Playground() {
   }, []);
 
   const share = useCallback(() => {
-    // empty extra files stay out of the link, so it stays short; they come back on load
     const record = Object.fromEntries(
       files
         .filter((file, index) => index === 0 || file.content.trim() !== "")
@@ -99,7 +82,9 @@ export default function Playground() {
     url.search = "";
     window.history.replaceState(null, "", url);
     setNotice(null);
-    load(defaultFiles);
+    setFiles(defaultFiles);
+    setActiveFile(defaultFiles[0].name);
+    setResetKey((key) => key + 1);
   };
 
   const format = () => void editorRef.current?.getAction("editor.action.formatDocument")?.run();
@@ -113,7 +98,7 @@ export default function Playground() {
       {notice ? <Notice role="status">{notice}</Notice> : null}
 
       <Workspace>
-        <Card data-ink>
+        <Card>
           <Header>
             <EditorSwitcher
               value={activeFile}
@@ -164,16 +149,12 @@ export default function Playground() {
             </PreviewBody>
           </PreviewCard>
 
-          <Card data-ink>
+          <Card>
             <Header>
               <EditorSwitcher
                 value={outputKind}
                 onValueChange={(value) => setOutputKind(value as OutputKind)}
-                items={[
-                  { value: "css", node: "CSS" },
-                  { value: "jsx", node: "JSX" },
-                  { value: "js", node: "JS" },
-                ]}
+                items={OUTPUT_KINDS.map((kind) => ({ value: kind, node: kind.toUpperCase() }))}
                 ariaLabel="Output"
               />
               <OutputFile>{activeFile}.tsx</OutputFile>
@@ -193,11 +174,6 @@ export default function Playground() {
   );
 }
 
-/**
- * A link carries the files in `q` and the output tab in `output` (css, jsx or js). Share
- * keeps the tab on screen, so the reader of a link sees what its author saw. Old links have
- * no `output` and open on CSS.
- */
 function readShareLink(): {
   files: PlaygroundFile[];
   output: OutputKind;
@@ -218,14 +194,10 @@ function readShareLink(): {
   }
 }
 
-/**
- * Empty tabs for a link with fewer files, for example one with only `index`: a normal
- * module and a `.yak` file, so the reader can split code up without making files.
- */
+/** empty tabs added to a link with fewer than MIN_EXTRA_FILES extra files */
 const SPARE_FILES = ["components", "tokens.yak"];
 const MIN_EXTRA_FILES = 2;
 
-/** Share links store a record. The main file is always `index`, and it comes first. */
 function filesFromRecord(record: Record<string, string>): PlaygroundFile[] {
   if (typeof record.index !== "string") throw new Error("no index file");
   const extras = Object.entries(record)
@@ -247,9 +219,6 @@ const Notice = styled.p`
   color: light-dark(${light.violet}, ${dark.white});
   font-size: ${fontSize.small};
 `;
-
-
-
 
 const HeaderButton = styled.button`
   padding: 6px 10px;
@@ -286,8 +255,11 @@ const Loading = styled.p`
   font-size: 13px;
 `;
 
-
-
+function OutputView({ code, lang }: { code: string; lang: "css" | "tsx" }) {
+  const highlight = use(highlightPromise);
+  const html = useMemo(() => highlight(code || "/* no output */", lang), [highlight, code, lang]);
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 const OutputFile = styled.span`
   margin-left: auto;

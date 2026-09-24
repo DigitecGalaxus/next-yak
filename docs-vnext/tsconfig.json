@@ -6,8 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    // yak files import sibling modules with explicit `.ts` extensions (the yak evaluator runs
-    // as native Node ESM, which needs exact specifiers). Safe with `noEmit`.
+    // .yak.ts files run as native Node ESM and must import siblings with the `.ts` extension.
     "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -34,7 +33,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  // out/ is the static export. Turbopack copies the playground worker source into it as an
-  // asset, and that copy must not be type-checked.
+  // out/ holds a copy of the playground worker source that must not be type-checked.
   "exclude": ["node_modules", "spikes", "out"]
 }

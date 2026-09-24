@@ -1,20 +1,15 @@
 "use client";
 
 import { css, styled } from "next-yak";
-import type { CSSProperties } from "react";
 import { buttonStyles } from "./button";
 import { useSearch } from "../search/search-provider";
 import { SearchIcon } from "../search/search-icon";
 import { keycapStyles } from "@/lib/mixins";
 
 export default function Search({
-  className,
-  style,
   fullWidth,
   onClick,
 }: {
-  className?: string;
-  style?: CSSProperties;
   fullWidth?: boolean;
   onClick?: () => void;
 }) {
@@ -27,8 +22,6 @@ export default function Search({
         onClick?.();
         setOpen(true);
       }}
-      className={className}
-      style={style}
       $fullWidth={fullWidth}
     >
       <div

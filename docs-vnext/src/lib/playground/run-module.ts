@@ -8,11 +8,7 @@ import * as InteropWildcard from "@swc/helpers/_/_interop_require_wildcard";
 import * as InteropDefault from "@swc/helpers/_/_interop_require_default";
 import type { TransformedFile } from "./types";
 
-/**
- * The modules a playground file may import. `@yak/react` is the new name of `next-yak`, so
- * both names point at the same runtime. The yak plugin rewrites `styled` and `css` imports
- * to the `/internal` entry, and the automatic JSX runtime imports `next-yak/jsx-runtime`.
- */
+/** `@yak/react` is the new name of `next-yak`, so both point at the same runtime. */
 const runtimeModules: Record<string, unknown> = {
   react: React,
   "react/jsx-runtime": ReactJsxRuntime,
@@ -26,13 +22,7 @@ const runtimeModules: Record<string, unknown> = {
   "@swc/helpers/_/_interop_require_default": InteropDefault,
 };
 
-/**
- * Evaluates the compiled CommonJS files and returns the main file's default export.
- *
- * A file imports another by `./name`. Files evaluate on their first import and then come
- * from the cache, so the order of the tabs does not matter. The CSS import that the yak
- * plugin adds to each file resolves to an empty module: the preview adds the CSS itself.
- */
+/** Evaluates the compiled CommonJS files and returns the main file's default export. */
 export function runModules(files: TransformedFile[]): ComponentType | null {
   const byName = new Map(files.map((file) => [file.name, file]));
   const cache = new Map<string, Record<string, unknown>>();
@@ -48,6 +38,7 @@ export function runModules(files: TransformedFile[]): ComponentType | null {
 
   function require(path: string): unknown {
     if (path in runtimeModules) return runtimeModules[path];
+    // the preview injects the CSS itself
     if (path.includes(".yak.css!=!")) return {};
     const file = byName.get(path.replace(/^\.\//, ""));
     if (file) return load(file);

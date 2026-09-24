@@ -342,12 +342,7 @@ export const ComparisonTable = () => {
       setActiveLibrary(library);
     },
     onMouseOut: () => {
-      setActiveLibrary((prev) => {
-        if (prev === library) {
-          return "Next-Yak";
-        }
-        return prev;
-      });
+      setActiveLibrary((prev) => (prev === library ? "Next-Yak" : prev));
     },
   });
 
@@ -395,21 +390,17 @@ export const ComparisonTable = () => {
                   )}
                 </ColumnFeatureName>
                 {categories.map((category) =>
-                  Object.values(libraries[category]).map((lib, i) => (
+                  Object.entries(libraries[category]).map(([name, lib], i) => (
                     <Column
-                      key={Object.keys(libraries[category])[i]}
+                      key={name}
                       $newCategory={i === 0}
-                      {...columnHoverEvents(Object.keys(libraries[category])[i])}
-                      $active={activeLibrary === Object.keys(libraries[category])[i]}
+                      {...columnHoverEvents(name)}
+                      $active={activeLibrary === name}
                     >
                       {lib[feature] ? (
-                        <IconYes
-                          title={titleText(feature, Object.keys(libraries[category])[i], true)}
-                        />
+                        <IconYes title={titleText(feature, name, true)} />
                       ) : (
-                        <IconNo
-                          title={titleText(feature, Object.keys(libraries[category])[i], false)}
-                        />
+                        <IconNo title={titleText(feature, name, false)} />
                       )}
                     </Column>
                   )),
@@ -441,8 +432,7 @@ const titleText = (featureName: string, libName: string, supported: boolean) => 
   return `${featureName} ${plural} ${not}supported by ${libName}`;
 };
 
-// Non-scrolling frame around the scroller so the right-edge fade stays pinned to
-// the visible edge (hinting the table scrolls horizontally when it overflows).
+// Does not scroll, so the right-edge fade stays pinned while the table scrolls.
 const Frame = styled.div`
   position: relative;
   &::after {
@@ -465,20 +455,13 @@ const MaxWidth = styled.div`
   padding: 0 2rem 0.5rem;
   position: relative;
   scrollbar-width: thin;
-  /* tighten the gutter when the prose column itself is narrow (Content sets
-     container: prose), not when the viewport is — the table lives in a ≤768px column */
   @container prose (max-width: ${container.prose.table}) {
     padding: 0 0.5rem 0.5rem;
   }
 `;
 
 const Table = styled.table`
-  /* Normal cells are opaque (--cell-background); the warm brand gradient below
-     only shows through the active column, whose cells switch to the translucent
-     --table-highlight. Every value is theme-aware via light-dark() — this site
-     toggles theme with data-theme + color-scheme, never a ".dark" class, so the
-     old "html.dark &" overrides never matched and the gradient flooded the whole
-     table in both modes. */
+  /* the gradient background shows only through the translucent --table-highlight cells */
   --cell-background: light-dark(#fffdf8, #221c30);
   --table-highlight: light-dark(hsl(0 0% 100% / 0.34), hsl(258 28% 9% / 0.42));
   --table-highlight-fg: light-dark(#5a1402, #ffffff);
@@ -486,7 +469,6 @@ const Table = styled.table`
   --border-color-light: light-dark(rgb(31 10 77 / 0.1), rgb(255 255 255 / 0.08));
   border-color: var(--border-color-light);
 
-  /* warm accent, revealed only beneath the translucent active column */
   background: linear-gradient(45deg, #e8b94e, #ed7a5e, #e8b94e) -100% / 200%;
 
   & td {

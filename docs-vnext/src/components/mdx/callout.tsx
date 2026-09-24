@@ -4,19 +4,6 @@ import type { ReactNode } from "react";
 
 type CalloutType = "info" | "warn" | "error";
 
-// Accent (icon + ring) per type from the shared `status` palette. The soft fill is derived from
-// the accent as a translucent tint — same mechanism as the code-block diff lines — so there's no
-// separate per-type bg token.
-const softFill = (accent: string) => `color-mix(in srgb, ${accent} 12%, transparent)`;
-const TONE: Record<CalloutType, { accent: string; bg: string }> = {
-  info: { accent: status.info, bg: softFill(status.info) },
-  warn: { accent: status.warn, bg: softFill(status.warn) },
-  error: { accent: status.error, bg: softFill(status.error) },
-};
-
-// The callout outline + brutalist shadow use the same edge pairing as the buttons
-// (`light.violet` / `dark.edge`), so the card chrome reads as one family with them.
-
 const ICONS: Record<CalloutType, ReactNode> = {
   info: <InfoGlyph />,
   warn: <WarnGlyph />,
@@ -32,9 +19,12 @@ export function Callout({
   title?: ReactNode;
   children: ReactNode;
 }) {
-  const { accent, bg } = TONE[type] ?? TONE.info;
+  const accent = status[type] ?? status.info;
   return (
-    <Box $bg={bg} role={type === "error" ? "alert" : "note"}>
+    <Box
+      $bg={`color-mix(in srgb, ${accent} 12%, transparent)`}
+      role={type === "error" ? "alert" : "note"}
+    >
       <IconRing $accent={accent} aria-hidden="true">
         {ICONS[type] ?? ICONS.info}
       </IconRing>
@@ -44,8 +34,6 @@ export function Callout({
   );
 }
 
-// The ring supplies the circle, so info/error are bare glyphs (circled-i / circled-×);
-// warn keeps its triangle for a distinct caution shape.
 function InfoGlyph() {
   return (
     <svg
@@ -100,7 +88,6 @@ function ErrorGlyph() {
 const Box = styled.aside<{ $bg: string }>`
   position: relative;
   margin: 26px 0;
-  /* left gutter + top room so the corner ring never collides with the first line */
   padding: 16px 18px 16px 28px;
   border: 2px solid light-dark(${light.violet}, ${dark.edge});
   border-radius: 10px;
@@ -113,8 +100,6 @@ const Box = styled.aside<{ $bg: string }>`
   }
 `;
 
-// A badge straddling the top-left corner: ink ring over a page-coloured fill with the accent
-// glyph. The slightly detached look is intentional, even when it overhangs a neighbour's shadow.
 const IconRing = styled.span<{ $accent: string }>`
   position: absolute;
   top: 1px;

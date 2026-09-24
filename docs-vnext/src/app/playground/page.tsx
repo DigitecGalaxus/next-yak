@@ -13,10 +13,6 @@ export const metadata: Metadata = pageMetadata({
   card: "playground",
 });
 
-/**
- * The intro renders here, on the server, so it is in the static HTML and shows at once.
- * The playground itself loads in the browser only (see playground-loader), a moment later.
- */
 export default function PlaygroundPage() {
   return (
     <Page>
@@ -33,7 +29,6 @@ export default function PlaygroundPage() {
   );
 }
 
-/* the width and side padding of the landing sections, so the playground lines up with them */
 const Page = styled.main`
   box-sizing: border-box;
   width: 100%;

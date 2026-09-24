@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  // every other route sets its own in pageMetadata()
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -34,11 +33,7 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * The colour the browser paints around the page, mostly the address bar on a phone. It is
- * the one head tag that reads the colour scheme, so it takes the same two page backgrounds
- * the Html element uses.
- */
+// Must match the Html background below (light.beige2 / dark.navy2)
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#faf5ef" },
@@ -87,9 +82,6 @@ const Html = styled.html`
   background: light-dark(${light.beige2}, ${dark.navy2});
   color: light-dark(${light.violetSoft}, ${dark.fog});
 
-  /* Hold the scrollbar's lane open at all times. Without it the page is 15px wider on a
-     short route than on a long one, and every centred thing slides sideways as the reader
-     moves between them. It also holds the page still when a dialog locks the scroll.
-     A browser that draws an overlay scrollbar reserves nothing, so this costs it nothing. */
+  /* Stops centred content shifting between short and long pages, and on dialog scroll lock */
   scrollbar-gutter: stable;
 `;

@@ -2,13 +2,13 @@
 
 import { css, keyframes } from "next-yak";
 import Image from "next/image";
-import { ReactNode, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { container, fonts, shadow, light, dark, ink } from "@/tokens";
-import { editorSurface, codeReset } from "@/lib/editor-surface";
+import { editorSurface, codeReset } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
 import { asset } from "@/lib/site";
-import { frameworks } from "./frameworks";
+import { frameworks, FRAMEWORK_TABS } from "./frameworks";
 import { Dot, EditorDots } from "./editor-dots";
 
 const blink = keyframes`
@@ -21,30 +21,19 @@ const blink = keyframes`
 `;
 
 /**
- * Interactive shell for the hero code editor. Highlighting happens on the server
- * (see hero-editor.tsx); this client component just tracks which framework tab is
- * active and swaps in the matching pre-highlighted code, install command, and the
- * import line. The pills show when the editor is wide enough; a compact <select>
- * dropdown takes over on narrow editors.
- *
- * Layout: the mascot and the npm terminal are normal flow children that overlap the
- * card with negative margins, so the wrapper's height naturally includes them — the
- * surrounding page never has to reserve space for these "peek-out" decorations. The
- * wrapper is the query container, so the mascot scales (cqi) and the switcher flips
- * with the *editor's own* width.
+ * The mascot and the terminal overlap the card with negative margins but stay in flow, so the
+ * wrapper's height includes them.
  */
 export default function HeroEditorView({
-  tabs,
   codeByTab,
   className,
   style,
 }: {
-  tabs: readonly { value: string; node: ReactNode }[];
   codeByTab: Record<string, string>;
   className?: string;
   style?: CSSProperties;
 }) {
-  const [active, setActive] = useState(tabs[0].value);
+  const [active, setActive] = useState<string>(frameworks[0].id);
 
   return (
     <div
@@ -58,9 +47,6 @@ export default function HeroEditorView({
         width: 100%;
         max-width: 620px;
 
-        /* in the side-by-side layout the editor shares the row with the text column:
-           it shrinks with the available space but never below 400px — the width we
-           already ship on mobile — so the layout can go side-by-side that early */
         @container hero (min-width: ${container.hero.split}) {
           flex: 0 1 620px;
           min-width: 400px;
@@ -84,10 +70,7 @@ export default function HeroEditorView({
         `}
       />
 
-      {/* the visible editor card — the canonical code-surface chrome (hairline + soft
-          shadow + ink fill), shared with docs code blocks via lib/editor-surface */}
       <div
-        data-ink
         css={css`
           ${editorSurface};
           display: flex;
@@ -127,7 +110,7 @@ export default function HeroEditorView({
           <EditorSwitcher
             value={active}
             onValueChange={setActive}
-            items={tabs}
+            items={FRAMEWORK_TABS}
             ariaLabel="Framework"
           />
         </div>
@@ -156,7 +139,6 @@ export default function HeroEditorView({
 function Terminal({ packageName }: { packageName?: string }) {
   return (
     <div
-      data-ink
       css={css`
         align-self: flex-end;
         margin-top: -44px;

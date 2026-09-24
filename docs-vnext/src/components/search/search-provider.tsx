@@ -10,11 +10,6 @@ type SearchContextValue = {
 
 const SearchContext = createContext<SearchContextValue | null>(null);
 
-/**
- * Owns the search dialog's open state, registers the global keyboard shortcuts
- * (⌘K / Ctrl+K to toggle, `/` to open when not typing), renders the dialog, and
- * exposes `useSearch()` so any trigger (e.g. the header button) can open it.
- */
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
@@ -49,7 +44,6 @@ export function useSearch() {
   return context;
 }
 
-// Don't hijack `/` while the user is typing in a field or contenteditable.
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   return (

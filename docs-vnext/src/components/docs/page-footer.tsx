@@ -4,7 +4,6 @@ import { styled } from "next-yak";
 import { fontWeight, light, dark } from "@/tokens";
 import { buttonStyles } from "@/components/landing-page/button";
 
-/** Previous / next page links, derived from `findNeighbour(tree, url)`. */
 export default function PageFooter({ previous, next }: { previous?: Item; next?: Item }) {
   if (!previous && !next) return null;
 
@@ -41,7 +40,6 @@ const Footer = styled.div`
 
 const PageLink = styled(Link)`
   ${buttonStyles};
-  /* A "normal" button — the deeper 4px offset shadow, not the 3px header controls. */
   --btn-offset: 4px;
 
   display: inline-flex;
@@ -58,7 +56,6 @@ const Arrow = styled.span`
   color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
-// Screen-reader-only direction prefix; the arrow alone wouldn't announce anything useful.
 const Sr = styled.span`
   position: absolute;
   width: 1px;

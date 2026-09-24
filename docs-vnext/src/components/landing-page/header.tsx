@@ -1,8 +1,7 @@
 import { css, styled } from "next-yak";
-import type { CSSProperties } from "react";
 import Search from "./search";
 import ThemeToggle from "./theme-toggle";
-import ButtonLink from "./button-link";
+import { iconButton } from "./button";
 import Link from "next/link";
 import NavLink, { NavExternalLink } from "./nav-link";
 import { EXTERNAL_LINK_HINT, externalLinkProps } from "@/lib/external-link";
@@ -13,7 +12,7 @@ import {
   fonts,
   headerHeight,
   maxContentWidth,
-  typography,
+  fontSize,
   light,
   dark,
   headerBg,
@@ -21,30 +20,19 @@ import {
 import { visuallyHidden } from "@/lib/mixins";
 import Yak from "./yak";
 
-export default function Header({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: CSSProperties;
-}) {
+export default function Header() {
   return (
     <header
-      className={className}
-      style={style}
       css={css`
-        /* full-width bar; the content inside caps and centers to align with the page */
         display: flex;
         justify-content: center;
         min-height: ${headerHeight};
-        /* sticky so search/nav stay reachable; the docs sidebar + TOC already pin at
-           top:72/96px expecting this. Translucent + blur lets content scroll under it. */
+        /* the docs sidebar and TOC pin at top: 72/96px and expect this to be sticky */
         position: sticky;
         top: 0;
         z-index: 40;
         background: ${headerBg};
         backdrop-filter: blur(10px);
-        /* a container so the nav collapses based on the bar's own width (see MobileMenu) */
         container: header / inline-size;
       `}
     >
@@ -89,8 +77,7 @@ export default function Header({
         <DesktopActions>
           <Search />
           <ThemeToggle />
-          {/* The icon carries no text, so the name and the new-tab hint go on the link. */}
-          <ButtonLink
+          <GitHubLink
             href="https://github.com/digitecgalaxus/next-yak"
             aria-label={`GitHub${EXTERNAL_LINK_HINT}`}
             {...externalLinkProps}
@@ -107,7 +94,7 @@ export default function Header({
                 fill="currentColor"
               />
             </svg>
-          </ButtonLink>
+          </GitHubLink>
         </DesktopActions>
         <MobileMenu tree={source.pageTree} />
       </div>
@@ -135,7 +122,6 @@ const DesktopActions = styled.div`
   }
 `;
 
-/** The wordmark. It navigates, so it answers like a link: the name takes the red. */
 const Brand = styled(Link)`
   display: flex;
   align-items: center;
@@ -144,7 +130,7 @@ const Brand = styled(Link)`
 
 const BrandName = styled.span`
   font-family: ${fonts.title};
-  font-size: ${typography.display};
+  font-size: ${fontSize.display};
   letter-spacing: -0.44px;
   color: light-dark(${light.violet}, ${dark.white});
 
@@ -158,9 +144,11 @@ const BrandName = styled.span`
   }
 `;
 
-/* The rename, for screen readers, crawlers and language models rather than for eyes:
-   hidden from the eye, but in the accessibility tree and in the HTML of every page, so
-   the old name stays associated with the new one. */
+const GitHubLink = styled(Link)`
+  ${iconButton};
+`;
+
+/* For screen readers and crawlers, so the old name stays tied to the new one. */
 const RenameNote = styled.span`
   ${visuallyHidden};
 `;

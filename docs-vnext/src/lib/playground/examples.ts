@@ -1,15 +1,6 @@
 import { asset } from "@/lib/site";
 import type { PlaygroundFile } from "./types";
 
-/**
- * The code a new visitor sees: the yak mascot from the old playground. It stays short on
- * purpose, one idea per file: a styled component with a prop-driven variant and a hover
- * (index), a component from another file (title), and a `.yak` file whose code runs at
- * build time, so only its results reach the CSS (sizes.yak).
- *
- * Unlike legacy-example.ts, this is free to change. The image path carries the base path,
- * so it loads on the GitHub Pages deploy as well as on localhost.
- */
 export const defaultFiles: PlaygroundFile[] = [
   {
     name: "index",

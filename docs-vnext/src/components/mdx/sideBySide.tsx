@@ -1,21 +1,12 @@
 import { styled } from "next-yak";
-import { ReactNode } from "react";
 import { container, syntax } from "@/tokens";
 
-export const SideBySide = ({ children }: { children: ReactNode }) => {
-  return <Grid>{children}</Grid>;
-};
-
-const Grid = styled.div`
+export const SideBySide = styled.div`
   display: grid;
-  /* minmax(0, …), not 1fr: a 1fr column never gets narrower than its longest code line,
-     so one long output line pushed the grid past the prose column and over the TOC. Now
-     each half keeps its share and a long line scrolls inside its own code block. */
+  /* not 1fr: a 1fr column cannot shrink below its longest code line */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
 
-  /* keys off the prose column's width (Content sets container: prose), not the viewport,
-     so it stacks in a narrow docs column even on a wide screen */
   @container prose (max-width: ${container.prose.sideBySide}) {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -24,9 +15,7 @@ const Grid = styled.div`
     margin-top: 0;
   }
 
-  /* Linked hover (lib/code-links.ts): a marked part has a dotted underline in its key's
-     colour. Hovering one lights up every part with the same key in both blocks, so the
-     reader sees which output came from which input. :has() does it without script. */
+  /* linked parts from lib/code-links.ts: hovering one highlights all parts with its key */
   [data-link] {
     border-radius: 3px;
     text-decoration: underline dotted color-mix(in srgb, var(--link) 70%, transparent);

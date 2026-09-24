@@ -10,12 +10,7 @@ type Theme = "system" | "light" | "dark";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 const LABELS: Record<Theme, string> = { system: "System", light: "Light", dark: "Dark" };
 
-/**
- * "system" follows the OS: it drops `data-theme` and the stored key, which returns the
- * page to the `color-scheme: light dark` default in tokens.tsx. "light" and "dark" force
- * a side. The pre-paint script in app/layout.tsx reads the same key before the first
- * paint, so a forced theme survives a reload without a flash.
- */
+// The pre-paint script in app/layout.tsx reads the same storage key and attribute.
 function applyTheme(theme: Theme) {
   const el = document.documentElement;
   try {
@@ -30,12 +25,7 @@ function applyTheme(theme: Theme) {
   for (const notify of listeners) notify();
 }
 
-/**
- * The `<html>` attribute is the one source of truth, not React state: the header and the
- * mobile drawer each render a toggle, and two `useState` copies drift apart the moment
- * one of them is clicked. The pre-paint script sets the attribute before React starts, so
- * the first client snapshot is already the stored choice.
- */
+// The <html> attribute is the store, so the header and drawer toggles stay in sync.
 const listeners = new Set<() => void>();
 
 function subscribe(notify: () => void) {
@@ -50,12 +40,8 @@ function readTheme(): Theme {
   return forced === "light" || forced === "dark" ? forced : "system";
 }
 
-/** The server has no OS preference to read, so it renders the automatic face. */
 const serverTheme = (): Theme => "system";
 
-// The OS preference is the second store. The cycle has two stops, not three, so the one
-// forced side has to be the side the OS is NOT giving. Reading it needs its own
-// subscription, because the reader can change it while the page is open.
 function subscribeOs(notify: () => void) {
   const query = window.matchMedia(DARK_QUERY);
   query.addEventListener("change", notify);
@@ -73,24 +59,16 @@ const serverOs = (): "light" | "dark" => "light";
 export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
   const theme = useSyncExternalStore(subscribe, readTheme, serverTheme);
   const os = useSyncExternalStore(subscribeOs, readOs, serverOs);
-  // System, then the other side, then System again. From System a click forces the side
-  // the OS is not giving, so the click always changes what the reader sees.
+  // From System, force the side the OS is not giving, so every click changes the page.
   const next: Theme = theme === "system" ? (os === "dark" ? "light" : "dark") : "system";
-
-  function cycle() {
-    applyTheme(next);
-  }
 
   return (
     <Toggle
       type="button"
-      onClick={cycle}
+      onClick={() => applyTheme(next)}
       aria-label={`Theme: ${LABELS[theme]}. Switch to ${LABELS[next]}.`}
       $withLabel={showLabel}
     >
-      {/* The face is the next stop, and CSS picks it, not React. The server cannot read
-          the OS preference, so a JS-picked face would paint the wrong one and then flip
-          on every load. All three ship, and one rule shows one of them. */}
       <AutoFace aria-hidden>
         <AutoIcon />
       </AutoFace>
@@ -105,7 +83,6 @@ export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
   );
 }
 
-/** Automatic: one circle, one half filled, so it reads apart from the sun and the moon. */
 function AutoIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,11 +129,8 @@ function MoonIcon() {
   );
 }
 
-/**
- * The three faces. In system mode the next stop is the side the OS does not give, so the
- * media query picks the sun or the moon. Once a theme is forced, `data-theme` sits on
- * <html> and the next stop is System, so the automatic face wins over both.
- */
+/* The face shows the next stop. CSS picks it because the server cannot read the OS
+   preference, so a JS-picked face would flash. */
 const Face = styled.span`
   display: none;
   line-height: 0;

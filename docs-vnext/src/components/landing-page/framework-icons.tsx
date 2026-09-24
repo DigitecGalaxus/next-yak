@@ -1,14 +1,9 @@
-import type { ReactNode, SVGProps } from "react";
+import type { SVGProps } from "react";
 import Image from "next/image";
 import { Icon } from "@/components/icon";
 import { asset } from "@/lib/site";
 
-/**
- * Framework marks render in their original brand colors by default (badges).
- * Pass `mono` for the single-color silhouette that inherits `currentColor` —
- * used by the editor switcher pills/dropdown and the coverage tab row, where
- * full-color logos would fight the control chrome.
- */
+/** Brand colors by default; `mono` gives a silhouette in `currentColor`. */
 type FrameworkIconProps = SVGProps<SVGSVGElement> & { mono?: boolean };
 
 export function ReactIcon({ mono, ...props }: FrameworkIconProps) {
@@ -22,23 +17,13 @@ export function ReactIcon({ mono, ...props }: FrameworkIconProps) {
   );
 }
 
-/**
- * The solidjs.com mark as one path, four ribbon subpaths that touch along their seams.
- * A plain fill welds them into one blob, so the mono variant below cuts the seams open.
- */
 const SOLID_RIBBONS =
   "M11.558.788A9.082 9.082 0 0 0 9.776.99l-.453.15c-.906.303-1.656.755-2.1 1.348l-.301.452-2.035 3.528c.426-.387.974-.698 1.643-.894h.001l.613-.154h.001a8.82 8.82 0 0 1 1.777-.206c2.916-.053 6.033 1.148 8.423 2.36 2.317 1.175 3.888 2.32 3.987 2.39L24 5.518c-.082-.06-1.66-1.21-3.991-2.386-2.393-1.206-5.521-2.396-8.45-2.343zM8.924 5.366a8.634 8.634 0 0 0-1.745.203l-.606.151c-1.278.376-2.095 1.16-2.43 2.108-.334.948-.188 2.065.487 3.116.33.43.747.813 1.216 1.147L12.328 10h.001a6.943 6.943 0 0 1 6.013 1.013l2.844-.963c-.17-.124-1.663-1.2-3.91-2.34-2.379-1.206-5.479-2.396-8.352-2.344zm5.435 4.497a6.791 6.791 0 0 0-1.984.283L2.94 13.189 0 18.334l9.276-2.992a6.945 6.945 0 0 1 7.408 2.314v.001c.695.903.89 1.906.66 2.808l2.572-4.63c.595-1.041.45-2.225-.302-3.429a6.792 6.792 0 0 0-5.255-2.543zm-3.031 5.341a6.787 6.787 0 0 0-2.006.283L.008 18.492c.175.131 2.02 1.498 4.687 2.768 2.797 1.332 6.37 2.467 9.468 1.712l.454-.152h.002c1.278-.376 2.134-1.162 2.487-2.09.353-.93.207-2.004-.541-2.978a6.791 6.791 0 0 0-5.237-2.548z";
 
 export function SolidIcon({ mono, ...props }: FrameworkIconProps) {
   if (mono) {
-    // Drawn as an outline, not a fill: filled, the four ribbons touch along their seams
-    // and weld into one blob at 15px. The stroke traces each ribbon instead, which keeps
-    // them apart. 2.2 matches the weight of the React atom beside it in the same row.
-    //
-    // An SVG mask would also open the seams, and it was the first thing I tried. It needs
-    // an id, two switchers render this icon, and the browser resolves a duplicate id to
-    // the first match. Once that first match sat in a display:none subtree the mask came
-    // back empty and the icon painted as a solid square.
+    // Stroked, not filled: filled ribbons weld into one blob at 15px. Not a mask either:
+    // two switchers render this icon, and a duplicate mask id inside display:none paints empty.
     return (
       <Icon viewBox="0 0 24 24" {...props}>
         <path
@@ -51,7 +36,6 @@ export function SolidIcon({ mono, ...props }: FrameworkIconProps) {
       </Icon>
     );
   }
-  // Official solidjs.com mark (viewBox kept; ids namespaced to avoid collisions).
   return (
     <Icon viewBox="0 0 166 155.3" {...props}>
       <defs>
@@ -142,7 +126,6 @@ export function QwikIcon({ mono, ...props }: FrameworkIconProps) {
       </Icon>
     );
   }
-  // Official qwik.dev mark (white lightning core, blue/purple shells).
   return (
     <Icon viewBox="0 0 500 506" {...props}>
       <path
@@ -190,7 +173,6 @@ export function ViteIcon({ mono, ...props }: FrameworkIconProps) {
       </Icon>
     );
   }
-  // Official vitejs.dev mark: blue→purple flash with the yellow bolt.
   return (
     <Icon viewBox="0 0 410 404" {...props}>
       <defs>
@@ -230,11 +212,7 @@ export function ViteIcon({ mono, ...props }: FrameworkIconProps) {
   );
 }
 
-/**
- * Rsbuild's brand mark is an illustrated mascot, so it has no single-colour form and no
- * `mono` variant. It also does not survive being inlined: the official file is 21kB of
- * gradients. It ships as a static asset instead, which keeps this module small.
- */
+// No mono variant: the mark is a 21kB illustration, so it ships as a static asset.
 export function RsbuildIcon({ mono: _mono, className }: FrameworkIconProps) {
   return (
     <Image
@@ -248,11 +226,13 @@ export function RsbuildIcon({ mono: _mono, className }: FrameworkIconProps) {
   );
 }
 
-export const FRAMEWORKS: { name: string; Icon: (props: FrameworkIconProps) => ReactNode }[] = [
-  { name: "React", Icon: ReactIcon },
-  { name: "Solid", Icon: SolidIcon },
-  { name: "Qwik", Icon: QwikIcon },
-  { name: "Next.js", Icon: NextIcon },
-  { name: "Vite", Icon: ViteIcon },
-  { name: "Rsbuild", Icon: RsbuildIcon },
-];
+export function StorybookIcon({ mono, ...props }: FrameworkIconProps) {
+  return (
+    <Icon viewBox="0 0 24 24" {...props}>
+      <path
+        d="M16.71.243l-.12 2.71a.18.18 0 00.29.15l1.06-.8.9.7a.18.18 0 00.28-.14l-.1-2.76 1.33-.1a1.2 1.2 0 011.279 1.2v21.596a1.2 1.2 0 01-1.26 1.2l-16.096-.72a1.2 1.2 0 01-1.15-1.16l-.75-19.797a1.2 1.2 0 011.13-1.27L16.7.222zM13.64 9.3c0 .47 3.16.24 3.59-.08 0-3.2-1.72-4.89-4.859-4.89-3.15 0-4.899 1.72-4.899 4.29 0 4.45 5.999 4.53 5.999 6.959 0 .7-.32 1.1-1.05 1.1-.96 0-1.35-.49-1.3-2.16 0-.36-3.649-.48-3.769 0-.27 4.03 2.23 5.2 5.099 5.2 2.79 0 4.969-1.49 4.969-4.18 0-4.77-6.099-4.64-6.099-6.999 0-.97.72-1.1 1.13-1.1.45 0 1.25.07 1.19 1.87z"
+        fill={mono ? "currentColor" : "#FF4785"}
+      />
+    </Icon>
+  );
+}

@@ -3,8 +3,7 @@
 import { css, keyframes, styled } from "next-yak";
 import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { container, fonts, fontWeight, ink, shadow, light, dark } from "@/tokens";
-import { editorSurface, codeReset } from "@/lib/editor-surface";
-import { overlineSmall } from "@/lib/mixins";
+import { overlineSmall, editorSurface, codeReset } from "@/lib/mixins";
 import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 import { SegmentedTabs } from "./segmented-tabs";
 import Step from "./step";
@@ -16,16 +15,6 @@ type Snippet = { html: string; lines: number };
 const CODE_FONT_SIZE = "13px";
 const CODE_LINE_HEIGHT = 1.7;
 
-/**
- * Layout for the pipeline (see pipeline.tsx for what it shows). Wide sections lay it
- * out in a row: the input and the JS pane share one horizontal axis through the plugin
- * chip, with the input shifted down by the diff's leading added line so its lines sit
- * level with the removed lines it became; the bundler config hangs under the input,
- * the CSS pane under a single elbow from the chip, and the steps sit beneath their
- * column. Narrow sections stack everything in reading order. The scroll tour (see
- * lib/scroll-tour) walks three turns of matching lines across the panes. A mouse or a
- * pen takes it over: resting on a band holds its turn lit in every pane.
- */
 export default function PipelineView({
   hosts,
   input,
@@ -40,7 +29,7 @@ export default function PipelineView({
   input: Snippet & { offset: number };
   /** the extracted CSS (named to keep clear of next-yak's `css` prop) */
   stylesheet: Snippet;
-  js: Snippet;
+  js: { html: string };
   bands: Record<"input" | "css" | "js", Band[]>;
   turns: number;
   className?: string;
@@ -48,11 +37,10 @@ export default function PipelineView({
 }) {
   const [hostId, setHostId] = useState(hosts[0].id);
   const host = hosts.find((h) => h.id === hostId) ?? hosts[0];
-  // the turn the pointer rests on; while it is set, it drives the tour instead of scrolling
   const [turn, setTurn] = useState<number | null>(null);
   const tour: Tour = {
     active: turn,
-    // a touch tap would latch a turn with no way to leave it, so only mouse and pen take over
+    // a touch tap would latch a turn with no way to leave it
     enter: (t) => (event) => {
       if (event.pointerType !== "touch") setTurn(t);
     },
@@ -79,7 +67,6 @@ export default function PipelineView({
             "--in-lines": input.lines,
             "--in-offset": input.offset,
             "--css-lines": stylesheet.lines,
-            "--js-lines": js.lines,
           } as CSSProperties
         }
       >
@@ -135,7 +122,6 @@ export default function PipelineView({
   );
 }
 
-/** The turn the pointer holds, and the handlers that let a band take or release it. */
 type Tour = {
   active: number | null;
   enter: (turn: number) => (event: PointerEvent) => void;
@@ -147,18 +133,14 @@ function Pane({
   html,
   bands = [],
   tour,
-  className,
-  style,
 }: {
   title: string;
   html: string;
   bands?: Band[];
   tour?: Tour;
-  className?: string;
-  style?: CSSProperties;
 }) {
   return (
-    <PaneFigure data-ink className={className} style={style}>
+    <PaneFigure>
       <PaneTitle>{title}</PaneTitle>
       <PaneCode>
         <div dangerouslySetInnerHTML={{ __html: html }} />
@@ -191,28 +173,19 @@ const SwitchLabel = styled.span`
 `;
 
 const Diagram = styled.div`
-  /* pane geometry the connectors and tour bands are computed from: every pane is a
-     title bar, padded code, one line per source line; the row is as tall as the two
-     stacked outputs; the axis is the input's vertical middle once it is shifted down to
-     match the diff */
+  /* the axis is the vertical middle of the input pane after its diff offset */
   --pane-title: 40px;
   --code-pad: 16px;
   --line-h: calc(${CODE_FONT_SIZE} * ${CODE_LINE_HEIGHT});
   --pane-gap: 16px;
   --in-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--in-lines) * var(--line-h));
   --css-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--css-lines) * var(--line-h));
-  --js-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--js-lines) * var(--line-h));
   --axis: calc(var(--in-offset) * var(--line-h) + var(--in-h) / 2);
   --plugin-w: 188px;
   --plugin-h: 84px;
   --col-gap: 32px;
-  /* how far a connector reaches into the column gap: up to 6px short of the pane */
   --reach: calc(var(--col-gap) - 6px);
 
-  /* The wire. It used to be a 1px hairline two lightness steps off the paper, which made
-     the one idea of this section the faintest thing in it. Now it is 2px of dashes in a
-     tone mixed halfway to the accent, and the dashes travel, so the direction reads
-     without the reader tracing a line. */
   --wire: light-dark(
     color-mix(in oklch, ${light.violetSoft} 55%, ${light.beige2}),
     color-mix(in oklch, ${dark.fog} 55%, ${dark.navy2})
@@ -232,10 +205,8 @@ const Diagram = styled.div`
     "s3";
 
   @container section (min-width: ${container.section.flow}) {
-    /* the "yours" column is sized for the config file's longest line (~47 chars), the
-       outputs for the JS diff's (~44) and stop growing before the panes turn into empty
-       ink; the plugin column takes what is left, up to 320px, so the connectors have room
-       to read as a pipeline. The mins plus gaps are what the flow breakpoint guarantees. */
+    /* column mins fit the longest config (~47 chars) and JS diff (~44) lines; the flow
+       breakpoint is their sum plus the gaps */
     grid-template-columns: minmax(320px, 420px) minmax(180px, 320px) minmax(390px, 520px);
     grid-template-areas:
       "in node out"
@@ -247,19 +218,14 @@ const Diagram = styled.div`
 
   @supports (animation-timeline: view()) {
     ${tourTimeline};
-    /* This block is the last one on the page: only about 480px of scroll follow it, and
-       the default tour needs more than that on a tall viewport. Two corrections. First,
-       cap how far the reading line sits above the bottom of the screen, so a tall
-       viewport cannot push the start of the tour past the point where the page stops
-       scrolling. Second, run the three turns off early, while the block travels from the
-       reading line up to the top of the screen. */
+    /* Last block on the page, with only ~480px of scroll after it. Cap the bottom inset
+       and run the tour early so it finishes before the page stops scrolling. */
     view-timeline-inset: 30% min(60%, 520px);
     --tour-start: 2%;
     --tour-span: 38%;
   }
 `;
 
-/* what you write: the component on the axis, the bundler config beneath it */
 const Yours = styled.div`
   grid-area: in;
   display: flex;
@@ -267,7 +233,6 @@ const Yours = styled.div`
   gap: var(--pane-gap);
 
   @container section (min-width: ${container.section.flow}) {
-    /* line the component up with the removed block in the diff */
     margin-top: calc(var(--in-offset) * var(--line-h));
   }
 `;
@@ -300,8 +265,7 @@ const PaneTitle = styled.figcaption`
 const PaneCode = styled.div`
   position: relative;
   padding: var(--code-pad) 18px;
-  /* this box scrolls long lines, not the <pre>, so the diff tint below can bleed into
-     the padding without creating a scrollable overflow */
+  /* this box scrolls, not the <pre>, so the diff tint can bleed into the padding */
   overflow-x: auto;
 
   ${codeReset};
@@ -311,8 +275,6 @@ const PaneCode = styled.div`
     line-height: ${CODE_LINE_HEIGHT};
   }
 
-  /* diff lines: a full-width tint (the line box is widened into the padding so it runs
-     edge to edge) and a +/- in the left gutter */
   .line[data-diff] {
     position: relative;
     display: inline-block;
@@ -348,7 +310,6 @@ const PaneCode = styled.div`
   }
 `;
 
-/* fades in over the first fifth of its turn and out over the last fifth */
 const bandReveal = keyframes`
   0%,
   100% {
@@ -360,7 +321,6 @@ const bandReveal = keyframes`
   }
 `;
 
-/* a band over lines --line..--line+--span of its pane, shown during tour turn --i */
 const TourBand = styled.div`
   position: absolute;
   left: 6px;
@@ -383,8 +343,7 @@ const TourBand = styled.div`
     }
   }
 
-  /* with a mouse the bands are also the targets: resting on one lines up the same code
-     in every pane. They cover the lines they mark, so this costs selecting those lines. */
+  /* bands are hover targets for a mouse, which blocks text selection of their lines */
   @media (hover: hover) and (pointer: fine) {
     pointer-events: auto;
   }
@@ -396,11 +355,6 @@ const TourBand = styled.div`
   }
 `;
 
-/* The plugin between input and outputs, with its wires. Stacked (wire in from above,
-   the plugin card, wire out below) until the section is wide enough for the row. In the
-   row everything is pinned to the axis: the wire in from the input lands on the card's
-   input port, the wire out leaves the output port for the JS pane, and one elbow drops
-   from under the card to the CSS pane. */
 const Node = styled.div`
   grid-area: node;
   display: flex;
@@ -415,7 +369,7 @@ const Node = styled.div`
   }
 `;
 
-/* One period of travel makes the dash pattern land back on itself, so the loop is seamless. */
+/* one period of travel lands the dashes back on themselves, so the loop is seamless */
 const flowX = keyframes`
   to {
     background-position-x: var(--wire-period);
@@ -428,7 +382,6 @@ const flowY = keyframes`
   }
 `;
 
-/* down the left edge first, then right along the bottom */
 const flowElbow = keyframes`
   to {
     background-position:
@@ -437,8 +390,7 @@ const flowElbow = keyframes`
   }
 `;
 
-/* A dashed border cannot move, and a background can, so the dashes are a repeating
-   gradient. The element carries the 2px of height itself. */
+/* a dashed border cannot animate, so the dashes are a repeating gradient */
 const dashesRight = css`
   background-image: repeating-linear-gradient(
     to right,
@@ -469,8 +421,6 @@ const dashesDown = css`
   }
 `;
 
-/* The plugin is the subject of this section, so it is a card with two ports, not a tag.
-   The old chip filled three percent of its column and read as a label on the empty gap. */
 const Plugin = styled.div`
   box-sizing: border-box;
   width: var(--plugin-w);
@@ -480,8 +430,6 @@ const Plugin = styled.div`
   background: ${ink.card};
   box-shadow: ${shadow.card};
   color: ${ink.fg};
-  /* the column belongs to both layouts: stacked, a block box ran the title and the
-     caption together on one line and pushed the caption past the card */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -495,7 +443,6 @@ const Plugin = styled.div`
     min-height: var(--plugin-h);
     justify-content: center;
 
-    /* the two ports the horizontal wires land on, centred on the axis */
     &::before,
     &::after {
       content: "";
@@ -535,7 +482,6 @@ const PluginCaption = styled.span`
   white-space: nowrap;
 `;
 
-/* stacked: a short vertical run. The dashes travel, and that is the direction cue. */
 const verticalWire = css`
   position: relative;
   width: 2px;
@@ -543,7 +489,6 @@ const verticalWire = css`
   ${dashesDown};
 `;
 
-/* row: a horizontal run on the axis */
 const horizontalWire = css`
   position: absolute;
   top: var(--axis);
@@ -551,10 +496,6 @@ const horizontalWire = css`
   height: 2px;
   transform: translateY(-50%);
   ${dashesRight};
-
-  &::after {
-    content: none;
-  }
 `;
 
 const LineIn = styled.div`
@@ -562,7 +503,6 @@ const LineIn = styled.div`
 
   @container section (min-width: ${container.section.flow}) {
     ${horizontalWire};
-    /* the wires reach across the column gap to just short of the panes */
     left: calc(-1 * var(--reach));
     right: calc(50% + var(--plugin-w) / 2 + 5px);
   }
@@ -578,9 +518,7 @@ const LineOut = styled.div`
   }
 `;
 
-/* From under the plugin down to the CSS pane's middle, then across to it. One element
-   paints both runs, the left edge and the bottom edge, so the dashes travel around the
-   corner in one animation. Row only. */
+/* one element paints both runs so the dashes travel around the corner in one animation */
 const ElbowDown = styled.div`
   display: none;
 
@@ -607,8 +545,7 @@ const ElbowDown = styled.div`
       2px var(--wire-period),
       var(--wire-period) 2px;
     background-repeat: repeat-y, repeat-x;
-    /* both runs are anchored to the bottom edge, so a dash always lands on the corner
-       instead of a gap falling there */
+    /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
     background-position:
       0 100%,
       0 100%;
