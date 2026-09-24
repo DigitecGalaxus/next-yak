@@ -755,7 +755,7 @@ const language: LanguageRegistration = {
       name: "variable.interpolation.scss",
       patterns: [
         {
-          include: "source.ts#expression",
+          include: "source.tsx#expression",
         },
       ],
     },

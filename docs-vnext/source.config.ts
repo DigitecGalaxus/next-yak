@@ -38,7 +38,9 @@ export default defineConfig({
       themes: { light: yakTheme, dark: yakTheme },
       // Custom grammars so CSS inside styled`…`/css`…` literals is highlighted per-property
       // (same as lib/shiki.ts). `styled` injects into ts/tsx fences; cssStyled builds on `css`.
-      langs: ["css", styled, cssStyled],
+      // Both grammars embed `source.tsx#…` rules, so `tsx` must load even for a page with
+      // only `ts` fences. Without it, interpolations and generics get no scopes.
+      langs: ["tsx", "css", styled, cssStyled],
       transformers: [
         ...(rehypeCodeDefaultOptions.transformers ?? []),
         // twoslash fences emit Popup/PopupTrigger/PopupContent, rendered by our base-ui
