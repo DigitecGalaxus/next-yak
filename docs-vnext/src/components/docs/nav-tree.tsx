@@ -5,8 +5,7 @@ import { usePathname } from "next/navigation";
 import type { Node, Root } from "fumadocs-core/page-tree";
 import { css, styled } from "next-yak";
 import { light, dark } from "@/tokens";
-import { sectionLabel } from "@/lib/mixins";
-import { railLink, railLinkActive } from "@/lib/link-styles";
+import { sectionLabel, railLink, railLinkActive } from "@/lib/mixins";
 import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
 export default function NavTree({
@@ -78,8 +77,7 @@ function PageLink({
   pathname: string;
   onNavigateAction?: () => void;
 }) {
-  // The url decides, not the flag: fumadocs leaves `external` unset on a markdown link
-  // item in meta.json, which sent the sidebar GitHub entry down the internal branch.
+  // fumadocs leaves `external` unset on markdown link items in meta.json
   if (node.external || isExternalHref(node.url)) {
     return (
       <ExternalItemLink href={node.url} {...externalLinkProps} onClick={onNavigateAction}>
@@ -88,9 +86,8 @@ function PageLink({
     );
   }
 
-  const active = pathname === node.url;
   return (
-    <ItemLink href={node.url} $active={active} onClick={onNavigateAction}>
+    <ItemLink href={node.url} $active={pathname === node.url} onClick={onNavigateAction}>
       {node.name}
     </ItemLink>
   );
@@ -130,8 +127,7 @@ const FolderChildren = styled.div`
 const ItemLink = styled(Link)<{ $active?: boolean }>`
   ${railLink};
 
-  /* The conditional has to wrap an inline css block. next-yak compiles the block it can
-     see at the call site, so handing it a bare mixin drops the rule. */
+  /* next-yak drops a bare mixin returned from a conditional, so wrap it in a css block */
   ${({ $active }) =>
     $active &&
     css`

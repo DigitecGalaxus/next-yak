@@ -5,22 +5,15 @@ import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { css, styled } from "next-yak";
 import { fonts, light, dark } from "@/tokens";
 import { keycapStyles, backdropStyles } from "@/lib/mixins";
-import { Highlight } from "./highlight";
+import { asset } from "@/lib/site";
 import { SearchIcon } from "./search-icon";
-import { searchClient } from "./search-config";
 
-/**
- * Command-palette search built from base-ui `Dialog` (focus trap, scroll lock,
- * Escape + backdrop dismissal, portal) and fumadocs-core's `useDocsSearch`
- * (the query logic). The result list and its keyboard navigation are
- * hand-rolled — base-ui's Autocomplete gates Enter/selection on its own `open`
- * state, which conflicts with the Dialog's modal behaviour, so a small
- * controlled list (the same approach fumadocs itself ships) is cleaner here.
- */
+// base-ui Autocomplete gates Enter on its own `open` state, which conflicts with the
+// modal Dialog, so the result list and its keyboard handling are hand-rolled.
 export default function SearchDialog({
   open,
   onOpenChange,
@@ -29,11 +22,14 @@ export default function SearchDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const { search, setSearch, query } = useDocsSearch({ ...searchClient, delayMs: 100 });
+  const { search, setSearch, query } = useDocsSearch({
+    type: "static",
+    from: asset("/api/search"),
+    delayMs: 100,
+  });
   const items = query.data && query.data !== "empty" ? query.data : [];
   const [active, setActive] = useState(0);
 
-  // Re-anchor the highlight to the top whenever the result set changes.
   useEffect(() => {
     setActive(0);
   }, [query.data]);
@@ -116,6 +112,20 @@ export default function SearchDialog({
   );
 }
 
+// Snippets wrap matches in <mark>. Rendering the rest as text keeps it escaped.
+function Highlight({ text }: { text: string }) {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(/<mark>([\s\S]*?)<\/mark>/g)) {
+    const start = match.index;
+    if (start > lastIndex) nodes.push(text.slice(lastIndex, start));
+    nodes.push(<Mark key={start}>{match[1]}</Mark>);
+    lastIndex = start + match[0].length;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
+}
+
 const Backdrop = styled(Dialog.Backdrop)`
   ${backdropStyles};
   z-index: 50;
@@ -143,7 +153,6 @@ const Popup = styled(Dialog.Popup)`
   }
 `;
 
-// Accessible label for the dialog; visually hidden.
 const Title = styled(Dialog.Title)`
   position: absolute;
   width: 1px;
@@ -236,4 +245,10 @@ const Content = styled.span<{ $page: boolean }>`
   font-size: 14px;
   color: light-dark(${light.violet}, ${dark.white});
   font-weight: ${({ $page }) => ($page ? 600 : 400)};
+`;
+
+const Mark = styled.mark`
+  background: transparent;
+  color: light-dark(${light.red}, ${dark.red});
+  font-weight: 700;
 `;

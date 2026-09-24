@@ -1,9 +1,8 @@
-// Functions that build the palette's color strings. `brand`/`paper` take a lightness and read the
-// chroma off a per-family curve, so most colors are one number; pass a 2nd arg to force the chroma.
+// `brand` and `paper` read the chroma off a per-family curve when no chroma is given.
 
 type Stops = ReadonlyArray<readonly [number, number]>;
 
-// Chroma at a lightness, linearly interpolated between a family's [lightness, chroma] points.
+// Linear interpolation between [lightness, chroma] points.
 const chromaAt = (stops: Stops, l: number): number => {
   if (l <= stops[0][0]) return stops[0][1];
   const last = stops[stops.length - 1];
@@ -32,5 +31,4 @@ const PAPER: Stops = [
 export const brand = (l: number, c: number = chromaAt(BRAND, l)) => `oklch(${l} ${round(c)} 293)`;
 export const paper = (l: number, c: number = chromaAt(PAPER, l)) => `oklch(${l} ${round(c)} 72)`;
 export const redOk = (l: number, c: number) => `oklch(${l} ${c} 31)`;
-export const cyanOk = (l: number, c: number) => `oklch(${l} ${c} 198)`;
 export const alpha = (c: string, a: number) => `rgb(from ${c} r g b / ${a})`;

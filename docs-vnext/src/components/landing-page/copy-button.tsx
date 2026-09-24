@@ -4,13 +4,8 @@ import { styled } from "next-yak";
 import { light, dark, ink } from "@/tokens";
 import { focusRing } from "@/lib/mixins";
 import { useCopy } from "@/lib/use-copy";
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
-/**
- * The red "install" copy button shared by the hero npm terminal and the coverage card.
- * A flat, dark-edged button that flips to a green "COPIED" confirmation.
- * Self-contained — pass the text.
- */
 export function CopyButton({
   text,
   className,

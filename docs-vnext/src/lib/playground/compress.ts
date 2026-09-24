@@ -1,15 +1,9 @@
-import { LEGACY_EXAMPLE_FILES } from "./legacy-example";
 import { compressSync, decompressSync, strFromU8, strToU8 } from "fflate";
 import { fromUint8Array, toUint8Array } from "js-base64";
 
 /**
- * Share links carry the playground files in `?q=`: the files joined with a delimiter,
- * common snippets swapped for 2-byte tokens, then deflated and base64 encoded.
- *
- * The dictionary is part of the link format. Change one entry and every link made before
- * the change decodes to the wrong text. So version "0" is frozen, including the two files
- * of the old default example (see legacy-example.ts). A new dictionary needs a new version
- * and a decoder that keeps the old one.
+ * The dictionary is part of the share link format and is frozen for version "0".
+ * Changing any entry breaks every existing link.
  */
 const DICTIONARY_VERSION = "0";
 
@@ -89,27 +83,64 @@ const dictionary = [
   "other",
   "index",
   "/img/yak-jumping.png",
-  // The files of the old default example, so a link that edits only the main file stays short
+  // snippets and files of the old playground's default example
   `const Center = styled.div\`
   display: grid;
   width: 100%;
   height: 100%;
   place-items: center;
 `,
-  LEGACY_EXAMPLE_FILES.other,
-  LEGACY_EXAMPLE_FILES["different.yak"],
+  `import { styled } from "next-yak";
+
+export const theme = {
+  dark: "html.dark &",
+  light: "html.light &",
+};
+
+export const Title = styled.h1\`
+  font-size: 5rem;
+  font-weight: 400;
+  text-align: center;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+
+  background: #000;
+  background: radial-gradient(
+    circle farthest-corner at top left,
+    #000 0%,
+    #333 100%
+  );
+  -webkit-text-fill-color: transparent;
+
+  @supports (-webkit-text-stroke: red 1px) {
+    transform: translateY(-4px);
+    padding: 4px 0;
+    \${theme.dark} {
+      background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    background: linear-gradient(45deg, #d1c170, #ed8080, #d1c170) -100%/ 200%;
+    -webkit-text-fill-color: initial;
+    -webkit-text-stroke: 4px transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--color-fd-background);
+    letter-spacing: 0.02em;
+  }
+
+  background-clip: text;
+  -webkit-background-clip: text;
+\`;`,
+  `const green = "00ff00";
+export const myColor = \`#\${ green }\`;`,
 ]
-  // Sorting the dictionary by length in descending order
-  // to ensure that longer tokens are replaced first
-  // e.g. `import { styled, css } from "next-yak";` before `import`
+  // longest first, so `import { styled, css } from "next-yak";` wins over `import`
   .sort((a, b) => b.length - a.length);
 
-// The delimiter is a special token that is used to separate
-// the different parts of the compressed string
 const DELIMITER = convertDictionaryIndexToToken(0);
 
-// It is important that the DELIMITER is the first token in the dictionary,
-// so that the index 0 matches the value
+// the delimiter must be token 0
 dictionary.unshift(DELIMITER);
 
 export const compressWithDictionary = (code: Record<string, string>): string => {
@@ -122,14 +153,11 @@ export const compressWithDictionary = (code: Record<string, string>): string => 
   dictionary.forEach((token, index) => {
     compressed = compressed.replaceAll(token, convertDictionaryIndexToToken(index));
   });
-  const compressedBytes = strToU8(compressed);
-  const compressedFlate = compressSync(compressedBytes, { level: 9, mem: 12 });
-  return fromUint8Array(compressedFlate);
+  return fromUint8Array(compressSync(strToU8(compressed), { level: 9, mem: 12 }));
 };
 
 export const decompressWithDictionary = (compressed: string): Record<string, string> => {
-  const decompressed = strFromU8(decompressSync(toUint8Array(compressed)));
-  let expanded = decompressed;
+  let expanded = strFromU8(decompressSync(toUint8Array(compressed)));
   dictionary.forEach((token, index) => {
     expanded = expanded.replaceAll(convertDictionaryIndexToToken(index), token);
   });
@@ -139,9 +167,7 @@ export const decompressWithDictionary = (compressed: string): Record<string, str
   }
   const result: Record<string, string> = {};
   for (let i = 0; i < code.length; i += 2) {
-    const path = code[i];
-    const content = code[i + 1];
-    result[path] = content;
+    result[code[i]] = code[i + 1];
   }
   return result;
 };

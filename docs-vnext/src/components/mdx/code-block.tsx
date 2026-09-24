@@ -4,14 +4,9 @@ import { useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { styled } from "next-yak";
 import { fonts, shadow, status, syntax, light, dark, ink } from "@/tokens";
-import { editorSurface, editorHeader } from "@/lib/editor-surface";
+import { editorSurface, editorHeader } from "@/lib/mixins";
 import { useCopy } from "@/lib/use-copy";
 
-/**
- * Wraps the shiki-highlighted `<pre>` from fumadocs' rehypeCode, which passes `title`/`icon`
- * props and dual `--shiki-light/-dark` custom props on the pre/spans. Nothing applies those by
- * default, so we resolve them with `light-dark()` — revealing the colors and following the theme.
- */
 export function CodeBlock({
   title,
   icon,
@@ -21,7 +16,7 @@ export function CodeBlock({
   const preRef = useRef<HTMLPreElement>(null);
 
   return (
-    <Figure data-ink>
+    <Figure>
       {title ? (
         <TitleBar>
           {icon ? <Icon aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon }} /> : null}
@@ -77,8 +72,6 @@ function CheckIcon() {
   );
 }
 
-// Shares the hero editor's card chrome (editor-surface.ts) and is always navy in both
-// themes, so the title bar / copy button are styled for a dark surface.
 const Figure = styled.figure`
   ${editorSurface};
   position: relative;
@@ -87,7 +80,7 @@ const Figure = styled.figure`
 
 const TitleBar = styled.div`
   ${editorHeader};
-  /* extra right room so a long filename never collides with the copy button */
+  /* room for the copy button */
   padding-right: 44px;
   font-family: ${fonts.mono};
   font-size: 13px;
@@ -138,7 +131,6 @@ const Copy = styled.button`
     opacity: 1;
   }
 
-  /* a touch screen has no hover, so the button is always there */
   @media (hover: none) {
     opacity: 1;
   }
@@ -152,19 +144,17 @@ const Pre = styled.pre`
   font-size: 13.5px;
   line-height: 1.6;
   color: light-dark(var(--shiki-light), var(--shiki-dark));
-  /* transparent so the card's ink fill shows through */
   background: transparent;
 
   & code {
     font-family: inherit;
   }
 
-  /* Each token span carries its own --shiki-light/-dark; resolve per element. */
+  /* shiki sets --shiki-light/-dark on each token span */
   & span {
     color: light-dark(var(--shiki-light), var(--shiki-dark));
   }
 
-  /* shiki notation transformers (diff / highlight) */
   & .line {
     display: inline-block;
     width: 100%;
@@ -188,8 +178,7 @@ const Pre = styled.pre`
     border-radius: 3px;
   }
 
-  /* twoslash autocomplete dropdown — raw <ul>/<li> markup (not the popup component), so styled
-     here. Without sizing, the kind-icon SVG balloons to fill the block. */
+  /* twoslash completions render as raw <ul>/<li>, not through the popup component */
   & .twoslash-completion-cursor {
     position: relative;
     display: inline-flex;

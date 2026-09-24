@@ -3,16 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { css, styled } from "next-yak";
-import { sectionLabel } from "@/lib/mixins";
-import { railLink, railLinkActive } from "@/lib/link-styles";
+import { sectionLabel, railLink, railLinkActive } from "@/lib/mixins";
 
-export type PostLink = { url: string; title: string };
-
-/**
- * The blog's left rail, the counterpart of the docs nav tree. It answers a pointer the
- * same way that tree does, with a surface and a colour, because both are rows in a list.
- */
-export default function PostNav({ posts }: { posts: PostLink[] }) {
+export default function PostNav({ posts }: { posts: { url: string; title: string }[] }) {
   const pathname = usePathname();
 
   return (
@@ -46,8 +39,7 @@ const List = styled.ul`
 const ItemLink = styled(Link)<{ $active: boolean }>`
   ${railLink};
 
-  /* The conditional has to wrap an inline css block. next-yak compiles the block it can
-     see at the call site, so handing it a bare mixin drops the rule. */
+  /* next-yak drops a bare mixin returned from a conditional, so wrap it in a css block */
   ${({ $active }) =>
     $active &&
     css`

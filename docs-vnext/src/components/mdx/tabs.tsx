@@ -4,20 +4,17 @@ import { fonts, ink } from "@/tokens";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import { styled } from "next-yak";
 import { useState, type ReactNode } from "react";
-import { editorSurface, editorHeader } from "@/lib/editor-surface";
+import { editorSurface, editorHeader } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
-import { iconForTab } from "./tab-icons";
+import { Icon } from "@/components/icon";
 
 export function Tabs({
   title,
   items,
   children,
 }: {
-  /** Window/file title shown on the left, distinct from the switcher values. */
   title?: string;
   items: string[];
-  /** Accepted for compatibility with the docs content; not yet used. */
-  groupId?: string;
   children: ReactNode;
 }) {
   const [value, setValue] = useState(items[0]);
@@ -25,7 +22,7 @@ export function Tabs({
   const icon = iconForTab(value);
 
   return (
-    <Root data-ink value={value} onValueChange={setTab}>
+    <Root value={value} onValueChange={setTab}>
       <Header>
         <Title>
           {icon ? <TabIcon>{icon}</TabIcon> : null}
@@ -44,15 +41,41 @@ export function Tabs({
   );
 }
 
+function iconForTab(value: string) {
+  const v = value.trim().toLowerCase();
+  if (v === "typescript" || /\.(ts|mts|cts|tsx)$/.test(v))
+    return <FileBadge bg="#3178C6" fg="#fff" label="TS" />;
+  if (v === "javascript" || /\.(js|mjs|cjs|jsx)$/.test(v))
+    return <FileBadge bg="#F7DF1E" fg="#000" label="JS" />;
+  return null;
+}
+
+function FileBadge({ bg, fg, label }: { bg: string; fg: string; label: string }) {
+  return (
+    <Icon viewBox="0 0 16 16">
+      <rect width="16" height="16" rx="2.5" fill={bg} />
+      <text
+        x="8.2"
+        y="11"
+        textAnchor="middle"
+        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+        fontSize="7.5"
+        fontWeight="700"
+        fill={fg}
+      >
+        {label}
+      </text>
+    </Icon>
+  );
+}
+
 export function Tab({ value, children }: { value: string; children: ReactNode }) {
   return <Panel value={value}>{children}</Panel>;
 }
 
-// Shares the hero editor's card chrome (editor-surface.ts): file logo + title on the
-// left, the switcher on the right.
 const Root = styled(BaseTabs.Root)`
   ${editorSurface};
-  /* query container the shared EditorSwitcher reads to swap pills ↔ dropdown when narrow */
+  /* read by EditorSwitcher */
   container: editor / inline-size;
   margin: 20px 0;
 `;
@@ -91,8 +114,7 @@ const TitleText = styled.span`
 `;
 
 const Panel = styled(BaseTabs.Panel)`
-  /* The panel's code block is a <figure> with its own card chrome; strip it so it merges
-     into the unified editor container. */
+  /* the nested <CodeBlock> drops its own card chrome */
   & > figure {
     margin: 0;
     border: none;

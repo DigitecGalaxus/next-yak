@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
-import { highlighterPromise, yakTheme } from "@/lib/shiki";
+import { highlightPromise } from "@/lib/shiki";
 import PipelineView, { type Band, type Host } from "./pipeline-view";
-import { NextIcon, RsbuildIcon, ViteIcon } from "./framework-icons";
-import { StorybookIcon } from "./tool-icons";
+import { NextIcon, RsbuildIcon, StorybookIcon, ViteIcon } from "./framework-icons";
 
 const INPUT = `const Button = styled.button\`
   font-size: 1.5em;
@@ -16,9 +15,7 @@ const OUTPUT_CSS = `.button_x7a {
 }
 .button_x7a:hover { color: red; }`;
 
-// The JS pane is a diff: the stylesheet import arrives, the template leaves, and the
-// component keeps only a class reference. Deliberately schematic (the real output goes
-// through yak's internal runtime); the point is what leaves the bundle and what stays.
+// Schematic: the real output goes through yak's internal runtime.
 const OUTPUT_JS = `import "./Button.css";
 const Button = styled.button\`
   font-size: 1.5em;
@@ -36,8 +33,6 @@ const JS_DIFF: Record<number, "add" | "remove"> = {
   7: "add",
 };
 
-// The bundlers the plugin runs inside, each with the config that wires it in. Same
-// input, same output whichever you pick; only this file changes.
 const HOSTS = [
   {
     id: "next",
@@ -84,10 +79,7 @@ export default defineConfig({
   },
 ] as const;
 
-// The scroll tour lights up what belongs together, one turn at a time, walking the
-// input top to bottom: the component and the class reference plus import that replace
-// it, the static declarations where they went, then the nested selector and its
-// flattened rule. 1-based lines of each pane.
+// Lines (1-based) of each pane that light up together in each scroll-tour turn.
 const TURNS = 3;
 const BANDS: Record<"input" | "css" | "js", Band[]> = {
   input: [
@@ -108,7 +100,6 @@ const BANDS: Record<"input" | "css" | "js", Band[]> = {
   ],
 };
 
-/** Tag shiki's line spans with the diff marks so the pane can paint them. */
 function markDiff(html: string, marks: Record<number, "add" | "remove">): string {
   let n = 0;
   return html.replaceAll('<span class="line">', () => {
@@ -117,14 +108,6 @@ function markDiff(html: string, marks: Record<number, "add" | "remove">): string
   });
 }
 
-/**
- * "How it works" as the pipeline it is: Button.tsx and your bundler config go in, the
- * plugin sits in the middle, and two things come out, a real stylesheet and the same JS
- * with the template swapped for a class reference (shown as a diff). A switch picks the
- * bundler; only the config pane and the chip's caption change, which is the point.
- * Highlighting happens here on the server; pipeline-view.tsx holds the switch state and
- * the layout.
- */
 export default async function Pipeline({
   className,
   style,
@@ -132,12 +115,9 @@ export default async function Pipeline({
   className?: string;
   style?: CSSProperties;
 }) {
-  const highlighter = await highlighterPromise;
-  const highlight = (code: string, lang: string) =>
-    highlighter.codeToHtml(code, { lang, theme: yakTheme.name });
+  const highlight = await highlightPromise;
   const lines = (code: string) => code.split("\n").length;
-  // lines the diff adds before the removed block; the input pane shifts down by as many
-  // so its lines sit level with the ones they became
+  // lines the diff adds before the removed block, so the input pane can sit level with it
   const inOffset =
     Math.min(...Object.entries(JS_DIFF).flatMap(([n, m]) => (m === "remove" ? [+n] : []))) - 1;
 
@@ -147,8 +127,6 @@ export default async function Pipeline({
     file: h.file,
     tab: (
       <>
-        {/* the brand marks run in colour here: two of the four (Rsbuild, Vite) lose
-            their identity in one colour, and this row sits on paper, not on ink */}
         <h.Icon />
         {h.label}
       </>
@@ -161,7 +139,7 @@ export default async function Pipeline({
       hosts={hosts}
       input={{ html: highlight(INPUT, "tsx"), lines: lines(INPUT), offset: inOffset }}
       stylesheet={{ html: highlight(OUTPUT_CSS, "css"), lines: lines(OUTPUT_CSS) }}
-      js={{ html: markDiff(highlight(OUTPUT_JS, "tsx"), JS_DIFF), lines: lines(OUTPUT_JS) }}
+      js={{ html: markDiff(highlight(OUTPUT_JS, "tsx"), JS_DIFF) }}
       bands={BANDS}
       turns={TURNS}
       className={className}

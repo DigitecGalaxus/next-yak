@@ -2,13 +2,6 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # testing
 /coverage
@@ -45,9 +38,6 @@ next-env.d.ts
 
 # share cards, written by scripts/generate-og.mjs at build time
 /public/og/
-
-# playground type files, written by scripts/generate-playground-types.mjs
-/public/playground/
 
 # playground type files, written by scripts/generate-playground-types.mjs
 /public/playground/

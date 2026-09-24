@@ -10,20 +10,15 @@ import type {
   WorkerResponse,
 } from "./types";
 
-export type CompilerState = {
+type CompilerState = {
   status: "loading" | "ready";
-  /** the last output that compiled and ran. It stays on screen while the code has an error. */
+  /** the last output that compiled and ran, kept while the code has an error */
   files: TransformedFile[];
   Component: ComponentType | null;
   error: string | null;
 };
 
-/**
- * Compiles the playground files in a worker and runs the result.
- *
- * Every request carries an id, and only the answer to the newest request counts. A slow
- * compile that finishes after a faster, newer one cannot put old output back on screen.
- */
+/** Compiles in a worker and runs the result. Only the answer to the newest request counts. */
 export function useCompiler(): [CompilerState, (files: PlaygroundFile[], options: TransformOptions) => void] {
   const worker = useRef<Worker | null>(null);
   const latest = useRef(0);

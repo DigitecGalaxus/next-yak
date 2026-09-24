@@ -6,23 +6,16 @@ import { styled } from "next-yak";
 import { dark } from "@/tokens";
 
 /**
- * Renders the playground component inside a shadow root.
- *
- * The shadow root keeps the two style sheets apart: the site's CSS does not reach the
- * preview, and a global selector in the playground (`html.dark &`, `body`) does not restyle
- * the site. `:host { all: initial }` also stops the site's font and colour from being
- * inherited, so the preview looks like a blank page with only the playground's CSS.
- *
- * It is a separate React root, not a portal. React listens for events on its root
- * container, and a click inside a shadow root reaches a listener outside it retargeted to
- * the host element, so a portal's onClick handlers would never fire.
+ * Renders into a shadow root so the site CSS and the playground CSS stay apart.
+ * It uses a separate React root, not a portal: events from inside a shadow root are
+ * retargeted to the host, so a portal's onClick handlers would never fire.
  */
 export function Preview({
   Component,
   sheets,
 }: {
   Component: ComponentType | null;
-  /** one style sheet per file. Not `css`: that prop name belongs to yak's css prop. */
+  /** not `css`, that name is yak's css prop */
   sheets: string[];
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -32,8 +25,6 @@ export function Preview({
     const host = hostRef.current!;
     const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
     const container = document.createElement("div");
-    // the container fills the panel, like a page body, so playground code can size to it
-    // (`min-height: 100%`) and centre itself in the preview
     container.style.height = "100%";
     shadow.replaceChildren(container);
     const root = createRoot(container);
@@ -60,11 +51,7 @@ export function Preview({
   return <Host ref={hostRef} />;
 }
 
-/**
- * `all: initial` drops everything the site would pass down. `color-scheme` comes back on
- * purpose: the preview follows the site's light or dark theme, so it paints a white page in
- * light mode and a dark page in dark mode, and playground CSS can use light-dark() too.
- */
+/* `all: initial` also resets color-scheme, so it is inherited back to follow the site theme */
 const hostReset = `
 :host {
   all: initial;
@@ -84,7 +71,6 @@ const Host = styled.div`
   overflow: auto;
 `;
 
-/** Shows a render error in place of the component, until the next compile. */
 class ErrorBoundary extends Component<
   { resetKey: unknown; children: ReactNode },
   { error: Error | null; resetKey: unknown }

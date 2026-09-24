@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_NAME, absoluteUrl } from "./site";
 
-/**
- * The per-page social block: the share card, the title, the description and the URL.
- *
- * Without it every page inherits the root layout's block, so a share of any docs page or
- * any post shows the homepage card and the homepage title. The card lives at
- * `/og/<card>.png`, written by scripts/generate-og.mjs before the build.
- */
 export function pageMetadata({
   title,
   description,
@@ -17,11 +10,9 @@ export function pageMetadata({
 }: {
   title: string;
   description?: string;
-  /** The route, for the canonical link and for og:url. */
   path: string;
-  /** The card file name under public/og, without the extension. */
+  /** File name under public/og (written by scripts/generate-og.mjs), without extension. */
   card: string;
-  /** Set on a blog post. It turns the card into an article for a crawler. */
   publishedTime?: string;
 }): Metadata {
   const images = [

@@ -1,11 +1,9 @@
 import { css, styled } from "next-yak";
 import Link from "next/link";
 import { fonts, fontSize, fontWeight, maxContentWidth, light, dark } from "@/tokens";
-import { sectionLabel } from "@/lib/mixins";
-import { chromeLink, proseLink } from "@/lib/link-styles";
+import { inlineCode, sectionLabel, chromeLink, proseLink } from "@/lib/mixins";
 import { externalLinkProps } from "@/lib/external-link";
 import Yak from "./yak";
-import Code from "./code";
 
 const COLUMNS = [
   {
@@ -40,16 +38,10 @@ const COLUMNS = [
   },
 ];
 
-/**
- * The landing page's footer. Opens with the rename, which is the permanent home for
- * the old name (the hero badge and header subtitle repeat it while the transition is
- * fresh), then the link columns.
- */
 export default function Footer() {
   return (
     <footer
       css={css`
-        /* the query container for the grid below (an element can't query itself) */
         container: footer / inline-size;
         color: light-dark(${light.violet}, ${dark.white});
       `}
@@ -81,7 +73,6 @@ export default function Footer() {
           </div>
           <p
             css={css`
-              /* wide enough for the story link to share the last line at desktop widths */
               max-width: 48ch;
               font-size: ${fontSize.small};
               line-height: 1.6;
@@ -138,9 +129,6 @@ const Inner = styled.div`
   }
 
   @container footer (min-width: 900px) {
-    /* brand column beside the three link columns: the brand takes the larger share so
-       the links sit well clear of its paragraph; the link columns never drop below the
-       width of their longest label */
     grid-template-columns: minmax(0, 2.2fr) repeat(3, minmax(180px, 1fr));
   }
 `;
@@ -159,11 +147,14 @@ const Brand = styled.div`
   }
 `;
 
-/* It sits inside a sentence, so it takes the prose role and not a button. A button cannot
-   stand in running text. The arrow goes, because an arrow belongs to a button. */
 const StoryLink = styled(Link)`
   ${proseLink};
   font-weight: ${fontWeight.bold};
+  white-space: nowrap;
+`;
+
+const Code = styled.code`
+  ${inlineCode};
   white-space: nowrap;
 `;
 

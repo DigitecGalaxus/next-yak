@@ -1,5 +1,5 @@
 import { css } from "next-yak";
-import { fonts, fontSize, fontWeight, light, dark, scrim } from "@/tokens";
+import { fonts, fontSize, fontWeight, light, dark, ink, scrim, shadow } from "@/tokens";
 
 export const keycapStyles = css`
   padding: 2px 8px;
@@ -25,11 +25,6 @@ export const subsectionHeading = css`
   color: light-dark(${light.violet}, ${dark.white});
 `;
 
-/**
- * The auto-measured sliding highlight behind a Base UI Tabs pill group — the shared
- * motion mechanic for the editor switcher and the coverage framework tabs. Consumers
- * add their own border-radius / background / outline.
- */
 export const slidingIndicator = css`
   position: absolute;
   z-index: 0;
@@ -52,21 +47,12 @@ export const overline = css`
   text-transform: uppercase;
 `;
 
-/**
- * A focus-visible ring. next-yak mixins are static, so the parts that vary are read
- * from CSS variables rather than arguments: it defaults to the violet accent at a 2px
- * offset; set `--focus-ring` (color) and/or `--focus-ring-offset` at the call site for
- * the tighter cyan ring used on the dark editor surface.
- */
+// Mixins take no arguments. Set `--focus-ring` / `--focus-ring-offset` at the call site to vary it.
 export const focusRing = css`
   outline: 2px solid var(--focus-ring, light-dark(${light.violet}, ${dark.white}));
   outline-offset: var(--focus-ring-offset, 2px);
 `;
 
-/**
- * The small uppercase label above a docs sidebar group and the on-page TOC heading
- * (nav-tree's SectionLabel, toc's Heading). Each consumer adds only its own margins.
- */
 export const sectionLabel = css`
   ${overline};
   font-size: 13px;
@@ -74,29 +60,21 @@ export const sectionLabel = css`
   color: light-dark(${light.violetSoft}, ${dark.fog});
 `;
 
-/**
- * A tighter overline for small mono captions (the coverage terminal / "works with"
- * labels). Consumers set their own color.
- */
 export const overlineSmall = css`
   ${overline};
   font-size: 13px;
   letter-spacing: 1.5px;
 `;
 
-/** The inline `<code>` chip — shared by the landing <Code> and the docs prose. */
 export const inlineCode = css`
   font-family: ${fonts.mono};
-  /* stays slightly smaller than surrounding text, but never dips below the 13px floor */
   font-size: max(0.88em, 13px);
-  /* bold, so a code name holds its own next to the bold brand name in the same sentence */
   font-weight: ${fontWeight.bold};
   color: light-dark(${light.violet}, ${dark.white});
   background: light-dark(
     color-mix(in srgb, ${light.violet} 8%, transparent),
     color-mix(in srgb, ${dark.white} 10%, transparent)
   );
-  /* a hairline edge drawn inside the box, so it adds no width to the line */
   box-shadow: inset 0 0 0 1px
     light-dark(
       color-mix(in srgb, ${light.violet} 14%, transparent),
@@ -106,11 +84,6 @@ export const inlineCode = css`
   border-radius: 5px;
 `;
 
-/**
- * Off the screen, but in the accessibility tree and in the HTML. For text that a
- * screen reader needs and an eye does not: the rename note in the header, the
- * "opens in a new tab" hint after an external link.
- */
 export const visuallyHidden = css`
   position: absolute;
   width: 1px;
@@ -118,4 +91,160 @@ export const visuallyHidden = css`
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+`;
+
+export const proseLink = css`
+  color: light-dark(${light.red}, ${dark.red});
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover,
+  &:focus-visible {
+    color: light-dark(${light.redDeep}, ${dark.redDeep});
+    text-decoration-thickness: 2px;
+  }
+`;
+
+export const chromeLink = css`
+  text-decoration: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: color 0.15s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: light-dark(${light.red}, ${dark.red});
+  }
+`;
+
+export const railLink = css`
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: ${fontSize.small};
+  line-height: 1.4;
+  color: light-dark(${light.violetSoft}, ${dark.fog});
+  text-decoration: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      color 0.12s ease,
+      background 0.12s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    color: light-dark(${light.violet}, ${dark.white});
+    background: light-dark(${light.beige3}, ${dark.navy3});
+  }
+`;
+
+export const railLinkActive = css`
+  position: relative;
+  color: light-dark(${light.violet}, ${dark.white});
+  font-weight: ${fontWeight.semibold};
+  background: light-dark(${light.beige3}, ${dark.navy3});
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+    background: light-dark(${light.red}, ${dark.red});
+  }
+`;
+
+export const editorSurface = css`
+  border: 1px solid ${ink.border};
+  border-radius: 12px;
+  background: ${ink.card};
+  box-shadow: ${shadow.card};
+  overflow: hidden;
+`;
+
+export const editorHeader = css`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-bottom: 2px solid ${ink.border};
+`;
+
+export const codeReset = css`
+  pre {
+    margin: 0;
+    overflow-x: auto;
+    font-family: ${fonts.mono};
+    background: transparent !important;
+  }
+
+  code {
+    font-family: inherit;
+  }
+`;
+
+export const proseStyles = css`
+  h2,
+  h3,
+  h4 {
+    color: light-dark(${light.violet}, ${dark.white});
+    line-height: 1.25;
+  }
+  h2 {
+    font-size: 26px;
+    margin-top: 52px;
+  }
+  h3 {
+    font-size: 20px;
+    margin-top: 32px;
+  }
+  p {
+    margin: 12px 0;
+  }
+  p a,
+  li a,
+  td a,
+  blockquote a {
+    ${proseLink};
+  }
+  /* keeps heading anchors inside <li> (Steps) out of the li a rule above */
+  h2 a,
+  h3 a,
+  h4 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  ul,
+  ol {
+    margin: 12px 0;
+    padding-left: 22px;
+  }
+  li {
+    margin: 4px 0;
+  }
+  & :not(pre) > code {
+    ${inlineCode};
+  }
+  table {
+    width: 100%;
+    margin: 16px 0;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th,
+  td {
+    padding: 6px 10px;
+    text-align: left;
+  }
+  blockquote {
+    margin: 16px 0;
+    padding-left: 14px;
+    border-left: 3px solid light-dark(${light.violet}, ${dark.white});
+  }
 `;

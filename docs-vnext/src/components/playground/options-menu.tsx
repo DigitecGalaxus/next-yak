@@ -12,12 +12,6 @@ const items: { key: keyof TransformOptions; label: string; hint: string }[] = [
   { key: "foldStatic", label: "Fold static", hint: "Plain elements for styles without props" },
 ];
 
-/**
- * The compiler options, in a menu on the output panel's title bar. As a row of toggles
- * they took a full line of the panel, and the options change far less often than the
- * output is read. The menu stays open while options change, so a reader can flip one
- * and watch the output update behind it.
- */
 export function OptionsMenu({
   options,
   onChange,
@@ -43,7 +37,7 @@ export function OptionsMenu({
       </Trigger>
       <Menu.Portal>
         <Positioner sideOffset={6} align="end">
-          <Popup data-ink>
+          <Popup>
             {items.map((item) => (
               <Item
                 key={item.key}

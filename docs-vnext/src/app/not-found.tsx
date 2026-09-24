@@ -1,5 +1,5 @@
 import { styled } from "next-yak";
-import CtaButton from "@/components/landing-page/cta-button";
+import { CtaButton } from "@/components/landing-page/button";
 import { light, dark } from "@/tokens";
 import { MessagePage, MessageActions } from "@/components/message-page";
 

@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 export default function Yak({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
