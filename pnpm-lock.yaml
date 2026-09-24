@@ -533,6 +533,18 @@ importers:
       '@base-ui/react':
         specifier: catalog:dev
         version: 1.8.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@monaco-editor/react':
+        specifier: catalog:dev
+        version: 4.7.0(monaco-editor@0.52.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@shikijs/monaco':
+        specifier: catalog:dev
+        version: 4.4.3
+      '@swc/helpers':
+        specifier: catalog:dev
+        version: 0.5.23
+      fflate:
+        specifier: catalog:dev
+        version: 0.8.3
       fumadocs-core:
         specifier: catalog:dev
         version: 16.15.5(@mdx-js/mdx@3.1.1(supports-color@8.1.1))(@tanstack/react-router@1.170.32(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.22.0(react@19.2.8))(next@16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@8.1.1)(zod@4.4.3)
@@ -542,12 +554,18 @@ importers:
       fumadocs-twoslash:
         specifier: catalog:dev
         version: 3.3.0(6386854c6119479d3983b06f6e7fffed)
+      js-base64:
+        specifier: catalog:dev
+        version: 3.9.3
       next:
         specifier: catalog:dev
         version: 16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       next-yak:
         specifier: workspace:*
         version: link:../packages/next-yak
+      prettier:
+        specifier: catalog:dev
+        version: 3.9.6
       react:
         specifier: catalog:dev
         version: 19.2.8
@@ -576,6 +594,9 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+      wasm-pack:
+        specifier: catalog:dev
+        version: 0.15.0
 
   e2e:
     devDependencies:

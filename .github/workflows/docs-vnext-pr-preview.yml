@@ -6,6 +6,7 @@ on:
       - "docs-vnext/**"
       - "packages/yak-swc/**"
       - "packages/next-yak/**"
+      - "docs/playground-wasm/**"
       - ".github/workflows/docs-vnext-pr-preview.yml"
 
 permissions:
