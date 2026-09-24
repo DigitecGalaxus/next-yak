@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { styled, css } from "next-yak";
-import { fontSize, fontWeight, light, dark } from "@/tokens";
+import { css, styled } from "next-yak";
 import { sectionLabel } from "@/lib/mixins";
+import { railLink, railLinkActive } from "@/lib/link-styles";
 
 export type PostLink = { url: string; title: string };
 
@@ -44,32 +44,13 @@ const List = styled.ul`
 `;
 
 const ItemLink = styled(Link)<{ $active: boolean }>`
-  display: block;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: ${fontSize.small};
-  line-height: 1.4;
-  color: light-dark(${light.violetSoft}, ${dark.fog});
-  text-decoration: none;
+  ${railLink};
 
-  @media (prefers-reduced-motion: no-preference) {
-    transition:
-      color 0.12s ease,
-      background 0.12s ease;
-  }
-
-  &:hover,
-  &:focus-visible {
-    outline: none;
-    color: light-dark(${light.violet}, ${dark.white});
-    background: light-dark(${light.beige3}, ${dark.navy3});
-  }
-
+  /* The conditional has to wrap an inline css block. next-yak compiles the block it can
+     see at the call site, so handing it a bare mixin drops the rule. */
   ${({ $active }) =>
     $active &&
     css`
-      color: light-dark(${light.violet}, ${dark.white});
-      font-weight: ${fontWeight.semibold};
-      background: light-dark(${light.beige3}, ${dark.navy3});
+      ${railLinkActive};
     `}
 `;
