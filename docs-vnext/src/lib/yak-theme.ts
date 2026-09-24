@@ -8,14 +8,26 @@ export const syntax = {
   comment: "#8a7daf",
   keyword: "#f178b6",
   string: "#f5a973",
-  entity: "#8bbcf0",
-  punctuation: "#bcb0d8",
+  // Numbers, booleans, hex colors and CSS units. Kept apart from strings so `8px` and `"8px"` differ.
+  constant: "#c9a2ff",
+  // Types, components and tags: the nouns of the code.
+  type: "#7fdcc5",
+  // Functions and tagged templates (`styled`, `css`): the verbs of the code.
+  func: "#ece27c",
+  // Object keys, JSX attributes and CSS property names.
+  property: "#8bbcf0",
+  // Also used for operators, so `=`, `=>` and `&&` recede instead of reading as keywords.
+  punctuation: "#a99fc4",
 } as const;
 
 // Brand-matched code theme (navy editor background), shared by the landing-page
 // highlighter (lib/shiki.ts) and the docs MDX pipeline (source.config.ts) so
 // code blocks look the same everywhere. Kept side-effect free for import from
 // the build config.
+//
+// Each group has one role. When a scope matches more than one group, the more specific
+// selector wins (`keyword.operator` beats `keyword`), which is how operators leave the
+// keyword color and CSS units leave it too.
 export const yakTheme = {
   name: "yak-night",
   type: "dark" as const,
@@ -34,12 +46,10 @@ export const yakTheme = {
         "storage.type",
         "storage.modifier",
         "keyword.control",
-        "keyword.operator",
         "keyword.operator.new",
         "keyword.operator.expression",
-        "keyword.operator.arrow",
-        "entity.name.tag",
-        "punctuation.definition.tag",
+        "keyword.control.at-rule",
+        "punctuation.definition.keyword",
       ],
       settings: { foreground: syntax.keyword },
     },
@@ -49,35 +59,58 @@ export const yakTheme = {
         "string.template",
         "string.quoted",
         "punctuation.definition.string",
-        "constant.numeric",
-        "constant.language",
-        "constant.language.boolean",
-        "support.constant",
         "support.constant.property-value",
-        "constant.other.color",
         "meta.property-value",
       ],
       settings: { foreground: syntax.string },
     },
     {
       scope: [
+        "constant.numeric",
+        "constant.language",
+        "constant.language.boolean",
+        "keyword.other.unit",
+        "constant.other.color",
+        "constant.other.color punctuation.definition.constant",
+        "constant.character.escape",
+        "variable.other.constant.property",
+      ],
+      settings: { foreground: syntax.constant },
+    },
+    {
+      scope: [
         "entity.name.type",
         "entity.name.class",
-        "entity.name.type.class",
+        "entity.other.inherited-class",
         "support.type",
+        "support.type.primitive",
         "support.class",
+        "support.class.component",
+        "entity.name.tag",
+      ],
+      settings: { foreground: syntax.type },
+    },
+    {
+      scope: [
         "entity.name.function",
         "support.function",
-        "variable.parameter",
-        "variable.other.readwrite",
+        "meta.function-call entity.name.function",
+        "entity.name.function.tagged-template",
+      ],
+      settings: { foreground: syntax.func },
+    },
+    {
+      scope: [
         "meta.object-literal.key",
         "support.type.property-name",
         "entity.other.attribute-name",
+        "variable.other.property",
+        "variable.other.object.property",
       ],
-      settings: { foreground: syntax.entity },
+      settings: { foreground: syntax.property },
     },
     {
-      scope: ["variable", "variable.other", "meta.definition.variable"],
+      scope: ["variable", "variable.other", "meta.definition.variable", "variable.parameter"],
       settings: { foreground: syntax.fg },
     },
     {
@@ -87,6 +120,10 @@ export const yakTheme = {
         "meta.brace.square",
         "punctuation.accessor",
         "punctuation.separator",
+        "punctuation.definition.tag",
+        "punctuation.definition.template-expression",
+        "keyword.operator",
+        "storage.type.function.arrow",
       ],
       settings: { foreground: syntax.punctuation },
     },
