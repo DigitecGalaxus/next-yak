@@ -33,10 +33,6 @@ function frontmatter(text) {
   return out;
 }
 
-/** satori has no line clamp, so a long description gets cut here instead. */
-const trim = (s, max = 78) =>
-  !s ? "" : s.length <= max ? s : `${s.slice(0, s.lastIndexOf(" ", max))}…`;
-
 const font = (file, name, weight) =>
   readFile(join(root, "src/og/fonts", file)).then((data) => ({
     name,
@@ -55,8 +51,6 @@ const pagesIn = async (dir, section, prefix) => {
         key: `${prefix}-${f.replace(/\.mdx$/, "")}`,
         section,
         title,
-        // A 3-line title leaves room for one line of blurb, not two.
-        blurb: trim(fm.description, title.length > 30 ? 46 : 78),
       };
     }),
   );
@@ -78,19 +72,16 @@ const cards = [
     home: true,
     section: "zero-runtime CSS-in-JS",
     title: "yak",
-    blurb: "Write styled-components syntax. Ship no runtime.",
   },
   {
     key: "blog",
     section: "Blog",
     title: "Blog",
-    blurb: "Notes on yak: the rename, the runtimes, and what is coming.",
   },
   {
     key: "playground",
     section: "Playground",
     title: "Playground",
-    blurb: "Write yak in the browser. See the CSS as you type.",
   },
   ...(await pagesIn("src/content/docs", "Documentation", "docs")),
   ...(await pagesIn("src/content/blog", "Blog", "blog")),

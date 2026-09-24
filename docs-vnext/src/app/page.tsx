@@ -270,31 +270,18 @@ export default async function Home() {
                 </SubHeading>
                 {/* The count comes from the benchmark site's own heading. Read it there before
                     you change this line, or the two stop agreeing. */}
-                <a
+                {/* A call to action is a button, the same one the hero uses, not a
+                    fourth link style. */}
+                <CtaButton
                   href="https://jantimon.github.io/css-in-js-bench"
                   {...externalLinkProps}
                   css={css`
-                    margin-top: 10px;
-                    font-family: ${fonts.mono};
-                    font-size: ${fontSize.small};
-                    font-weight: ${fontWeight.bold};
-                    /* A border rather than text-decoration: Chrome does not draw an
-                       ancestor underline under an atomic inline box, so the line stopped
-                       short of the arrow. The link is a flex item at flex-start, so the
-                       border spans exactly the content, arrow included. */
-                    text-decoration: none;
-                    border-bottom: 1.5px solid currentColor;
-                    padding-bottom: 1px;
-
-                    &:hover,
-                    &:focus-visible {
-                      color: light-dark(${light.red}, ${dark.red});
-                    }
+                    margin-top: 18px;
                   `}
                 >
                   See all 22 styling techniques
                   <ExternalMark />
-                </a>
+                </CtaButton>
               </div>
 
               <figure

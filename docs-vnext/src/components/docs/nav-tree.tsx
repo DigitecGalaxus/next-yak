@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Node, Root } from "fumadocs-core/page-tree";
 import { css, styled } from "next-yak";
-import { fontSize, fontWeight, light, dark } from "@/tokens";
+import { light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
+import { railLink, railLinkActive } from "@/lib/link-styles";
 import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
 export default function NavTree({
@@ -126,43 +127,18 @@ const FolderChildren = styled.div`
   border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
 `;
 
-const itemLinkStyles = css`
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: ${fontSize.small};
-  color: light-dark(${light.violetSoft}, ${dark.fog});
-  text-decoration: none;
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition:
-      color 0.12s ease,
-      background 0.12s ease;
-  }
-
-  &:hover {
-    color: light-dark(${light.violet}, ${dark.white});
-    background: light-dark(${light.beige3}, ${dark.navy3});
-  }
-
-  &:focus-visible {
-    outline: none;
-    color: light-dark(${light.violet}, ${dark.white});
-    background: light-dark(${light.beige3}, ${dark.navy3});
-  }
-`;
-
 const ItemLink = styled(Link)<{ $active?: boolean }>`
-  ${itemLinkStyles};
+  ${railLink};
 
+  /* The conditional has to wrap an inline css block. next-yak compiles the block it can
+     see at the call site, so handing it a bare mixin drops the rule. */
   ${({ $active }) =>
     $active &&
     css`
-      color: light-dark(${light.violet}, ${dark.white});
-      font-weight: ${fontWeight.semibold};
-      background: light-dark(${light.beige3}, ${dark.navy3});
+      ${railLinkActive};
     `}
 `;
 
 const ExternalItemLink = styled.a`
-  ${itemLinkStyles};
+  ${railLink};
 `;

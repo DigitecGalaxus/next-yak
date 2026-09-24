@@ -6,6 +6,7 @@ import { styled, css } from "next-yak";
 import { light, dark } from "@/tokens";
 import { externalLinkProps } from "@/lib/external-link";
 import ExternalMark from "@/components/external-mark";
+import { chromeLink } from "@/lib/link-styles";
 
 export default function NavLink({
   href,
@@ -61,23 +62,15 @@ export function NavExternalLink({
 }
 
 const navLinkStyles = css`
-  text-decoration: none;
+  ${chromeLink};
   text-underline-offset: 6px;
   text-decoration-thickness: 2px;
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition: color 0.15s ease;
-  }
 `;
 
 /* The hover comes after the active rule on purpose. It sat before it, so the active link
-   answered a pointer with nothing: it already carried the colour the hover asked for.
-   Red is the answer every link on this site gives. */
+   answered a pointer with nothing: it already carried the colour the hover asked for. */
 const navLinkHover = css`
-  &:hover,
-  &:focus-visible {
-    color: light-dark(${light.red}, ${dark.red});
-  }
+  ${chromeLink};
 
   &:focus-visible {
     outline: none;

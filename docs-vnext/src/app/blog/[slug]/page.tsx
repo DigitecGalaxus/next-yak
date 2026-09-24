@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { styled } from "next-yak";
 import { blog } from "@/lib/blog";
 import { pageMetadata } from "@/lib/page-metadata";
+import { chromeLink } from "@/lib/link-styles";
 import { formatPostDate } from "@/lib/blog-date";
 import { getMDXComponents } from "@/mdx-components";
 import Toc from "@/components/docs/toc";
@@ -84,16 +85,11 @@ const Content = styled.article`
 `;
 
 const BackLink = styled(Link)`
+  ${chromeLink};
   display: inline-block;
   margin-bottom: 14px;
   font-family: ${fonts.mono};
   font-size: 13px;
-  text-decoration: none;
-
-  &:hover,
-  &:focus-visible {
-    color: light-dark(${light.red}, ${dark.red});
-  }
 `;
 
 const Title = styled.h1`

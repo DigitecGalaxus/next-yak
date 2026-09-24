@@ -2,6 +2,7 @@ import { css, styled } from "next-yak";
 import Link from "next/link";
 import { fonts, fontSize, fontWeight, maxContentWidth, light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
+import { chromeLink, proseLink } from "@/lib/link-styles";
 import { externalLinkProps } from "@/lib/external-link";
 import Yak from "./yak";
 import Code from "./code";
@@ -89,7 +90,7 @@ export default function Footer() {
             <b>yak</b>, formerly <Code>next-yak</Code>. Same library, same team, broader home: the
             package is now <Code>@yak/react</Code>, with <Code>@yak/solid</Code> and{" "}
             <Code>@yak/qwik</Code> beside it.{" "}
-            <StoryLink href="/blog/renaming-next-yak-to-yak">Read the story →</StoryLink>
+            <StoryLink href="/blog/renaming-next-yak-to-yak">Read the story</StoryLink>
           </p>
         </Brand>
 
@@ -158,18 +159,12 @@ const Brand = styled.div`
   }
 `;
 
+/* It sits inside a sentence, so it takes the prose role and not a button. A button cannot
+   stand in running text. The arrow goes, because an arrow belongs to a button. */
 const StoryLink = styled(Link)`
-  color: light-dark(${light.red}, ${dark.red});
+  ${proseLink};
   font-weight: ${fontWeight.bold};
   white-space: nowrap;
-
-  /* it rests red already, so the hover deepens the red instead of reaching for it */
-  &:hover,
-  &:focus-visible {
-    color: light-dark(${light.redDeep}, ${dark.redDeep});
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
 `;
 
 const Column = styled.div`
@@ -183,13 +178,9 @@ const ColumnTitle = styled.span`
 `;
 
 const FooterLink = styled(Link)`
+  ${chromeLink};
   font-size: ${fontSize.small};
   color: light-dark(${light.violet}, ${dark.white});
-
-  &:hover,
-  &:focus-visible {
-    color: light-dark(${light.red}, ${dark.red});
-  }
 `;
 
 const Legal = styled.p`
