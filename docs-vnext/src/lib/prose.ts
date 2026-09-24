@@ -1,4 +1,5 @@
 import { css } from "next-yak";
+import { proseLink } from "./link-styles";
 import { light, dark } from "@/tokens";
 import { inlineCode } from "@/lib/mixins";
 
@@ -30,16 +31,7 @@ export const proseStyles = css`
   li a,
   td a,
   blockquote a {
-    color: light-dark(${light.red}, ${dark.red});
-    text-decoration: underline;
-    text-underline-offset: 3px;
-
-    /* a prose link rests red, so the hover deepens it and thickens the rule */
-    &:hover,
-    &:focus-visible {
-      color: light-dark(${light.redDeep}, ${dark.redDeep});
-      text-decoration-thickness: 2px;
-    }
+    ${proseLink};
   }
   /* Heading anchor links stay clean even inside <li> (e.g. Steps), where the
      li-a rule above would otherwise recolor + underline them. */
