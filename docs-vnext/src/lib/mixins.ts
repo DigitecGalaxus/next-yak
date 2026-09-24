@@ -89,8 +89,19 @@ export const inlineCode = css`
   font-family: ${fonts.mono};
   /* stays slightly smaller than surrounding text, but never dips below the 13px floor */
   font-size: max(0.88em, 13px);
+  /* bold, so a code name holds its own next to the bold brand name in the same sentence */
+  font-weight: ${fontWeight.bold};
   color: light-dark(${light.violet}, ${dark.white});
-  background: light-dark(${light.beige4}, ${dark.navy4});
+  background: light-dark(
+    color-mix(in srgb, ${light.violet} 8%, transparent),
+    color-mix(in srgb, ${dark.white} 10%, transparent)
+  );
+  /* a hairline edge drawn inside the box, so it adds no width to the line */
+  box-shadow: inset 0 0 0 1px
+    light-dark(
+      color-mix(in srgb, ${light.violet} 14%, transparent),
+      color-mix(in srgb, ${dark.white} 16%, transparent)
+    );
   padding: 2px 5px;
   border-radius: 5px;
 `;

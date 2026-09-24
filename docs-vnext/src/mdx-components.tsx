@@ -19,6 +19,7 @@ type MDXComponents = Record<string, ComponentType<any>>;
  * - `a` → client-navigating Link for internal/relative links, plain anchor for
  *   external; relative links are resolved against the current page's URL
  * - `h2`/`h3`/`h4` → headings with hover anchor links
+ * - `img` → plain image that also takes the static image object fumadocs imports
  * - custom components are exposed globally so MDX files don't each need to import them
  */
 export function getMDXComponents(
@@ -31,6 +32,7 @@ export function getMDXComponents(
     h2: makeHeading("h2"),
     h3: makeHeading("h3"),
     h4: makeHeading("h4"),
+    img: MdxImage,
     Callout,
     Tabs,
     Tab,
@@ -44,6 +46,33 @@ export function getMDXComponents(
     ...components,
   };
 }
+
+type StaticImage = { src: string; width: number; height: number };
+
+/**
+ * fumadocs turns `![alt](/img/x.svg)` into an image import, so `src` is an object with the
+ * URL and the size, not a string. A plain <img> would print it as "[object Object]": the
+ * browser then requests /docs/[object Object], and the static export fails on that path.
+ * The object's URL already carries the base path.
+ */
+function MdxImage({ src, width, height, alt = "", ...props }: ComponentPropsWithoutRef<"img">) {
+  const image = typeof src === "object" && src !== null ? (src as unknown as StaticImage) : null;
+  return (
+    <Image
+      src={image ? image.src : src}
+      width={width ?? image?.width}
+      height={height ?? image?.height}
+      alt={alt}
+      {...props}
+    />
+  );
+}
+
+/* the width and height attributes reserve the box; the height follows the column width */
+const Image = styled.img`
+  max-width: 100%;
+  height: auto;
+`;
 
 function makeAnchor(pageUrl?: string) {
   return function Anchor({ href = "", children, ...props }: ComponentPropsWithoutRef<"a">) {
