@@ -90,7 +90,7 @@ const cards = [
     key: "playground",
     section: "Playground",
     title: "Playground",
-    blurb: "An interactive playground is on the way.",
+    blurb: "Write yak in the browser. See the CSS as you type.",
   },
   ...(await pagesIn("src/content/docs", "Documentation", "docs")),
   ...(await pagesIn("src/content/blog", "Blog", "blog")),
