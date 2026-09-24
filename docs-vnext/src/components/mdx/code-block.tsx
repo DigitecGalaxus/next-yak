@@ -137,6 +137,11 @@ const Copy = styled.button`
   &:focus-visible {
     opacity: 1;
   }
+
+  /* a touch screen has no hover, so the button is always there */
+  @media (hover: none) {
+    opacity: 1;
+  }
 `;
 
 const Pre = styled.pre`

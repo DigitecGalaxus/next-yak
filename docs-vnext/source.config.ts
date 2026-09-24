@@ -6,6 +6,7 @@ import { createFileSystemTypesCache } from "fumadocs-twoslash/cache-fs";
 import { yakTheme } from "./src/lib/yak-theme";
 import cssStyled from "./src/lib/langs/css-styled";
 import styled from "./src/lib/langs/styled";
+import { transformerCodeLinks } from "./src/lib/code-links";
 
 export const docs = defineDocs({
   dir: "src/content/docs",
@@ -42,6 +43,8 @@ export default defineConfig({
       // only `ts` fences. Without it, interpolations and generics get no scopes.
       langs: ["tsx", "css", styled, cssStyled],
       transformers: [
+        // `⟦1:…⟧` markers for the linked hover in input/output pairs (lib/code-links.ts)
+        transformerCodeLinks(),
         ...(rehypeCodeDefaultOptions.transformers ?? []),
         // twoslash fences emit Popup/PopupTrigger/PopupContent, rendered by our base-ui
         // adapter (mdx-components.tsx → components/mdx/twoslash.tsx).

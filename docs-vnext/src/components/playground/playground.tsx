@@ -34,7 +34,8 @@ import {
 const MAX_EXTRA_FILES = 3;
 
 /** CSS: the extracted styles. JSX: the yak transform with the JSX kept. JS: the JSX compiled too. */
-type OutputKind = "css" | "jsx" | "js";
+const OUTPUT_KINDS = ["css", "jsx", "js"] as const;
+type OutputKind = (typeof OUTPUT_KINDS)[number];
 
 const defaultOptions: TransformOptions = { minify: false, showComments: true, foldStatic: true };
 
@@ -53,7 +54,7 @@ export default function Playground() {
   const [resetKey, setResetKey] = useState(0);
   const [activeFile, setActiveFile] = useState(initial.files[0].name);
   const [options, setOptions] = useState(defaultOptions);
-  const [outputKind, setOutputKind] = useState<OutputKind>("css");
+  const [outputKind, setOutputKind] = useState<OutputKind>(initial.output);
   const [notice, setNotice] = useState<string | null>(initial.notice);
   const [compiler, compile] = useCompiler();
   const { copied, copy } = useCopy(2000);
@@ -78,12 +79,20 @@ export default function Playground() {
   }, []);
 
   const share = useCallback(() => {
-    const record = Object.fromEntries(files.map((file) => [file.name, file.content]));
+    // empty extra files stay out of the link, so it stays short; they come back on load
+    const record = Object.fromEntries(
+      files
+        .filter((file, index) => index === 0 || file.content.trim() !== "")
+        .map((file) => [file.name, file.content]),
+    );
     const url = new URL(window.location.href);
-    url.search = new URLSearchParams({ q: compressWithDictionary(record) }).toString();
+    url.search = new URLSearchParams({
+      q: compressWithDictionary(record),
+      output: outputKind,
+    }).toString();
     window.history.replaceState(null, "", url);
     void copy(url.toString());
-  }, [files, copy]);
+  }, [files, outputKind, copy]);
 
   const reset = () => {
     const url = new URL(window.location.href);
@@ -184,26 +193,50 @@ export default function Playground() {
   );
 }
 
-function readShareLink(): { files: PlaygroundFile[]; notice: string | null } {
-  const q = new URLSearchParams(window.location.search).get("q");
-  if (!q) return { files: defaultFiles, notice: null };
+/**
+ * A link carries the files in `q` and the output tab in `output` (css, jsx or js). Share
+ * keeps the tab on screen, so the reader of a link sees what its author saw. Old links have
+ * no `output` and open on CSS.
+ */
+function readShareLink(): {
+  files: PlaygroundFile[];
+  output: OutputKind;
+  notice: string | null;
+} {
+  const params = new URLSearchParams(window.location.search);
+  const output = OUTPUT_KINDS.find((kind) => kind === params.get("output")) ?? "css";
+  const q = params.get("q");
+  if (!q) return { files: defaultFiles, output, notice: null };
   try {
-    return { files: filesFromRecord(decompressWithDictionary(q)), notice: null };
+    return { files: filesFromRecord(decompressWithDictionary(q)), output, notice: null };
   } catch {
     return {
       files: defaultFiles,
+      output,
       notice: "This share link could not be read. The playground shows the default example.",
     };
   }
 }
+
+/**
+ * Empty tabs for a link with fewer files, for example one with only `index`: a normal
+ * module and a `.yak` file, so the reader can split code up without making files.
+ */
+const SPARE_FILES = ["components", "tokens.yak"];
+const MIN_EXTRA_FILES = 2;
 
 /** Share links store a record. The main file is always `index`, and it comes first. */
 function filesFromRecord(record: Record<string, string>): PlaygroundFile[] {
   if (typeof record.index !== "string") throw new Error("no index file");
   const extras = Object.entries(record)
     .filter(([name]) => name !== "index" && !name.includes("node_modules") && !name.endsWith(".d.ts"))
-    .slice(0, MAX_EXTRA_FILES);
-  return [{ name: "index", content: record.index }, ...extras.map(([name, content]) => ({ name, content }))];
+    .slice(0, MAX_EXTRA_FILES)
+    .map(([name, content]) => ({ name, content }));
+  for (const name of SPARE_FILES) {
+    if (extras.length >= MIN_EXTRA_FILES) break;
+    if (!extras.some((file) => file.name === name)) extras.push({ name, content: "" });
+  }
+  return [{ name: "index", content: record.index }, ...extras];
 }
 
 const Notice = styled.p`

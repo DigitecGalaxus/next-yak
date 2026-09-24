@@ -15,20 +15,20 @@ When a styled component is declared and used in the same file, next-yak already 
 <div>
 
 ```tsx title="input"
-const Card = styled.div`
+const Card = ⟦1:styled.div⟧`
   color: red;
 `;
 
-const Page = () => <Card>hi</Card>;
+const Page = () => ⟦2:<Card>hi</Card>⟧;
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-const Card = __yak.__yak_div("yCard");
+const Card = ⟦1:__yak.__yak_div("yCard")⟧;
 
-const Page = () => <div className="yCard">hi</div>;
+const Page = () => ⟦2:<div className="yCard">hi</div>⟧;
 ```
 
 </div>
@@ -46,18 +46,18 @@ Attributes stay on the element. A `className` merges at build time when both sid
 <div>
 
 ```tsx title="input"
-<Card />
-<Card className="user" />
-<Card className={on && "on"} />
+⟦1:<Card />⟧
+<Card ⟦2:className="user"⟧ />
+<Card ⟦3:className={on && "on"}⟧ />
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-<div className="yCard" />
-<div className="yCard user" />
-<div className={__yak_mergeClassNames("yCard", on && "on")} />
+⟦1:<div className="yCard" />⟧
+<div ⟦2:className="yCard user"⟧ />
+<div ⟦3:className={__yak_mergeClassNames("yCard", on && "on")}⟧ />
 ```
 
 </div>
@@ -69,14 +69,14 @@ Other attributes pass through untouched:
 <div>
 
 ```tsx title="input"
-<Card style={{ margin: 1 }} onClick={f} data-x="1" />
+<⟦1:Card⟧ ⟦2:style={{ margin: 1 }} onClick={f} data-x="1"⟧ />
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-<div style={{ margin: 1 }} onClick={f} data-x="1" className="yCard" />
+<⟦1:div⟧ ⟦2:style={{ margin: 1 }} onClick={f} data-x="1"⟧ ⟦1:className="yCard"⟧ />
 ```
 
 </div>
@@ -92,7 +92,7 @@ A fully static `styled(Component)` folds to the component it wraps, which may li
 ```tsx title="input"
 import { Card } from "./card";
 
-const Fancy = styled(Card)`
+const ⟦2:Fancy⟧ = styled(⟦1:Card⟧)`
   gap: 4px;
 `;
 
@@ -103,7 +103,7 @@ const Page = () => <Fancy>hi</Fancy>;
 <div>
 
 ```tsx title="output"
-const Page = () => <Card className="yFancy">hi</Card>;
+const Page = () => <⟦1:Card⟧ className="⟦2:yFancy⟧">hi</⟦1:Card⟧>;
 ```
 
 </div>
@@ -119,11 +119,11 @@ When the wrapped component is itself a same-file static styled component, the wh
 <div>
 
 ```tsx title="input"
-const Card = styled.div`
+const ⟦1:Card⟧ = ⟦3:styled.div⟧`
   color: green;
 `;
 
-const Fancy = styled(Card)`
+const ⟦2:Fancy⟧ = styled(Card)`
   padding: 4px;
 `;
 
@@ -134,7 +134,7 @@ const Page = () => <Fancy>hi</Fancy>;
 <div>
 
 ```tsx title="output"
-const Page = () => <div className="yCard yFancy">hi</div>;
+const Page = () => <⟦3:div⟧ className="⟦1:yCard⟧ ⟦2:yFancy⟧">hi</⟦3:div⟧>;
 ```
 
 </div>
@@ -146,11 +146,11 @@ The declaration flattens the same way. An exported chain ships one wrapper, and 
 <div>
 
 ```tsx title="input"
-const Card = styled.div`
+const ⟦1:Card⟧ = ⟦3:styled.div⟧`
   color: green;
 `;
 
-export const Fancy = styled(Card)`
+export const ⟦2:Fancy⟧ = styled(Card)`
   padding: 4px;
 `;
 ```
@@ -159,7 +159,9 @@ export const Fancy = styled(Card)`
 <div>
 
 ```tsx title="output"
-export const Fancy = /*#__PURE__*/ __yak.__yak_div("yCard yFancy");
+export const Fancy = /*#__PURE__*/ __yak.⟦3:__yak_div⟧(
+  "⟦1:yCard⟧ ⟦2:yFancy⟧",
+);
 ```
 
 </div>
@@ -171,15 +173,15 @@ A chain does not collapse when its parent is dynamic, uses `.attrs()`, or comes 
 <div>
 
 ```tsx title="input"
-const Toggle = styled.button<{ $on?: boolean }>`
-  ${({ $on }) =>
+const ⟦1:Toggle⟧ = styled.button<{ $on?: boolean }>`
+  ${⟦3:({ $on }) =>
     $on &&
     css`
       color: red;
-    `}
+    `⟧}
 `;
 
-const Of = styled(Toggle)`
+const ⟦2:Of⟧ = styled(Toggle)`
   color: teal;
 `;
 
@@ -190,10 +192,13 @@ const Page = () => <Of>hi</Of>;
 <div>
 
 ```tsx title="output"
-const Toggle = __yak.__yak_button("yToggle", ({ $on }) => $on && css("yToggle-on"));
-const Of = styled(Toggle)("yOf");
+const ⟦1:Toggle⟧ = __yak.__yak_button(
+  "yToggle",
+  ⟦3:({ $on }) => $on && css("yToggle-on")⟧,
+);
+const ⟦2:Of⟧ = styled(Toggle)("yOf");
 
-const Page = () => <Toggle className="yOf">hi</Toggle>;
+const Page = () => <⟦1:Toggle⟧ className="⟦2:yOf⟧">hi</⟦1:Toggle⟧>;
 ```
 
 </div>
@@ -208,19 +213,19 @@ A style that toggles a `css` block on a prop folds too. The condition inlines in
 
 ```tsx title="input"
 const Box = styled.div<{ $on: boolean }>`
-  ${({ $on }) => $on && css`color: red;`}
+  ${⟦3:({ $on }) => $on && css`color: red;`⟧}
 `;
 
-<Box $on />
-<Box $on={open} />
+<Box ⟦1:$on⟧ />
+<Box ⟦2:$on={open}⟧ />
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-<div className={"yBox" + (true ? " yBox-on" : "")} />
-<div className={"yBox" + (open ? " yBox-on" : "")} />
+<div className={"yBox" + (⟦1:true⟧ ? ⟦3:" yBox-on"⟧ : "")} />
+<div className={"yBox" + (⟦2:open⟧ ? ⟦3:" yBox-on"⟧ : "")} />
 ```
 
 </div>
@@ -234,14 +239,18 @@ A prop value the compiler cannot prove safe to run twice is bound once, so it ev
 <div>
 
 ```tsx title="input"
-<Box $on={isOpen(item)} />
+<Box ⟦2:$on⟧={⟦1:isOpen(item)⟧} />
 ```
 
 </div>
 <div>
 
 ```tsx title="output"
-<div className={(($on) => "yBox" + ($on ? " yBox-on" : ""))(isOpen(item))} />
+<div
+  className={((⟦2:$on⟧) => "yBox" + ($on ? " yBox-on" : ""))(
+    ⟦1:isOpen(item)⟧,
+  )}
+/>
 ```
 
 </div>
@@ -254,14 +263,14 @@ A regular prop stays on the element. When a condition reads a value that is not 
 
 ```tsx title="input"
 const Button = styled.button<{ disabled?: boolean }>`
-  ${({ disabled }) =>
+  ${⟦2:({ disabled }) =>
     !disabled &&
     css`
       cursor: pointer;
-    `}
+    `⟧}
 `;
 
-<Button disabled={busy()}>Save</Button>;
+<Button ⟦3:disabled⟧={⟦1:busy()⟧}>Save</Button>;
 ```
 
 </div>
@@ -270,10 +279,13 @@ const Button = styled.button<{ disabled?: boolean }>`
 ```tsx title="output"
 {
   ((disabled) => (
-    <button disabled={disabled} className={"yButton" + (!disabled ? " yButton-hit" : "")}>
+    <button
+      ⟦3:disabled={disabled}⟧
+      className={"yButton" + ⟦2:(!disabled ? " yButton-hit" : "")⟧}
+    >
       Save
     </button>
-  ))(busy());
+  ))(⟦1:busy()⟧);
 }
 ```
 
@@ -291,8 +303,8 @@ The [css prop](/docs/features#css-prop) folds on the same rule. A static css pro
 
 ```tsx title="input"
 <div
-  css={css`
-    color: red;
+  ⟦1:css={css`⟧
+    ⟦1:color: red;⟧
   `}
 />
 ```
@@ -301,7 +313,7 @@ The [css prop](/docs/features#css-prop) folds on the same rule. A static css pro
 <div>
 
 ```tsx title="output"
-<div className="yX" />
+<div ⟦1:className="yX"⟧ />
 ```
 
 </div>
@@ -315,17 +327,17 @@ A conditional css prop keeps its condition; the branch toggles class names:
 ```tsx title="input"
 <div
   css={css`
-    color: black;
-    ${() =>
+    ⟦1:color: black;⟧
+    ${⟦2:() =>
       a &&
       css`
         color: red;
-      `}
-    ${() =>
+      `⟧}
+    ${⟦3:() =>
       b &&
       css`
         font-weight: bold;
-      `}
+      `⟧}
   `}
 />
 ```
@@ -334,7 +346,7 @@ A conditional css prop keeps its condition; the branch toggles class names:
 <div>
 
 ```tsx title="output"
-<div className={"yBase" + (a ? " yA" : "") + (b ? " yB" : "")} />
+<div className={⟦1:"yBase"⟧ + ⟦2:(a ? " yA" : "")⟧ + ⟦3:(b ? " yB" : "")⟧} />
 ```
 
 </div>
