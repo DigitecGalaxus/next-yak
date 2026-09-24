@@ -20,30 +20,43 @@ const language: LanguageRegistration = {
     {
       contentName: "source.css.scss",
       begin:
-        "([\\s\\S][sS][tT][yY][lL][eE][dD](?:<.+>(?=\\())?(?:\\.[_$[:alpha:]][_$[:alnum:]]*|\\s*\\(['\"][_$[:alpha:]][_$[:alnum:]]*['\"]\\)|\\s*\\((.+)\\))*(?:\\s*<.+>)?\\(?)\\s*(\\([\\{\\}\\w,\\:\\s]+?\\)\\s*=>\\s*)?(`)",
+        "([\\s\\S][sS][tT][yY][lL][eE][dD](?:<.+>(?=\\())?(?:\\.[_$[:alpha:]][_$[:alnum:]]*|\\s*\\(['\"][_$[:alpha:]][_$[:alnum:]]*['\"]\\)|\\s*\\((.+)\\))*)(\\s*<.+>)?(\\(?)\\s*(\\([\\{\\}\\w,\\:\\s]+?\\)\\s*=>\\s*)?(`)",
+      // Local change: the upstream grammar put the `<…>` generic in capture 1 and parsed it
+      // as an expression, so `styled.button<{ $primary: boolean }>` read `<` and `>` as
+      // comparisons. Capture 3 now parses it as type arguments.
       beginCaptures: {
         "1": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#expression",
             },
           ],
         },
         "2": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#expression",
             },
           ],
         },
         "3": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#type-arguments",
             },
           ],
         },
         "4": {
+          name: "meta.brace.round.ts",
+        },
+        "5": {
+          patterns: [
+            {
+              include: "source.tsx#expression",
+            },
+          ],
+        },
+        "6": {
           name: "punctuation.definition.string.template.begin.js string.template.js",
         },
       },
@@ -69,7 +82,7 @@ const language: LanguageRegistration = {
         "2": {
           patterns: [
             {
-              include: "source.ts#type-parameters",
+              include: "source.tsx#type-parameters",
             },
           ],
         },
@@ -116,13 +129,13 @@ const language: LanguageRegistration = {
         "1": {
           patterns: [
             {
-              include: "source.ts#var-expr",
+              include: "source.tsx#var-expr",
             },
             {
-              include: "source.ts#object-literal",
+              include: "source.tsx#object-literal",
             },
             {
-              include: "source.ts#object-member",
+              include: "source.tsx#object-member",
             },
           ],
         },
@@ -156,7 +169,7 @@ const language: LanguageRegistration = {
         "1": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#expression",
             },
           ],
         },
@@ -189,7 +202,7 @@ const language: LanguageRegistration = {
         "1": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#expression",
             },
           ],
         },
@@ -216,7 +229,7 @@ const language: LanguageRegistration = {
         "1": {
           patterns: [
             {
-              include: "source.ts#expression",
+              include: "source.tsx#expression",
             },
           ],
         },
@@ -250,7 +263,7 @@ const language: LanguageRegistration = {
           ],
         },
         {
-          include: "source.ts#expression",
+          include: "source.tsx#expression",
         },
       ],
     },
@@ -293,13 +306,13 @@ const language: LanguageRegistration = {
         "1": {
           patterns: [
             {
-              include: "source.ts#var-expr",
+              include: "source.tsx#var-expr",
             },
             {
-              include: "source.ts#object-literal",
+              include: "source.tsx#object-literal",
             },
             {
-              include: "source.ts#object-member",
+              include: "source.tsx#object-member",
             },
           ],
         },
