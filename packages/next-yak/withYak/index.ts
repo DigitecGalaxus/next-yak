@@ -2,6 +2,7 @@
 import type { NextConfig } from "next";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { allowYakGlobalCss, hasAppDir } from "./allow-global-css.ts";
 import {
   buildYakPluginOptions,
   resolveYakContext,
@@ -132,6 +133,15 @@ function addYakWebpack(
   nextConfig.webpack = (webpackConfig, options) => {
     if (previousConfig) {
       webpackConfig = previousConfig(webpackConfig, options);
+    }
+
+    if (
+      yakOptions.experiments?.transpilationMode === "Css" &&
+      !options.isServer &&
+      !hasAppDir(options.dir)
+    ) {
+      // Next.js restricts global CSS imports only in the client build of a pages-only project, so only patch its rules there
+      allowYakGlobalCss(webpackConfig);
     }
 
     webpackConfig.module.rules.push({
