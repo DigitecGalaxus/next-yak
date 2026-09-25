@@ -4,14 +4,16 @@ import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState } from
 import type { OnMount } from "@monaco-editor/react";
 import { styled } from "next-yak";
 import { fonts, fontSize, light, dark, ink, status } from "@/tokens";
-import { focusRing } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { useCopy } from "@/lib/use-copy";
 import { highlightPromise } from "@/lib/shiki";
 import { compressWithDictionary, decompressWithDictionary } from "@/lib/playground/compress";
-import { defaultFiles } from "@/lib/playground/examples";
+import { examples } from "@/lib/playground/examples";
+import { DEFAULT_FRAMEWORK, isFrameworkId, type FrameworkId } from "@/lib/playground/frameworks";
 import { useCompiler } from "@/lib/playground/use-compiler";
 import type { PlaygroundFile, TransformOptions } from "@/lib/playground/types";
+import { FRAMEWORK_TABS } from "@/components/landing-page/frameworks";
+import { EditorDots } from "@/components/landing-page/editor-dots";
 import { SourceEditor } from "./source-editor";
 import { Preview } from "./preview";
 import { OptionsMenu } from "./options-menu";
@@ -26,7 +28,10 @@ import {
   PreviewCard,
   PreviewHeader,
   Spacer,
+  HeaderButton,
+  PackageName,
   StatusPill,
+  TitleBar,
   Workspace,
 } from "./layout";
 
@@ -38,10 +43,15 @@ type OutputKind = (typeof OUTPUT_KINDS)[number];
 
 const defaultOptions: TransformOptions = { minify: false, showComments: true, foldStatic: true };
 
+const frameworkTabs = FRAMEWORK_TABS.filter((tab) => isFrameworkId(tab.value));
+
 export default function Playground() {
   // the page is a static export, so the share link is read here in the browser
   const [initial] = useState(readShareLink);
+  const [framework, setFramework] = useState<FrameworkId>(initial.framework);
   const [files, setFiles] = useState<PlaygroundFile[]>(initial.files);
+  // the edits in each framework, so a switch back finds them again
+  const drafts = useRef<Partial<Record<FrameworkId, PlaygroundFile[]>>>({});
   const [resetKey, setResetKey] = useState(0);
   const [activeFile, setActiveFile] = useState(initial.files[0].name);
   const [options, setOptions] = useState(defaultOptions);
@@ -52,9 +62,9 @@ export default function Playground() {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => compile(files, options), 200);
+    const timer = setTimeout(() => compile(framework, files, options), 200);
     return () => clearTimeout(timer);
-  }, [files, options, compile]);
+  }, [framework, files, options, compile]);
 
   const onChange = useCallback((name: string, content: string) => {
     setFiles((current) =>
@@ -72,19 +82,34 @@ export default function Playground() {
     url.search = new URLSearchParams({
       q: compressWithDictionary(record),
       output: outputKind,
+      // links from before the framework switch have no framework and open in React
+      ...(framework === DEFAULT_FRAMEWORK ? {} : { framework }),
     }).toString();
     window.history.replaceState(null, "", url);
     void copy(url.toString());
-  }, [files, outputKind, copy]);
+  }, [framework, files, outputKind, copy]);
 
-  const reset = () => {
+  /** Shows `next` in the editor. The share link in the address bar no longer matches it. */
+  const showFiles = (nextFramework: FrameworkId, next: PlaygroundFile[]) => {
     const url = new URL(window.location.href);
     url.search = "";
     window.history.replaceState(null, "", url);
     setNotice(null);
-    setFiles(defaultFiles);
-    setActiveFile(defaultFiles[0].name);
+    setFramework(nextFramework);
+    setFiles(next);
+    setActiveFile(next[0].name);
     setResetKey((key) => key + 1);
+  };
+
+  const reset = () => {
+    delete drafts.current[framework];
+    showFiles(framework, examples[framework]);
+  };
+
+  const switchFramework = (next: string) => {
+    if (!isFrameworkId(next) || next === framework) return;
+    drafts.current[framework] = files;
+    showFiles(next, drafts.current[next] ?? examples[next]);
   };
 
   const format = () => void editorRef.current?.getAction("editor.action.formatDocument")?.run();
@@ -99,13 +124,9 @@ export default function Playground() {
 
       <Workspace>
         <Card>
-          <Header>
-            <EditorSwitcher
-              value={activeFile}
-              onValueChange={setActiveFile}
-              items={fileTabs}
-              ariaLabel="File"
-            />
+          <TitleBar>
+            <EditorDots />
+            <PackageName>@yak/{framework}</PackageName>
             <Spacer />
             <HeaderButton type="button" onClick={format} title="Format (prettier)">
               Format
@@ -121,10 +142,28 @@ export default function Playground() {
             >
               {copied ? "Copied" : "Share"}
             </HeaderButton>
+          </TitleBar>
+          <Header>
+            <EditorSwitcher
+              value={activeFile}
+              onValueChange={setActiveFile}
+              items={fileTabs}
+              ariaLabel="File"
+              pair
+            />
+            <Spacer />
+            <EditorSwitcher
+              value={framework}
+              onValueChange={switchFramework}
+              items={frameworkTabs}
+              ariaLabel="Framework"
+              pair
+            />
           </Header>
           <EditorBody>
             <Suspense fallback={<Loading>Loading the editor…</Loading>}>
               <SourceEditor
+                framework={framework}
                 files={files}
                 activeFile={activeFile}
                 resetKey={resetKey}
@@ -145,7 +184,7 @@ export default function Playground() {
               </StatusPill>
             </PreviewHeader>
             <PreviewBody>
-              <Preview Component={compiler.Component} sheets={sheets} />
+              <Preview result={compiler.result} sheets={sheets} />
             </PreviewBody>
           </PreviewCard>
 
@@ -175,19 +214,23 @@ export default function Playground() {
 }
 
 function readShareLink(): {
+  framework: FrameworkId;
   files: PlaygroundFile[];
   output: OutputKind;
   notice: string | null;
 } {
   const params = new URLSearchParams(window.location.search);
   const output = OUTPUT_KINDS.find((kind) => kind === params.get("output")) ?? "css";
+  const requested = params.get("framework");
+  const framework = isFrameworkId(requested) ? requested : DEFAULT_FRAMEWORK;
   const q = params.get("q");
-  if (!q) return { files: defaultFiles, output, notice: null };
+  if (!q) return { framework, files: examples[framework], output, notice: null };
   try {
-    return { files: filesFromRecord(decompressWithDictionary(q)), output, notice: null };
+    return { framework, files: filesFromRecord(decompressWithDictionary(q)), output, notice: null };
   } catch {
     return {
-      files: defaultFiles,
+      framework,
+      files: examples[framework],
       output,
       notice: "This share link could not be read. The playground shows the default example.",
     };
@@ -218,33 +261,6 @@ const Notice = styled.p`
   background: color-mix(in srgb, ${status.warn} 16%, transparent);
   color: light-dark(${light.violet}, ${dark.white});
   font-size: ${fontSize.small};
-`;
-
-const HeaderButton = styled.button`
-  padding: 6px 10px;
-  border: 1px solid ${ink.border};
-  border-radius: 6px;
-  background: transparent;
-  color: ${ink.fgSubtle};
-  font-family: ${fonts.mono};
-  font-size: 13px;
-  cursor: pointer;
-
-  &:hover {
-    background: ${ink.hover};
-    color: ${ink.fg};
-  }
-
-  &[data-copied] {
-    border-color: ${ink.success};
-    color: ${ink.success};
-  }
-
-  &:focus-visible {
-    ${focusRing};
-    --focus-ring: ${ink.success};
-    --focus-ring-offset: 1px;
-  }
 `;
 
 const Loading = styled.p`
