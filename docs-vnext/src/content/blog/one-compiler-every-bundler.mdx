@@ -1,0 +1,26 @@
+---
+title: One compiler, every bundler
+description: yak started as a Next.js plugin. Now one SWC plugin runs in Webpack, Turbopack, Vite, Rsbuild and Storybook.
+date: 2026-10-07
+author: The yak team
+draft: true
+type: deep-dive
+---
+
+<Callout title="Draft">
+  This post is not written yet. The outline below is what it will cover.
+</Callout>
+
+## What this post will cover
+
+- Where yak started: a Next.js plugin for Webpack.
+- The one piece that does not change: the SWC plugin, compiled to WASM.
+- What each bundler needs: a way to give the extracted CSS to its own CSS pipeline.
+- Turbopack, Vite 8 with Rolldown, Rsbuild, vinext and Storybook.
+- Cross-file constants and mixins on every bundler.
+- How the e2e suite runs the same cases on every bundler, in dev and in build.
+
+## Trying it today
+
+Read the [Vite guide](/docs/vite), the [Rsbuild guide](/docs/rsbuild) or the
+[Storybook guide](/docs/storybook).

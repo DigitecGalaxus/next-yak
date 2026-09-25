@@ -35,7 +35,7 @@ const font = (file, name, weight) =>
 
 const pagesIn = async (dir, section, prefix) => {
   const files = (await readdir(join(root, dir))).filter((f) => f.endsWith(".mdx"));
-  return Promise.all(
+  const pages = await Promise.all(
     files.sort().map(async (f) => {
       const fm = frontmatter(await readFile(join(root, dir, f), "utf8"));
       const title = fm.title ?? f.replace(/\.mdx$/, "");
@@ -43,9 +43,12 @@ const pagesIn = async (dir, section, prefix) => {
         key: `${prefix}-${f.replace(/\.mdx$/, "")}`,
         section,
         title,
+        draft: fm.draft === "true",
       };
     }),
   );
+  // A draft card in public/og would ship with the site and leak the draft's title.
+  return pages.filter((page) => !page.draft);
 };
 
 const fonts = await Promise.all([
