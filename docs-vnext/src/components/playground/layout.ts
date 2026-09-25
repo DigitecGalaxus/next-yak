@@ -1,6 +1,6 @@
 import { styled } from "next-yak";
-import { fonts, fontWeight, light, dark, ink, status, screen } from "@/tokens";
-import { overline, editorSurface, editorHeader, codeReset } from "@/lib/mixins";
+import { container, fonts, fontWeight, light, dark, ink, status, screen } from "@/tokens";
+import { overline, editorSurface, editorHeader, codeReset, editorScrollbar, focusRing } from "@/lib/mixins";
 
 export const Workspace = styled.div`
   display: grid;
@@ -38,6 +38,52 @@ export const Card = styled.section`
 export const Header = styled.div`
   ${editorHeader};
   border-bottom-color: ${ink.divider};
+`;
+
+export const TitleBar = styled(Header)`
+  min-height: 0;
+  padding-top: 10px;
+  padding-bottom: 0;
+  border-bottom: none;
+`;
+
+export const PackageName = styled.span`
+  margin-left: 6px;
+  color: ${ink.fgMuted};
+  font-family: ${fonts.mono};
+  font-size: 13px;
+
+  /* narrow cards need the room for the buttons */
+  @container editor not (min-width: ${container.editor.switch}) {
+    display: none;
+  }
+`;
+
+export const HeaderButton = styled.button`
+  padding: 6px 10px;
+  border: 1px solid ${ink.border};
+  border-radius: 6px;
+  background: transparent;
+  color: ${ink.fgSubtle};
+  font-family: ${fonts.mono};
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: ${ink.hover};
+    color: ${ink.fg};
+  }
+
+  &[data-copied] {
+    border-color: ${ink.success};
+    color: ${ink.success};
+  }
+
+  &:focus-visible {
+    ${focusRing};
+    --focus-ring: ${ink.success};
+    --focus-ring-offset: 1px;
+  }
 `;
 
 export const Spacer = styled.div`
@@ -105,6 +151,7 @@ export const OutputBody = styled.div`
   min-height: 0;
   overflow: auto;
   padding: 12px 14px;
+  ${editorScrollbar};
 
   ${codeReset};
   pre {
