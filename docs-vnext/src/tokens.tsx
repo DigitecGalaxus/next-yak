@@ -65,6 +65,7 @@ export const screen = {
 export const container = {
   editor: {
     switch: "460px", // framework pills ↔ compact dropdown
+    switchPair: "560px", // same, for two switchers in one row (playground files + framework)
   },
   section: {
     twoCol: "740px", // feature concept cards 1 → 2 columns

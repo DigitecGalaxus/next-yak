@@ -3,7 +3,7 @@
 import { css, keyframes, styled } from "next-yak";
 import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { container, fonts, fontWeight, ink, shadow, light, dark } from "@/tokens";
-import { overlineSmall, editorSurface, codeReset } from "@/lib/mixins";
+import { overlineSmall, editorSurface, codeReset, editorScrollbar } from "@/lib/mixins";
 import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 import { SegmentedTabs } from "./segmented-tabs";
 import Step from "./step";
@@ -267,6 +267,7 @@ const PaneCode = styled.div`
   padding: var(--code-pad) 18px;
   /* this box scrolls, not the <pre>, so the diff tint can bleed into the padding */
   overflow-x: auto;
+  ${editorScrollbar};
 
   ${codeReset};
   pre {

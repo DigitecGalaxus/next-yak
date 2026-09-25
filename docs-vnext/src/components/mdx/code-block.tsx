@@ -4,7 +4,7 @@ import { useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { styled } from "next-yak";
 import { fonts, shadow, status, syntax, light, dark, ink } from "@/tokens";
-import { editorSurface, editorHeader } from "@/lib/mixins";
+import { editorSurface, editorHeader, editorScrollbar } from "@/lib/mixins";
 import { useCopy } from "@/lib/use-copy";
 
 export function CodeBlock({
@@ -140,6 +140,7 @@ const Pre = styled.pre`
   margin: 0;
   padding: 16px;
   overflow-x: auto;
+  ${editorScrollbar};
   font-family: ${fonts.mono};
   font-size: 13.5px;
   line-height: 1.6;

@@ -2,20 +2,24 @@
 
 import dynamic from "next/dynamic";
 import { css, keyframes, styled } from "next-yak";
-import { ink, radii } from "@/tokens";
+import { container, ink, radii } from "@/tokens";
 import { visuallyHidden } from "@/lib/mixins";
+import { EditorDots } from "@/components/landing-page/editor-dots";
 import {
   Card,
   Column,
   EditorBody,
   Header,
+  HeaderButton,
   OutputBody,
+  PackageName,
   PanelLabel,
   PreviewBody,
   PreviewCard,
   PreviewHeader,
   Spacer,
   StatusPill,
+  TitleBar,
   Workspace,
 } from "./layout";
 
@@ -34,10 +38,22 @@ function PlaygroundSkeleton() {
       <Hidden role="status">Loading the playground</Hidden>
 
       <Card aria-hidden="true">
-        <Header>
-          <Pill style={{ width: 300 }} />
+        <TitleBar>
+          <EditorDots />
+          <PackageName>
+            <TextPill />
+          </PackageName>
           <Spacer />
-          <Pill style={{ width: 200 }} />
+          {["Format", "Reset", "Share"].map((label) => (
+            <HeaderButton key={label} type="button" disabled tabIndex={-1}>
+              {label}
+            </HeaderButton>
+          ))}
+        </TitleBar>
+        <Header>
+          <SwitcherPill $narrow={110} $wide={330} $pair />
+          <Spacer />
+          <SwitcherPill $narrow={100} $wide={182} $pair />
         </Header>
         <EditorBody>
           <Lines lines={editorLines} />
@@ -55,9 +71,9 @@ function PlaygroundSkeleton() {
 
         <Card>
           <Header>
-            <Pill style={{ width: 150 }} />
+            <SwitcherPill $narrow={96} $wide={150} />
             <Spacer />
-            <Pill style={{ width: 90 }} />
+            <ButtonPill style={{ width: 97 }} />
           </Header>
           <OutputBody>
             <Lines lines={outputLines} />
@@ -98,11 +114,43 @@ const Hidden = styled.span`
   ${visuallyHidden};
 `;
 
-/* the height of the tab switcher it stands in for */
-const Pill = styled.span`
+/* the sizes of the EditorSwitcher: tab pills when wide, a dropdown when narrow */
+const pillsSize = css<{ $wide: number }>`
+  width: ${({ $wide }) => `${$wide}px`};
+  height: 41.5px;
+`;
+
+const SwitcherPill = styled.span<{ $narrow: number; $wide: number; $pair?: boolean }>`
   flex: 0 1 auto;
-  height: 42px;
+  width: ${({ $narrow }) => `${$narrow}px`};
+  height: 33.5px;
   border-radius: ${radii.card};
+  ${placeholder};
+
+  ${({ $pair }) =>
+    !$pair &&
+    css`
+      @container editor (min-width: ${container.editor.switch}) {
+        ${pillsSize};
+      }
+    `}
+
+  @container editor (min-width: ${container.editor.switchPair}) {
+    ${pillsSize};
+  }
+`;
+
+const ButtonPill = styled.span`
+  height: 33.5px;
+  border-radius: 6px;
+  ${placeholder};
+`;
+
+const TextPill = styled.span`
+  display: block;
+  width: 10ch;
+  height: 12px;
+  border-radius: 6px;
   ${placeholder};
 `;
 

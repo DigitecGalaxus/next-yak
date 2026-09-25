@@ -22,25 +22,30 @@ const ready = init({ module_or_path: new URL("./wasm/index_bg.wasm", import.meta
 );
 
 self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
-  const { id, files, options } = event.data;
+  const { id, framework, files, options } = event.data;
   await ready;
   try {
-    post({ type: "result", id, files: await transformAll(files, options) });
+    const compile = framework === "solid" ? await solidCompiler() : compileReact;
+    post({ type: "result", id, framework, files: await transformAll(files, options, compile) });
   } catch (error) {
     post({ type: "error", id, message: error instanceof Error ? error.message : String(error) });
   }
 });
 
+type Compiled = Pick<TransformedFile, "executable" | "js" | "jsx">;
+type Compile = (file: PlaygroundFile, options: TransformOptions) => Compiled;
+
 /**
- * Each file compiles three times: CommonJS for the preview to run, and two formatted ES
- * modules for the output panel, one with the JSX compiled and one with it kept.
+ * Each file compiles three times: CommonJS for the preview to run, and two ES modules for
+ * the output panel, one with the JSX compiled and one with it kept.
  * All files compile before any CSS resolves, so a file can take constants from any other.
  */
 async function transformAll(
   files: PlaygroundFile[],
   options: TransformOptions,
+  compile: Compile,
 ): Promise<TransformedFile[]> {
-  const compiled = await Promise.all(files.map((file) => compileFile(file, options)));
+  const compiled = await Promise.all(files.map((file) => compileFile(file, options, compile)));
   return Promise.all(
     compiled.map(async (file) => ({
       ...file,
@@ -52,33 +57,51 @@ async function transformAll(
 async function compileFile(
   file: PlaygroundFile,
   options: TransformOptions,
+  compile: Compile,
 ): Promise<Omit<TransformedFile, "css">> {
   try {
-    const executable = runSwc(file, options, "commonjs");
-    const [js, jsx] = await Promise.all(
-      (["js", "jsx"] as const).map((output) =>
-        prettier.format(runSwc(file, options, output), {
-          parser: "typescript",
-          plugins: [typescriptParser, estreePlugin],
-        }),
-      ),
-    );
-    return { ...file, executable, js, jsx };
+    const { executable, js, jsx } = compile(file, options);
+    const [prettyJs, prettyJsx] = await Promise.all([js, jsx].map(formatCode));
+    return { ...file, executable, js: prettyJs, jsx: prettyJsx };
   } catch (error) {
-    // SWC reports a multi-line diagnostic. Its first line names the problem.
-    if (typeof error === "string") {
-      throw new Error(`${error.split("\n")[0].replace("x ", "").trim()} in ${file.name}.tsx`);
-    }
-    throw error;
+    // SWC and Babel report a multi-line diagnostic. Its first line names the problem.
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${message.split("\n")[0].replace("x ", "").trim()} in ${file.name}.tsx`);
   }
+}
+
+const formatCode = (code: string) =>
+  prettier.format(code, { parser: "typescript", plugins: [typescriptParser, estreePlugin] });
+
+/** React: SWC compiles the JSX itself, with yak's JSX runtime for the css prop. */
+const compileReact: Compile = (file, options) => ({
+  executable: runSwc(file, options, { jsx: "automatic", commonjs: true, comments: true }),
+  js: runSwc(file, options, { jsx: "automatic", commonjs: false }),
+  jsx: runSwc(file, options, { jsx: "preserve", commonjs: false }),
+});
+
+/** Solid: SWC runs yak and keeps the JSX, then Solid's compiler turns the JSX into DOM code. */
+let solidPromise: Promise<Compile> | null = null;
+function solidCompiler(): Promise<Compile> {
+  // Babel is large, so a React-only visit never loads it
+  solidPromise ??= import("./solid-compiler").then(({ compileSolidJsx }) => (file, options) => {
+    const filename = `${file.name}.tsx`;
+    const jsx = runSwc(file, options, { jsx: "preserve", commonjs: false });
+    const withComments = runSwc(file, options, { jsx: "preserve", commonjs: false, comments: true });
+    return {
+      executable: compileSolidJsx(withComments, filename, true),
+      js: compileSolidJsx(jsx, filename, false),
+      jsx,
+    };
+  });
+  return solidPromise;
 }
 
 function runSwc(
   file: PlaygroundFile,
   options: TransformOptions,
-  output: "commonjs" | "js" | "jsx",
+  output: { jsx: "automatic" | "preserve"; commonjs: boolean; comments?: boolean },
 ): string {
-  const commonjs = output === "commonjs";
   return transform(
     file.content,
     {
@@ -88,13 +111,13 @@ function runSwc(
         loose: false,
         minify: { compress: false, mangle: false },
         // the CSS loader needs the yak comments in the CommonJS copy
-        preserveAllComments: commonjs || options.showComments,
+        preserveAllComments: output.comments || options.showComments,
         transform: {
           // "preserve" still runs the yak transform, it only leaves the JSX as it is
-          react: { runtime: output === "jsx" ? "preserve" : "automatic", importSource: "next-yak" },
+          react: { runtime: output.jsx, importSource: "next-yak" },
         },
       },
-      ...(commonjs ? { module: { type: "commonjs" } } : {}),
+      ...(output.commonjs ? { module: { type: "commonjs" } } : {}),
       // only class names are minified, by the yak option below
       minify: false,
     },

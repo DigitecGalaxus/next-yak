@@ -2,28 +2,33 @@
 
 import { Select } from "@base-ui/react/select";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import { styled } from "next-yak";
+import { css, styled } from "next-yak";
 import { container, fonts, radii, shadow, ink } from "@/tokens";
 import { focusRing, slidingIndicator } from "@/lib/mixins";
 import type { ReactNode } from "react";
 
-/** Needs an ancestor with `container: editor / inline-size`. It shows a dropdown when narrow. */
+/**
+ * Needs an ancestor with `container: editor / inline-size`. It shows a dropdown when narrow.
+ * `pair` switches later, for a row that holds two switchers.
+ */
 export function EditorSwitcher({
   value,
   onValueChange,
   items,
   ariaLabel = "Select",
+  pair = false,
 }: {
   value: string;
   onValueChange: (value: string) => void;
   items: readonly { value: string; node: ReactNode }[];
   ariaLabel?: string;
+  pair?: boolean;
 }) {
   const handleChange = (next: unknown) => onValueChange(String(next));
 
   return (
     <>
-      <SwitcherRoot value={value} onValueChange={handleChange}>
+      <SwitcherRoot value={value} onValueChange={handleChange} $pair={pair}>
         <SwitcherList activateOnFocus>
           <SwitcherIndicator />
           {items.map((item) => (
@@ -35,7 +40,7 @@ export function EditorSwitcher({
       </SwitcherRoot>
 
       <Select.Root value={value} onValueChange={handleChange}>
-        <SelectTrigger aria-label={ariaLabel}>
+        <SelectTrigger aria-label={ariaLabel} $pair={pair}>
           <SelectValue>{items.find((i) => i.value === value)?.node}</SelectValue>
           <SelectIcon>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -76,10 +81,18 @@ export function EditorSwitcher({
   );
 }
 
-const SwitcherRoot = styled(BaseTabs.Root)`
+const SwitcherRoot = styled(BaseTabs.Root)<{ $pair: boolean }>`
   display: none;
 
-  @container editor (min-width: ${container.editor.switch}) {
+  ${({ $pair }) =>
+    !$pair &&
+    css`
+      @container editor (min-width: ${container.editor.switch}) {
+        display: block;
+      }
+    `}
+
+  @container editor (min-width: ${container.editor.switchPair}) {
     display: block;
   }
 `;
@@ -143,7 +156,7 @@ const SwitcherIndicator = styled(BaseTabs.Indicator)`
   box-shadow: 2px 2px 0 0 ${ink.switcherEdge};
 `;
 
-const SelectTrigger = styled(Select.Trigger)`
+const SelectTrigger = styled(Select.Trigger)<{ $pair: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -164,7 +177,15 @@ const SelectTrigger = styled(Select.Trigger)`
     --focus-ring-offset: 1px;
   }
 
-  @container editor (min-width: ${container.editor.switch}) {
+  ${({ $pair }) =>
+    !$pair &&
+    css`
+      @container editor (min-width: ${container.editor.switch}) {
+        display: none;
+      }
+    `}
+
+  @container editor (min-width: ${container.editor.switchPair}) {
     display: none;
   }
 `;
