@@ -1,0 +1,172 @@
+"use client";
+
+import { Dialog } from "@base-ui/react/dialog";
+import { usePathname } from "next/navigation";
+import type { Root } from "fumadocs-core/page-tree";
+import { useEffect, useState } from "react";
+import { css, styled } from "next-yak";
+import { screen, light, dark } from "@/tokens";
+import { iconButton } from "./button";
+import { backdropStyles } from "@/lib/mixins";
+import NavLink, { NavExternalLink } from "./nav-link";
+import Search from "./search";
+import ThemeToggle from "./theme-toggle";
+import NavTree from "../docs/nav-tree";
+
+export default function MobileMenu({ tree }: { tree: Root }) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const close = () => setOpen(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  return (
+    <Bar>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Trigger aria-label="Open menu">
+          <MenuIcon />
+        </Trigger>
+        <Dialog.Portal>
+          <Backdrop />
+          <Drawer>
+            <Dialog.Title
+              css={css`
+                margin-bottom: 18px;
+                font-size: 18px;
+                color: light-dark(${light.violet}, ${dark.white});
+              `}
+            >
+              Menu
+            </Dialog.Title>
+
+            <Search fullWidth onClick={close} />
+
+            <PrimaryNav>
+              <Section>
+                <NavLink href="/docs/getting-started" onClick={close}>
+                  Documentation
+                </NavLink>
+                {pathname.startsWith("/docs") && (
+                  <SubNav>
+                    <NavTree tree={tree} onNavigateAction={close} />
+                  </SubNav>
+                )}
+              </Section>
+              <NavLink href="/playground" onClick={close}>
+                Playground
+              </NavLink>
+              <NavLink href="/blog" onClick={close}>
+                Blog
+              </NavLink>
+              <NavExternalLink href="https://jantimon.github.io/css-in-js-bench" onClick={close}>
+                Benchmarks
+              </NavExternalLink>
+              <NavExternalLink href="https://github.com/digitecgalaxus/next-yak" onClick={close}>
+                GitHub
+              </NavExternalLink>
+            </PrimaryNav>
+
+            <ThemeFoot>
+              <ThemeToggle showLabel />
+            </ThemeFoot>
+          </Drawer>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </Bar>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2 4h12M2 8h12M2 12h12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+const Bar = styled.div`
+  display: none;
+
+  @container header (max-width: ${screen.nav}) {
+    display: flex;
+    align-items: center;
+  }
+`;
+
+const Trigger = styled(Dialog.Trigger)`
+  ${iconButton};
+`;
+
+const Backdrop = styled(Dialog.Backdrop)`
+  ${backdropStyles};
+  z-index: 60;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: opacity 0.25s ease;
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+`;
+
+const Drawer = styled(Dialog.Popup)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, 82vw);
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 24px 18px;
+  background: light-dark(${light.beige2}, ${dark.navy2});
+  border-right: 2.5px solid light-dark(${light.violet}, ${dark.white});
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform 0.25s ease;
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    transform: translateX(-100%);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+`;
+
+const PrimaryNav = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+  font-size: 16px;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SubNav = styled.div`
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
+`;
+
+const ThemeFoot = styled.div`
+  margin-top: auto;
+  padding-top: 18px;
+`;
