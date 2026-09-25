@@ -18,6 +18,11 @@ export const blog = defineDocs({
     schema: frontmatterSchema.extend({
       date: z.iso.date(),
       author: z.string().optional(),
+      // Drafts show in `next dev` only. See `showDrafts` in src/lib/source.ts.
+      draft: z.boolean().default(false),
+      type: z.enum(["announcement", "release", "deep-dive", "guide"]),
+      // The blog index shows the newest featured post as the big card on top.
+      featured: z.boolean().default(false),
     }),
   },
 });

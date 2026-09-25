@@ -1,0 +1,25 @@
+---
+title: Dynamic mixins across files
+description: Mixins that read props now work when you import them from another file.
+date: 2026-11-05
+author: The yak team
+draft: true
+type: release
+---
+
+<Callout title="Draft">
+  This post is not written yet. The outline below is what it will cover.
+</Callout>
+
+## What this post will cover
+
+- The problem: a mixin that reads props did not work when it came from another file.
+- Why this is difficult: the compiler sees one file at a time, but the CSS must be static.
+- How yak solves it: the cross-file resolver puts the mixin into the component that uses it.
+- What now works: prop functions, nested mixins and mixins in selectors.
+- What stays not supported.
+
+## Trying it today
+
+Update to the release that has this change, and read the
+[features guide](/docs/features).

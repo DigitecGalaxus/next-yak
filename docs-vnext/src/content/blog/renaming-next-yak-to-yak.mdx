@@ -1,8 +1,11 @@
 ---
 title: next-yak is now yak
 description: Why the project changed its name, what moved, and what you have to do.
-date: 2026-09-22
+date: 2026-10-08
 author: The yak team
+draft: true
+type: announcement
+featured: true
 ---
 
 <Callout title="Draft">
@@ -11,14 +14,21 @@ author: The yak team
 
 ## What this post will cover
 
-- Why the name changed, and why now.
-- What `next-yak` grew into: a build-time CSS-in-JS library for React, Solid and Qwik, not
-  a Next.js plugin.
+- Why the name changed, and why now. The name `next-yak` says "Next.js and React only". Both
+  parts are no longer true.
+- yak runs on every major bundler, not only Next.js. See
+  [One compiler, every bundler](/blog/one-compiler-every-bundler).
+- yak runs on React, Solid and Qwik. See [yak for Solid](/blog/yak-solid) and
+  [yak for Qwik](/blog/yak-qwik).
+- yak is fast. See
+  [Your styled components disappear at build time](/blog/build-time-folding).
 - The new package names: `@yak/react`, `@yak/solid` and `@yak/qwik`.
 - What you have to change in your project, and what keeps working untouched.
-- How long the old package keeps receiving releases.
+- How long `next-yak` keeps receiving releases.
+- The new site: new documentation, a playground for all three frameworks, and this blog.
 
 ## Migrating today
 
-The [migration guide](/docs/migration-from-styled-components) covers the move
-from styled-components. A guide for the rename follows with this post.
+The rename guide shows the changes from `next-yak` to `@yak/react`. The
+[migration guide](/docs/migration-from-styled-components) covers the move from
+styled-components.

@@ -1,0 +1,30 @@
+---
+title: yak for Qwik
+description: The Qwik runtime, how styles stay resumable, and what it shares with React and Solid.
+date: 2026-10-01
+author: The yak team
+draft: true
+type: release
+---
+
+<Callout title="Draft">
+  This post is not written yet. The outline below is what it will cover.
+</Callout>
+
+## What this post will cover
+
+- What `@yak/qwik` is, and which Qwik version it needs.
+- Why Qwik is a good fit: yak extracts the CSS at build time, so no style code has to
+  resume in the browser.
+- How a styled component works inside `component$`, and how props reach the styles.
+- Dynamic styles: how a prop change updates a CSS variable without a new render.
+- How yak compares to `useStyles$` and `useStylesScoped$`.
+- The one compiler, the three runtimes: the SWC plugin extracts the same CSS for React,
+  Solid and Qwik.
+- Server rendering, and what the e2e suite checks on every commit.
+- What is not supported yet.
+
+## Trying it today
+
+Install `@yak/qwik` and read the [Vite guide](/docs/vite). Qwik uses the same Vite
+plugin as Solid.
