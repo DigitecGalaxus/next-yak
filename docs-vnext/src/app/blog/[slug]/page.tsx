@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { styled } from "next-yak";
-import { blog, formatPostDate } from "@/lib/source";
+import { getPost, getPostsNewestFirst, readingMinutes, formatPostDate } from "@/lib/source";
+import { PostTag } from "@/components/blog/post-tag";
 import { pageMetadata } from "@/lib/page-metadata";
 import { chromeLink } from "@/lib/mixins";
 import { getMDXComponents } from "@/mdx-components";
@@ -13,18 +14,21 @@ type PageProps = { params: Promise<{ slug: string }> };
 
 export default async function BlogPost(props: PageProps) {
   const { slug } = await props.params;
-  const post = blog.getPage([slug]);
+  const post = getPost(slug);
   if (!post) notFound();
 
   const MDX = post.data.body;
+  const minutes = await readingMinutes(post);
 
   return (
     <ArticleLayout toc={post.data.toc}>
       <BackLink href="/blog">← Blog</BackLink>
+      <PostTag type={post.data.type} />
       <Title>{post.data.title}</Title>
       <Meta>
         <time dateTime={post.data.date}>{formatPostDate(post.data.date)}</time>
-        {post.data.author ? <> · {post.data.author}</> : null}
+        {post.data.author ? <> · {post.data.author}</> : null} · {minutes} min read
+        {post.data.draft ? <> · draft</> : null}
       </Meta>
       {post.data.description ? <Description>{post.data.description}</Description> : null}
       <Prose>
@@ -35,12 +39,15 @@ export default async function BlogPost(props: PageProps) {
 }
 
 export function generateStaticParams() {
-  return blog.generateParams().map(({ slug }) => ({ slug: (slug ?? []).join("/") }));
+  const slugs = getPostsNewestFirst().map((post) => ({ slug: post.slugs.join("/") }));
+  // `output: "export"` fails on an empty list. While every post is a draft, emit one slug
+  // that matches no post, so the build writes a 404 page for it.
+  return slugs.length > 0 ? slugs : [{ slug: "no-posts" }];
 }
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { slug } = await props.params;
-  const post = blog.getPage([slug]);
+  const post = getPost(slug);
   if (!post) return {};
   return pageMetadata({
     title: post.data.title,
@@ -53,7 +60,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 const BackLink = styled(Link)`
   ${chromeLink};
-  display: inline-block;
+  display: block;
+  width: fit-content;
   margin-bottom: 14px;
   font-family: ${fonts.mono};
   font-size: 13px;
