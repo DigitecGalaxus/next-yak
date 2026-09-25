@@ -123,6 +123,9 @@ catalogs:
       specifier: ^2.0.0-rc.8
       version: 2.0.0-rc.8
   dev:
+    '@babel/standalone':
+      specifier: 7.29.9
+      version: 7.29.9
     '@babel/types':
       specifier: 8.0.4
       version: 8.0.4
@@ -159,6 +162,9 @@ catalogs:
     '@shikijs/transformers':
       specifier: 4.4.3
       version: 4.4.3
+    '@solidjs/babel-plugin':
+      specifier: 2.0.0-rc.6
+      version: 2.0.0-rc.6
     '@solidjs/vite-plugin':
       specifier: 3.0.0-next.38
       version: 3.0.0-next.38
@@ -198,6 +204,9 @@ catalogs:
     '@testing-library/react':
       specifier: 16.3.3
       version: 16.3.3
+    '@types/babel__standalone':
+      specifier: 7.1.9
+      version: 7.1.9
     '@types/benchmark':
       specifier: 2.1.5
       version: 2.1.5
@@ -530,6 +539,9 @@ importers:
 
   docs-vnext:
     dependencies:
+      '@babel/standalone':
+        specifier: catalog:dev
+        version: 7.29.9
       '@base-ui/react':
         specifier: catalog:dev
         version: 1.8.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -539,9 +551,18 @@ importers:
       '@shikijs/monaco':
         specifier: catalog:dev
         version: 4.4.3
+      '@solidjs/babel-plugin':
+        specifier: catalog:dev
+        version: 2.0.0-rc.6(@babel/core@7.29.7(supports-color@8.1.1))
+      '@solidjs/web':
+        specifier: catalog:core
+        version: 2.0.0-rc.8(solid-js@2.0.0-rc.8)
       '@swc/helpers':
         specifier: catalog:dev
         version: 0.5.23
+      '@yak/solid':
+        specifier: workspace:*
+        version: link:../packages/yak-solid
       fflate:
         specifier: catalog:dev
         version: 0.8.3
@@ -575,6 +596,9 @@ importers:
       shiki:
         specifier: catalog:dev
         version: 4.4.3
+      solid-js:
+        specifier: catalog:core
+        version: 2.0.0-rc.8
       yak-swc:
         specifier: workspace:*
         version: link:../packages/yak-swc
@@ -582,6 +606,9 @@ importers:
         specifier: catalog:dev
         version: 4.4.3
     devDependencies:
+      '@types/babel__standalone':
+        specifier: catalog:dev
+        version: 7.1.9
       '@types/node':
         specifier: catalog:dev
         version: 26.4.1
@@ -1521,6 +1548,10 @@ packages:
 
   '@babel/runtime@7.29.7':
     resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/standalone@7.29.9':
+    resolution: {integrity: sha512-Oztlw9huD3bdgX6HmYqCSBamOtH05qbbF5TGfD2cbetKsqMo/2U9WB24U02qGDqMzmY0wY2bnLhbFAjXW3dWYg==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.29.7':
@@ -5298,6 +5329,9 @@ packages:
 
   '@types/babel__generator@7.27.0':
     resolution: {integrity: sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==}
+
+  '@types/babel__standalone@7.1.9':
+    resolution: {integrity: sha512-IcCNPLqpevUD7UpV8QB0uwQPOyoOKACFf0YtYWRHcmxcakaje4Q7dbG2+jMqxw/I8Zk0NHvEps66WwS7z/UaaA==}
 
   '@types/babel__template@7.4.4':
     resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
@@ -10633,6 +10667,8 @@ snapshots:
 
   '@babel/runtime@7.29.7': {}
 
+  '@babel/standalone@7.29.9': {}
+
   '@babel/template@7.29.7':
     dependencies:
       '@babel/code-frame': 7.29.7
@@ -13961,6 +13997,15 @@ snapshots:
   '@types/babel__generator@7.27.0':
     dependencies:
       '@babel/types': 7.29.8
+
+  '@types/babel__standalone@7.1.9':
+    dependencies:
+      '@babel/parser': 7.29.8
+      '@babel/types': 7.29.8
+      '@types/babel__core': 7.20.5
+      '@types/babel__generator': 7.27.0
+      '@types/babel__template': 7.4.4
+      '@types/babel__traverse': 7.28.0
 
   '@types/babel__template@7.4.4':
     dependencies:

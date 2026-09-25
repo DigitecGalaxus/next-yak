@@ -1,5 +1,5 @@
 import { css } from "next-yak";
-import { fonts, fontSize, fontWeight, light, dark, ink, scrim, shadow } from "@/tokens";
+import { fonts, fontSize, fontWeight, light, dark, ink, scrim, shadow, syntax } from "@/tokens";
 
 export const keycapStyles = css`
   padding: 2px 8px;
@@ -176,10 +176,40 @@ export const editorHeader = css`
   border-bottom: 2px solid ${ink.border};
 `;
 
+/**
+ * Matches the Monaco editor scrollbar. Chrome ignores the -webkit- rules once the standard
+ * properties are set, so those stay behind @supports for Firefox.
+ */
+export const editorScrollbar = css`
+  &::-webkit-scrollbar {
+    width: 14px;
+    height: 12px;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${syntax.punctuation}26;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${syntax.punctuation}40;
+  }
+  &::-webkit-scrollbar-thumb:active {
+    background: ${syntax.punctuation}66;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: ${syntax.punctuation}40 transparent;
+  }
+`;
+
 export const codeReset = css`
   pre {
     margin: 0;
     overflow-x: auto;
+    ${editorScrollbar};
     font-family: ${fonts.mono};
     background: transparent !important;
   }

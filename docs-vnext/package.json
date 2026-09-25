@@ -14,10 +14,14 @@
     "playground-types": "node scripts/generate-playground-types.mjs"
   },
   "dependencies": {
+    "@babel/standalone": "catalog:dev",
     "@base-ui/react": "catalog:dev",
     "@monaco-editor/react": "catalog:dev",
     "@shikijs/monaco": "catalog:dev",
+    "@solidjs/babel-plugin": "catalog:dev",
+    "@solidjs/web": "catalog:core",
     "@swc/helpers": "catalog:dev",
+    "@yak/solid": "workspace:*",
     "fflate": "catalog:dev",
     "fumadocs-core": "catalog:dev",
     "fumadocs-mdx": "catalog:dev",
@@ -29,10 +33,12 @@
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "shiki": "catalog:dev",
+    "solid-js": "catalog:core",
     "yak-swc": "workspace:*",
     "zod": "catalog:dev"
   },
   "devDependencies": {
+    "@types/babel__standalone": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

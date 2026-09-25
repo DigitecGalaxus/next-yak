@@ -9,12 +9,12 @@ import { use, useEffect, useRef } from "react";
 import { syntax, yakTheme } from "@/lib/yak-theme";
 import { highlighterPromise as sharedHighlighter } from "@/lib/shiki";
 import { asset } from "@/lib/site";
+import type { FrameworkId } from "@/lib/playground/frameworks";
 import type { PlaygroundFile } from "@/lib/playground/types";
 
 /** ink.card as hex, Monaco reads hex colors only */
 const CARD_FILL = "#221442";
 
-/** The background must be opaque: Monaco paints the sticky scroll header with it. */
 const editorTheme = {
   ...yakTheme,
   name: "yak-editor",
@@ -29,11 +29,6 @@ const editorTheme = {
     "editor.inactiveSelectionBackground": `${syntax.keyword}1f`,
     "editorBracketMatch.background": `${syntax.property}22`,
     "editorBracketMatch.border": `${syntax.property}66`,
-    "editorStickyScroll.background": CARD_FILL,
-    "editorStickyScrollGutter.background": CARD_FILL,
-    "editorStickyScrollHover.background": "#2c1d52",
-    "editorStickyScroll.shadow": "#0d061c99",
-    "editorStickyScroll.border": `${syntax.punctuation}26`,
     "editorWidget.background": syntax.bg,
     "editorHoverWidget.background": syntax.bg,
     "editorHoverWidget.border": `${syntax.punctuation}40`,
@@ -57,6 +52,7 @@ const uriFor = (monaco: Monaco, name: string) => monaco.Uri.parse(`file:///${nam
  * changes; after that the editor owns the text and reports edits through `onChange`.
  */
 export function SourceEditor({
+  framework,
   files,
   activeFile,
   resetKey,
@@ -64,6 +60,7 @@ export function SourceEditor({
   onShortcutShare,
   editorRef,
 }: {
+  framework: FrameworkId;
   files: PlaygroundFile[];
   activeFile: string;
   resetKey: number;
@@ -82,11 +79,14 @@ export function SourceEditor({
   // beforeMount can run with the props of an older render
   const filesRef = useRef(files);
   filesRef.current = files;
+  const frameworkRef = useRef(framework);
+  frameworkRef.current = framework;
 
   useEffect(() => {
     const monaco = monacoRef.current;
     if (!monaco) return;
     seedModels(monaco, filesRef.current);
+    void addTypes(monaco, frameworkRef.current);
     editorRef.current?.setModel(monaco.editor.getModel(uriFor(monaco, activeFile)));
     // only a reset reseeds; `files` changes on every keystroke
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,6 +104,8 @@ export function SourceEditor({
         lineHeight: 22,
         padding: { top: 14, bottom: 14 },
         minimap: { enabled: false },
+        // the files are short, and a pinned line under the header reads like a second header
+        stickyScroll: { enabled: false },
         automaticLayout: true,
         scrollBeyondLastLine: false,
         wordWrap: "on",
@@ -125,7 +127,7 @@ export function SourceEditor({
           model.onDidChangeContent(() => changeRef.current(name, model.getValue()));
         });
         seedModels(monaco, filesRef.current);
-        void addTypes(monaco);
+        void addTypes(monaco, frameworkRef.current);
       }}
       onMount={(editor, monaco) => {
         editorRef.current = editor;
@@ -158,28 +160,49 @@ function seedModels(monaco: Monaco, files: PlaygroundFile[]) {
   }
 }
 
-let typesPromise: Promise<Record<string, string>> | null = null;
+const typesPromises = new Map<FrameworkId, Promise<Record<string, string>>>();
+let extraLibs: { dispose(): void }[] = [];
+let typesFor: FrameworkId | null = null;
 
-async function addTypes(monaco: Monaco) {
+/** JSX settings as in each framework's own tsconfig */
+const jsxSettings = (monaco: Monaco, framework: FrameworkId) => {
+  const ts = monaco.languages.typescript;
+  return framework === "solid"
+    ? { jsx: ts.JsxEmit.Preserve, jsxImportSource: "@solidjs/web" }
+    : { jsx: ts.JsxEmit.ReactJSX, jsxImportSource: "next-yak" };
+};
+
+async function addTypes(monaco: Monaco, framework: FrameworkId) {
+  if (typesFor === framework) return;
+  typesFor = framework;
   const ts = monaco.languages.typescript;
   ts.typescriptDefaults.setCompilerOptions({
     target: ts.ScriptTarget.ES2020,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    jsx: ts.JsxEmit.ReactJSX,
-    jsxImportSource: "next-yak",
+    ...jsxSettings(monaco, framework),
     esModuleInterop: true,
     strict: true,
     allowNonTsExtensions: true,
   });
   ts.typescriptDefaults.setEagerModelSync(true);
 
-  typesPromise ??= fetch(asset("/playground/types.json")).then((r) => r.json());
+  let types = typesPromises.get(framework);
+  if (!types) {
+    types = fetch(asset(`/playground/types/${framework}.json`)).then((r) => r.json());
+    typesPromises.set(framework, types);
+  }
   try {
-    for (const [path, content] of Object.entries(await typesPromise)) {
-      ts.typescriptDefaults.addExtraLib(content, `file:///${path}`);
-    }
+    const libs = await types;
+    // a later switch owns the libraries now
+    if (typesFor !== framework) return;
+    for (const lib of extraLibs) lib.dispose();
+    extraLibs = Object.entries(libs).map(([path, content]) =>
+      ts.typescriptDefaults.addExtraLib(content, `file:///${path}`),
+    );
   } catch {
+    typesPromises.delete(framework);
+    if (typesFor === framework) typesFor = null;
     // the editor still works without types
   }
 }

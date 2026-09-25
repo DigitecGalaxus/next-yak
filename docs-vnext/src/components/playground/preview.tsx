@@ -1,52 +1,68 @@
 "use client";
 
-import { Component, useEffect, useRef, type ComponentType, type ReactNode } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { useEffect, useRef } from "react";
 import { styled } from "next-yak";
 import { dark } from "@/tokens";
+import { errorStyles } from "@/lib/playground/runtimes/error";
+import type { Renderer, Runtime } from "@/lib/playground/runtimes/types";
 
 /**
  * Renders into a shadow root so the site CSS and the playground CSS stay apart.
- * It uses a separate React root, not a portal: events from inside a shadow root are
- * retargeted to the host, so a portal's onClick handlers would never fire.
+ * The framework runtime owns the mount node, the preview only swaps the style sheets.
  */
 export function Preview({
-  Component,
+  result,
   sheets,
 }: {
-  Component: ComponentType | null;
+  result: { runtime: Runtime; exported: unknown } | null;
   /** not `css`, that name is yak's css prop */
   sheets: string[];
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const rootRef = useRef<Root | null>(null);
+  const stylesRef = useRef<HTMLDivElement | null>(null);
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const rendererRef = useRef<{ runtime: Runtime; renderer: Renderer } | null>(null);
 
   useEffect(() => {
     const host = hostRef.current!;
     const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
-    const container = document.createElement("div");
-    container.style.height = "100%";
-    shadow.replaceChildren(container);
-    const root = createRoot(container);
-    rootRef.current = root;
+    const reset = document.createElement("style");
+    reset.textContent = hostReset;
+    const styles = document.createElement("div");
+    styles.style.display = "none";
+    const mount = document.createElement("div");
+    mount.style.height = "100%";
+    shadow.replaceChildren(reset, styles, mount);
+    stylesRef.current = styles;
+    mountRef.current = mount;
     return () => {
-      rootRef.current = null;
-      // unmount after the current render, React does not allow it during one
-      queueMicrotask(() => root.unmount());
+      rendererRef.current?.renderer.dispose();
+      rendererRef.current = null;
     };
   }, []);
 
   useEffect(() => {
-    rootRef.current?.render(
-      <>
-        <style>{hostReset}</style>
-        {sheets.map((sheet, index) => (
-          <style key={index}>{sheet}</style>
-        ))}
-        <ErrorBoundary resetKey={Component}>{Component ? <Component /> : null}</ErrorBoundary>
-      </>,
+    stylesRef.current?.replaceChildren(
+      ...sheets.map((sheet) => {
+        const style = document.createElement("style");
+        style.textContent = sheet;
+        return style;
+      }),
     );
-  }, [Component, sheets]);
+  }, [sheets]);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount || !result) return;
+    if (rendererRef.current?.runtime !== result.runtime) {
+      rendererRef.current?.renderer.dispose();
+      const container = document.createElement("div");
+      container.style.height = "100%";
+      mount.replaceChildren(container);
+      rendererRef.current = { runtime: result.runtime, renderer: result.runtime.createRenderer(container) };
+    }
+    rendererRef.current.renderer.render(result.exported);
+  }, [result]);
 
   return <Host ref={hostRef} />;
 }
@@ -64,46 +80,9 @@ const hostReset = `
   font-size: 16px;
   line-height: 1.5;
 }
-`;
+${errorStyles}`;
 
 const Host = styled.div`
   height: 100%;
   overflow: auto;
 `;
-
-class ErrorBoundary extends Component<
-  { resetKey: unknown; children: ReactNode },
-  { error: Error | null; resetKey: unknown }
-> {
-  state = { error: null as Error | null, resetKey: this.props.resetKey };
-
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-
-  static getDerivedStateFromProps(
-    props: { resetKey: unknown },
-    state: { error: Error | null; resetKey: unknown },
-  ) {
-    return props.resetKey === state.resetKey ? null : { error: null, resetKey: props.resetKey };
-  }
-
-  render() {
-    if (!this.state.error) return this.props.children;
-    return (
-      <pre
-        style={{
-          margin: 16,
-          padding: 12,
-          borderRadius: 8,
-          background: "#fdecec",
-          color: "#8a1c1c",
-          font: "13px/1.5 ui-monospace, monospace",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {this.state.error.message}
-      </pre>
-    );
-  }
-}
