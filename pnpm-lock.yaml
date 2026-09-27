@@ -6,6 +6,9 @@ importers:
   .:
     configDependencies: {}
     packageManagerDependencies:
+      '@pnpm/exe':
+        specifier: 12.3.1
+        version: 12.3.1
       pnpm:
         specifier: 12.3.1
         version: 12.3.1
@@ -56,6 +59,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@pnpm/exe@12.3.1':
+    resolution: {integrity: sha512-Tqo6y+EutDHtI6dodXgaYGQJfRQbwqWmhs8QgsQACd2J+qUInOYFPoiU94RIWuxsQBqgH3OMpTEkNEoJO1uPZA==}
+    engines: {node: '>=18.*'}
+    hasBin: true
+
   pnpm@12.3.1:
     resolution: {integrity: sha512-PBTBVAjRSJ01D47X+TNh0mzHBwVPaEmk7qO7dAf/T+RWS0E6HEIadzoXarEWio3xx9VI8s0Nx9NE9YxOaApbGA==}
     engines: {node: '>=18.*'}
@@ -86,6 +94,17 @@ snapshots:
 
   '@pnpm/exe.win32-x64@12.3.1':
     optional: true
+
+  '@pnpm/exe@12.3.1':
+    optionalDependencies:
+      '@pnpm/exe.darwin-arm64': 12.3.1
+      '@pnpm/exe.darwin-x64': 12.3.1
+      '@pnpm/exe.linux-arm64': 12.3.1
+      '@pnpm/exe.linux-arm64-musl': 12.3.1
+      '@pnpm/exe.linux-x64': 12.3.1
+      '@pnpm/exe.linux-x64-musl': 12.3.1
+      '@pnpm/exe.win32-arm64': 12.3.1
+      '@pnpm/exe.win32-x64': 12.3.1
 
   pnpm@12.3.1:
     optionalDependencies:
@@ -157,8 +176,8 @@ catalogs:
       specifier: 4.4.3
       version: 4.4.3
     '@solidjs/vite-plugin':
-      specifier: 3.0.0-next.38
-      version: 3.0.0-next.38
+      specifier: 3.0.0-next.46
+      version: 3.0.0-next.46
     '@storybook/addon-docs':
       specifier: 10.6.0
       version: 10.6.0
@@ -784,7 +803,7 @@ importers:
     devDependencies:
       '@solidjs/vite-plugin':
         specifier: catalog:dev
-        version: 3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
       typescript:
         specifier: catalog:dev
         version: 6.0.3
@@ -1027,7 +1046,7 @@ importers:
     devDependencies:
       '@solidjs/vite-plugin':
         specifier: catalog:dev
-        version: 3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
       '@types/node':
         specifier: catalog:dev
         version: 26.4.1
@@ -1187,7 +1206,7 @@ importers:
     devDependencies:
       '@solidjs/vite-plugin':
         specifier: catalog:dev
-        version: 3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))))(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))))(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
       '@solidjs/web':
         specifier: catalog:core
         version: 2.0.0-rc.10(solid-js@2.0.0-rc.10)
@@ -4592,6 +4611,21 @@ packages:
       '@solidjs/web': ^2.0.0-rc.0
       '@testing-library/jest-dom': ^5.16.6 || ^5.17.0 || ^6.*
       solid-js: ^2.0.0-rc.0
+      vite: ^8.0.0 || ^9.0.0
+    peerDependenciesMeta:
+      '@solidjs/start-devtools':
+        optional: true
+      '@testing-library/jest-dom':
+        optional: true
+
+  '@solidjs/vite-plugin@3.0.0-next.46':
+    resolution: {integrity: sha512-iKVgtv5xroO6FgNkt6jYQYUsjlk6luv4EsXuSwzSP1Wslj9tKN7X9bWMHBq9EtlOtNCTRb+e579mmL+6c1xkpw==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      '@solidjs/start-devtools': ^1.0.0-next.2
+      '@solidjs/web': ^2.0.0-rc.10
+      '@testing-library/jest-dom': ^5.16.6 || ^5.17.0 || ^6.0.0 || ^7.0.0
+      solid-js: ^2.0.0-rc.10
       vite: ^8.0.0 || ^9.0.0
     peerDependenciesMeta:
       '@solidjs/start-devtools':
@@ -12995,24 +13029,6 @@ snapshots:
       - supports-color
     optional: true
 
-  '@solidjs/vite-plugin@3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
-    dependencies:
-      '@ampproject/remapping': 2.3.0
-      '@babel/core': 7.29.7(supports-color@8.1.1)
-      '@solidjs/babel-plugin': 2.0.0-rc.10(@babel/core@7.29.7(supports-color@8.1.1))
-      '@solidjs/compiler': 2.0.0-rc.10
-      '@solidjs/web': 2.0.0-rc.10(solid-js@2.0.0-rc.10)
-      '@types/babel__core': 7.20.5
-      merge-anything: 5.1.7
-      solid-js: 2.0.0-rc.10
-      vite: 8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
-    optionalDependencies:
-      '@testing-library/jest-dom': 6.9.1
-    transitivePeerDependencies:
-      - '@tsrx/core'
-      - supports-color
-
   '@solidjs/vite-plugin@3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
@@ -13030,8 +13046,45 @@ snapshots:
     transitivePeerDependencies:
       - '@tsrx/core'
       - supports-color
+    optional: true
 
-  '@solidjs/vite-plugin@3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))))(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
+  '@solidjs/vite-plugin@3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@babel/core': 7.29.7(supports-color@8.1.1)
+      '@solidjs/babel-plugin': 2.0.0-rc.10(@babel/core@7.29.7(supports-color@8.1.1))
+      '@solidjs/compiler': 2.0.0-rc.10
+      '@solidjs/web': 2.0.0-rc.10(solid-js@2.0.0-rc.10)
+      '@types/babel__core': 7.20.5
+      merge-anything: 5.1.7
+      solid-js: 2.0.0-rc.10
+      vite: 8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
+      vitefu: 1.1.3(vite@8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+    optionalDependencies:
+      '@testing-library/jest-dom': 6.9.1
+    transitivePeerDependencies:
+      - '@tsrx/core'
+      - supports-color
+
+  '@solidjs/vite-plugin@3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@babel/core': 7.29.7(supports-color@8.1.1)
+      '@solidjs/babel-plugin': 2.0.0-rc.10(@babel/core@7.29.7(supports-color@8.1.1))
+      '@solidjs/compiler': 2.0.0-rc.10
+      '@solidjs/web': 2.0.0-rc.10(solid-js@2.0.0-rc.10)
+      '@types/babel__core': 7.20.5
+      merge-anything: 5.1.7
+      solid-js: 2.0.0-rc.10
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
+      vitefu: 1.1.3(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+    optionalDependencies:
+      '@testing-library/jest-dom': 6.9.1
+    transitivePeerDependencies:
+      - '@tsrx/core'
+      - supports-color
+
+  '@solidjs/vite-plugin@3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))))(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@babel/core': 7.29.7(supports-color@8.1.1)
