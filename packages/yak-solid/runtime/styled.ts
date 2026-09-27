@@ -43,7 +43,7 @@ import type {
   StaticStyleProcessor,
   StyleObject,
 } from "./publicStyledApi.js";
-import { $PROXY, createMemo } from "solid-js";
+import { $PROXY, createMemo, merge, omit } from "solid-js";
 // the helpers solid's compiled jsx calls; this file hand-writes what the compiler would emit for a tag
 import {
   ChildProperties,
@@ -783,71 +783,72 @@ const createElementRenderer = (tag: string, attrString: string): TargetRenderer 
 };
 
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
-  const bound = targetProps(props, meta);
-  // a proxy can add children later, so it keeps the child binding
-  const skipChildren = !($PROXY in bound) && !("children" in bound);
-  // no untrack here: a component body runs untracked
-  spread(el, bound, skipChildren);
+  // children come from the author's props or from attrs; a reactive spread
+  // can add them later
+  const skipChildren = !meta.attrsAddKeys && !($PROXY in props) && !("children" in props);
+  // the sources as an array, like a compiled <tag {...a} {...b}>: spread()
+  // reads a function source inline, no memo and no hydration id. that
+  // matters here: the server writer for a tag builds none of this, so an
+  // owner created only on the client would shift every later element's id.
+  // no untrack: a component body runs untracked
+  spread(el, targetSources(props, meta), skipChildren);
   // replay events once the element's bindings are ready
   runHydrationEvents();
   return el;
 };
 
-/**
- * the props the target sees: author props, attrs output, computed class and style
- * $-props and the provider theme are hidden. solid's omit() takes fixed key
- * names and $-props are open-ended, so the filter is hand-written
- *
- * plain copy when the keys can't change, proxy when attrs or a reactive
- * spread can add keys and downstream omit() has to notice
- * the copy stays unmarked on purpose, a $PROXY mark makes omit()/merge()
- * wrap it again and every read gets slower
- */
-const targetProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
-  if (!meta.attrsAddKeys && !($PROXY in props)) return copyProps(props, meta);
-  return proxyProps(props, meta);
-};
+/** the props a component target receives: the sources as one merge() view */
+const targetProps = (props: Props, meta: RenderMeta): Props =>
+  merge(...targetSources(props, meta)) as Props;
 
 /**
- * copies descriptors without reading them: a getter like icon={<Icon />}
- * renders a child and takes hydration keys, the target reads it in its own
- * order. a getter is re-homed rather than moved (see `rehome`)
+ * what the target sees, as the sources solid's own primitives take: omit()
+ * with the skip predicate over the author's props ($-props, theme, and the
+ * keys attrs bake), the attrs the memo produced as a function source when
+ * they can add keys, and the computed class/style last. always views, never
+ * a copy: a getter like icon={<Icon />} renders a child and takes hydration
+ * keys, so it is read by the target in its own order, once. on the server
+ * the values are final and go in as data properties; on the client as
+ * getters over the memo
  */
-const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
-  const { compute, classOf } = meta;
-  const out: Record<PropertyKey, unknown> = {};
-  // string keys only, like solid's omit(): a symbol never reaches the target
-  for (const key of Object.getOwnPropertyNames(props)) {
-    if (meta.skip(key)) continue;
-    const descriptor = Reflect.getOwnPropertyDescriptor(props, key)!;
-    if ("value" in descriptor && descriptor.enumerable) {
-      out[key] = descriptor.value;
-    } else {
-      Object.defineProperty(out, key, rehome(props, key, descriptor));
-    }
-  }
+const targetSources = (props: Props, meta: RenderMeta): [Props, TargetAttrs, Props] => {
+  const { skip, compute, classOf } = meta;
+  const rest = omit(props, skip as (key: string | symbol) => boolean);
+  let extras: Props;
   if (isServer) {
-    // the values are final on the server: plain values take the value path
-    // in solid's omit() and merge() instead of a getter per read
+    extras = {};
     if (compute) {
       const computed = compute();
-      out.class = computed.class;
-      if (computed.style !== undefined) out.style = computed.style;
-    } else out.class = classOf(props);
-    return out;
+      extras.class = computed.class;
+      if (computed.style !== undefined) extras.style = computed.style;
+    } else extras.class = classOf(props);
+  } else {
+    const classFn = compute ? () => compute().class : () => classOf(props);
+    const styleFn = styleGetter(compute);
+    extras = {
+      get class() {
+        return classFn();
+      },
+    } as Props;
+    if (styleFn) {
+      Object.defineProperty(extras, "style", {
+        get: styleFn,
+        enumerable: true,
+        configurable: true,
+      });
+    }
   }
-  const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = styleGetter(compute);
-  Object.defineProperty(out, "class", {
-    get: classFn,
-    enumerable: true,
-    configurable: true,
-  });
-  if (styleFn) {
-    Object.defineProperty(out, "style", { get: styleFn, enumerable: true, configurable: true });
-  }
-  return out;
+  if (!meta.attrsAddKeys) return [rest, undefined, extras];
+  // meta.attrsAddKeys, not the destructured copy: the read narrows meta.compute
+  const attrsSource = () => {
+    const attrs = meta.compute().attrs;
+    return attrs ? omit(attrs, skip as (key: string | symbol) => boolean) : undefined;
+  };
+  return [rest, attrsSource, extras];
 };
+
+/** the attrs source, or none when attrs cannot add keys (baked, or no attrs) */
+type TargetAttrs = (() => Props | undefined) | undefined;
 
 /**
  * the style accessor a component target receives, or none
@@ -861,62 +862,4 @@ const styleGetter = (
   if (!compute) return undefined;
   if (isServer && compute().style === undefined) return undefined;
   return () => compute().style;
-};
-
-/**
- * attrs and reactive spreads can add or remove keys; the $PROXY mark keeps
- * downstream omit() calls reactive
- */
-const proxyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
-  // trap closures per element on purpose, not shared with viewTraps: solid's
-  // for-in hits two traps per key, so a backing object would add an
-  // indirection to each
-  const { skip, compute, classOf } = meta;
-  // meta.attrsAddKeys, not the destructured copy: the read narrows meta.compute
-  const attrsProps = () => (meta.attrsAddKeys ? meta.compute().attrs : undefined);
-  const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = styleGetter(compute);
-  const contributed = (key: PropertyKey) =>
-    key === "class" ? classFn : key === "style" ? styleFn : undefined;
-  const fromAttrs = (key: PropertyKey) => {
-    const attrs = attrsProps();
-    return attrs && key in attrs ? attrs : undefined;
-  };
-  return new Proxy(props, {
-    get(target, key, receiver) {
-      // the receiver, like solid's own props proxies: solid's spread walks
-      // a proxy's keys through its traps only when props[$PROXY] === props
-      if (key === $PROXY) return receiver;
-      const getter = contributed(key);
-      if (getter) return getter();
-      if (skip(key)) return undefined;
-      const attrs = fromAttrs(key);
-      return attrs ? attrs[key] : Reflect.get(target, key);
-    },
-    has(target, key) {
-      if (key === $PROXY) return true;
-      if (contributed(key)) return true;
-      if (skip(key)) return false;
-      return Reflect.has(target, key) || fromAttrs(key) !== undefined;
-    },
-    ownKeys(target) {
-      const keys = new Set<string | symbol>();
-      for (const key of Reflect.ownKeys(target)) if (!skip(key)) keys.add(key);
-      for (const key of Object.keys(attrsProps() ?? {})) if (!skip(key)) keys.add(key);
-      // class and style are always own keys, listed after the author keys and attrs
-      keys.add("class");
-      if (styleFn) keys.add("style");
-      return [...keys];
-    },
-    getOwnPropertyDescriptor(target, key) {
-      const getter = contributed(key);
-      if (getter) return { enumerable: true, configurable: true, get: getter };
-      if (skip(key)) return undefined;
-      const attrs = fromAttrs(key);
-      if (attrs) {
-        return { enumerable: true, configurable: true, get: () => attrsProps()?.[key] };
-      }
-      return Reflect.getOwnPropertyDescriptor(target, key);
-    },
-  });
 };
