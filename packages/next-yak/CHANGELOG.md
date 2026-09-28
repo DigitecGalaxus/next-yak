@@ -1,5 +1,12 @@
 # next-yak
 
+## 9.10.1
+
+### Patch Changes
+
+- ee11260: Respect Vite's file access restrictions when loading virtual CSS modules in the dev server.
+- yak-swc@9.10.1
+
 ## 9.10.0
 
 ### Minor Changes
