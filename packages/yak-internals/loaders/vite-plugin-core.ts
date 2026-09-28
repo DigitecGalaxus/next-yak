@@ -2,7 +2,7 @@ import { type JscConfig, Options, transform as swcTransform } from "@swc/core";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
-import { normalizePath, type Plugin } from "vite";
+import { isFileLoadingAllowed, normalizePath, type Plugin, type ResolvedConfig } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
 import { createEvaluator, type Evaluator } from "yak-internals/isolated-source-eval";
@@ -124,6 +124,18 @@ async function viteYakImpl(
   const virtualCssModuleRegex = /^\0virtual:yak-css:/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
+
+  function checkFileAccess(filePath: string, config: ResolvedConfig): string {
+    if (config.command !== "serve") return filePath;
+
+    const normalizedPath = normalizePath(resolve(filePath));
+    if (!isFileLoadingAllowed(config, normalizedPath)) {
+      throw new Error(`[${library.name}] Access to yak CSS source is denied`);
+    }
+
+    return normalizedPath;
+  }
+
   return {
     name: "vite-plugin-yak:css:pre",
     enforce: "pre",
@@ -166,17 +178,25 @@ async function viteYakImpl(
         id: virtualCssModuleRegex,
       },
       async handler(id) {
-        // remove \0virtual:yak-css: (17 chars) from the beginning and .css (4 chars) from the end
-        // The path is relative to basePath — resolve to absolute for Vite's file APIs
+        const config = this.environment.getTopLevelConfig();
+        // The source path sits between the virtual prefix and the .css suffix.
         const queryStringStart = id.indexOf("?");
         const queryString = queryStringStart === -1 ? "" : id.slice(queryStringStart);
-        const relativeId = id.slice(17, -4 - queryString.length);
+        const idWithoutQuery = id.slice(0, id.length - queryString.length);
+        if (!idWithoutQuery.startsWith("\0virtual:yak-css:") || !idWithoutQuery.endsWith(".css")) {
+          this.error(`[${library.name}] Invalid yak CSS module`);
+        }
+        const relativeId = idWithoutQuery.slice(17, -4);
+        if (!relativeId) {
+          this.error(`[${library.name}] Invalid yak CSS module`);
+        }
         const originalId = resolve(basePath, relativeId);
+        // Dev requests can choose virtual module paths, so checkFileAccess prevents
+        // unrestricted reads by enforcing Vite's file access rules before reading.
+        const readSource = async (filePath: string) =>
+          this.fs.readFile(checkFileAccess(filePath, config), { encoding: "utf8" });
+        const sourceContent = await readSource(originalId);
         this.addWatchFile(originalId);
-
-        const sourceContent = await this.fs.readFile(originalId, {
-          encoding: "utf8",
-        });
         const code = await transform(sourceContent, originalId, basePath, yakSwcPath, yakOptions);
         debugLog("ts", code.code, originalId);
         const extractedCss = extractCss(code.code, "Css");
@@ -189,21 +209,18 @@ async function viteYakImpl(
                 {
                   transpilationMode: "Css",
                   extractExports: async (modulePath) => {
-                    const sourceContent = await this.fs.readFile(modulePath, {
-                      encoding: "utf8",
-                    });
+                    const sourceContent = await readSource(modulePath);
 
                     this.addWatchFile(modulePath);
 
                     return parseExports(sourceContent);
                   },
                   getTransformed: async (modulePath) => {
-                    const sourceContent = await this.fs.readFile(modulePath, {
-                      encoding: "utf8",
-                    });
+                    const sourceContent = await readSource(modulePath);
                     return transform(sourceContent, modulePath, basePath, yakSwcPath, yakOptions);
                   },
                   evaluateYakModule: async (modulePath: string) => {
+                    checkFileAccess(modulePath, config);
                     this.addWatchFile(modulePath);
                     const result = await evaluator.evaluate(modulePath);
                     if (!result.ok) {
