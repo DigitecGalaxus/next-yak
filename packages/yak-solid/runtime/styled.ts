@@ -864,37 +864,21 @@ type TargetAttrs = (() => Props | undefined) | undefined;
 /**
  * client only: the computed class and style as getters over the memo. object
  * literals, two shapes: a getter defined on a literal takes V8's boilerplate
- * path, Object.defineProperty on an existing object does not
+ * path
  */
-const clientExtras = (props: Props, { compute, classOf }: RenderMeta): Props => {
-  const classFn = compute ? () => compute().class : () => classOf(props);
-  const styleFn = styleGetter(compute);
-  return styleFn
+const clientExtras = (props: Props, { compute, classOf }: RenderMeta): Props =>
+  compute
     ? {
         get class() {
-          return classFn();
+          // compute().class is accessed lazily and includes props.class in its results
+          return compute().class;
         },
         get style() {
-          return styleFn();
+          return compute().style;
         },
       }
     : {
         get class() {
-          return classFn();
+          return classOf(props);
         },
       };
-};
-
-/**
- * the style accessor a component target receives, or none
- * on the server the value is final, and a target that spreads its props
- * into ssrElement would write style="" for an undefined one; on the client
- * the accessor stays so the memo can set a style later
- */
-const styleGetter = (
-  compute: (() => ComputedStyles) | undefined,
-): (() => StyleObject | undefined) | undefined => {
-  if (!compute) return undefined;
-  if (isServer && compute().style === undefined) return undefined;
-  return () => compute().style;
-};
