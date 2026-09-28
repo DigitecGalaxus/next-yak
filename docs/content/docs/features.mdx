@@ -177,6 +177,33 @@ font-weight: bold;
 </Tabs>
 </details>
 
+### Dynamic values from user input
+
+next-yak passes a dynamic value to the element's `style` prop as a CSS variable, just like
+`<p style={{ "--var1": value }} />`. On the server, React and Solid write that value into the HTML without
+CSS escaping. A value with a `;` therefore adds declarations of its own:
+
+```jsx
+const Accent = styled.span`
+  color: ${(props) => props.$color};
+`;
+
+<Accent $color="red;position:fixed;inset:0" />
+// server HTML: <span style="--var1:red;position:fixed;inset:0">
+```
+
+The added declarations stay in place after hydration. On the client, the browser rejects the same value, so
+server and client render different styles. A plain `style` prop without next-yak behaves the same way, and
+React's server renderer
+[notes this in its source](https://github.com/facebook/react/blob/d083ec1da1e5252abd3ddfdde6dfbc09701a2c51/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1293-L1299):
+"If you provide unsafe user data here they can inject arbitrary CSS".
+
+<Callout type="warn">
+Treat values from users, a CMS, query parameters or APIs like any other untrusted input. Validate them
+against what you expect, such as a hex color (`/^#[0-9a-f]{3,8}$/i`) or a finite number, before you pass them
+to a styled component.
+</Callout>
+
 ## Compatible with utility-first CSS frameworks (e.g. Tailwind)
 
 Next-yak is fully compatible with utility-first CSS frameworks like Tailwind. Just use the `atoms` function to
