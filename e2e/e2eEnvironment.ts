@@ -655,9 +655,9 @@ export interface RunOptions {
  * Assemble all cases, optionally build, start a server, run Playwright,
  * then tear down the server.
  *
- * Non-HMR cases run in a single batched Playwright process with parallel
- * workers. HMR cases run sequentially (one process each) since they modify
- * files on the dev server.
+ * HMR and security cases run one at a time: file edits and Vite error
+ * overlays can affect other pages connected to the same dev server.
+ * Other cases run in a batch with parallel workers.
  */
 export async function runBundlerCases(
   bundler: string,
@@ -689,26 +689,27 @@ export async function runBundlerCases(
     await waitForPort(port);
 
     const results: Result[] = [];
-    const hmrCases = frameworkCases.filter((c) => c.startsWith("hmr-"));
-    const nonHmrCases = frameworkCases.filter((c) => !c.startsWith("hmr-"));
+    const isolatedCases = frameworkCases.filter((c) => /^(hmr|security)-/.test(c));
+    const batchCases = frameworkCases.filter((c) => !isolatedCases.includes(c));
 
     if (options.warmPages) {
       const urlPattern = await readUrlPattern(bundler);
-      await warmPages(bundler, port, urlPattern, nonHmrCases, discoveredBundlers);
+      await warmPages(bundler, port, urlPattern, batchCases, discoveredBundlers);
     }
 
-    // Batch all non-HMR cases in one Playwright process (parallel workers)
-    if (nonHmrCases.length > 0) {
+    // Batch cases that cannot affect other pages on the server.
+    if (batchCases.length > 0) {
       const start = Date.now();
-      const passed = await runPlaywrightBatch(bundler, nonHmrCases, discoveredBundlers);
+      const passed = await runPlaywrightBatch(bundler, batchCases, discoveredBundlers);
       const durationMs = Date.now() - start;
-      for (const caseName of nonHmrCases) {
+      for (const caseName of batchCases) {
         results.push({ bundler, caseName, passed, durationMs });
       }
     }
 
-    // HMR cases run sequentially — they modify files on the dev server
-    for (const caseName of hmrCases) {
+    // HMR and security cases run sequentially: file edits and Vite error overlays
+    // can affect other pages on the dev server.
+    for (const caseName of isolatedCases) {
       const start = Date.now();
       const passed = await runPlaywright(bundler, caseName, discoveredBundlers);
       results.push({
