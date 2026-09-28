@@ -132,7 +132,7 @@ Like `next-yak`, the yak SWC compiler extracts your CSS at build time. At runtim
 
 ## Requirements
 
-- `solid-js` >= 2.0.0-rc.6 and `@solidjs/web` >= 2.0.0-rc.6
+- `solid-js` >= 2.0.0-rc.10 and `@solidjs/web` >= 2.0.0-rc.10
 - `@solidjs/vite-plugin` >= 3.0.0-next (the Solid 2 line, npm tag `next`)
 - `yak-swc` with yak-package auto-detection (bundled as a dependency, version released together with this package or newer)
 
