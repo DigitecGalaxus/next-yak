@@ -155,3 +155,39 @@ it("should support subtree overrides through YakThemeContext", () => {
   flush();
   expect(box.style.getPropertyValue("--color")).toBe("blue");
 });
+
+// solid 2.0.0-rc.10 compiles a props literal with getters into a hoisted
+// constructor whose getters read their captured values through `this`
+// (`hoistProps`): a descriptor copied onto another object reads nothing.
+// This is the compiler's output shape, built by hand because the test JSX
+// is compiled by the plugin version pinned here.
+const hoistedProps = <T,>(label: () => T, className: string) => {
+  const slot = Symbol();
+  const labelDescriptor = {
+    get(this: any) {
+      return this[slot]();
+    },
+    enumerable: true,
+    configurable: true,
+  };
+  const props: any = {};
+  props[slot] = label;
+  Object.defineProperty(props, "aria-label", labelDescriptor);
+  props.class = className;
+  return props;
+};
+
+it("reads a receiver-dependent getter through its props when a styled(Component) copies props", () => {
+  const Inner = (props: any) => <input aria-label={props["aria-label"]} class={props.class} />;
+  const Component = styled(Inner)("cssClass");
+  const [label, setLabel] = createSignal("first");
+  const container = renderInto(() => Component(hoistedProps(label, "own")));
+
+  const element = container.querySelector("input")!;
+  expect(element.getAttribute("aria-label")).toBe("first");
+  expect(element.className).toBe("own cssClass");
+
+  setLabel("second");
+  flush();
+  expect(element.getAttribute("aria-label")).toBe("second");
+});

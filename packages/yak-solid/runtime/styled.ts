@@ -339,8 +339,8 @@ const combineProps = (props: Props, newProps: Props | null | undefined): Props =
   // descriptors, not values: a spread would run every author getter here,
   // and a children getter renders (twice, and with the wrong hydration keys)
   const descriptors = {
-    ...Object.getOwnPropertyDescriptors(props),
-    ...Object.getOwnPropertyDescriptors(newProps),
+    ...rehomedDescriptors(props),
+    ...rehomedDescriptors(newProps),
   };
   // an equal class counts as nothing: own attrs get the combined props and
   // may hand the same class back, merging it again would duplicate it
@@ -362,6 +362,35 @@ const valueDescriptor = (value: unknown): PropertyDescriptor => ({
   configurable: true,
   writable: true,
 });
+
+/**
+ * a getter is only defined for a read through its own object: solid's
+ * compiled props getters (2.0.0-rc.10, `hoistProps`) reach their captured
+ * values through `this`, so a descriptor moved to another object reads
+ * nothing. re-homing keeps the laziness (nothing is read here) and reads
+ * the source when the target is read; a data descriptor passes as it is
+ */
+const rehome = (
+  source: object,
+  key: PropertyKey,
+  descriptor: PropertyDescriptor,
+): PropertyDescriptor =>
+  descriptor.get || descriptor.set
+    ? {
+        get: () => (source as any)[key],
+        set: descriptor.set && ((value: unknown) => ((source as any)[key] = value)),
+        enumerable: descriptor.enumerable,
+        configurable: true,
+      }
+    : descriptor;
+
+const rehomedDescriptors = (source: object): PropertyDescriptorMap => {
+  const descriptors = Object.getOwnPropertyDescriptors(source) as PropertyDescriptorMap;
+  for (const key of Reflect.ownKeys(descriptors)) {
+    descriptors[key as string] = rehome(source, key, descriptors[key as string]);
+  }
+  return descriptors;
+};
 
 const hasGetter = (object: object): boolean => {
   for (const key of Object.getOwnPropertyNames(object)) {
@@ -782,7 +811,7 @@ const targetProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknow
 /**
  * copies descriptors without reading them: a getter like icon={<Icon />}
  * renders a child and takes hydration keys, the target reads it in its own
- * order. moving the getter is safe, solid's compiled getters do not depend on `this`
+ * order. a getter is re-homed rather than moved (see `rehome`)
  */
 const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown> => {
   const { compute, classOf } = meta;
@@ -794,7 +823,7 @@ const copyProps = (props: Props, meta: RenderMeta): Record<PropertyKey, unknown>
     if ("value" in descriptor && descriptor.enumerable) {
       out[key] = descriptor.value;
     } else {
-      Object.defineProperty(out, key, descriptor);
+      Object.defineProperty(out, key, rehome(props, key, descriptor));
     }
   }
   if (isServer) {
