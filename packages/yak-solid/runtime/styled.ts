@@ -783,15 +783,22 @@ const createElementRenderer = (tag: string, attrString: string): TargetRenderer 
 };
 
 const bindElement = (el: Element, props: Props, meta: RenderMeta): Element => {
-  // children come from the author's props or from attrs; a reactive spread
-  // can add them later
-  const skipChildren = !meta.attrsAddKeys && !($PROXY in props) && !("children" in props);
-  // the sources as an array, like a compiled <tag {...a} {...b}>: spread()
-  // reads a function source inline, no memo and no hydration id. that
-  // matters here: the server writer for a tag builds none of this, so an
-  // owner created only on the client would shift every later element's id.
-  // no untrack: a component body runs untracked
-  spread(el, targetSources(props, meta), skipChildren);
+  // no untrack anywhere below: a component body runs untracked
+  if (!meta.attrsAddKeys && !($PROXY in props)) {
+    // a fixed key set read by one spread: copying the few descriptors is
+    // cheaper than a view. measured on the client with omit() + the source
+    // list instead: +12–15% hydrate and mount on dynamic-prop tags (an
+    // omit view, spread()'s source walk and their garbage, per element)
+    const bound = copyProps(props, meta);
+    spread(el, bound, !("children" in bound));
+  } else {
+    // attrs or a reactive spread can add keys — children too — so the target
+    // reads views. the sources as an array, like a compiled <tag {...a} {...b}>:
+    // spread() reads a function source inline, no memo and no hydration id.
+    // that matters here: the server writer for a tag builds none of this, so
+    // an owner created only on the client would shift every later element's id
+    spread(el, targetSources(props, meta), false);
+  }
   // replay events once the element's bindings are ready
   runHydrationEvents();
   return el;
@@ -802,14 +809,33 @@ const targetProps = (props: Props, meta: RenderMeta): Props =>
   merge(...targetSources(props, meta)) as Props;
 
 /**
+ * the client tag path when the keys cannot change: the computed class/style
+ * getters, then the author's props copied in without reading them — a
+ * getter like icon={<Icon />} renders a child and takes hydration keys, so it
+ * is re-homed (see `rehome`) and read by the spread in its own order
+ */
+const copyProps = (props: Props, meta: RenderMeta): Props => {
+  const out = clientExtras(props, meta);
+  // string keys only, like solid's omit(): a symbol never reaches the target.
+  // skip drops class (and style with a memo), the keys the extras own
+  for (const key of Object.getOwnPropertyNames(props)) {
+    if (meta.skip(key)) continue;
+    const descriptor = Reflect.getOwnPropertyDescriptor(props, key)!;
+    if ("value" in descriptor && descriptor.enumerable) out[key] = descriptor.value;
+    else Object.defineProperty(out, key, rehome(props, key, descriptor));
+  }
+  return out;
+};
+
+/**
  * what the target sees, as the sources solid's own primitives take: omit()
  * with the skip predicate over the author's props ($-props, theme, and the
  * keys attrs bake), the attrs the memo produced as a function source when
- * they can add keys, and the computed class/style last. always views, never
- * a copy: a getter like icon={<Icon />} renders a child and takes hydration
- * keys, so it is read by the target in its own order, once. on the server
- * the values are final and go in as data properties; on the client as
- * getters over the memo
+ * they can add keys, and the computed class/style last. views, not a copy:
+ * a getter like icon={<Icon />} renders a child and takes hydration keys,
+ * so it is read by the target in its own order, once. on the server the
+ * values are final and go in as data properties; on the client as getters
+ * over the memo
  */
 const targetSources = (props: Props, meta: RenderMeta): [Props, TargetAttrs, Props] => {
   const { skip, compute, classOf } = meta;
@@ -822,22 +848,7 @@ const targetSources = (props: Props, meta: RenderMeta): [Props, TargetAttrs, Pro
       extras.class = computed.class;
       if (computed.style !== undefined) extras.style = computed.style;
     } else extras.class = classOf(props);
-  } else {
-    const classFn = compute ? () => compute().class : () => classOf(props);
-    const styleFn = styleGetter(compute);
-    extras = {
-      get class() {
-        return classFn();
-      },
-    } as Props;
-    if (styleFn) {
-      Object.defineProperty(extras, "style", {
-        get: styleFn,
-        enumerable: true,
-        configurable: true,
-      });
-    }
-  }
+  } else extras = clientExtras(props, meta);
   if (!meta.attrsAddKeys) return [rest, undefined, extras];
   // meta.attrsAddKeys, not the destructured copy: the read narrows meta.compute
   const attrsSource = () => {
@@ -849,6 +860,30 @@ const targetSources = (props: Props, meta: RenderMeta): [Props, TargetAttrs, Pro
 
 /** the attrs source, or none when attrs cannot add keys (baked, or no attrs) */
 type TargetAttrs = (() => Props | undefined) | undefined;
+
+/**
+ * client only: the computed class and style as getters over the memo. object
+ * literals, two shapes: a getter defined on a literal takes V8's boilerplate
+ * path, Object.defineProperty on an existing object does not
+ */
+const clientExtras = (props: Props, { compute, classOf }: RenderMeta): Props => {
+  const classFn = compute ? () => compute().class : () => classOf(props);
+  const styleFn = styleGetter(compute);
+  return styleFn
+    ? {
+        get class() {
+          return classFn();
+        },
+        get style() {
+          return styleFn();
+        },
+      }
+    : {
+        get class() {
+          return classFn();
+        },
+      };
+};
 
 /**
  * the style accessor a component target receives, or none
