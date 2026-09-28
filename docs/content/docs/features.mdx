@@ -193,7 +193,10 @@ const Accent = styled.span`
 ```
 
 The added declarations stay in place after hydration. On the client, the browser rejects the same value, so
-server and client render different styles. A plain `style` prop without next-yak behaves the same way.
+server and client render different styles. A plain `style` prop without next-yak behaves the same way, and
+React's server renderer
+[notes this in its source](https://github.com/facebook/react/blob/d083ec1da1e5252abd3ddfdde6dfbc09701a2c51/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1293-L1299):
+"If you provide unsafe user data here they can inject arbitrary CSS".
 
 <Callout type="warn">
 Treat values from users, a CMS, query parameters or APIs like any other untrusted input. Validate them
