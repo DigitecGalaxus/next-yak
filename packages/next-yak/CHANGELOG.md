@@ -1,5 +1,12 @@
 # next-yak
 
+## 9.10.2
+
+### Patch Changes
+
+- 06f0195: `transpilationMode: "Css"` now lets co-located `.yak.css` files be imported from any module.
+- yak-swc@9.10.2
+
 ## 9.10.1
 
 ### Patch Changes
