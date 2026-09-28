@@ -1,5 +1,12 @@
 # @yak/solid
 
+## 0.2.1
+
+### Patch Changes
+
+- ee11260: Respect Vite's file access restrictions when loading virtual CSS modules in the dev server.
+- yak-swc@9.10.1
+
 ## 0.2.0
 
 ### Minor Changes
