@@ -8,7 +8,7 @@ Thank you for your interest in contributing to next-yak! This document provides 
   - [Prerequisites](#prerequisites)
   - [Initial setup](#initial-setup)
   - [Project structure](#project-structure)
-- [Developing `next-yak` TypeScript/JavaScript](#developing-next-yak-typescriptjavascript)
+- [Developing `@yak/react` TypeScript/JavaScript](#developing-yakreact-typescriptjavascript)
 - [Developing `yak-swc` Rust](#developing-yak-swc-rust)
   - [Running the example app](#running-the-example-app)
 - [Integration & e2e testing](#integration--e2e-testing)
@@ -64,7 +64,7 @@ The monorepo is organized into several key packages and directories:
 
 The main package
 
-- [next-yak](./packages/next-yak) - TypeScript/JavaScript code for Next.js
+- [@yak/react](./packages/yak-react) - TypeScript/JavaScript code for React (Next.js, Vite, Rsbuild)
 
 Rust packages under `./packages/yak-swc/`:
 
@@ -80,11 +80,11 @@ Additional directories
 - [examples/vite](./examples/vite) - Demo Vite application
 - [docs](./docs) - Documentation and playground, hosted at [yak.js.org](https://yak.js.org/)
 
-## Developing `next-yak` TypeScript/JavaScript
+## Developing `@yak/react` TypeScript/JavaScript
 
-The main package is written in TypeScript. The package is responsible for transforming components and serving styles to the module CSS system of Next.js. The TypeScript/JavaScript code is located in the `./packages/next-yak` directory.
+The main package is written in TypeScript. The package is responsible for transforming components and serving styles to the module CSS system of Next.js. The TypeScript/JavaScript code is located in the `./packages/yak-react` directory.
 
-Building, from the the `./` or the `./packages/next-yak` directory:
+Building, from the the `./` or the `./packages/yak-react` directory:
 
 ```bash
 pnpm build
@@ -135,7 +135,7 @@ pnpm test:snapshots
 
 ### Running the example app
 
-The example app is a Next.js application that demonstrates the features of `next-yak`. The example app is located in the `./examples/next-js` directory.
+The example app is a Next.js application that demonstrates the features of `@yak/react`. The example app is located in the `./examples/next-js` directory.
 
 Build everything and start the example app
 
@@ -166,7 +166,7 @@ To run the example app:
 pnpm example
 
 # Turbopack
-pnpm --filter=next-yak-example run dev:turbo
+pnpm --filter=next-js-yak-example run dev:turbo
 ```
 
 Both bundlers are covered by the e2e suites under `e2e/bundlers/`.

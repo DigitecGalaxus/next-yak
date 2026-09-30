@@ -1,10 +1,9 @@
-import { existsSync } from "node:fs";
 import type { KnipConfig } from "knip";
 
 type Workspace = NonNullable<KnipConfig["workspaces"]>[string];
 
 // The yak-swc wasm plugin is referenced by name so knip cannot see it
-const yakSwc = ["yak-swc"];
+const yakSwc = ["@yak/swc"];
 
 // Every index file in the e2e tests is an entry and imports that only resolve after copying to `.tmp/` are expected
 const bundler = (extra: Workspace = {}): Workspace => ({
@@ -13,15 +12,13 @@ const bundler = (extra: Workspace = {}): Workspace => ({
   ...extra,
 });
 
-const hasPlaygroundWasm = existsSync(new URL("docs/playground-wasm/out", import.meta.url));
-
 const config: KnipConfig = {
   // Exports that are also used inside their own module are a deliberate choice
   ignoreExportsUsedInFile: true,
   // System binary used by the e2e runner
   ignoreBinaries: ["pgrep"],
   workspaces: {
-    "packages/next-yak": {
+    "packages/yak-react": {
       entry: ["runtime/__tests__/*.tsx"],
       // Used by the yak-internals code that tsdown bundles into this package
       ignoreDependencies: ["@babel/parser", ...yakSwc],
@@ -45,21 +42,11 @@ const config: KnipConfig = {
     "packages/yak-internals": {
       ignore: ["isolated-source-eval/__tests__/fixtures/**"],
     },
-    "packages/eslint-plugin-yak": {
+    "packages/yak-eslint-plugin": {
       ignore: ["rules/fixtures/**"],
     },
-    "packages/storybook-addon-yak": {
+    "packages/yak-storybook": {
       ignoreDependencies: yakSwc,
-    },
-    docs: {
-      // Fumadocs convention file
-      entry: ["mdx-components.tsx"],
-      // Vendored type definitions served to the playground, plus the wasm-pack output when it has been built.
-      ignore: ["public/**", ...(hasPlaygroundWasm ? ["playground-wasm/out/**"] : [])],
-      // Without the wasm-pack output the two imports of it cannot resolve.
-      ignoreUnresolved: hasPlaygroundWasm ? [] : [/playground-wasm\/out$/],
-      // Referenced by name in the webpack rule in next.config.mjs
-      ignoreDependencies: ["raw-loader", ...yakSwc],
     },
     // yak.context.ts is picked up by convention by the yak loaders (see yak-internals/config.ts)
     "examples/next-js": { entry: ["yak.context.ts"], ignoreDependencies: yakSwc },
@@ -78,7 +65,7 @@ const config: KnipConfig = {
       // Mounted into the bundler scaffolds at runtime
       ignore: ["cases/**"],
       // Type-check the cases (tsconfig.json), not imported by the runner
-      ignoreDependencies: ["next-yak", "@types/react"],
+      ignoreDependencies: ["@yak/react", "@types/react"],
     },
     "e2e/bundlers/next-app-turbopack": bundler({ ignoreDependencies: yakSwc }),
     "e2e/bundlers/next-app-webpack": bundler({ ignoreDependencies: yakSwc }),

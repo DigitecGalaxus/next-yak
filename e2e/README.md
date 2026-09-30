@@ -1,6 +1,6 @@
 # E2E Tests
 
-next-yak spans multiple layers — an SWC plugin (Rust → WASM), bundler integrations (webpack, Vite), React runtime, and the browser's CSS engine. Unit and snapshot tests verify each layer in isolation, but can't catch issues at the seams: a CSS rule that extracts correctly but doesn't apply in the browser, or an HMR update that triggers a full reload instead of a hot swap.
+@yak/react spans multiple layers — an SWC plugin (Rust → WASM), bundler integrations (webpack, Vite), React runtime, and the browser's CSS engine. Unit and snapshot tests verify each layer in isolation, but can't catch issues at the seams: a CSS rule that extracts correctly but doesn't apply in the browser, or an HMR update that triggers a full reload instead of a hot swap.
 
 These e2e tests run real dev servers **and** production builds with Playwright to verify that styled components render with the correct CSS in an actual browser.
 
@@ -40,18 +40,18 @@ For each bundler, `e2eEnvironment.ts`:
 
 ```bash
 # Dev tests
-pnpm --filter next-yak-e2e test                     # all bundlers x all cases
-pnpm --filter next-yak-e2e test next-app-webpack    # just Next.js with webpack
-pnpm --filter next-yak-e2e test vite yak-file-mixin # just Vite with one case
+pnpm --filter yak-e2e test                     # all bundlers x all cases
+pnpm --filter yak-e2e test next-app-webpack    # just Next.js with webpack
+pnpm --filter yak-e2e test vite yak-file-mixin # just Vite with one case
 
 # Build tests (production)
-pnpm --filter next-yak-e2e test:build               # all bundlers x non-HMR cases
-pnpm --filter next-yak-e2e test:build vite           # just Vite production build
+pnpm --filter yak-e2e test:build               # all bundlers x non-HMR cases
+pnpm --filter yak-e2e test:build vite           # just Vite production build
 ```
 
 ## Fold modes
 
-next-yak folds statically known styles at build time: static styled-component
+@yak/react folds statically known styles at build time: static styled-component
 JSX usages become plain DOM elements, and static `css` props become plain
 `className`s. Setting `foldStatic: false` turns this off, routing both through
 the runtime path.
@@ -61,11 +61,11 @@ pass in both modes.
 
 ```bash
 # Fold on (default)
-pnpm --filter next-yak-e2e test
+pnpm --filter yak-e2e test
 
-# Fold off — each bundler config passes foldStatic: false to next-yak
-YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test
-YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
+# Fold off — each bundler config passes foldStatic: false to @yak/react
+YAK_E2E_FOLD_STATIC=false pnpm --filter yak-e2e test
+YAK_E2E_FOLD_STATIC=false pnpm --filter yak-e2e test:build
 ```
 
 `YAK_E2E_FOLD_STATIC=false` is the only value that switches modes; anything else
@@ -98,8 +98,8 @@ own CSS.
 
 Port a case to Solid by adding an `index.solid.tsx` next to the React
 `index.tsx`: same `data-testid`s, importing `@yak/solid` instead of
-`next-yak`, written with Solid idioms (`class`, signals). Helper modules that
-import `next-yak` get variants too (`mixin.solid.tsx`,
+`@yak/react`, written with Solid idioms (`class`, signals). Helper modules that
+import `@yak/react` get variants too (`mixin.solid.tsx`,
 `typography.solid.yak.ts`). During assembly the `.solid` marker is stripped
 (`index.solid.tsx` → `.tmp/cases/<name>/index.tsx`), replacing the React
 file. Variants therefore import siblings by their unmarked names, and the
@@ -116,7 +116,7 @@ Create `cases/<name>/index.tsx` and `cases/<name>/index.test.ts`:
 
 ```tsx
 // cases/my-case/index.tsx
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 const Box = styled.div`
   background: blue;
 `;
@@ -128,7 +128,7 @@ export default function App() {
 ```ts
 // cases/my-case/index.test.ts
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 test(
   "applies background",
@@ -143,7 +143,7 @@ New cases are discovered automatically.
 
 ## Adding a bundler
 
-1. Create `bundlers/<name>/package.json` with bundler + next-yak dependencies and `dev`, `build`, `start` scripts
+1. Create `bundlers/<name>/package.json` with bundler + @yak/react dependencies and `dev`, `build`, `start` scripts
 2. Add bundler config (`vite.config.ts`, `next.config.mjs`, etc.)
 3. Add entry point files (`index.html` + `main.tsx` for Vite, `app/layout.tsx` + `app/page.tsx` for Next.js)
 4. Create `bundlers/<name>/playwright.config.ts` using `basePlaywrightConfig` from `playwright-base.ts`

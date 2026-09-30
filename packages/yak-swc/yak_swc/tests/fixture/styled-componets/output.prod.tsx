@@ -1,7 +1,7 @@
 // @ts-ignore
 import styled from "styled-components";
-import { styled as styledYak } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled as styledYak } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = "red";
 // Should be transformed as it is yak

@@ -1,4 +1,4 @@
-export const metadata = { title: "next-yak e2e" };
+export const metadata = { title: "yak e2e" };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

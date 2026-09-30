@@ -1,5 +1,5 @@
-import { css, styled, atoms, __yak_mergeCssProp } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled, atoms, __yak_mergeCssProp } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGZvbnQtc2l6ZTogMjBweDsKfS55bTd1QkJ1MSB7CiAgY29sb3I6IHJlZDsKfQ==";
 const Elem = ()=><div {...__yak_mergeCssProp(atoms("yellow"))}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp(atoms("blue"), {

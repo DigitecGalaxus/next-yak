@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import type { ReactNode } from "react";
 import { ClockHands } from "./ClockHands";
 

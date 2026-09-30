@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 test(
   "HMR: styled exports preserve importer state across CSS and JS edits",

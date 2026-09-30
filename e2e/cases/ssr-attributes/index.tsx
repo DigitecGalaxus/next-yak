@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 
 // a style tag whose content stays raw (react needs dangerouslySetInnerHTML for that)
 const RawStyle = styled.style``;

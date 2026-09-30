@@ -2,55 +2,55 @@ import Benchmark from "benchmark";
 import { readFileSync, writeFileSync } from "node:fs";
 import { renderToString } from "react-dom/server";
 import { ServerStyleSheet } from "styled-components";
-import { KanjiLetterComponentYak } from "./generated/KanjiLetterComponent.next-yak.compiled";
+import { KanjiLetterComponentYak } from "./generated/KanjiLetterComponent.yak.compiled";
 import React from "react";
 import { KanjiLetterComponentStyled } from "./generated/KanjiLetterComponent.styled-components";
 
 // Pure Components
-import { PureComponentsYak } from "./generated/PureComponents.next-yak.compiled";
+import { PureComponentsYak } from "./generated/PureComponents.yak.compiled";
 import { PureComponentsStyled } from "./generated/PureComponents.styled-components";
 
 // Attrs Components
-import { AttrsComponentsYak } from "./generated/AttrsComponents.next-yak.compiled";
+import { AttrsComponentsYak } from "./generated/AttrsComponents.yak.compiled";
 import { AttrsComponentsStyled } from "./generated/AttrsComponents.styled-components";
 
 // CSS Prop Components
-import { CssPropComponentsYak } from "./generated/CssPropComponents.next-yak.compiled";
+import { CssPropComponentsYak } from "./generated/CssPropComponents.yak.compiled";
 import { CssPropComponentsStyled } from "./generated/CssPropComponents.styled-components";
 
 // Dynamic Props Components
-import { DynamicPropsComponentsYak } from "./generated/DynamicPropsComponents.next-yak.compiled";
+import { DynamicPropsComponentsYak } from "./generated/DynamicPropsComponents.yak.compiled";
 import { DynamicPropsComponentsStyled } from "./generated/DynamicPropsComponents.styled-components";
 
 // Nested Components
-import { NestedComponentsYak } from "./generated/NestedComponents.next-yak.compiled";
+import { NestedComponentsYak } from "./generated/NestedComponents.yak.compiled";
 import { NestedComponentsStyled } from "./generated/NestedComponents.styled-components";
 
 // Industry-standard benchmarks (ported from styled-components):
 //   https://github.com/styled-components/styled-components/tree/main/packages/benchmarks/src/cases
-import { TreeYak } from "./generated/Tree.next-yak.compiled";
+import { TreeYak } from "./generated/Tree.yak.compiled";
 import { TreeStyled } from "./generated/Tree.styled-components";
-import { SierpinskiYak } from "./generated/Sierpinski.next-yak.compiled";
+import { SierpinskiYak } from "./generated/Sierpinski.yak.compiled";
 import { SierpinskiStyled } from "./generated/Sierpinski.styled-components";
 import {
   CrossRequestCacheYak,
   RENDER_COUNT as CROSS_REQUEST_CACHE_COUNT,
-} from "./generated/CrossRequestCache.next-yak.compiled";
+} from "./generated/CrossRequestCache.yak.compiled";
 import { CrossRequestCacheStyled } from "./generated/CrossRequestCache.styled-components";
 
 // Tree shape extremes
-import { TreeDeepYak } from "./generated/TreeDeep.next-yak.compiled";
+import { TreeDeepYak } from "./generated/TreeDeep.yak.compiled";
 import { TreeDeepStyled } from "./generated/TreeDeep.styled-components";
-import { TreeWideYak } from "./generated/TreeWide.next-yak.compiled";
+import { TreeWideYak } from "./generated/TreeWide.yak.compiled";
 import { TreeWideStyled } from "./generated/TreeWide.styled-components";
 
 // Idiomatic-yak rewrites
-import { IdiomaticTreeYak } from "./generated/IdiomaticTree.next-yak.compiled";
+import { IdiomaticTreeYak } from "./generated/IdiomaticTree.yak.compiled";
 import { IdiomaticTreeStyled } from "./generated/IdiomaticTree.styled-components";
-import { IdiomaticDynamicPropsComponentsYak } from "./generated/IdiomaticDynamicProps.next-yak.compiled";
+import { IdiomaticDynamicPropsComponentsYak } from "./generated/IdiomaticDynamicProps.yak.compiled";
 import { IdiomaticDynamicPropsComponentsStyled } from "./generated/IdiomaticDynamicProps.styled-components";
 
-// Each row pairs the styled-components and next-yak variants of one workload.
+// Each row pairs the styled-components and yak variants of one workload.
 // Order here is the order rendered in the output table.
 const ROWS: Array<{ label: string; styled: string; yak: string }> = [
   {
@@ -145,10 +145,10 @@ function renderTable(baseline: Map<string, number> | undefined): string {
     "<tr>",
     " <td>Benchmark",
     " <td>styled-components (ops/sec)",
-    " <td>next-yak (ops/sec)",
-    " <td>next yak is",
+    " <td>yak (ops/sec)",
+    " <td>yak is",
   ];
-  if (baseline) lines.push(" <td>Δ next-yak vs main");
+  if (baseline) lines.push(" <td>Δ yak vs main");
 
   for (const row of ROWS) {
     const styled = results.get(row.styled);

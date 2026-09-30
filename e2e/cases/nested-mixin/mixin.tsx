@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 import { Icon } from "./icon.tsx";
 
 const buttonTextMixin = css`

@@ -2,39 +2,39 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import React, { useState, use } from "react";
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 import { benchmarks, type BenchmarkEntry } from "../manifest";
 
-import { KanjiLetterComponentYak } from "../../../bench/generated/KanjiLetterComponent.next-yak";
+import { KanjiLetterComponentYak } from "../../../bench/generated/KanjiLetterComponent.yak";
 import { KanjiLetterComponentStyled } from "../../../bench/generated/KanjiLetterComponent.styled-components";
-import { PureComponentsYak } from "../../../bench/generated/PureComponents.next-yak";
+import { PureComponentsYak } from "../../../bench/generated/PureComponents.yak";
 import { PureComponentsStyled } from "../../../bench/generated/PureComponents.styled-components";
-import { AttrsComponentsYak } from "../../../bench/generated/AttrsComponents.next-yak";
+import { AttrsComponentsYak } from "../../../bench/generated/AttrsComponents.yak";
 import { AttrsComponentsStyled } from "../../../bench/generated/AttrsComponents.styled-components";
-import { CssPropComponentsYak } from "../../../bench/generated/CssPropComponents.next-yak";
+import { CssPropComponentsYak } from "../../../bench/generated/CssPropComponents.yak";
 import { CssPropComponentsStyled } from "../../../bench/generated/CssPropComponents.styled-components";
-import { DynamicPropsComponentsYak } from "../../../bench/generated/DynamicPropsComponents.next-yak";
+import { DynamicPropsComponentsYak } from "../../../bench/generated/DynamicPropsComponents.yak";
 import { DynamicPropsComponentsStyled } from "../../../bench/generated/DynamicPropsComponents.styled-components";
-import { NestedComponentsYak } from "../../../bench/generated/NestedComponents.next-yak";
+import { NestedComponentsYak } from "../../../bench/generated/NestedComponents.yak";
 import { NestedComponentsStyled } from "../../../bench/generated/NestedComponents.styled-components";
-import { TreeYak } from "../../../bench/generated/Tree.next-yak";
+import { TreeYak } from "../../../bench/generated/Tree.yak";
 import { TreeStyled } from "../../../bench/generated/Tree.styled-components";
-import { SierpinskiYak } from "../../../bench/generated/Sierpinski.next-yak";
+import { SierpinskiYak } from "../../../bench/generated/Sierpinski.yak";
 import { SierpinskiStyled } from "../../../bench/generated/Sierpinski.styled-components";
-import { CrossRequestCacheYak } from "../../../bench/generated/CrossRequestCache.next-yak";
+import { CrossRequestCacheYak } from "../../../bench/generated/CrossRequestCache.yak";
 import { CrossRequestCacheStyled } from "../../../bench/generated/CrossRequestCache.styled-components";
-import { TreeDeepYak } from "../../../bench/generated/TreeDeep.next-yak";
+import { TreeDeepYak } from "../../../bench/generated/TreeDeep.yak";
 import { TreeDeepStyled } from "../../../bench/generated/TreeDeep.styled-components";
-import { TreeWideYak } from "../../../bench/generated/TreeWide.next-yak";
+import { TreeWideYak } from "../../../bench/generated/TreeWide.yak";
 import { TreeWideStyled } from "../../../bench/generated/TreeWide.styled-components";
-import { IdiomaticTreeYak } from "../../../bench/generated/IdiomaticTree.next-yak";
+import { IdiomaticTreeYak } from "../../../bench/generated/IdiomaticTree.yak";
 import { IdiomaticTreeStyled } from "../../../bench/generated/IdiomaticTree.styled-components";
-import { IdiomaticDynamicPropsComponentsYak } from "../../../bench/generated/IdiomaticDynamicProps.next-yak";
+import { IdiomaticDynamicPropsComponentsYak } from "../../../bench/generated/IdiomaticDynamicProps.yak";
 import { IdiomaticDynamicPropsComponentsStyled } from "../../../bench/generated/IdiomaticDynamicProps.styled-components";
 
 // Maps slug -> { yak, styled } component pair. Source-imported (not the
-// .compiled variants) so the next-yak webpack loader extracts the CSS the
+// .compiled variants) so the yak webpack loader extracts the CSS the
 // same way it would in a real Next.js app.
 const components: Record<string, { Yak: React.FC<any>; Styled: React.FC<any> }> = {
   "kanji-letter": { Yak: KanjiLetterComponentYak, Styled: KanjiLetterComponentStyled },
@@ -145,7 +145,7 @@ export default function BenchmarkViewer({ params }: { params: Promise<{ slug: st
       <Subtitle>{entry.description}</Subtitle>
       <Grid>
         <Cell>
-          <CellHeading>next-yak</CellHeading>
+          <CellHeading>yak</CellHeading>
           <Surface $contained={entry.containedSurface}>{renderDemo(entry, pair.Yak)}</Surface>
         </Cell>
         <Cell>

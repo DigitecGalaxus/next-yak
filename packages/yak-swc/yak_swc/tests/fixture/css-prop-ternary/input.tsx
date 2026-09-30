@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 
 // folds: both arms are fully static
 const Elem = ({ active }: { active: boolean }) => {

@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 // URL clients can remove ../ segments before sending the request.
 function requestPath(origin: string, path: string): Promise<{ status: number; body: string }> {
@@ -39,7 +39,7 @@ test(
       await writeFile(file, `SECRET=https://${secret}\n`);
       const outsideFile = join(outside, "private.txt");
       await writeFile(outsideFile, `SECRET=https://${secret}\n`);
-      const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "next-yak";
+      const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "@yak/react";
       const sources = [file, outsideFile];
       for (const extension of ["ts", "yak.ts"]) {
         await writeFile(

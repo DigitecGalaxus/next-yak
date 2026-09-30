@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQtY29sb3I6ICMwMDdiZmY7CiAgY29sb3I6ICNmOGY5ZmE7CiAgcGFkZGluZzogMTBweCAzMy4zMzMzJTsKICB6LWluZGV4OiAxOwogIG1hcmdpbi10b3A6IC0xcHg7CiAgYm9yZGVyOiBub25lOwogIGJvcmRlci1yYWRpdXM6IDRweDsKICBjdXJzb3I6IHBvaW50ZXI7CiAgZm9udC1zaXplOiAxNnB4OwogIGZvbnQtd2VpZ2h0OiBib2xkOwogICY6aG92ZXIgewogICAgYmFja2dyb3VuZC1jb2xvcjogIzM0M2E0MDsKICB9CiAgJjphY3RpdmUgewogICAgY29sb3I6ICMwMDAwMDA7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjEyNTI5OwogIH0KfQ==";
 const colors = {
     primary: "#007bff",

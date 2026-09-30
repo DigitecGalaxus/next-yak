@@ -1,5 +1,5 @@
-import { css, styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnU2IHsKICBwYWRkaW5nOiAxMHB4IDIwcHg7CiAgYm9yZGVyOiBub25lOwogIGJvcmRlci1yYWRpdXM6IDVweDsKICBjdXJzb3I6IHBvaW50ZXI7Cn0KLnltN3VCQnU3IHsKICAmOmhvdmVyIHsKICAgIGZvbnQtc2l6ZTogMTZweDsKICAgIGNvbG9yOiBibGFjazsKICB9Cn0KLnltN3VCQnU4IHsKICAmOmhvdmVyIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9Ci55bTd1QkJ1NiB7CiAgJjpmb2N1cyB7CiAgICBmb250LXNpemU6IDE2cHg7CiAgICBjb2xvcjogYmxhY2s7CiAgfQp9Ci55bTd1QkJ1OSB7CiAgJjpmb2N1cyB7CiAgICBjb2xvcjogcmVkOwogIH0KfQoueW03dUJCdTYgewogICY6Zm9jdXMgewogICAgZm9udC1zaXplOiAxNnB4OwogICAgY29sb3I6IGJsYWNrOwogIH0KfQoueW03dUJCdUEgewogICY6Zm9jdXMgewogICAgY29sb3I6IHJlZDsKICB9Cn0=";
 const textColor = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu1"));
 const textStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu3"));

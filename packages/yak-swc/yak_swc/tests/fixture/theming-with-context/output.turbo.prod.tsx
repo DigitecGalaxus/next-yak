@@ -1,6 +1,6 @@
 import React from 'react';
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQtY29sb3I6IHZhcigtLXltN3VCQnUxKTsKICBjb2xvcjogdmFyKC0teW03dUJCdTIpOwogIHBhZGRpbmc6IDIwcHg7CiAgYm9yZGVyLXJhZGl1czogOHB4Owp9";
 const ThemedComponent = /*YAK Extracted CSS:
 .ym7uBBu {

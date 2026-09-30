@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 test(
   "HMR adds a new styled component without full reload",
@@ -23,7 +23,7 @@ test(
 
     // Add a second styled component via HMR (the JSX below is framework-neutral,
     // only the import source differs per framework)
-    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "next-yak";
+    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "@yak/react";
     await testEnv.writeFile(
       "index.tsx",
       `import { styled } from "${yakPackage}";

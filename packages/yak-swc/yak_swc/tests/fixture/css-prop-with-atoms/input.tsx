@@ -1,4 +1,4 @@
-import { css, styled, atoms } from "next-yak";
+import { css, styled, atoms } from "@yak/react";
 
 const Elem = () => <div css={atoms("yellow")} />;
 

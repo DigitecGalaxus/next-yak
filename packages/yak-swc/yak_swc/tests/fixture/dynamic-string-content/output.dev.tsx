@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Dynamic value wrapped in quotes should produce `var(--xxx)` (unquoted),
 // because `var()` references inside string literals are treated as literal

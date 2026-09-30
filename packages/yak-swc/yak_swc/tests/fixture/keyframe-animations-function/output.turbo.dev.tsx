@@ -1,5 +1,5 @@
-import { styled, css, keyframes } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css, keyframes } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X0ZhZGVJblRleHRfX1wkcmV2ZXJzZV9tN3VCQnUgewogIGFuaW1hdGlvbjogZmFkZU91dF9tN3VCQnUgMXMgZWFzZS1pbjsKfQouaW5wdXRfRmFkZUluVGV4dF9fbm90X1wkcmV2ZXJzZV9tN3VCQnUgewogIGFuaW1hdGlvbjogZmFkZUluX203dUJCdSAxcyBlYXNlLWluOwp9Ci5pbnB1dF9GYWRlSW5UZXh0X203dUJCdSB7CiAgZm9udC1zaXplOiAxOHB4OwogIGNvbG9yOiAjMzMzOwp9QGtleWZyYW1lcyBmYWRlSW5fbTd1QkJ1IHsKICBmcm9tIHsKICAgIG9wYWNpdHk6IDA7CiAgfQogIHRvIHsKICAgIG9wYWNpdHk6IDE7CiAgfQp9QGtleWZyYW1lcyBmYWRlT3V0X203dUJCdSB7CiAgZnJvbSB7CiAgICBvcGFjaXR5OiAxOwogIH0KICB0byB7CiAgICBvcGFjaXR5OiAwOwogIH0KfQ==";
 export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:input_FadeInText_m7uBBu*//*YAK Extracted CSS:
 .input_FadeInText__\$reverse_m7uBBu {

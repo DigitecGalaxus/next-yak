@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 const atomClasses = async (page: import("@playwright/test").Page, testId: string) =>
   ((await page.getByTestId(testId).getAttribute("class")) ?? "")

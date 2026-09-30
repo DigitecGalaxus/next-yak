@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { benchmarks } from "./bench/manifest";
 
 const Page = styled.div`
@@ -25,7 +25,7 @@ const Description = styled.span`
 export default function Home() {
   return (
     <Page>
-      <h1>next-yak benchmarks</h1>
+      <h1>yak benchmarks</h1>
       <p>
         Each benchmark below has a generator at <code>benchmarks/bench/&lt;slug&gt;/gen.ts</code>{" "}
         and is registered in the benchmark harness. The links here render the same components in the

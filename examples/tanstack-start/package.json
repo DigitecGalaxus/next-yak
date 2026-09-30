@@ -13,7 +13,7 @@
   "dependencies": {
     "@tanstack/react-router": "catalog:dev",
     "@tanstack/react-start": "catalog:dev",
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"
   },

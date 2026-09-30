@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "next-yak",
+    "jsxImportSource": "@yak/react",
     "incremental": true,
     "plugins": [
       {

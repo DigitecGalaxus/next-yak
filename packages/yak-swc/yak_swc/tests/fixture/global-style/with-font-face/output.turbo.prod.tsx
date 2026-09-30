@@ -1,4 +1,4 @@
-import { globalStyle } from "next-yak/internal";
+import { globalStyle } from "@yak/react/internal";
 import "data:text/css;base64,QHByb3BlcnR5IC0tcHJvZ3Jlc3MgewogIHN5bnRheDogIjxwZXJjZW50YWdlPiI7CiAgaW5oZXJpdHM6IGZhbHNlOwogIGluaXRpYWwtdmFsdWU6IDAlOwp9CgpAZm9udC1mYWNlIHsKICBmb250LWZhbWlseTogIkludGVyIjsKICBzcmM6IHVybCgiL2ZvbnRzL2ludGVyLndvZmYyIikgZm9ybWF0KCJ3b2ZmMiIpOwogIGZvbnQtZGlzcGxheTogc3dhcDsKfQpib2R5IHsKICBmb250LWZhbWlseTogIkludGVyIiwgc2Fucy1zZXJpZjsKfQ==";
 /*YAK Extracted CSS:
 @property --progress {

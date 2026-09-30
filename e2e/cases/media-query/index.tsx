@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { screenQueries } from "./queries.yak.ts";
 
 const Title = styled.h1`

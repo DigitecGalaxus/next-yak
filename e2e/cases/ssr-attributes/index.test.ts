@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 // class and style differ per styled component (generated names), they get
 // their own assertions

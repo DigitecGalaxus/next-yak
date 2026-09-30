@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
-import { YakThemeProvider } from "next-yak";
-import { getYakThemeContext } from "next-yak/context/baseContext";
+import { YakThemeProvider } from "@yak/react";
+import { getYakThemeContext } from "@yak/react/context/baseContext";
 
 const preview: Preview = {
   parameters: {

@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X0J1dHRvbl9tN3VCQnUgewogIGNvbG9yOiBncmVlbjsKICBiYWNrZ3JvdW5kOiByZWQ7Cn0=";
 const primary = "green";
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:

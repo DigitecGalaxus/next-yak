@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 // Dynamic value wrapped in quotes should produce `var(--xxx)` (unquoted),
 // because `var()` references inside string literals are treated as literal

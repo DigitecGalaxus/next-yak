@@ -1,5 +1,5 @@
-import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X1RvZ2dsZV9tN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQouaW5wdXRfVG9nZ2xlX19cJG9uX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfS5pbnB1dF9SYW5nZV9fXCRhX203dUJCdSB7CiAgY29sb3I6IHJlZDsKfQouaW5wdXRfUmFuZ2VfX1wkYl9tN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LmlucHV0X0FjdGlvbkJ1dHRvbl9fX203dUJCdSB7CiAgY3Vyc29yOiBwb2ludGVyOwp9LmlucHV0X0NhcmRfbTd1QkJ1IHsKICBjb2xvcjogZ3JlZW47Cn0uaW5wdXRfRmFuY3lfbTd1QkJ1IHsKICBwYWRkaW5nOiA0cHg7Cn0uaW5wdXRfV2l0aEF0dHJzX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfTXV0YWJsZV9tN3VCQnUgewogIGNvbG9yOiB0ZWFsOwp9";
 const on = Math.random() > 0.5;
 const props = {} as any;

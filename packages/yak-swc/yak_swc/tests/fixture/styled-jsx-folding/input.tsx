@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 import { ImportedCard } from "./imported-card";
 
 const someRef = { current: null } as any;

@@ -1,4 +1,4 @@
-import { css, styled, YakThemeProvider } from "next-yak";
+import { css, styled, YakThemeProvider } from "@yak/react";
 import { useState } from "react";
 
 type Theme = { brandName: "brandA" | "brandB" };

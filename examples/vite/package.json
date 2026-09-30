@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:yak": "pnpm run --filter next-yak build",
-    "build:swc": "pnpm run --filter yak-swc build",
+    "build:yak": "pnpm run --filter @yak/react build",
+    "build:swc": "pnpm run --filter @yak/swc build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"
   },

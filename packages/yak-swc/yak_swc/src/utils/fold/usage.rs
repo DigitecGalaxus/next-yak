@@ -750,7 +750,7 @@ fn inline_expression(
 /// component sees props, so the runtime path reads `undefined` while a
 /// substituted fold would see the attribute value - reading it must bail
 ///
-/// `ref` is absent on purpose: React 19, the minimum next-yak supports, passes
+/// `ref` is absent on purpose: React 19, the minimum yak supports, passes
 /// it as an ordinary prop, so the runtime and the fold read the same value
 ///
 fn is_runtime_injected_prop(name: &Atom) -> bool {

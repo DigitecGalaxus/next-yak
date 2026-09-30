@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_mergeCssProp } from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTMgewogIGNvbG9yOiBibGFjazsKfQoueW03dUJCdTQgewogIGZvbnQtd2VpZ2h0OiBib2xkOwp9Ci55bTd1QkJ1NSB7CiAgdGV4dC1kZWNvcmF0aW9uOiB1bmRlcmxpbmU7Cn0ueW03dUJCdTYgewogIGNvbG9yOiB0ZWFsOwp9LnltN3VCQnU3IHsKICBjb2xvcjogcHVycGxlOwp9LnltN3VCQnU4IHsKICBmb250LXNpemU6IDE2cHg7Cn0ueW03dUJCdTkgewogIGNvbG9yOiBvbGl2ZTsKfS55bTd1QkJ1QSB7CiAgY29sb3I6IHZhcigtLXltN3VCQnVCKTsKfQ==";
 const on = Math.random() > 0.5;
 const big = Math.random() > 0.5;

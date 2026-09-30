@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X2J1dHRvbnNfcHJpbWFyeV9tN3VCQnUgewogIGNvbG9yOiB2YXIoLS1pbnB1dF9idXR0b25zX3ByaW1hcnlfX2NvbG9yX203dUJCdSk7Cn0uaW5wdXRfYnV0dG9uc19kYW5nZXJfbTd1QkJ1IHsKICBjb2xvcjogdmFyKC0taW5wdXRfYnV0dG9uc19kYW5nZXJfX2NvbG9yX203dUJCdSk7Cn0=";
 const buttons = {
     primary: /*YAK Extracted CSS:

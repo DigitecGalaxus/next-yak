@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "packages/next-yak/runtime/**"
+      - "packages/yak-react/runtime/**"
       - "benchmarks/**"
       - ".github/workflows/benchmarks.yml"
   workflow_dispatch:
@@ -81,7 +81,7 @@ jobs:
         continue-on-error: true
         run: pnpm run build:swc
 
-      - name: Build next-yak (baseline)
+      - name: Build yak (baseline)
         continue-on-error: true
         run: pnpm run build
 
@@ -133,7 +133,7 @@ jobs:
       - name: Build SWC plugin (PR)
         run: pnpm run build:swc
 
-      - name: Build next-yak (PR)
+      - name: Build yak (PR)
         run: pnpm run build
 
       - name: Generate benchmark sources (PR)

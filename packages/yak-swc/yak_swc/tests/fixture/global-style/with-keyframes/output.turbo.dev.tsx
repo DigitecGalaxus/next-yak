@@ -1,4 +1,4 @@
-import { globalStyle, keyframes } from "next-yak/internal";
+import { globalStyle, keyframes } from "@yak/react/internal";
 import "data:text/css;base64,QGtleWZyYW1lcyBmYWRlSW5fbTd1QkJ1IHsKICBmcm9tIHsKICAgIG9wYWNpdHk6IDA7CiAgfQogIHRvIHsKICAgIG9wYWNpdHk6IDE7CiAgfQp9Ojp2aWV3LXRyYW5zaXRpb24tbmV3KHJvb3QpIHsKICBhbmltYXRpb246IGZhZGVJbl9tN3VCQnUgMjAwbXMgZWFzZTsKfQ==";
 const fadeIn = /*YAK Extracted CSS:
 @keyframes fadeIn_m7uBBu {

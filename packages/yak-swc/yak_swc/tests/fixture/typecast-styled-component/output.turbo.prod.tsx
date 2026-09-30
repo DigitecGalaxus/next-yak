@@ -1,7 +1,7 @@
-import { styled, css, keyframes } from "next-yak/internal";
+import { styled, css, keyframes } from "@yak/react/internal";
 // @ts-ignore
 import type { DefaultTheme, StyledComponent } from "styled-components";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGZpbGw6IGN1cnJlbnRDb2xvcjsKfUBrZXlmcmFtZXMgeW03dUJCdTIgewogIGZyb20gewogICAgb3BhY2l0eTogMDsKICB9CiAgdG8gewogICAgb3BhY2l0eTogMTsKICB9Cn0ueW03dUJCdTMgewogIGNvbG9yOiByZWQ7CiAgYW5pbWF0aW9uOiB5bTd1QkJ1MiAxcyBsaW5lYXI7Cn0ueW03dUJCdTQgewogIC55bTd1QkJ1IHsKICAgIGNvbG9yOiBibHVlOwogIH0KfQ==";
 // styled component wrapped in `as unknown as ...` (e.g. when migrating from styled-components)
 export const StyledSvg = /*YAK EXPORTED STYLED:StyledSvg:ym7uBBu*//*YAK Extracted CSS:

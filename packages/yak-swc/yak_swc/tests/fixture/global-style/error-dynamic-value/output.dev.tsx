@@ -1,2 +1,2 @@
-import { globalStyle } from "next-yak/internal";
+import { globalStyle } from "@yak/react/internal";
 /*#__PURE__*/ globalStyle();

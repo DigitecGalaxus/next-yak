@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 test(
   "renders shared .yak.ts tokens across multiple components with correct CSS",

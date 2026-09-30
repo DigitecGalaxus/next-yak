@@ -1,5 +1,5 @@
-import { styled, css, keyframes } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css, keyframes } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu1) {

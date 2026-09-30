@@ -75,7 +75,7 @@ const NestedComponent${index + 1} = ${styled}(Level4Component${index + 1})\`
 \`;`;
 }).join("")}
 
-export const NestedComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
+export const NestedComponents${lib === "yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', maxWidth: '1200px', margin: '0 auto' }}>
       ${Array.from(

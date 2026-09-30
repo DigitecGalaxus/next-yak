@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQ6IHJlZDsKICBAbWVkaWEgewogICAgZGlzcGxheTogbm9uZTsKICB9Cn0=";
 // Dynamic interpolation inside @media query is not valid CSS:
 // the browser cannot read CSS variables before the media query is evaluated.

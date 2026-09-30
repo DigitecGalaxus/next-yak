@@ -1,5 +1,5 @@
-/** @jsxImportSource next-yak */
-import { styled } from "next-yak";
+/** @jsxImportSource @yak/react */
+import { styled } from "@yak/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Counter } from "../components/Counter";
 
@@ -8,9 +8,9 @@ export const Route = createFileRoute("/")({ component: Home });
 function Home() {
   return (
     <Main>
-      <Title>next-yak + TanStack Start</Title>
+      <Title>@yak/react + TanStack Start</Title>
       <Description>
-        A simple page styled with next-yak. This is a client-rendered route with yak styled
+        A simple page styled with @yak/react. This is a client-rendered route with yak styled
         components.
       </Description>
       <Counter />

@@ -1,4 +1,4 @@
-import { atoms, styled } from "next-yak";
+import { atoms, styled } from "@yak/react";
 
 // utility class names as an atomic CSS framework would emit them
 // (the stylesheet below is hand written, no framework in the e2e app)

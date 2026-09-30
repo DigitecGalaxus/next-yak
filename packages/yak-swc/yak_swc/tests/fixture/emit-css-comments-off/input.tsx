@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 // Covers both comment emission sites: a named export and a default export
 export const Button = styled.button`

@@ -1,5 +1,5 @@
-import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiBibGFjazsKfQoueW03dUJCdTEgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTMgewogIGNvbG9yOiByZWQ7Cn0KLnltN3VCQnU0IHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1NiB7CiAgY3Vyc29yOiBwb2ludGVyOwp9LnltN3VCQnU3IHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTggewogIHBhZGRpbmc6IDRweDsKfS55bTd1QkJ1OSB7CiAgY29sb3I6IGJsdWU7Cn0ueW03dUJCdUEgewogIGNvbG9yOiB0ZWFsOwp9";
 const on = Math.random() > 0.5;
 const props = {} as any;

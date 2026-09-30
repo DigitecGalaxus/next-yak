@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 
 const on = Math.random() > 0.5;
 const big = Math.random() > 0.5;

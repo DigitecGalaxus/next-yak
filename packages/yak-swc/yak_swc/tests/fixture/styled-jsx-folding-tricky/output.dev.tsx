@@ -1,5 +1,5 @@
-import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const on = Math.random() > 0.5;
 const props = {} as any;

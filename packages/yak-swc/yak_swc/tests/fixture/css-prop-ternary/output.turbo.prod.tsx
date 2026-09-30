@@ -1,4 +1,4 @@
-import { css, __yak_unitPostFix, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBjb2xvcjogcmVkOwp9Ci55bTd1QkJ1MyB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnU0IHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1NSB7CiAgd2lkdGg6IHZhcigtLXltN3VCQnU2KTsKfS55bTd1QkJ1NyB7CiAgY29sb3I6IGJsdWU7Cn0ueW03dUJCdTkgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnVFIHsKICBjb2xvcjogYmx1ZTsKfQ==";
 // folds: both arms are fully static
 const Elem = ({ active }: {

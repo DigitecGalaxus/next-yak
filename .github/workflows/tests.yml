@@ -5,23 +5,23 @@ on:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
-      - "packages/storybook-addon-yak/**"
-      - "packages/eslint-plugin-yak/**"
+      - "packages/yak-storybook/**"
+      - "packages/yak-eslint-plugin/**"
       - ".github/workflows/tests.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
-      - "packages/storybook-addon-yak/**"
-      - "packages/eslint-plugin-yak/**"
+      - "packages/yak-storybook/**"
+      - "packages/yak-eslint-plugin/**"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
 
@@ -79,16 +79,16 @@ jobs:
         run: pnpm install
 
       - name: Validate wasm fixtures
-        run: pnpm --filter yak-swc test:wasm-fixtures
+        run: pnpm --filter @yak/swc test:wasm-fixtures
 
       - name: Build
         run: pnpm run build
 
       - name: Build Storybook Addon
-        run: pnpm run --filter=storybook-addon-yak build
+        run: pnpm run --filter=@yak/storybook build
 
       - name: Validate ESLint Plugin Docs
-        run: pnpm --filter eslint-plugin-yak check:docs
+        run: pnpm --filter @yak/eslint-plugin check:docs
 
       - name: Test
         run: pnpm run test

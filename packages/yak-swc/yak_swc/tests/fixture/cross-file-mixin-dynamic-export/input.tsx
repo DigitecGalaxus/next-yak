@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 
 const textColor = css<{$active: boolean}>`
   color: black;

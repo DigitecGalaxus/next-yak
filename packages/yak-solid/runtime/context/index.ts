@@ -7,7 +7,7 @@ export interface YakTheme {}
 /**
  * The yak theme context
  *
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/runtime/context/README.md
+ * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 export const YakThemeContext = /* @__PURE__ */ createContext<Accessor<YakTheme>>(() => ({}));
 

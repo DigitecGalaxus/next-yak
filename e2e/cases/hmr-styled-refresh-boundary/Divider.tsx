@@ -6,7 +6,7 @@
  * Without that, the HMR update would propagate up through every parent
  * module until it reaches the entry point → full page reload.
  */
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 export const Divider = styled.hr`
   background-color: red;

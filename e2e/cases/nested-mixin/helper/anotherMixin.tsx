@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 import { buttonMixin } from "../mixin.tsx";
 import { typography } from "./typography.tsx";
 

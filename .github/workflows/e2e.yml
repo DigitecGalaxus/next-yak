@@ -5,7 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
@@ -15,7 +15,7 @@ on:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
@@ -92,7 +92,7 @@ jobs:
         run: pnpm run build
 
       - name: Install Playwright browsers
-        run: pnpm --filter next-yak-e2e exec playwright install chromium
+        run: pnpm --filter yak-e2e exec playwright install chromium
 
       - name: Run e2e dev tests
         if: matrix.phase == 'dev'

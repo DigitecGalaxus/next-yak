@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import { getSwcParserOptions } from "../swcParserOptions.js";
 
 describe("swc parses every extension of the yak loader rule", () => {
-  const jsxSource = `import { styled } from "next-yak";
+  const jsxSource = `import { styled } from "@yak/react";
 const Container = styled.div\`display: flex;\`;
 export default function Component() {
   return <Container>Hello</Container>;
 }`;
-  const typeScriptSource = `import { styled } from "next-yak";
+  const typeScriptSource = `import { styled } from "@yak/react";
 export const gap: Array<number> = [1];
 export const Container = styled.div\`gap: \${gap[0]}px;\`;`;
 

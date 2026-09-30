@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X1Jlc3BvbnNpdmVHcmlkX203dUJCdSB7CiAgZGlzcGxheTogZ3JpZDsKICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmcjsKICBnYXA6IDIwcHg7CiAgcGFkZGluZzogMjBweDsKICBAbWVkaWEgKG1pbi13aWR0aDogNzY4cHgpIHsKICAgIGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KDIsIDFmcik7CiAgfQogIEBtZWRpYSAobWluLXdpZHRoOiAxMDI0cHgpIHsKICAgIGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KDMsIDFmcik7CiAgfQp9";
 export const ResponsiveGrid = /*YAK EXPORTED STYLED:ResponsiveGrid:input_ResponsiveGrid_m7uBBu*//*YAK Extracted CSS:
 .input_ResponsiveGrid_m7uBBu {

@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 // Identical prop arrow used in two declarations
 const TwiceSameArrow = styled.div<{ $x: number }>`

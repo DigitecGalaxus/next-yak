@@ -81,7 +81,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "workspace:*"
+    "@yak/swc": "workspace:*"
   },
   "devDependencies": {
     "@solidjs/vite-plugin": "catalog:dev",

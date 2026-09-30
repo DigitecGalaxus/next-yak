@@ -237,7 +237,7 @@ test("resolve styled component with as type cast (#162)", async () => {
   const { resolved } = await resolveCrossFileConstant(
     createParseContext({
       "/foo/icon.tsx": `
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 export const Comp = styled.svg\`\` as unknown as any;
 `,
     }),

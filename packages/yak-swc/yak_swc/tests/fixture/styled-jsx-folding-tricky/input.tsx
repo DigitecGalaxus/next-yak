@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 
 const on = Math.random() > 0.5;
 const props = {} as any;

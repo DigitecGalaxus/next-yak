@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import Text from "./text";
 
 const Box = styled.div`

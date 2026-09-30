@@ -1,5 +1,5 @@
 "use client";
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 export const Clock = () => {

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "next-yak benchmarks",
+  title: "yak benchmarks",
   description:
-    "Side-by-side runtime comparison of next-yak and styled-components on the benchmark suite.",
+    "Side-by-side runtime comparison of yak and styled-components on the benchmark suite.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

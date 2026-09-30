@@ -1,7 +1,7 @@
 // Adversarial shapes for the css prop fold - fold_css_expr folds css() calls,
 // ternaries and a top level `&&`, so every shape below pins either the fold or
 // the bail-out that keeps it on the runtime path
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_mergeCssProp } from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUxIHsKICBjb2xvcjogYmxhY2s7Cn0KLnltN3VCQnUyIHsKICBjb2xvcjogcmVkOwp9Ci55bTd1QkJ1MyB7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0ueW03dUJCdTQgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnU1IHsKICBjb2xvcjogdmFyKC0teW03dUJCdTYpOwp9";
 // folds: a top level `&&` becomes `on ? "class" : ""`
 // the fold has to keep the /*YAK Extracted CSS:*/ comment the loader parses,

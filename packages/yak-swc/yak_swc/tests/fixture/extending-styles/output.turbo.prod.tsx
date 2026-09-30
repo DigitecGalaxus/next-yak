@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIHBhZGRpbmc6IDEwcHggMjBweDsKICBib3JkZXI6IG5vbmU7CiAgYm9yZGVyLXJhZGl1czogNHB4OwogIGZvbnQtc2l6ZTogMTZweDsKICBjdXJzb3I6IHBvaW50ZXI7Cn0ueW03dUJCdTEgewogIGJhY2tncm91bmQtY29sb3I6ICMwMDdiZmY7CiAgY29sb3I6ICNmZmY7CiAgJjpob3ZlciB7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMDA1NmIzOwogIH0KfS55bTd1QkJ1MiB7CiAgYmFja2dyb3VuZC1jb2xvcjogIzZjNzU3ZDsKICBjb2xvcjogI2ZmZjsKICAmOmhvdmVyIHsKICAgIGJhY2tncm91bmQtY29sb3I6ICM1NDViNjI7CiAgfQp9";
 const BaseButton = /*YAK Extracted CSS:
 .ym7uBBu {

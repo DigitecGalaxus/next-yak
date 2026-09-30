@@ -1,4 +1,4 @@
-import { globalStyle, keyframes } from "next-yak";
+import { globalStyle, keyframes } from "@yak/react";
 
 const fadeIn = keyframes`
   from {

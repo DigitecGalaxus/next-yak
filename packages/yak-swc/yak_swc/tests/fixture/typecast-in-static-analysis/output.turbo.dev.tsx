@@ -1,5 +1,5 @@
-import { styled, css } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X0FfbTd1QkJ1IHsKICB3aWR0aDogMzJweDsKICBtYXJnaW46IDI0cHg7CiAgcGFkZGluZzogOHB4Owp9LmlucHV0X0JfbTd1QkJ1IHsKICAuaW5wdXRfQm94X203dUJCdSB7CiAgICBjb2xvcjogcmVkOwogIH0KfS5pbnB1dF9DX203dUJCdSB7CiAgY29sb3I6IGJsdWU7Cn0uaW5wdXRfUGFnZV9tN3VCQnUgewogIGRpc3BsYXk6IGJsb2NrOwp9";
 // Numeric constants used inside math expressions, in cast form
 const BASE = 16 as const;

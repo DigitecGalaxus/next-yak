@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { Marker } from "./marker.tsx";
 
 const Styled = styled.div`

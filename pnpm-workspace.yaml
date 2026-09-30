@@ -2,12 +2,11 @@ packages:
   - packages/*
   - examples/*
   - benchmarks
-  - docs
   - e2e
   - e2e/bundlers/*
 
 overrides:
-  yak-swc: workspace:*
+  "@yak/swc": workspace:*
   # Every copy of @swc/core in the workspace must stay on the ABI line the
   # yak-swc wasm plugin is built for (see the core catalog). Storybook's
   # webpack builder runs the plugin through its own swc-loader, so a second,
@@ -23,7 +22,6 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-  wasm-pack: true
 
 catalogs:
   core:
@@ -39,34 +37,25 @@ catalogs:
     "@rsbuild/core": 2.2.2
     "@rsbuild/plugin-react": 2.1.0
     "@changesets/cli": 3.0.1
-    "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 16.3.4
     "@playwright/test": 1.62.1
-    "@radix-ui/react-switch": 1.3.7
-    "@shikijs/magic-move": 4.4.3
-    "@shikijs/monaco": 4.4.3
-    "@shikijs/transformers": 4.4.3
     "@storybook/addon-docs": 10.6.0
     "@storybook/addon-webpack5-compiler-swc": 4.0.3
     "@storybook/react": 10.6.0
     "@storybook/react-vite": 10.6.0
     "@storybook/react-webpack5": 10.6.0
-    "@swc/helpers": 0.5.23
-    "@tailwindcss/postcss": 4.3.3
     "@tanstack/react-router": 1.170.32
     "@tanstack/react-start": 1.168.49
     "@testing-library/dom": 10.4.1
     "@testing-library/react": 16.3.3
     "@types/benchmark": 2.1.5
     "@types/jest": 30.0.0
-    "@types/mdx": 2.0.14
     "@types/node": 26.4.1
     "@types/react": 19.2.18
     "@types/react-dom": 19.2.5
     "@types/webpack": 5.28.5
     "@typescript-eslint/parser": 8.69.0
     "@typescript-eslint/rule-tester": 8.69.0
-    "@vercel/analytics": 2.0.1
     "@vitejs/plugin-react": 6.1.1
     "@vitejs/plugin-react-swc": 4.3.3
     "@vitejs/plugin-rsc": 0.5.34
@@ -74,36 +63,22 @@ catalogs:
     eslint: 10.9.1
     eslint-config-next: 16.3.4
     eslint-doc-generator: 3.7.1
-    fflate: 0.8.3
-    fumadocs-core: 16.15.5
-    fumadocs-mdx: 15.4.0
-    fumadocs-twoslash: 3.3.0
-    fumadocs-ui: 16.15.5
     jest: 30.5.1
     "@testing-library/jest-dom": 7.0.1
     jest-environment-jsdom: 30.5.1
-    js-base64: 3.9.3
     jsdom: 30.0.1
     knip: 6.34.0
-    lz-string: 1.5.0
     next: 16.3.4
-    next-themes: 0.4.6
     oxfmt: 0.66.0
     oxlint: 1.81.0
-    postcss: 8.5.26
     # postcss-nested 8 is ESM-only. Next.js loads postcss plugins for webpack
     # via `require(name)(options)`, which cannot consume that (Turbopack is fine),
     # so the Next.js example stays on 7.x until Next handles ESM plugins.
     postcss-nested: 7.0.2
-    prettier: 3.9.6
-    raw-loader: 4.0.2
     react: 19.2.8
     react-dom: 19.2.8
-    react-resizable-panels: 4.12.3
-    shiki: 4.4.3
     storybook: 10.6.0
     styled-components: 6.5.3
-    tailwindcss: 4.3.3
     tsdown: 0.22.14
     tsx: 4.23.13
     # TypeScript 7 (the native compiler) ships no programmatic API yet, which
@@ -113,4 +88,3 @@ catalogs:
     vite: 8.2.2
     "@solidjs/vite-plugin": 3.0.0-next.46
     vitest: 4.1.11
-    wasm-pack: 0.15.0

@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 
 const elements = ["h1", "h2", "h3"];
 

@@ -1,6 +1,6 @@
 // @ts-ignore
 import styled from "styled-components";
-import { styled as styledYak } from "next-yak";
+import { styled as styledYak } from "@yak/react";
 
 const textColor = "red";
 

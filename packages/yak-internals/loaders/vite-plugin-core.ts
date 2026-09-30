@@ -42,7 +42,7 @@ type SwcOverrides = Omit<
 };
 
 /**
- * @internal Describes a yak runtime package (e.g. "next-yak", "@yak/solid").
+ * @internal Describes a yak runtime package (e.g. "@yak/react", "@yak/solid").
  * The yak-swc compiler detects the package from the import source on its own.
  * This only controls the vite-plugin side (filtering, context alias, HMR).
  * Not part of the public API
@@ -87,7 +87,7 @@ const defaultSwcOptions: ViteYakPluginOptions["swcOptions"] = {
 
 /**
  * @internal Creates the vite plugin function for a yak runtime package.
- * next-yak and @yak/solid each wrap it with their own library config and
+ * @yak/react and @yak/solid each wrap it with their own library config and
  * export the result as their public vite plugin.
  */
 export function createViteYakPlugin(library: YakViteLibrary) {
@@ -332,7 +332,7 @@ async function viteYakImpl(
  */
 async function findYakSwcPlugin() {
   try {
-    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const packageJsonPath = require.resolve("@yak/swc/package.json");
     const packageRoot = dirname(packageJsonPath);
 
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));

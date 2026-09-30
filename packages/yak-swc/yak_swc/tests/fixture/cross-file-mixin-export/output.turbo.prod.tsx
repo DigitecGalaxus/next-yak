@@ -1,6 +1,6 @@
-import { css, styled } from "next-yak/internal";
+import { css, styled } from "@yak/react/internal";
 import { typographyMixin } from "./typography";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUzIHsKICBwYWRkaW5nOiAxMHB4IDIwcHg7CiAgYm9yZGVyOiBub25lOwogIGJvcmRlci1yYWRpdXM6IDVweDsKICBjdXJzb3I6IHBvaW50ZXI7Cn0KLnltN3VCQnU0IHsKICAmOmhvdmVyIHsKICAgIGZvbnQtc2l6ZTogMTZweDsKICAgIGNvbG9yOiBibGFjazsKICB9Cn0KLnltN3VCQnUzIHsKICAmOmZvY3VzIHsKICAgIGZvbnQtc2l6ZTogMTZweDsKICAgIGNvbG9yOiBibGFjazsKICAgIGZvbnQtc2l6ZTogMTZweDsKICAgIGNvbG9yOiBibGFjazsKICB9Cn0=";
 const textColor = /*#__PURE__*/ css();
 const textStyles = /*#__PURE__*/ css();

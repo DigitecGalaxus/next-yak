@@ -15,7 +15,7 @@ pub struct YakFileVisitor {
 }
 
 /// A visitor which transform the AST of a .yak.tsx .yak.ts or .yak.js file
-/// by removing the next-yak imports and converting tagged template literals
+/// by removing the yak imports and converting tagged template literals
 /// so that it can evaluated as a pure nodejs module
 impl Default for YakFileVisitor {
   fn default() -> Self {
@@ -181,7 +181,7 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-                import { css } from "next-yak";
+                import { css } from "@yak/react";
                 export const heading = css`
                   font-size: ${20}px;
                 `;

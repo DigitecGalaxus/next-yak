@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 // Non-exported styled component with no CSS rules
 // should still get a class so it can be used as a selector

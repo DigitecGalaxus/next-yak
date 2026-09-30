@@ -1,5 +1,5 @@
 "use client";
-import { css, styled, useTheme } from "next-yak";
+import { css, styled, useTheme } from "@yak/react";
 import { useRouter } from "next/navigation";
 
 const Button = styled.button<{ $primary?: boolean }>`

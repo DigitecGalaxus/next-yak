@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import", "react"],
-  "jsPlugins": ["eslint-plugin-yak"],
+  "jsPlugins": ["@yak/eslint-plugin"],
   "categories": {
     "correctness": "error"
   },
@@ -11,10 +11,10 @@
     "no-var": "off",
     "no-control-regex": "off",
     "typescript/no-empty-object-type": "off",
-    "yak/css-nesting-operator": "error",
-    "yak/css-global-deprecated": "warn",
-    "yak/enforce-semicolon": "error",
-    "yak/style-conditions": "warn"
+    "@yak/css-nesting-operator": "error",
+    "@yak/css-global-deprecated": "warn",
+    "@yak/enforce-semicolon": "error",
+    "@yak/style-conditions": "warn"
   },
   "overrides": [
     {
@@ -27,8 +27,8 @@
         "typescript/triple-slash-reference": "off",
         "oxc/number-arg-out-of-range": "off",
         "react/purity": "off",
-        "yak/enforce-semicolon": "off",
-        "yak/style-conditions": "off"
+        "@yak/enforce-semicolon": "off",
+        "@yak/style-conditions": "off"
       }
     },
     {
@@ -50,10 +50,9 @@
     "**/target/**",
     "benchmarks/**",
     "cross-file-tests/__tests__/.tmp/**",
-    "packages/eslint-plugin-yak/rules/fixtures/**",
+    "packages/yak-eslint-plugin/rules/fixtures/**",
     "packages/yak-swc/yak_swc/tests/fixture/**",
     "packages/yak-internals/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
-    "e2e/**",
-    "docs/**"
+    "e2e/**"
   ]
 }

@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X1RoZW1lZEJ1dHRvbl9tN3VCQnUgewogIGJhY2tncm91bmQtY29sb3I6IHZhcigtLXByaW1hcnktY29sb3IpOwogIGNvbG9yOiAjZmZmOwogIGZvbnQtc2l6ZTogdmFyKC0tZm9udC1zaXplLWJhc2UpOwogIHBhZGRpbmc6IDEwcHggMjBweDsKICBib3JkZXI6IG5vbmU7CiAgYm9yZGVyLXJhZGl1czogNHB4OwogIGN1cnNvcjogcG9pbnRlcjsKICAmOmhvdmVyIHsKICAgIGJhY2tncm91bmQtY29sb3I6IHZhcigtLXNlY29uZGFyeS1jb2xvcik7CiAgfQp9LmlucHV0X1RoZW1lUHJvdmlkZXJfbTd1QkJ1IHsKICAtLXByaW1hcnktY29sb3I6ICMwMDdiZmY7CiAgLS1zZWNvbmRhcnktY29sb3I6ICM2Yzc1N2Q7CiAgLS1mb250LXNpemUtYmFzZTogMTZweDsKfQ==";
 export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:input_ThemedButton_m7uBBu*//*YAK Extracted CSS:
 .input_ThemedButton_m7uBBu {

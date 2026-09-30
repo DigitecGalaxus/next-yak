@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const buttons = {
   primary: styled.button<{ $c: string }>`

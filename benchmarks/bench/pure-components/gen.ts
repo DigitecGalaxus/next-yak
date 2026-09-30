@@ -26,7 +26,7 @@ ${Array.from({ length: componentCount }, (_, index) => {
 \`;`;
 }).join("\n\n")}
 
-export const PureComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
+export const PureComponents${lib === "yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div>
       ${Array.from(

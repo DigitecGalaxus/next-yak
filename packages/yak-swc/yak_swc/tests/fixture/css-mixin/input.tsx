@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 const buttonStyles = css`
   padding: 10px 20px;

@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react-swc";
-import { viteYak } from "next-yak/vite";
+import { viteYak } from "@yak/react/vite";
 import { defineConfig } from "vite";
 
 // Discover all .html entry points for multi-page build

@@ -11,18 +11,17 @@ next-yak is a CSS-in-JS solution for Next.js that combines styled-components syn
 ```
 next-yak/
 ├── packages/
-│   ├── next-yak/          # Main TypeScript/JavaScript package
+│   ├── yak-react/         # Main TypeScript/JavaScript package (@yak/react)
 │   ├── yak-internals/     # Private shared loader infrastructure (bundled, never published)
 │   ├── yak-swc/           # SWC plugin (Rust → WASM)
 │   │   ├── yak_swc/       # Core SWC plugin implementation
 │   │   ├── css_in_js_parser/  # CSS-in-JS parser library
 │   │   └── relative_posix_path/  # Path utility
-│   ├── eslint-plugin-yak/ # ESLint plugin
+│   ├── yak-eslint-plugin/ # ESLint and Oxlint plugin (@yak/eslint-plugin)
 │   └── example/           # Next.js example (symlinked to examples/next-js)
 ├── examples/
 │   ├── next-js/           # Next.js example app
 │   └── vite/              # Vite example app
-├── docs/                  # Documentation site (yak.js.org)
 ├── cross-file-tests/      # Cross-file transformation tests
 └── benchmarks/            # Performance benchmarks
 ```
@@ -44,7 +43,7 @@ pnpm lint:knip
 ### Building
 
 ```bash
-# Build the main next-yak TypeScript package
+# Build the main @yak/react TypeScript package
 pnpm build
 
 # Build the Rust SWC plugin (compiles to WASM)
@@ -75,9 +74,6 @@ pnpm example
 
 # Run Vite example
 pnpm example:vite
-
-# Run documentation site
-pnpm docs
 ```
 
 ### Package-Specific Commands
@@ -98,13 +94,13 @@ cd packages/yak-swc && pnpm prettier
 
 ## Key Files
 
-### TypeScript/JavaScript (packages/next-yak/)
+### TypeScript/JavaScript (packages/yak-react/)
 
 - `loaders/vite-plugin.ts` - Vite plugin (shared core lives in `packages/yak-internals`)
 - `loaders/webpack-loader.ts` - Webpack loader
 - `loaders/turbo-loader.ts` - Turbopack loader
 - `withYak/index.ts` - Next.js config wrapper
-- `packages/yak-internals/cross-file-resolver/` - Cross-file constant resolution (private shared package, bundled into next-yak and @yak/solid at build time)
+- `packages/yak-internals/cross-file-resolver/` - Cross-file constant resolution (private shared package, bundled into @yak/react and @yak/solid at build time)
 
 ### Rust (packages/yak-swc/yak_swc/src/)
 

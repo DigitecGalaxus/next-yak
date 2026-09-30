@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_mergeCssProp } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const on = Math.random() > 0.5;
 const big = Math.random() > 0.5;

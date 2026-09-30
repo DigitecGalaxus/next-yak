@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 // Dynamic interpolation inside @media query is not valid CSS:
 // the browser cannot read CSS variables before the media query is evaluated.

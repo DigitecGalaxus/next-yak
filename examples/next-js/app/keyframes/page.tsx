@@ -1,4 +1,4 @@
-import { styled, keyframes } from "next-yak";
+import { styled, keyframes } from "@yak/react";
 import styles from "../page.module.css";
 import { Clock } from "../Clock";
 import { ClockHand, maxWidthMixin } from "../ClockHands";

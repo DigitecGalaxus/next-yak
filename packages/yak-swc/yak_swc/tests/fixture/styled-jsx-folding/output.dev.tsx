@@ -1,7 +1,7 @@
 import React, { memo } from "react";
-import { css, styled, __yak_mergeClassNames } from "next-yak/internal";
+import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
 import { ImportedCard } from "./imported-card";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const someRef = {
     current: null

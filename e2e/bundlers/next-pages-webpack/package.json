@@ -8,11 +8,11 @@
     "start": "cd .tmp && next start -p 3003"
   },
   "dependencies": {
+    "@yak/react": "workspace:*",
+    "@yak/swc": "workspace:*",
     "next": "catalog:dev",
-    "next-yak": "workspace:*",
     "react": "catalog:dev",
-    "react-dom": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "react-dom": "catalog:dev"
   },
   "devDependencies": {
     "@types/react": "catalog:dev",

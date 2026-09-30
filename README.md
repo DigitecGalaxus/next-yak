@@ -1,17 +1,17 @@
-# next-yak
+# @yak/react
 
 [Documentation](https://yak.js.org/docs/getting-started) and [Playground](https://yak.js.org/playground), hosted at [yak.js.org](https://yak.js.org/)
 
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
-[![npm version](https://badge.fury.io/js/next-yak.svg)](https://www.npmjs.com/package/next-yak)
+[![npm version](https://badge.fury.io/js/@yak%2Freact.svg)](https://www.npmjs.com/package/@yak/react)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/DigitecGalaxus/next-yak/blob/main/LICENSE)
 
-**next-yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
+**@yak/react** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
 
 Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 with OXC), **Rsbuild** (2+), and **Storybook**. Any Vite-based framework works out of the box, including react-router, TanStack Start, and more.
 
-> **Production-proven:** next-yak is sponsored and used in production by [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, delivering measurable improvements in Core Web Vitals.
+> **Production-proven:** @yak/react is sponsored and used in production by [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, delivering measurable improvements in Core Web Vitals.
 
 ## Features
 
@@ -29,21 +29,23 @@ Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 wit
 
 ## Compatibility
 
-| next-yak | Next.js   | Vite            | react       | swc_core |
-| -------- | --------- | --------------- | ----------- | -------- |
-| 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
-| 8.x      | >= 16.0.0 | -               | 19.x        | 45.0.1   |
-| 7.x      | >= 15.4.4 | -               | 19.x        | 38.0.1   |
-| 6.x      | >= 15.4.1 | -               | 19.x        | 27.0.6   |
-| 5.x      | >= 15.2.1 | -               | 19.x        | 16.0.0   |
-| 4.x      | >= 15.0.4 | -               | 19.x        | 5.0.1    |
-| 3.x      | 15.x      | -               | 18.x / 19.x | 3.0.2    |
-| 2.x      | 14.x      | -               | 18.x / 19.x | 0.279.0  |
+Versions before 10.x are on npm as [`next-yak`](https://www.npmjs.com/package/next-yak).
+
+| Version | Next.js   | Vite            | react       | swc_core |
+| ------- | --------- | --------------- | ----------- | -------- |
+| 9.x     | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
+| 8.x     | >= 16.0.0 | -               | 19.x        | 45.0.1   |
+| 7.x     | >= 15.4.4 | -               | 19.x        | 38.0.1   |
+| 6.x     | >= 15.4.1 | -               | 19.x        | 27.0.6   |
+| 5.x     | >= 15.2.1 | -               | 19.x        | 16.0.0   |
+| 4.x     | >= 15.0.4 | -               | 19.x        | 5.0.1    |
+| 3.x     | 15.x      | -               | 18.x / 19.x | 3.0.2    |
+| 2.x     | 14.x      | -               | 18.x / 19.x | 0.279.0  |
 
 ## Installation
 
 ```bash
-npm install next-yak
+npm install @yak/react
 ```
 
 ## Getting Started
@@ -54,10 +56,10 @@ See a live [stackblitz demo](https://stackblitz.com/edit/stackblitz-starters-dfy
 
 Works out of the box with both **Webpack** and **Turbopack**, no configuration changes needed.
 
-1. Add next-yak to your `next.config.ts`:
+1. Add @yak/react to your `next.config.ts`:
 
 ```js
-import { withYak } from "next-yak/withYak";
+import { withYak } from "@yak/react/withYak";
 
 const nextConfig = {
   // your next.js config
@@ -69,7 +71,7 @@ export default withYak(nextConfig);
 2. Start styling:
 
 ```jsx
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const StyledDiv = styled.div`
   color: #333;
@@ -78,7 +80,7 @@ const StyledDiv = styled.div`
 `;
 
 function HomePage() {
-  return <StyledDiv>Hello, next-yak!</StyledDiv>;
+  return <StyledDiv>Hello, @yak/react!</StyledDiv>;
 }
 
 export default HomePage;
@@ -86,13 +88,13 @@ export default HomePage;
 
 ### Vite
 
-Since v9.1.0, next-yak supports Vite 7+ (including Vite 8 with OXC/Rolldown). Any Vite-based framework works: vanilla Vite, react-router, TanStack Start, and more.
+Since `next-yak` 9.1.0, the package supports Vite 7+ (including Vite 8 with OXC/Rolldown). Any Vite-based framework works: vanilla Vite, react-router, TanStack Start, and more.
 
 ```js
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { viteYak } from "next-yak/vite";
+import { viteYak } from "@yak/react/vite";
 
 export default defineConfig({
   plugins: [viteYak(), react()],
@@ -103,13 +105,13 @@ See the full [Vite setup guide](https://yak.js.org/docs/vite).
 
 ### Rsbuild
 
-Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin. It composes with `pluginReact()` and Rsbuild's built-in SWC.
+Since `next-yak` 9.5.0, the package supports Rsbuild 2+ via the `pluginYak` plugin. It composes with `pluginReact()` and Rsbuild's built-in SWC.
 
 ```js
 // rsbuild.config.ts
 import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
-import { pluginYak } from "next-yak/rsbuild";
+import { pluginYak } from "@yak/react/rsbuild";
 
 export default defineConfig({
   plugins: [pluginReact(), pluginYak()],
@@ -120,10 +122,10 @@ See the full [Rsbuild setup guide](https://yak.js.org/docs/rsbuild).
 
 ### Storybook
 
-The `storybook-addon-yak` addon enables next-yak in Storybook 10+ with both Vite and Webpack builders.
+The `@yak/storybook` addon enables @yak/react in Storybook 10+ with both Vite and Webpack builders.
 
 ```bash
-npm i -D storybook-addon-yak
+npm i -D @yak/storybook
 ```
 
 See the full [Storybook setup guide](https://yak.js.org/docs/storybook).
@@ -135,7 +137,7 @@ See the full [Storybook setup guide](https://yak.js.org/docs/storybook).
 Dynamic Styles will only toggle the css class during runtime:
 
 ```jsx
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 const ToggleButton = styled.button`
   ${(props) =>
@@ -158,7 +160,7 @@ const ToggleButton = styled.button`
 Dynamic Properties use custom properties ([aka css variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)) under the hood to extract the CSS at built time but modify properties at runtime:
 
 ```jsx
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const ProgressBar = styled.div`
   width: ${(props) => `${props.$percent}%`};
@@ -186,10 +188,10 @@ const ExampleComponent = () => {
 
 ### Targeting Components
 
-In next-yak, you can target other components directly using CSS selectors as long as they are **in the same file**:
+In @yak/react, you can target other components directly using CSS selectors as long as they are **in the same file**:
 
 ```jsx
-import { styled, keyframes } from "next-yak";
+import { styled, keyframes } from "@yak/react";
 
 const flip = keyframes`
   from { transform: rotateY(0deg); }
@@ -218,13 +220,13 @@ const ExampleComponent = () => {
 
 ## Nesting
 
-`next-yak` supports CSS nesting out of the box.
+`@yak/react` supports CSS nesting out of the box.
 
 [Nesting Example (video)](https://github.com/DigitecGalaxus/next-yak/assets/4113649/33eeeb13-b0cf-499f-a1d3-ba6f51cf4308)
 
 ## Performance
 
-next-yak was validated across many thousands of real-world users at [Digitec Galaxus](https://www.galaxus.ch):
+@yak/react was validated across many thousands of real-world users at [Digitec Galaxus](https://www.galaxus.ch):
 
 - **>20%** faster navigational LCP
 - **>15%** reduced SSR latency
@@ -236,17 +238,17 @@ Read more in the [Digitec Galaxus blog post](https://www.galaxus.ch/page/next-ya
 
 ## How it works
 
-next-yak uses a Rust-based SWC plugin to extract CSS at build time. The extracted CSS is processed through the bundler's native CSS pipeline (PostCSS for Webpack, Lightning CSS for Turbopack and Vite), ensuring consistency between your CSS files and CSS-in-JS.
+@yak/react uses a Rust-based SWC plugin to extract CSS at build time. The extracted CSS is processed through the bundler's native CSS pipeline (PostCSS for Webpack, Lightning CSS for Turbopack and Vite), ensuring consistency between your CSS files and CSS-in-JS.
 
 [![Compile Flow](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/compile-flow.webp)](https://raw.githubusercontent.com/DigitecGalaxus/next-yak/main/compile-flow.webp)
 
 ## Atomic CSS
 
-`next-yak` ships with atomic css support
+`@yak/react` ships with atomic css support
 So you can use [tailwind](https://tailwindcss.com/) out of the box without additional configuration.
 
 ```tsx
-import { styled, atoms } from "next-yak";
+import { styled, atoms } from "@yak/react";
 
 // Mixing tailwind with custom styles
 const Icon = styled.p`
@@ -272,10 +274,10 @@ const Button = styled.button`
 The downside of dynamic properties is that they require inline style attributes.
 While this is not a problem for most cases, we can't use them for media queries.
 
-`next-yak` allows you to define build time constants which can be used in your styles:
+`@yak/react` allows you to define build time constants which can be used in your styles:
 
 ```jsx
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { breakpoints, spacings } from "./constants.yak";
 
 const Container = styled.div`
@@ -297,7 +299,7 @@ const Container = styled.div`
 
 ## Yak shaving
 
-While trying to get next-yak to work properly we stumbled across several bugs.
+While trying to get @yak/react to work properly we stumbled across several bugs.
 Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤️
 
 <details>
@@ -331,7 +333,7 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤�
 
 <details>
   <summary>Experiments</summary>
-  Incomplete work in progress experiments to test the features and performance of next-yak:
+  Incomplete work in progress experiments to test the features and performance of @yak/react:
 
 - https://next-yak-benchmark.vercel.app/
 - https://yacijs.vercel.app/
@@ -346,7 +348,7 @@ Massive kudos to:
 - @kdy1: For his support while rewriting our Babel plugin as a blazing fast SWC Rust WASM plugin
 - @samcx: For his great help to merge features into Next.js
 
-Special thanks to the contributors and the inspiring projects that influenced next-yak:
+Special thanks to the contributors and the inspiring projects that influenced @yak/react:
 
 - Styled-Components: For pioneering the styled syntax and redefining styling in the React ecosystem
 - Linaria: For its innovative approach to zero-runtime CSS in JS
@@ -356,7 +358,7 @@ Special thanks to the contributors and the inspiring projects that influenced ne
 
 ## License
 
-**next-yak** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/LICENSE).
+**@yak/react** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/LICENSE).
 
 ## Contributing
 

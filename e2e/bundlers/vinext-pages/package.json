@@ -8,7 +8,7 @@
     "start": "cd .tmp && vinext start -p 3006"
   },
   "dependencies": {
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "vinext": "catalog:dev"

@@ -1,4 +1,4 @@
-import { globalStyle, styled } from "next-yak";
+import { globalStyle, styled } from "@yak/react";
 
 export const Dialog = styled.dialog`
   padding: 16px;

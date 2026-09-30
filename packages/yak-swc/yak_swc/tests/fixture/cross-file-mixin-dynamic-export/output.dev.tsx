@@ -1,5 +1,5 @@
-import { css, styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("input_textColor__$active_m7uBBu"));
 const textStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("input_textStyles__$active_m7uBBu"));

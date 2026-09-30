@@ -1,4 +1,4 @@
-import { styled, css, keyframes } from "next-yak";
+import { styled, css, keyframes } from "@yak/react";
 // @ts-ignore
 import type { DefaultTheme, StyledComponent } from "styled-components";
 

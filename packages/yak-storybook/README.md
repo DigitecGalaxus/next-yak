@@ -1,0 +1,40 @@
+# @yak/storybook
+
+Storybook addon for [@yak/react](https://yak.js.org/) - a CSS-in-JS library that combines styled-components syntax with build-time CSS extraction.
+
+Supports both Vite and Webpack Storybook builders.
+
+## Installation
+
+```bash
+npm install --save-dev @yak/storybook
+```
+
+## Usage
+
+Add the addon to your Storybook configuration:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from "@storybook/react-vite";
+
+const config: StorybookConfig = {
+  addons: ["@yak/storybook"],
+  // ...
+};
+
+export default config;
+```
+
+For Webpack, ensure you also have the SWC compiler addon:
+
+```ts
+addons: [
+  "@storybook/addon-webpack5-compiler-swc",
+  "@yak/storybook",
+],
+```
+
+## Documentation
+
+See the full documentation at [yak.js.org/docs/storybook](https://yak.js.org/docs/storybook).
