@@ -56,7 +56,7 @@ export default defineConfig({
 
 A styled component is a plain function, not a `component$`. Qwik inlines it into the parent's render: no lazy boundary, no serialized props, children arrive as a prop. On the server it costs one virtual node in Qwik's out-of-band vnode data and nothing in the HTML; a `component$` per element would serialize its props and a QRL for every instance.
 
-Static usages fold away at build time. `<Button type="button">` with no runtime interpolation becomes `<button class="yX" type="button">`, which costs the same as a plain element. Every other usage runs the function, which on the server is about ten times a plain element (Qwik's inline-component path). Keep style values static where you can.
+Static usages fold away at build time. `<Button type="button">` with no runtime interpolation becomes `<button class="yX" type="button">`, which costs the same as a plain element. Every other usage runs the function as a Qwik inline component. On the server, Qwik renders many sibling inline components in n² time, see [QwikDev/qwik#9084](https://github.com/QwikDev/qwik/issues/9084): 1,000 siblings take 13 times as long as 1,000 plain elements, and 4,000 take 41 times as long. Keep style values static where you can.
 
 ## Coming from next-yak
 
