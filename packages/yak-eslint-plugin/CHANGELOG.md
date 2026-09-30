@@ -1,5 +1,17 @@
 # eslint-plugin-yak
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- 50ef4de: The rules no longer check files that import from `next-yak`. Import from `@yak/react` instead.
+- 50ef4de: The rule prefix is now `@yak/` in ESLint and in Oxlint.
+- 50ef4de: Rename `eslint-plugin-yak` to `@yak/eslint-plugin`.
+
+### Minor Changes
+
+- 50ef4de: Add support for `@yak/solid`.
+
 ## 1.4.0
 
 ### Minor Changes

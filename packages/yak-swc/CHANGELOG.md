@@ -1,5 +1,13 @@
 # yak-swc
 
+## 10.0.0-rc.0
+
+### Major Changes
+
+- 50ef4de: Rename `yak-swc` to `@yak/swc`.
+- 50ef4de: The default yak package is now `@yak/react` instead of `next-yak`.
+- 50ef4de: Imports from `next-yak` are no longer compiled. Import from `@yak/react` instead.
+
 ## 9.10.2
 
 ## 9.10.1

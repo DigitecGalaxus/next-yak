@@ -1,5 +1,14 @@
 # @yak/solid
 
+## 0.3.1-rc.0
+
+### Patch Changes
+
+- Updated dependencies [50ef4de]
+- Updated dependencies [50ef4de]
+- Updated dependencies [50ef4de]
+  - @yak/swc@10.0.0-rc.0
+
 ## 0.3.0
 
 ### Minor Changes
