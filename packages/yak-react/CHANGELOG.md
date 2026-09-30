@@ -1,5 +1,18 @@
 # next-yak
 
+## 10.0.0-rc.0
+
+### Major Changes
+
+- 50ef4de: Rename `next-yak` to `@yak/react`.
+
+### Patch Changes
+
+- Updated dependencies [50ef4de]
+- Updated dependencies [50ef4de]
+- Updated dependencies [50ef4de]
+  - @yak/swc@10.0.0-rc.0
+
 ## 9.10.2
 
 ### Patch Changes

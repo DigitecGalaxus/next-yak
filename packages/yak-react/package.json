@@ -1,6 +1,6 @@
 {
   "name": "@yak/react",
-  "version": "9.10.2",
+  "version": "10.0.0-rc.0",
   "description": "@yak/react is a CSS-in-JS library for React: styled-components syntax with CSS extracted at build time. Works with Next.js, Vite and Rsbuild.",
   "keywords": [
     "css-in-js",
@@ -172,7 +172,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "@yak/swc": "9.10.2"
+    "@yak/swc": "10.0.0-rc.0"
   },
   "devDependencies": {
     "@rsbuild/core": "catalog:dev",

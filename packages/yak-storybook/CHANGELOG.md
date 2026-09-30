@@ -1,5 +1,16 @@
 # storybook-addon-yak
 
+## 10.0.0-rc.0
+
+### Major Changes
+
+- 50ef4de: Rename `storybook-addon-yak` to `@yak/storybook`.
+
+### Patch Changes
+
+- Updated dependencies [50ef4de]
+  - @yak/react@10.0.0-rc.0
+
 ## 9.10.2
 
 ## 9.10.1
