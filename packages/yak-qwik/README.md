@@ -1,6 +1,6 @@
 # @yak/qwik
 
-styled-components syntax for Qwik 2, compiled to plain CSS at build time by the yak compiler. Beta: it tracks `@qwik.dev/core` 2.0.0-beta.43 and later.
+styled-components syntax for Qwik 2, compiled to plain CSS at build time by the yak compiler. Beta: it tracks `@qwik.dev/core` 2.0.0-beta.47 and later.
 
 ```tsx
 import { component$, useSignal } from "@qwik.dev/core";
@@ -33,7 +33,7 @@ export default component$(() => {
 npm install @yak/qwik
 ```
 
-`@yak/qwik` peers on `@qwik.dev/core` (2.0.0-beta.43 or later) and Vite 8, the versions Qwik 2 itself requires.
+`@yak/qwik` peers on `@qwik.dev/core` (2.0.0-beta.47 or later) and Vite 8, the versions Qwik 2 itself requires.
 
 ```ts
 // vite.config.ts
@@ -56,7 +56,7 @@ export default defineConfig({
 
 A styled component is a plain function, not a `component$`. Qwik inlines it into the parent's render: no lazy boundary, no serialized props, children arrive as a prop. On the server it costs one virtual node in Qwik's out-of-band vnode data and nothing in the HTML; a `component$` per element would serialize its props and a QRL for every instance.
 
-Static usages fold away at build time. `<Button type="button">` with no runtime interpolation becomes `<button class="yX" type="button">`, which costs the same as a plain element. Every other usage runs the function as a Qwik inline component. On the server, Qwik renders many sibling inline components in n² time, see [QwikDev/qwik#9084](https://github.com/QwikDev/qwik/issues/9084): 1,000 siblings take 13 times as long as 1,000 plain elements, and 4,000 take 41 times as long. Keep style values static where you can.
+Static usages fold away at build time. `<Button type="button">` with no runtime interpolation becomes `<button class="yX" type="button">`, which costs the same as a plain element. Every other usage runs the function as a Qwik inline component, which takes about twice as long as a plain element to render on the server. Keep style values static where you can.
 
 ## Coming from next-yak
 
@@ -79,7 +79,7 @@ export const ThemeProvider = component$(() => {
 Styled components read the theme through Qwik's `_resolveContextWithoutSequentialScope`, the exported helper Qwik's own router uses for reads outside a hook scope. It is marked internal by Qwik, so this package pins the betas it was verified on.
 
 - A `class` value may be a string, an array, an object or a Signal; a Signal is read inside the styled component, so the parent re-renders on change (Qwik's attribute-level signal binding does not apply to yak's merged class).
-- Serving CSS in dev: Qwik loads no module on the client at startup, so the stylesheets a page needs are linked from the server render. `@qwik.dev/router`'s dev middleware does this for every CSS module in the graph; yak's CSS is a virtual module, which the router handles from the version that carries the fix in `patches/@qwik.dev__router@2.0.0-beta.43.patch` of the yak repository (served under `/@id/__x00__`, kept away from the file watcher). Use the router; a dev server of your own has to link the stylesheets itself. Production builds carry the CSS through Qwik's manifest injections.
+- Serving CSS in dev: Qwik loads no module on the client at startup, so the stylesheets a page needs are linked from the server render. `@qwik.dev/router`'s dev middleware does this for every CSS module in the graph; yak's CSS is a virtual module, which the router links from `@qwik.dev/router` 2.0.0-beta.47 on. Use the router; a dev server of your own has to link the stylesheets itself. Production builds carry the CSS through Qwik's manifest injections.
 - Dev HMR: an edit to a module with a `component$` re-renders in place, an edit to a module without one (a styled-only file) reloads the page. That is Qwik's dev server, not yak.
 
 ## Theming with `yak.context.ts`
