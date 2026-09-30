@@ -14,8 +14,8 @@
 import { statSync } from "node:fs";
 import type { Evaluator } from "../isolated-source-eval/index.js";
 
-const EVALUATOR_KEY = Symbol.for("next-yak-evaluator");
-const MTIMES_KEY = Symbol.for("next-yak-mtimes");
+const EVALUATOR_KEY = Symbol.for("@yak/react-evaluator");
+const MTIMES_KEY = Symbol.for("@yak/react-mtimes");
 
 /**
  * A shared `Map` of file paths to their last known modification times, used to detect changes on disk

@@ -166,7 +166,7 @@ To run the example app:
 pnpm example
 
 # Turbopack
-pnpm --filter=next-yak-example run dev:turbo
+pnpm --filter=next-js-yak-example run dev:turbo
 ```
 
 Both bundlers are covered by the e2e suites under `e2e/bundlers/`.

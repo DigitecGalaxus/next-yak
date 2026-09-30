@@ -16,10 +16,6 @@ const enforceSemicolons = yakPlugin.rules["enforce-semicolon"] as unknown as Par
 ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
   valid: [
     {
-      // next-yak is not a yak package on 10.x, so its imports are not checked
-      code: ['import { styled } from "next-yak";', "styled.button`", "${foo}", "`"].join("\n"),
-    },
-    {
       // Single selector expression
       code: [
         'import { css, styled } from "@yak/react";',

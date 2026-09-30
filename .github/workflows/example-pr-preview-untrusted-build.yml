@@ -52,7 +52,7 @@ jobs:
         run: pnpm --filter @yak/eslint-plugin build
 
       - name: Lint example
-        run: pnpm --filter next-yak-example lint
+        run: pnpm --filter next-js-yak-example lint
 
       - name: Add Rust wasm targets
         run: rustup target add wasm32-wasip1 wasm32-unknown-unknown

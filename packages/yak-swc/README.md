@@ -1,6 +1,6 @@
 # @yak/swc
 
-This package contains the Rust SWC plugin for [next-yak](https://www.npmjs.com/package/next-yak), a build time CSS-in-JS solution.
+This package contains the Rust SWC plugin for [@yak/react](https://www.npmjs.com/package/@yak/react) and [@yak/solid](https://www.npmjs.com/package/@yak/solid), a build time CSS-in-JS solution.
 
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/548ed098-fad3-4991-938d-e67607fb1851)
 

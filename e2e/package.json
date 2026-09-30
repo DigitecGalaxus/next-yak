@@ -1,5 +1,5 @@
 {
-  "name": "next-yak-e2e",
+  "name": "yak-e2e",
   "private": true,
   "type": "module",
   "exports": {

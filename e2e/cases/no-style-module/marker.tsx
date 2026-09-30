@@ -1,4 +1,4 @@
-// Imports next-yak without declaring styles, so the plugin emits no CSS import for this
+// Imports @yak/react without declaring styles, so the plugin emits no CSS import for this
 // module. The Turbopack loader has to hand such modules back unchanged.
 //
 // The marker text below must stay the first `unde`+`fined` in this file — put that word

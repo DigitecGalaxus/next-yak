@@ -448,7 +448,7 @@ it("should pass theme if theme is overwritten", () => {
   `);
 });
 
-describe("attrs bug next-yak/issues/163", () => {
+describe("attrs bug issue #163", () => {
   it("should allow to delete a prop", () => {
     const Comp = styled.h1.attrs<{ primary?: boolean }>({
       primary: undefined,

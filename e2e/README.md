@@ -40,13 +40,13 @@ For each bundler, `e2eEnvironment.ts`:
 
 ```bash
 # Dev tests
-pnpm --filter next-yak-e2e test                     # all bundlers x all cases
-pnpm --filter next-yak-e2e test next-app-webpack    # just Next.js with webpack
-pnpm --filter next-yak-e2e test vite yak-file-mixin # just Vite with one case
+pnpm --filter yak-e2e test                     # all bundlers x all cases
+pnpm --filter yak-e2e test next-app-webpack    # just Next.js with webpack
+pnpm --filter yak-e2e test vite yak-file-mixin # just Vite with one case
 
 # Build tests (production)
-pnpm --filter next-yak-e2e test:build               # all bundlers x non-HMR cases
-pnpm --filter next-yak-e2e test:build vite           # just Vite production build
+pnpm --filter yak-e2e test:build               # all bundlers x non-HMR cases
+pnpm --filter yak-e2e test:build vite           # just Vite production build
 ```
 
 ## Fold modes
@@ -61,11 +61,11 @@ pass in both modes.
 
 ```bash
 # Fold on (default)
-pnpm --filter next-yak-e2e test
+pnpm --filter yak-e2e test
 
 # Fold off — each bundler config passes foldStatic: false to @yak/react
-YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test
-YAK_E2E_FOLD_STATIC=false pnpm --filter next-yak-e2e test:build
+YAK_E2E_FOLD_STATIC=false pnpm --filter yak-e2e test
+YAK_E2E_FOLD_STATIC=false pnpm --filter yak-e2e test:build
 ```
 
 `YAK_E2E_FOLD_STATIC=false` is the only value that switches modes; anything else
@@ -128,7 +128,7 @@ export default function App() {
 ```ts
 // cases/my-case/index.test.ts
 import { test, expect } from "@playwright/test";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 test(
   "applies background",

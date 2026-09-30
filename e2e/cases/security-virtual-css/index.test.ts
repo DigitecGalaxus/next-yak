@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
-import { withTestEnv } from "next-yak-e2e";
+import { withTestEnv } from "yak-e2e";
 
 // URL clients can remove ../ segments before sending the request.
 function requestPath(origin: string, path: string): Promise<{ status: number; body: string }> {
