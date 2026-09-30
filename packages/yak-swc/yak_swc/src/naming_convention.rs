@@ -193,20 +193,9 @@ fn escape_css_class_name(input: &str) -> String {
   result
 }
 
-#[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum TranspilationMode {
-  CssModule,
-  Css,
-}
-
-impl TranspilationMode {
-  /// Returns a valid CSS class name
-  pub fn css_class_name(&self, input: &str) -> String {
-    match self {
-      TranspilationMode::CssModule => format!(":global(.{})", escape_css_class_name(input)),
-      TranspilationMode::Css => format!(".{}", escape_css_class_name(input)),
-    }
-  }
+/// Returns a valid CSS class selector for the given class name
+pub fn css_class_name(input: &str) -> String {
+  format!(".{}", escape_css_class_name(input))
 }
 
 /// Configuration for how CSS imports should be generated
@@ -216,12 +205,11 @@ impl TranspilationMode {
 ///
 /// Examples:
 /// - `"virtual:yak-css:{{__MODULE_PATH__}}.css"` (Vite)
-/// - `"./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css"` (Webpack)
+/// - `"./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"` (Webpack)
 /// - `"data:text/css;base64,"` with `encoding: Base64` (Turbopack)
 #[derive(Deserialize, Clone, PartialEq, Eq)]
 pub struct CssImportConfig {
   pub value: String,
-  pub transpilation: TranspilationMode,
   pub encoding: ImportModeEncoding,
 }
 
@@ -229,12 +217,6 @@ pub struct CssImportConfig {
 pub enum ImportModeEncoding {
   Base64,
   None,
-}
-
-impl CssImportConfig {
-  pub fn transpilation_mode(&self) -> TranspilationMode {
-    self.transpilation
-  }
 }
 
 /// Convert a number to a CSS-safe string

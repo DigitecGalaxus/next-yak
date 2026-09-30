@@ -1,11 +1,11 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // Dynamic value wrapped in quotes should produce `var(--xxx)` (unquoted),
 // because `var()` references inside string literals are treated as literal
 // text by the CSS engine and never get substituted.
 const Input = /*YAK Extracted CSS:
-:global(.input_Input_m7uBBu) {
+.input_Input_m7uBBu {
   &::before {
     content: var(--input_Input__content_m7uBBu);
   }
@@ -24,7 +24,7 @@ const Input = /*YAK Extracted CSS:
 // var() inside url() works because url() evaluates the var, so
 // `url("${...}")` is also stripped to `url(var(--xxx))`.
 const Bg = /*YAK Extracted CSS:
-:global(.input_Bg_m7uBBu) {
+.input_Bg_m7uBBu {
   background: url(var(--input_Bg__background_m7uBBu));
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Bg_m7uBBu", {
@@ -38,7 +38,7 @@ const Bg = /*YAK Extracted CSS:
 // static text means the user must restructure their CSS (e.g. split into
 // multiple values) for var() to actually substitute.
 const Partial = /*YAK Extracted CSS:
-:global(.input_Partial_m7uBBu) {
+.input_Partial_m7uBBu {
   &::before {
     content: "Hello var(--input_Partial__content_m7uBBu)";
   }

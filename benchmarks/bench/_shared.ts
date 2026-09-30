@@ -73,7 +73,7 @@ export const importHeader = (lib: Lib, withCss = true) => {
 /**
  * Run a TSX source through the yak SWC plugin, mirroring what the
  * webpack/vite/turbo loader does for app code at build time. Strips the
- * generated `*.yak.module.css` import (the bench harness has no CSS
+ * generated `*.yak.css` import (the bench harness has no CSS
  * pipeline) and inlines `__styleYak.foo` -> `"foo"` so class refs are
  * literal strings the runtime will pass straight through.
  */
@@ -95,7 +95,7 @@ function compileYak(source: string): string {
         minify: false,
         isModule: true,
       })
-      .code.replace(/import[^;\n]+yak.module.css";/, "")
+      .code.replace(/import[^;\n]+yak.css";/, "")
       .replace(/__styleYak.(\w+)/g, `"$1"`)
   );
 }

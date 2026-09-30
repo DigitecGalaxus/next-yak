@@ -1,15 +1,15 @@
 import { css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // folds: both arms are fully static
 const Elem = ({ active }: {
     active: boolean;
 })=>{
     return <div className={active ? /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ "ym7uBBu" : /*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: blue;
 }
 */ /*#__PURE__*/ "ym7uBBu1"}/>;
@@ -20,14 +20,14 @@ const Elem2 = ({ active, big }: {
     big: boolean;
 })=>{
     return <div className={active ? /*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   color: red;
 }
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   font-size: 20px;
 }
 */ /*#__PURE__*/ "ym7uBBu2" + (big ? " ym7uBBu3" : "") : /*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: blue;
 }
 */ /*#__PURE__*/ "ym7uBBu4"}/>;
@@ -38,7 +38,7 @@ const Elem3 = ({ active, width }: {
     width: number;
 })=>{
     return <div {...__yak_mergeCssProp(active ? /*YAK Extracted CSS:
-:global(.ym7uBBu5) {
+.ym7uBBu5 {
   width: var(--ym7uBBu6);
 }
 */ /*#__PURE__*/ css({
@@ -46,7 +46,7 @@ const Elem3 = ({ active, width }: {
             "--ym7uBBu6": /*#__PURE__*/ __yak_unitPostFix(()=>width, "px")
         }
     }, "ym7uBBu5") : /*YAK Extracted CSS:
-:global(.ym7uBBu7) {
+.ym7uBBu7 {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu7"))}/>;
@@ -56,7 +56,7 @@ const Elem4 = ({ active }: {
     active: boolean;
 })=>{
     return <div className={active ? "" : /*YAK Extracted CSS:
-:global(.ym7uBBu9) {
+.ym7uBBu9 {
   color: blue;
 }
 */ /*#__PURE__*/ "ym7uBBu9"}/>;
@@ -74,7 +74,7 @@ const Elem6 = ({ active }: {
     active: boolean;
 })=>{
     return <div className={/*YAK Extracted CSS:
-:global(.ym7uBBuE) {
+.ym7uBBuE {
   color: blue;
 }
 */ /*#__PURE__*/ "ym7uBBuC" + (active ? "" : " ym7uBBuE")}/>;

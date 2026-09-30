@@ -1,6 +1,6 @@
 import { styled, css } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // Covers both comment emission sites: a named export and a default export
 export const Button = /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
 export const mixin = /*#__PURE__*/ css();

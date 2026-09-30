@@ -1,17 +1,17 @@
 import { css, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ css("ym7uBBu"))}>
   <p {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu1"))}>
     <span {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   color: green;
 }
 */ /*#__PURE__*/ css("ym7uBBu2"))}>

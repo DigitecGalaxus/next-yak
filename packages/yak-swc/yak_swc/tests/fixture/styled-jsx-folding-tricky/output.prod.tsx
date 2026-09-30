@@ -1,6 +1,6 @@
 import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const on = Math.random() > 0.5;
 const props = {} as any;
 const cn = (value: unknown)=>String(value);
@@ -9,45 +9,45 @@ const f = ()=>Math.random() > 0.5;
 const g = ()=>"id-value";
 // dynamic component: a class-toggling $prop drives the conditional class
 const Toggle = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: black;
 }
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu", ({ $on })=>$on && /*#__PURE__*/ css("ym7uBBu1"));
 // dynamic component reading two $props, to place an impure obstacle between the
 // bound props
 const Range = /*YAK Extracted CSS:
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   color: red;
 }
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: blue;
 }
 */ /*#__PURE__*/ __yak.__yak_span("ym7uBBu2", ({ $a })=>$a && /*#__PURE__*/ css("ym7uBBu3"), ({ $b })=>$b && /*#__PURE__*/ css("ym7uBBu4"));
 // dynamic component whose condition reads a non-$ prop that also stays on the
 // DOM element
 const ActionButton = /*YAK Extracted CSS:
-:global(.ym7uBBu6) {
+.ym7uBBu6 {
   cursor: pointer;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu5", ({ disabled })=>!disabled && /*#__PURE__*/ css("ym7uBBu6"));
 // static component for the plain className merges
 const Card = /*YAK Extracted CSS:
-:global(.ym7uBBu7) {
+.ym7uBBu7 {
   color: green;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu7");
 // collapses: parent Card is a same-file static component
 const Fancy = /*YAK Extracted CSS:
-:global(.ym7uBBu8) {
+.ym7uBBu8 {
   padding: 4px;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu7 ym7uBBu8");
 // bails: an .attrs() chain is never registered as foldable
 const WithAttrs = /*YAK Extracted CSS:
-:global(.ym7uBBu9) {
+.ym7uBBu9 {
   color: blue;
 }
 */ /*#__PURE__*/ (__yak.__yak_input.attrs({
@@ -55,7 +55,7 @@ const WithAttrs = /*YAK Extracted CSS:
 }))("ym7uBBu9");
 // bails: a let binding can be reassigned, so its usages keep the runtime path
 let Mutable = /*YAK Extracted CSS:
-:global(.ym7uBBuA) {
+.ym7uBBuA {
   color: teal;
 }
 */ /*#__PURE__*/ __yak.__yak_span("ym7uBBuA");

@@ -1,7 +1,7 @@
 import { globalStyle, keyframes } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const fadeIn = /*YAK Extracted CSS:
-@keyframes :global(fadeIn_m7uBBu) {
+@keyframes fadeIn_m7uBBu {
   from {
     opacity: 0;
   }
@@ -12,6 +12,6 @@ const fadeIn = /*YAK Extracted CSS:
 */ /*#__PURE__*/ keyframes("fadeIn_m7uBBu");
 /*YAK Extracted CSS:
 ::view-transition-new(root) {
-  animation: global(fadeIn_m7uBBu) 200ms ease;
+  animation: fadeIn_m7uBBu 200ms ease;
 }
 */ /*#__PURE__*/ globalStyle();

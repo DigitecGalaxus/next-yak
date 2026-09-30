@@ -1,13 +1,13 @@
 import { styled, css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/solid/internal";
 import * as __yak from "@yak/solid/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: red;
 }
 */ /* @refresh component */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
 export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:ym7uBBu1*//*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   display: flex;
   align-items: var(--ym7uBBu2);
   margin-bottom: var(--ym7uBBu3);
@@ -19,7 +19,7 @@ export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:ym7uBBu1*//*YAK
     }
 });
 export const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: blue;
 }
 */ /*#__PURE__*/ css("ym7uBBu4"), {

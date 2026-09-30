@@ -1,15 +1,15 @@
 import { globalStyle, styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const Dialog = /*YAK EXPORTED STYLED:Dialog:input_Dialog_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Dialog_m7uBBu) {
+.input_Dialog_m7uBBu {
   padding: 16px;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_dialog("input_Dialog_m7uBBu"), {
     "displayName": "Dialog"
 });
 /*YAK Extracted CSS:
-body:has(:global(.input_Dialog_m7uBBu)[open]) {
+body:has(.input_Dialog_m7uBBu[open]) {
   overflow: hidden;
 }
 */ /*#__PURE__*/ globalStyle();
