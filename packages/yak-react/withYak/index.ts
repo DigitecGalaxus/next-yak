@@ -62,7 +62,7 @@ function addYakTurbopack(
 ) {
   // turbopack can't handle options with undefined values, so we remove them
   const yakLoader = removeUndefinedRecursive({
-    loader: path.join(currentDir, "../loaders/turbo-loader.cjs"),
+    loader: path.join(currentDir, "../loaders/turbo-loader.js"),
     options: {
       yakOptions: yakOptions,
       yakPluginOptions: yakPluginOptions,
@@ -135,7 +135,7 @@ function addYakWebpack(
 
     webpackConfig.module.rules.push({
       test: /\.yak\.css$/,
-      loader: path.join(currentDir, "../loaders/webpack-loader.cjs"),
+      loader: path.join(currentDir, "../loaders/webpack-loader.js"),
       options: yakOptions,
     });
 

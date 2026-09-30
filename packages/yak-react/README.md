@@ -94,6 +94,17 @@ const Button = styled.button`
 `;
 ```
 
+### Jest
+
+`@yak/react` is ESM only. With `next/jest`, add it to `transpilePackages` in your Next.js config, so that Jest can load it:
+
+```js
+// next.config.mjs
+const nextConfig = {
+  transpilePackages: ["@yak/react"],
+};
+```
+
 ## License
 
 **@yak/react** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/LICENSE).

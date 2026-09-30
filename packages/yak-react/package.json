@@ -39,121 +39,59 @@
   "types": "./dist/",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./static": {
-      "import": {
-        "types": "./dist/static/index.d.ts",
-        "default": "./dist/static/index.js"
-      },
-      "require": {
-        "types": "./dist/static/index.d.cts",
-        "default": "./dist/static/index.cjs"
-      }
+      "types": "./dist/static/index.d.ts",
+      "default": "./dist/static/index.js"
     },
     "./internal": {
-      "import": {
-        "types": "./dist/internal.d.ts",
-        "default": "./dist/internal.js"
-      },
-      "require": {
-        "types": "./dist/internal.d.cts",
-        "default": "./dist/internal.cjs"
-      }
+      "types": "./dist/internal.d.ts",
+      "default": "./dist/internal.js"
     },
     "./withYak": {
-      "import": {
-        "types": "./dist/withYak/index.d.ts",
-        "default": "./dist/withYak/index.js"
-      },
-      "require": {
-        "types": "./dist/withYak/index.d.cts",
-        "default": "./dist/withYak/index.cjs"
-      }
+      "types": "./dist/withYak/index.d.ts",
+      "default": "./dist/withYak/index.js"
     },
     "./context/baseContext": {
-      "import": {
-        "types": "./dist/context/baseContext.d.ts",
-        "default": "./dist/context/baseContext.js"
-      },
-      "require": {
-        "types": "./dist/context/baseContext.d.cts",
-        "default": "./dist/context/baseContext.cjs"
-      }
+      "types": "./dist/context/baseContext.d.ts",
+      "default": "./dist/context/baseContext.js"
     },
     "./context": {
       "react-server": {
-        "import": {
-          "types": "./dist/context/index.server.d.ts",
-          "default": "./dist/context/index.server.js"
-        },
-        "require": {
-          "types": "./dist/context/index.server.d.cts",
-          "default": "./dist/context/index.server.cjs"
-        }
+        "types": "./dist/context/index.server.d.ts",
+        "default": "./dist/context/index.server.js"
       },
       "default": {
-        "import": {
-          "types": "./dist/context/index.d.ts",
-          "default": "./dist/context/index.js"
-        },
-        "require": {
-          "types": "./dist/context/index.d.cts",
-          "default": "./dist/context/index.cjs"
-        }
+        "types": "./dist/context/index.d.ts",
+        "default": "./dist/context/index.js"
       }
     },
     "./jsx-runtime": {
-      "import": {
-        "types": "./dist/jsx-runtime.d.ts",
-        "default": "./dist/jsx-runtime.js"
-      },
-      "require": {
-        "types": "./dist/jsx-runtime.d.cts",
-        "default": "./dist/jsx-runtime.cjs"
-      }
+      "types": "./dist/jsx-runtime.d.ts",
+      "default": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
-      "import": {
-        "types": "./dist/jsx-dev-runtime.d.ts",
-        "default": "./dist/jsx-dev-runtime.js"
-      },
-      "require": {
-        "types": "./dist/jsx-dev-runtime.d.cts",
-        "default": "./dist/jsx-dev-runtime.cjs"
-      }
+      "types": "./dist/jsx-dev-runtime.d.ts",
+      "default": "./dist/jsx-dev-runtime.js"
     },
-    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.cjs",
+    "./loaders/webpack-loader": "./dist/loaders/webpack-loader.js",
     "./vite": {
-      "import": {
-        "types": "./dist/loaders/vite-plugin.d.ts",
-        "default": "./dist/loaders/vite-plugin.js"
-      }
+      "types": "./dist/loaders/vite-plugin.d.ts",
+      "default": "./dist/loaders/vite-plugin.js"
     },
     "./cross-file-resolver": {
-      "import": {
-        "types": "./dist/cross-file-resolver/index.d.ts",
-        "default": "./dist/cross-file-resolver/index.js"
-      }
+      "types": "./dist/cross-file-resolver/index.d.ts",
+      "default": "./dist/cross-file-resolver/index.js"
     },
     "./isolated-source-eval": {
-      "import": {
-        "types": "./dist/isolated-source-eval/index.d.ts",
-        "default": "./dist/isolated-source-eval/index.js"
-      }
+      "types": "./dist/isolated-source-eval/index.d.ts",
+      "default": "./dist/isolated-source-eval/index.js"
     },
     "./rsbuild": {
-      "import": {
-        "types": "./dist/rsbuild/index.d.ts",
-        "default": "./dist/rsbuild/index.js"
-      }
+      "types": "./dist/rsbuild/index.d.ts",
+      "default": "./dist/rsbuild/index.js"
     }
   },
   "publishConfig": {
@@ -214,5 +152,8 @@
     "react": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
