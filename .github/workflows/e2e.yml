@@ -2,7 +2,7 @@ name: E2E Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "v9"]
     paths:
       - "./package.json"
       - "packages/next-yak/**"
@@ -12,7 +12,7 @@ on:
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "v9"]
     paths:
       - "./package.json"
       - "packages/next-yak/**"

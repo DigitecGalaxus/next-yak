@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      # maintenance line for next-yak 9.x, see CONTRIBUTION.md
+      - v9
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -76,4 +78,4 @@ jobs:
         uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
         with:
           publish-script: pnpm release
-          pr-title: Release new version
+          pr-title: Release new version (${{ github.ref_name }})

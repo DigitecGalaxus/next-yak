@@ -13,6 +13,7 @@ Thank you for your interest in contributing to next-yak! This document provides 
   - [Running the example app](#running-the-example-app)
 - [Integration & e2e testing](#integration--e2e-testing)
 - [Submitting a pull request](#submitting-a-pull-request)
+- [Hotfixes for next-yak 9.x](#hotfixes-for-next-yak-9x)
 - [Common issues](#common-issues)
   - [Rust setup issues](#rust-setup-issues)
   - [Build issues](#build-issues)
@@ -219,6 +220,27 @@ See [`e2e/README.md`](./e2e/README.md) for the suite structure and how to run a 
    ```
 
 6. Push changes and create a pull request
+
+## Hotfixes for next-yak 9.x
+
+The `v9` branch is the maintenance line for `next-yak` 9.x. The release workflow publishes from `main` and from `v9`. Each branch gets its own "Release new version" pull request.
+
+1. Fix the bug on `main` first, so the next major version keeps the fix.
+2. Create a branch from `v9` and cherry-pick the fix commit:
+   ```bash
+   git switch -c fix/your-fix origin/v9
+   git cherry-pick <commit>
+   ```
+3. Add a changeset for `next-yak` and `yak-swc` only:
+   ```bash
+   pnpm changeset
+   ```
+4. Open the pull request against `v9`.
+5. Merge the "Release new version (v9)" pull request to publish the release.
+
+If the bug exists only in 9.x code, fix it on `v9` directly and skip step 1. Do not add changesets for other packages on `v9`, because they release from `main` only.
+
+After the 10.0.0 release, `yak-swc` and `storybook-addon-yak` have 10.x versions on npm. A 9.x release from `v9` then moves their `latest` dist-tag back to 9.x. Before the first `v9` release after 10.0.0, change the `v9` publish step so that it keeps `latest` on 10.x for these packages.
 
 ## Common issues
 

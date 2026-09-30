@@ -2,7 +2,7 @@ name: Vite-Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "v9"]
     paths:
       - "./package.json"
       - "packages/next-yak/**"
@@ -13,7 +13,7 @@ on:
       - "packages/eslint-plugin-yak/**"
       - ".github/workflows/tests.yml"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "v9"]
     paths:
       - "./package.json"
       - "packages/next-yak/**"

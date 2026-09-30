@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - v9
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   check-changeset:
     name: Verify changeset present
-    if: github.head_ref != 'changeset-release/main'
+    if: "!startsWith(github.head_ref, 'changeset-release/')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -36,4 +37,6 @@ jobs:
           run_install: true
 
       - name: Check for changeset
-        run: npx changeset status --since=origin/main
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: npx changeset status --since="origin/$BASE_REF"
