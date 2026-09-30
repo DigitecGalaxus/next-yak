@@ -16,8 +16,6 @@ use crate::utils::native_elements::VALID_ELEMENTS;
 /// package-specific output: the internal import specifier and the runtime
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum YakPackage {
-  /// "next-yak"
-  NextYak,
   /// "@yak/react"
   YakReact,
   /// "@yak/solid"
@@ -25,11 +23,7 @@ pub enum YakPackage {
 }
 
 impl YakPackage {
-  const ALL: [YakPackage; 3] = [
-    YakPackage::NextYak,
-    YakPackage::YakReact,
-    YakPackage::YakSolid,
-  ];
+  const ALL: [YakPackage; 2] = [YakPackage::YakReact, YakPackage::YakSolid];
 
   /// Match an import source against the known yak packages
   pub fn from_import_source(source: &str) -> Option<YakPackage> {
@@ -41,7 +35,6 @@ impl YakPackage {
   /// The package name users import from
   pub fn name(self) -> &'static str {
     match self {
-      YakPackage::NextYak => "next-yak",
       YakPackage::YakReact => "@yak/react",
       YakPackage::YakSolid => "@yak/solid",
     }
@@ -51,7 +44,6 @@ impl YakPackage {
   /// e.g. `import { styled } from "@yak/solid"` -> `"@yak/solid/internal"`
   pub fn internal_specifier(self) -> &'static str {
     match self {
-      YakPackage::NextYak => "next-yak/internal",
       YakPackage::YakReact => "@yak/react/internal",
       YakPackage::YakSolid => "@yak/solid/internal",
     }
@@ -60,7 +52,7 @@ impl YakPackage {
   /// The framework runtime of the package
   pub fn runtime(self) -> YakRuntime {
     match self {
-      YakPackage::NextYak | YakPackage::YakReact => YakRuntime::React,
+      YakPackage::YakReact => YakRuntime::React,
       YakPackage::YakSolid => YakRuntime::Solid,
     }
   }
@@ -97,22 +89,22 @@ impl YakRuntime {
 #[derive(Debug)]
 
 pub struct YakImports {
-  /// Utilities used from "next-yak/internal"
+  /// Utilities used from "@yak/react/internal"
   /// e.g. unitPostFix, mergeCssProp
   yak_utilities: FxHashMap<String, Ident>,
-  /// Imports from "next-yak"
+  /// Imports from "@yak/react"
   /// Local to Imported mapping
   yak_library_imports: FxHashMap<Id, Id>,
-  /// Direct component imports from "next-yak/internal"
+  /// Direct component imports from "@yak/react/internal"
   /// e.g. __yak_button
   yak_component_import: Option<Ident>,
-  /// Local Identifiers for the next-yak css function \
-  /// Most of the time it is just `css#0` for `import { css } from "next-yak"` \
-  /// but it might also contain renamings like `import { css as css_ } from "next-yak"`
+  /// Local Identifiers for the yak css function \
+  /// Most of the time it is just `css#0` for `import { css } from "@yak/react"` \
+  /// but it might also contain renamings like `import { css as css_ } from "@yak/react"`
   yak_css_idents: FxHashSet<Id>,
-  /// Local Identifiers for the next-yak keyframes function \
-  /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
-  /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
+  /// Local Identifiers for the yak keyframes function \
+  /// Most of the time it is just `keyframes#0` for `import { keyframes } from "@yak/react"` \
+  /// but it might also contain renamings like `import { keyframes as keyframes_ } from "@yak/react"`
   yak_keyframes_idents: FxHashSet<Id>,
   /// The detected yak package (@yak/react if the file has no yak import)
   package: YakPackage,
@@ -129,7 +121,7 @@ pub struct YakImports {
 /// # Returns
 ///
 /// Returns a `YakImports` struct containing:
-/// - Mapped imports from next-yak
+/// - Mapped imports from yak
 /// - CSS function identifiers
 /// - Keyframe function identifiers
 /// - Utility function references
@@ -170,7 +162,7 @@ impl YakImports {
   }
 
   /// The specifier the compiled runtime imports point to \
-  /// e.g. "next-yak/internal" or "@yak/solid/internal"
+  /// e.g. "@yak/react/internal" or "@yak/solid/internal"
   pub fn internal_specifier(&self) -> &'static str {
     self.package.internal_specifier()
   }
@@ -183,7 +175,7 @@ impl YakImports {
     &self.yak_keyframes_idents
   }
 
-  /// Check if the current AST has imports to the next-yak library
+  /// Check if the current AST has imports to the yak library
   pub fn is_using_next_yak(&self) -> bool {
     !self.yak_library_imports.is_empty()
   }
@@ -193,7 +185,7 @@ impl YakImports {
     self.package.runtime()
   }
 
-  /// Get the name of the used next-yak library function
+  /// Get the name of the used yak library function
   /// e.g. styled.button`color: red;` -> styled
   pub fn get_yak_library_function_name(&self, n: &TaggedTpl) -> Option<Atom> {
     if !self.is_using_next_yak() {
@@ -214,14 +206,14 @@ impl YakImports {
 
     if let Some(id) = get_root_ident(&n.tag) {
       // Return the original name
-      // e.g. import { styled as renamedStyled } from "next-yak" -> styled
+      // e.g. import { styled as renamedStyled } from "@yak/react" -> styled
       self.yak_library_imports.get(&id).map(|id| id.0.clone())
     } else {
       None
     }
   }
 
-  /// Get the name of the used next-yak library function
+  /// Get the name of the used yak library function
   /// e.g. atom("flex") -> atom
   pub fn get_yak_library_name_for_ident(&self, id: &Id) -> Option<Atom> {
     if !self.is_using_next_yak() {
@@ -247,7 +239,7 @@ impl YakImports {
 
   /// Returns the expression for the given component
   /// e.g. __yak.__yak_button for button
-  /// Importing components as `import * as __yak from "next-yak/internal"` allows
+  /// Importing components as `import * as __yak from "@yak/react/internal"` allows
   /// webpack to optimize usages
   /// Without this webpack injects `(0, s.As)` for `__yak_button` instead of `s.As`
   pub fn get_yak_component_import(&mut self, name: impl AsRef<str>) -> Option<Box<Expr>> {
@@ -267,7 +259,7 @@ impl YakImports {
   }
 
   /// Get the import declaration specifiers for all used utility functions
-  /// i.e. `import { __yak_unitPostFix } from "next-yak/internal"`
+  /// i.e. `import { __yak_unitPostFix } from "@yak/react/internal"`
   pub fn get_yak_utility_import_specifiers(&self) -> Vec<ImportSpecifier> {
     self
       .yak_utilities
@@ -283,7 +275,7 @@ impl YakImports {
       .collect()
   }
   /// Get the import declaration for all usages of yak components in the given file
-  /// i.e. `import * as __yak from "next-yak/internal"`
+  /// i.e. `import * as __yak from "@yak/react/internal"`
   pub fn get_yak_component_import_declaration(&self) -> Option<ModuleDecl> {
     self.yak_component_import.clone().map(|yak_import| {
       ModuleDecl::Import(ImportDecl {
@@ -302,16 +294,16 @@ impl YakImports {
 }
 
 struct YakImportVisitor {
-  /// Imports from "next-yak"
+  /// Imports from "@yak/react"
   /// Local to Imported mapping
   pub yak_library_imports: FxHashMap<Id, Id>,
-  /// Local Identifiers for the next-yak css function \
-  /// Most of the time it is just `css#0` for `import { css } from "next-yak"` \
-  /// but it might also contain renamings like `import { css as css_ } from "next-yak"`
+  /// Local Identifiers for the yak css function \
+  /// Most of the time it is just `css#0` for `import { css } from "@yak/react"` \
+  /// but it might also contain renamings like `import { css as css_ } from "@yak/react"`
   pub yak_css_idents: FxHashSet<Id>,
-  /// Local Identifiers for the next-yak keyframes function \
-  /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
-  /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
+  /// Local Identifiers for the yak keyframes function \
+  /// Most of the time it is just `keyframes#0` for `import { keyframes } from "@yak/react"` \
+  /// but it might also contain renamings like `import { keyframes as keyframes_ } from "@yak/react"`
   pub yak_keyframes_idents: FxHashSet<Id>,
   /// The yak package this file imports from
   pub detected_package: Option<YakPackage>,
@@ -416,6 +408,23 @@ mod tests {
   }
 
   #[test]
+  fn test_yak_import_visitor_ignores_next_yak() {
+    let mut visitor = YakImportVisitor::new();
+    let code = r#"
+    import { styled, css } from "next-yak";
+    "#;
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      code,
+      code,
+    );
+    let imports: YakImports = visitor.into();
+    assert!(!imports.is_using_next_yak());
+  }
+
+  #[test]
   fn test_yak_import_visitor() {
     let mut visitor = YakImportVisitor::new();
     test_transform(
@@ -423,8 +432,8 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-        import { styled, css } from "next-yak";
-        import { styled as renamedStyled, keyframes } from "next-yak";
+        import { styled, css } from "@yak/react";
+        import { styled as renamedStyled, keyframes } from "@yak/react";
         import { primary } from "./theme";
         const duration = 34;
         export function run(primary = "red") {
@@ -432,8 +441,8 @@ mod tests {
         }
     "#,
       r#"
-        import { styled, css } from "next-yak/internal";
-        import { styled as renamedStyled, keyframes } from "next-yak/internal";
+        import { styled, css } from "@yak/react/internal";
+        import { styled as renamedStyled, keyframes } from "@yak/react/internal";
         import { primary } from "./theme";
         const duration = 34;
         export function run(primary = "red") {
@@ -453,11 +462,11 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-        import { css } from "next-yak";
+        import { css } from "@yak/react";
         const styles = css`color: red;`;
       "#,
       r#"
-        import { css } from "next-yak/internal";
+        import { css } from "@yak/react/internal";
         const styles = css`color: red;`;
       "#,
     );
@@ -474,11 +483,11 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-        import { css as myCss } from "next-yak";
+        import { css as myCss } from "@yak/react";
         const styles = myCss`color: red;`;
       "#,
       r#"
-        import { css as myCss } from "next-yak/internal";
+        import { css as myCss } from "@yak/react/internal";
         const styles = myCss`color: red;`;
       "#,
     );
@@ -495,11 +504,11 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-        import { keyframes } from "next-yak";
+        import { keyframes } from "@yak/react";
         const animation = keyframes`from { opacity: 0; } to { opacity: 1; }`;
       "#,
       r#"
-        import { keyframes } from "next-yak/internal";
+        import { keyframes } from "@yak/react/internal";
         const animation = keyframes`from { opacity: 0; } to { opacity: 1; }`;
       "#,
     );
@@ -516,11 +525,11 @@ mod tests {
       Some(true),
       |_| visit_mut_pass(&mut visitor),
       r#"
-        import { keyframes as myKeyframes } from "next-yak";
+        import { keyframes as myKeyframes } from "@yak/react";
         const animation = myKeyframes`from { opacity: 0; } to { opacity: 1; }`;
       "#,
       r#"
-        import { keyframes as myKeyframes } from "next-yak/internal";
+        import { keyframes as myKeyframes } from "@yak/react/internal";
         const animation = myKeyframes`from { opacity: 0; } to { opacity: 1; }`;
       "#,
     );

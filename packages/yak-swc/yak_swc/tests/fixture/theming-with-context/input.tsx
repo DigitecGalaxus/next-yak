@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const ThemedComponent = styled.div`
   background-color: ${props => props.theme.background};

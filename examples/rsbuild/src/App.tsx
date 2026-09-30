@@ -30,7 +30,7 @@ export function App() {
   return (
     <Card data-testid="card">
       <Title data-testid="title" $accent>
-        next-yak on Rspack
+        @yak/react on Rspack
       </Title>
       <span>Zero-runtime CSS-in-JS, build-time extracted.</span>
     </Card>

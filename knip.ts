@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import type { KnipConfig } from "knip";
 
 type Workspace = NonNullable<KnipConfig["workspaces"]>[string];
@@ -12,8 +11,6 @@ const bundler = (extra: Workspace = {}): Workspace => ({
   ignoreUnresolved: [/\/cases\/\[case-name\]\/index\.tsx$/],
   ...extra,
 });
-
-const hasPlaygroundWasm = existsSync(new URL("docs/playground-wasm/out", import.meta.url));
 
 const config: KnipConfig = {
   // Exports that are also used inside their own module are a deliberate choice
@@ -50,17 +47,6 @@ const config: KnipConfig = {
     },
     "packages/yak-storybook": {
       ignoreDependencies: yakSwc,
-    },
-    docs: {
-      // Fumadocs convention file
-      entry: ["mdx-components.tsx"],
-      // Vendored type definitions served to the playground, plus the wasm-pack output when it has been built.
-      ignore: ["public/**", ...(hasPlaygroundWasm ? ["playground-wasm/out/**"] : [])],
-      // Without the wasm-pack output the two imports of it cannot resolve.
-      ignoreUnresolved: hasPlaygroundWasm ? [] : [/playground-wasm\/out$/],
-      // Referenced by name in the webpack rule in next.config.mjs. The docs use the
-      // published next-yak 9.x, so its compiler keeps the old name yak-swc
-      ignoreDependencies: ["raw-loader", "yak-swc"],
     },
     // yak.context.ts is picked up by convention by the yak loaders (see yak-internals/config.ts)
     "examples/next-js": { entry: ["yak.context.ts"], ignoreDependencies: yakSwc },

@@ -1,6 +1,6 @@
-# Vite + next-yak example
+# Vite + @yak/react example
 
-This example shows how to use **next-yak** in a plain React + Vite app using the `viteYak` plugin.
+This example shows how to use **@yak/react** in a plain React + Vite app using the `viteYak` plugin.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ This folder is part of the monorepo and assumes you are in the project root.
 ```bash
 pnpm install
 pnpm --filter @yak/swc build
-pnpm --filter next-yak build
+pnpm --filter @yak/react build
 ```
 
 ## Running the example
@@ -32,12 +32,12 @@ pnpm --filter vite-yak-example build
 pnpm --filter vite-yak-example preview
 ```
 
-## How next-yak is wired in
+## How @yak/react is wired in
 
 Key files to look at:
 
 - `vite.config.ts` – integrates the `viteYak` plugin:
-  - `import { viteYak } from 'next-yak/vite';`
+  - `import { viteYak } from '@yak/react/vite';`
   - `plugins: [react(), viteYak()]`
 - `yak.context.ts` – defines the `YakTheme` and theme context used by `YakThemeProvider`.
 - `src/main.tsx` – wraps the app in `YakThemeProvider` with `getYakThemeContext()`.

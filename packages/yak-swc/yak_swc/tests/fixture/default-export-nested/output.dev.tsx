@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export default {
     Title: /*YAK EXPORTED STYLED:default.Title:input_default_Title_m7uBBu*//*YAK Extracted CSS:

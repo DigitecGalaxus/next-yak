@@ -1,11 +1,11 @@
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 import { colors } from "./colorDefinitions";
 import { fonts } from "./fontDefinitions";
 import { sizes } from "./sizeDefinitions";
 import * as constants from "./otherConstants";
 import { s as renamedSize } from "./moreSizes";
 import defaultImport from "./betterFontSizes";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {

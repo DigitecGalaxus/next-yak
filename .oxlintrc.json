@@ -53,7 +53,6 @@
     "packages/yak-eslint-plugin/rules/fixtures/**",
     "packages/yak-swc/yak_swc/tests/fixture/**",
     "packages/yak-internals/isolated-source-eval/__tests__/fixtures/syntax-error.ts",
-    "e2e/**",
-    "docs/**"
+    "e2e/**"
   ]
 }

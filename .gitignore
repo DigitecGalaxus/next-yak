@@ -1,6 +1,5 @@
 .next
 node_modules
-**/docs/dist
 **/yak-react/dist
 **/yak-solid/dist
 **/yak-eslint-plugin/dist

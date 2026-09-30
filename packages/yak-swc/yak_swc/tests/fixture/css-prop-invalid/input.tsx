@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 
 const styles = css`color:red;`;
 const Elem = () => <div css="invalid" />;

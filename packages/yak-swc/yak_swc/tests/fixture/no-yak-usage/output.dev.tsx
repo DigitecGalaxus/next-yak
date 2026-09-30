@@ -1,3 +1,3 @@
 // Should not add an import to the .css module as no css has been extracted
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 export const isYak = typeof styled === "function";

@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 export const FlexContainer = styled.div`
   display: flex;

@@ -14,7 +14,6 @@
     "build:swc": "pnpm run --filter=@yak/swc build",
     "example": "pnpm --filter=next-yak-example run dev",
     "example:vite": "pnpm --filter=vite-yak-example run dev",
-    "docs": "pnpm --filter=docs run dev",
     "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/yak-react",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

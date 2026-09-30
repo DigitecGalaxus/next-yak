@@ -1,6 +1,6 @@
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 import Text from "./text";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const Box = /*YAK EXPORTED STYLED:Box:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {

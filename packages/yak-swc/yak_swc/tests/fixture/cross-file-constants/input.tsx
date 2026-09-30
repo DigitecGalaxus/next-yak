@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { colors } from "./colorDefinitions";
 import { fonts } from "./fontDefinitions";
 import { sizes } from "./sizeDefinitions";

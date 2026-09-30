@@ -1,4 +1,4 @@
-import { globalStyle } from "next-yak";
+import { globalStyle } from "@yak/react";
 
 // Cascade layers are not added automatically — users opt in by authoring
 // @layer themselves; the at-rule passes through verbatim.

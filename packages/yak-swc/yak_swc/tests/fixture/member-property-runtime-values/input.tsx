@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 const SIZES: Record<"sm" | "md", { width: string; height: string }> = {
      sm: { width: '24px', height: '24px' },

@@ -1,4 +1,4 @@
-import { globalStyle } from "next-yak/internal";
+import { globalStyle } from "@yak/react/internal";
 function Component() {
     globalStyle`
     body {

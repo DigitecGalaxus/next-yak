@@ -1,4 +1,4 @@
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 import { IconButton } from "./iconButton";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const FancyIconButton = /*YAK EXPORTED STYLED:FancyIconButton:input_FancyIconButton_m7uBBu*//*YAK Extracted CSS:

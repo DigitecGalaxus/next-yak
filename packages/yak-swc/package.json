@@ -32,9 +32,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm build:yak && pnpm build:playground",
+    "build": "pnpm build:yak",
     "build:yak": "RUSTFLAGS=\"--cfg swc_ast_unknown -Clink-arg=--allow-undefined\" cargo build -p yak_swc --release --target=wasm32-wasip1",
-    "build:playground": "RUSTFLAGS='--cfg getrandom_backend=\"wasm_js\"' cargo build -p playground-wasm --release --target=wasm32-unknown-unknown",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && npm run build",
     "format": "cargo fmt --all",
     "test": "cargo test -- --include-ignored",

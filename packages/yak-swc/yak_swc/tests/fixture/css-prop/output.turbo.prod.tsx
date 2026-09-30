@@ -1,5 +1,5 @@
-import { css, styled, __yak_mergeCssProp } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled, __yak_mergeCssProp } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAxMHB4Owp9LnltN3VCQnUzIHsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTQgewogIGNvbG9yOiBwdXJwbGU7Cn0ueW03dUJCdTUgewogIGZvbnQtc2l6ZTogMTZweDsKfS55bTd1QkJ1NiB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1NyB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1OCB7CiAgY29sb3I6IHJlZDsKfS55bTd1QkJ1QyB7CiAgY29sb3I6IHJlZDsKfQoueW03dUJCdUQgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnVFIHsKICBjb2xvcjogcmVkOwp9LnltN3VCQnVGIHsKICBjb2xvcjogYmx1ZTsKfS55bTd1QkJ1RyB7CiAgY29sb3I6IGJyb3duOwp9LnltN3VCQnVIIHsKICBjb2xvcjogdGVhbDsKfS55bTd1QkJ1SSB7CiAgZm9udC1zaXplOiAyMHB4Owp9LnltN3VCQnVKIHsKICBjb2xvcjogcmVkOwp9";
 const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBu {

@@ -1,5 +1,5 @@
-import { styled, css, __yak_unitPostFix } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQ6IHVybCgiL2NhcmQtYmcuanBnIikgbm8tcmVwZWF0Owp9Ci55bTd1QkJ1MSB7CiAgYmFja2dyb3VuZDogdXJsKC9jYXJkLWJnLWFjdGl2ZS5qcGcpIG5vLXJlcGVhdDsKfQoueW03dUJCdSB7CiAgdHJhbnNmb3JtOiB0cmFuc2xhdGUoLTUwJSwgLTUwJSkgcm90YXRlKHZhcigtLXltN3VCQnUyKSkKdHJhbnNsYXRlKDAsIC04OHB4KSByb3RhdGUodmFyKC0teW03dUJCdTMpKTsKfQ==";
 export const Card = /*YAK EXPORTED STYLED:Card:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {

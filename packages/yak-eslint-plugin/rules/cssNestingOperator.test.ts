@@ -29,55 +29,55 @@ const getErrorWithSuggestionsCode = (options: { code: string }) =>
 ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   valid: [
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    color: red;
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    \${mixin};
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     & + * { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :hover & { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     & ~ * { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :root { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :modal { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     global(selector) { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
   div {
     > :focus { }
@@ -85,7 +85,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
   \${({ $condition }) =>
     $condition &&
@@ -99,25 +99,25 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     input:not(:active, :selected):focus-visible { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     div > :hover { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     div > * { }
   \``,
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     \${Selector} > :hover { }
   \``,
@@ -125,7 +125,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   ],
   invalid: [
     {
-      code: `import { styled, css } from "next-yak";
+      code: `import { styled, css } from "@yak/react";
   const x = styled.div\`
     /* { */
     > div {
@@ -134,7 +134,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled, css } from "next-yak";
+        code: `import { styled, css } from "@yak/react";
   const x = styled.div\`
     /* { */
     & > div {
@@ -144,7 +144,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
       }),
     },
     {
-      code: `import { styled, css } from "next-yak";
+      code: `import { styled, css } from "@yak/react";
   const x = styled.div\`
   \${({ $condition }) =>
       $condition &&
@@ -158,7 +158,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled, css } from "next-yak";
+        code: `import { styled, css } from "@yak/react";
   const x = styled.div\`
   \${({ $condition }) =>
       $condition &&
@@ -173,7 +173,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    > button {
      > span { }
@@ -181,7 +181,7 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
    & > button {
      > span { }
@@ -190,53 +190,53 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    ::after { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
    &::after { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    :not(:active, :selected):focus-visible { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
    &:not(:active, :selected):focus-visible { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    :hover :active { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
    &:hover :active { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
    &:hover,
    :active { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
    &:hover,
    &:active { }
@@ -244,52 +244,52 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     > :is { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     & > :is { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     > * { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     & > * { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :dir(rtl) { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     &:dir(rtl) { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :hover { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     &:hover { }
   \``,
@@ -298,39 +298,39 @@ ruleTester.run("yak-css-nesting-operator", cssNestingOperator, {
     // Bare pseudo-selectors can intentionally mean descendants in native CSS nesting.
     // Keep the potentially behavior-changing `&` insertion as an opt-in suggestion.
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :first-child { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     &:first-child { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     :has(img) { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     &:has(img) { }
   \``,
       }),
     },
     {
-      code: `import { styled } from "next-yak";
+      code: `import { styled } from "@yak/react";
   const x = styled.div\`
     ::backdrop { }
   \``,
       output: null,
       errors: getErrorWithSuggestionsCode({
-        code: `import { styled } from "next-yak";
+        code: `import { styled } from "@yak/react";
   const x = styled.div\`
     &::backdrop { }
   \``,

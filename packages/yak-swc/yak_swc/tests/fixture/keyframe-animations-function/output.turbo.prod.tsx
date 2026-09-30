@@ -1,5 +1,5 @@
-import { styled, css, keyframes } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css, keyframes } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUxIHsKICBhbmltYXRpb246IHltN3VCQnUyIDFzIGVhc2UtaW47Cn0KLnltN3VCQnUzIHsKICBhbmltYXRpb246IHltN3VCQnU0IDFzIGVhc2UtaW47Cn0KLnltN3VCQnUgewogIGZvbnQtc2l6ZTogMThweDsKICBjb2xvcjogIzMzMzsKfUBrZXlmcmFtZXMgeW03dUJCdTQgewogIGZyb20gewogICAgb3BhY2l0eTogMDsKICB9CiAgdG8gewogICAgb3BhY2l0eTogMTsKICB9Cn1Aa2V5ZnJhbWVzIHltN3VCQnUyIHsKICBmcm9tIHsKICAgIG9wYWNpdHk6IDE7CiAgfQogIHRvIHsKICAgIG9wYWNpdHk6IDA7CiAgfQp9";
 export const FadeInText = /*YAK EXPORTED STYLED:FadeInText:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu1 {

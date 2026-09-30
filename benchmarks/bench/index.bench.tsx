@@ -146,7 +146,7 @@ function renderTable(baseline: Map<string, number> | undefined): string {
     " <td>Benchmark",
     " <td>styled-components (ops/sec)",
     " <td>yak (ops/sec)",
-    " <td>next yak is",
+    " <td>yak is",
   ];
   if (baseline) lines.push(" <td>Δ yak vs main");
 

@@ -17,14 +17,14 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
   valid: [
     // No :global() usage
     `
-      import { styled } from "next-yak";
+      import { styled } from "@yak/react";
       const Button = styled.button\`
         color: red;
       \`;
     `,
     // CSS mode (no :global() generated)
     `
-      import { styled } from "next-yak";
+      import { styled } from "@yak/react";
       const Button = styled.button\`
         .external-class {
           color: red;
@@ -37,7 +37,7 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
     // User-written :global() with HTML element
     {
       code: `
-        import { styled } from "next-yak";
+        import { styled } from "@yak/react";
         const Button = styled.button\`
           :global(html) {
             background: white;
@@ -53,7 +53,7 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
     // User-written :global() with external class
     {
       code: `
-        import { styled } from "next-yak";
+        import { styled } from "@yak/react";
         const Button = styled.button\`
           :global(.external-class) {
             color: red;
@@ -69,7 +69,7 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
     // User-written :global() with external ID
     {
       code: `
-        import { styled } from "next-yak";
+        import { styled } from "@yak/react";
         const Button = styled.button\`
           :global(#external-id) {
             color: red;
@@ -85,7 +85,7 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
     // User-written :global() with attribute selector
     {
       code: `
-        import { styled } from "next-yak";
+        import { styled } from "@yak/react";
         const Button = styled.button\`
           :global([data-attr]) {
             color: red;
@@ -101,7 +101,7 @@ ruleTester.run("css-global-deprecated", cssGlobalDeprecated, {
     // Multiple user-written :global() selectors
     {
       code: `
-        import { styled } from "next-yak";
+        import { styled } from "@yak/react";
         const Button = styled.button\`
           :global(html) {
             background: white;

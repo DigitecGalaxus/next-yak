@@ -22,7 +22,6 @@ next-yak/
 ├── examples/
 │   ├── next-js/           # Next.js example app
 │   └── vite/              # Vite example app
-├── docs/                  # Documentation site (yak.js.org)
 ├── cross-file-tests/      # Cross-file transformation tests
 └── benchmarks/            # Performance benchmarks
 ```
@@ -75,9 +74,6 @@ pnpm example
 
 # Run Vite example
 pnpm example:vite
-
-# Run documentation site
-pnpm docs
 ```
 
 ### Package-Specific Commands

@@ -1,4 +1,4 @@
-import { css, __yak_unitPostFix, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // folds: both arms are fully static
 const Elem = ({ active }: {

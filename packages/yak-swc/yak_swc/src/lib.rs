@@ -90,8 +90,8 @@ pub struct Config {
   /// Enabled by default.
   #[serde(default = "Config::fold_static_default")]
   pub fold_static: bool,
-  /// Fail the build when a `css` prop has a value next-yak can't handle
-  /// (e.g. an array, an object or a plain string). Enabled by default: next-yak
+  /// Fail the build when a `css` prop has a value yak can't handle
+  /// (e.g. an array, an object or a plain string). Enabled by default: yak
   /// claims the `css` prop, so a malformed value is almost always a mistake
   /// worth surfacing. Set to false to leave such props untouched instead, e.g.
   /// when another library on the same element uses its own `css` prop.
@@ -192,7 +192,7 @@ where
   /// Used to access constants in css expressions
   variables: VariableVisitor,
   /// Visitor to gather all imports from the current program
-  /// Used to check if the current program is using next-yak
+  /// Used to check if the current program is using yak
   /// to identify css-in-js expressions
   yak_library_imports: Option<YakImports>,
   /// Variable Name to Unique CSS Identifier Mapping\
@@ -244,7 +244,7 @@ where
   global_style_error: bool,
   /// Function/arrow nesting depth — `0` is the module scope `globalStyle` requires
   function_depth: u32,
-  /// Fail loudly on a `css` prop next-yak can't handle instead of leaving it untouched
+  /// Fail loudly on a `css` prop yak can't handle instead of leaving it untouched
   strict_css_prop: bool,
   /// Emit the /*YAK Extracted CSS:*/ comments loaders parse to extract the CSS
   emit_css_comments: bool,
@@ -301,7 +301,7 @@ where
     }
   }
 
-  /// Check if we are inside a next-yak css expression
+  /// Check if we are inside a yak css expression
   fn is_inside_css_expression(&self) -> bool {
     self.current_css_state.is_some()
   }
@@ -1300,7 +1300,7 @@ where
           return;
         }
         panic!(
-          "Invalid context for next-yak function {:?}",
+          "Invalid context for yak function {:?}",
           yak_library_function_name
         )
       }

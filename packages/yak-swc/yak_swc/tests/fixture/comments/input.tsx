@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const primary = "green";
 export const Button = styled.button`

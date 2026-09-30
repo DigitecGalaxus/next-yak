@@ -1,9 +1,9 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_mergeCssProp } from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUxIHsKICBjb2xvcjogcmVkOwp9";
-// A real yak style keeps the module recognized as using next-yak, so the css
+// A real yak style keeps the module recognized as using yak, so the css
 // prop below is still processed by the plugin.
 const yakClass = /*#__PURE__*/ css();
-// A css prop next-yak owns is still compiled and merged with className and
+// A css prop yak owns is still compiled and merged with className and
 // style. Non-strict only changes what happens to a value it can not compile.
 const Merged = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBu1 {
@@ -15,7 +15,7 @@ const Merged = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
             padding: "5px"
         }
     })}/>;
-// With strictCssProp off, a css prop value next-yak can't handle is left
+// With strictCssProp off, a css prop value yak can't handle is left
 // untouched instead of failing the build - useful when another library on the
 // same element owns the css prop. Under the default strict mode these error
 // (see the css-prop-invalid fixture).

@@ -1,6 +1,6 @@
-//! Compile-time folding of next-yak's runtime wrappers into plain markup
+//! Compile-time folding of yak's runtime wrappers into plain markup
 //!
-//! next-yak normally emits a runtime component for every styled component and a
+//! yak normally emits a runtime component for every styled component and a
 //! runtime merge call for every `css` prop. When the styles are fully known at
 //! build time both can be skipped, and the element keeps only the class names it
 //! would have received at runtime. Folding is opt-in through `foldStatic`.

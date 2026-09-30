@@ -16,15 +16,22 @@ const enforceSemicolons = yakPlugin.rules["enforce-semicolon"] as unknown as Par
 ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
   valid: [
     {
+      // next-yak is not a yak package on 10.x, so its imports are not checked
+      code: ['import { styled } from "next-yak";', "styled.button`", "${foo}", "`"].join("\n"),
+    },
+    {
       // Single selector expression
-      code: ['import { css, styled } from "next-yak";', "styled.button`", "  ${foo} {", "}`"].join(
-        "\n",
-      ),
+      code: [
+        'import { css, styled } from "@yak/react";',
+        "styled.button`",
+        "  ${foo} {",
+        "}`",
+      ].join("\n"),
     },
     {
       // Two selector expressions
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${bar} ${foo} {",
         "}`",
@@ -33,7 +40,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Selector expression followed by a selector
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${foo} div",
         "{",
@@ -42,14 +49,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
     {
       // Single mixin without other css
-      code: ['import { css, styled } from "next-yak";', "styled.button`", "  ${foo};", "`"].join(
+      code: ['import { css, styled } from "@yak/react";', "styled.button`", "  ${foo};", "`"].join(
         "\n",
       ),
     },
     {
       // Mixin with other css before
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  color: red;",
         "  ${foo};",
@@ -59,7 +66,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Arrow function expression
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${({ $myVar }) => css`",
         "  color: red;",
@@ -70,7 +77,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Constant expression as css value
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  transition: transform ${time}",
         "    ,opacity 0.3s;",
@@ -80,7 +87,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Conditional expression
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "${",
         "$visuallyUnmounted &&",
@@ -95,20 +102,16 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
   ],
   invalid: [
-    ...["@yak/react", "@yak/solid"].map((importSource) => ({
-      // Every yak runtime package is detected, not only next-yak
-      code: [`import { styled } from "${importSource}";`, "styled.button`", "${foo}", "`"].join(
-        "\n",
-      ),
-      output: [`import { styled } from "${importSource}";`, "styled.button`", "${foo};", "`"].join(
-        "\n",
-      ),
-      errors: [{ messageId: "lonelyExpression" as const }],
-    })),
+    {
+      // @yak/solid imports are checked too
+      code: ['import { styled } from "@yak/solid";', "styled.button`", "${foo}", "`"].join("\n"),
+      output: ['import { styled } from "@yak/solid";', "styled.button`", "${foo};", "`"].join("\n"),
+      errors: [{ messageId: "lonelyExpression" }],
+    },
     {
       // Mixin with attrs and styled.div
       code: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "export const Skeleton = styled.div.attrs<ISkeletonProps>({",
         ' "aria-hidden": true,',
         " disableAnimation: undefined,",
@@ -117,7 +120,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
         "`",
       ].join("\n"),
       output: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "export const Skeleton = styled.div.attrs<ISkeletonProps>({",
         ' "aria-hidden": true,',
         " disableAnimation: undefined,",
@@ -130,7 +133,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with attrs and styled(button)
       code: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "export const Skeleton = styled(button).attrs<ISkeletonProps>({",
         ' "aria-hidden": true,',
         " disableAnimation: undefined,",
@@ -139,7 +142,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
         "`",
       ].join("\n"),
       output: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "export const Skeleton = styled(button).attrs<ISkeletonProps>({",
         ' "aria-hidden": true,',
         " disableAnimation: undefined,",
@@ -151,14 +154,16 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
     {
       // Mixin with no other css
-      code: ['import { styled } from "next-yak";', "styled.button`", "${foo}", "`"].join("\n"),
-      output: ['import { styled } from "next-yak";', "styled.button`", "${foo};", "`"].join("\n"),
+      code: ['import { styled } from "@yak/react";', "styled.button`", "${foo}", "`"].join("\n"),
+      output: ['import { styled } from "@yak/react";', "styled.button`", "${foo};", "`"].join("\n"),
       errors: [{ messageId: "lonelyExpression" }],
     },
     {
       // Mixin with whitespace around but no other css
-      code: ['import { styled } from "next-yak";', "styled.button`", "  ${foo}  ", "`"].join("\n"),
-      output: ['import { styled } from "next-yak";', "styled.button`", "  ${foo};  ", "`"].join(
+      code: ['import { styled } from "@yak/react";', "styled.button`", "  ${foo}  ", "`"].join(
+        "\n",
+      ),
+      output: ['import { styled } from "@yak/react";', "styled.button`", "  ${foo};  ", "`"].join(
         "\n",
       ),
       errors: [{ messageId: "lonelyExpression" }],
@@ -166,14 +171,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with css after
       code: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "styled.button`",
         "${foo}",
         "margin-bottom: 10px;",
         "`",
       ].join("\n"),
       output: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "styled.button`",
         "${foo};",
         "margin-bottom: 10px;",
@@ -184,14 +189,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with selector after
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${foo}",
         "  div { }",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${foo};",
         "  div { }",
@@ -202,7 +207,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin within selector
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  div {",
         "    ${foo}",
@@ -210,7 +215,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  div {",
         "    ${foo};",
@@ -222,14 +227,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin below single line selector
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  div { }",
         "  ${foo}",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  div { }",
         "  ${foo};",
@@ -240,14 +245,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with css before
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  color: red;",
         "  ${foo}",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  color: red;",
         "  ${foo};",
@@ -258,14 +263,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin after a CSS escape
       code: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "styled.div`",
         '  content: "\\x";',
         "  ${foo}",
         "`",
       ].join("\n"),
       output: [
-        'import { styled } from "next-yak";',
+        'import { styled } from "@yak/react";',
         "styled.div`",
         '  content: "\\x";',
         "  ${foo};",
@@ -276,14 +281,14 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with arrow function expression before
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${({ $myVar }) => css`color: red;`}",
         "  ${foo}",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${({ $myVar }) => css`color: red;`}",
         "  ${foo};",
@@ -294,7 +299,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with empty line and arrow function expression before
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${({ $myVar }) => css`color: red;`}",
         " ",
@@ -302,7 +307,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "  ${({ $myVar }) => css`color: red;`}",
         " ",
@@ -314,13 +319,13 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin in generic styled.div
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.div<{ $size: PopoverSize }>`",
         "  ${foo}",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.div<{ $size: PopoverSize }>`",
         "  ${foo};",
         "`",
@@ -330,13 +335,13 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with array expression
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.div`",
         " ${aspectRatioStyles['16/9']}",
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.div`",
         " ${aspectRatioStyles['16/9']};",
         "`",
@@ -346,7 +351,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     {
       // Mixin with conditional expression before
       code: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "${",
         "$visuallyUnmounted &&",
@@ -360,7 +365,7 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
         "`",
       ].join("\n"),
       output: [
-        'import { css, styled } from "next-yak";',
+        'import { css, styled } from "@yak/react";',
         "styled.button`",
         "${",
         "$visuallyUnmounted &&",

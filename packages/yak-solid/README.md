@@ -114,9 +114,9 @@ function InvertedSection(props) {
 }
 ```
 
-## Coming from next-yak or React?
+## Coming from @yak/react or React?
 
-If you've used `next-yak`, the API is the same with a few Solid-shaped differences:
+If you've used `@yak/react`, the API is the same with a few Solid-shaped differences:
 
 - `useTheme()` returns an accessor: read `theme().highContrast`, not `theme.highContrast`. The same applies to `props.theme()` in interpolations and in `.attrs()`.
 - `class` instead of `className`, including inside `.attrs({ ... })`.
@@ -125,7 +125,7 @@ If you've used `next-yak`, the API is the same with a few Solid-shaped differenc
 
 ## How it works
 
-Like `next-yak`, the yak SWC compiler extracts your CSS at build time. At runtime only a tiny layer remains that merges class names and feeds dynamic values through CSS custom properties:
+Like `@yak/react`, the yak SWC compiler extracts your CSS at build time. At runtime only a tiny layer remains that merges class names and feeds dynamic values through CSS custom properties:
 
 - Static styles become plain CSS classes. A static `styled.div` never subscribes to the theme and adds a single reactive `class` binding.
 - Dynamic interpolations (`${(props) => ...}`) become CSS variables set on the element's inline `style`. Updates flow through one memo per component: the element is never re-created, only its `class`/`style` bindings change, and only props actually used by the CSS re-run the memo.

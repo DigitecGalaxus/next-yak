@@ -1,11 +1,11 @@
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 import { colors } from "./colorDefinitions";
 import { fonts } from "./fontDefinitions";
 import { sizes } from "./sizeDefinitions";
 import * as constants from "./otherConstants";
 import { s as renamedSize } from "./moreSizes";
 import defaultImport from "./betterFontSizes";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGZvbnQtc2l6ZTogLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2ZvbnREZWZpbml0aW9uczpmb250czpzbSIsbWl4aW4pOwogIGNvbG9yOiAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vY29sb3JEZWZpbml0aW9uczpjb2xvcnM6ZGFyazpwcmltYXJ5IixtaXhpbik7CiAgYm9yZGVyLWNvbG9yOiAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vY29sb3JEZWZpbml0aW9uczpjb2xvcnM6c2hhZG93czpkYXJrOnByaW1hcnkiLG1peGluKTsKICBiYWNrZ3JvdW5kLWNvbG9yOiAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vY29sb3JEZWZpbml0aW9uczpjb2xvcnM6bGlnaHQ6ZnVsbCUyMG9wYWNpdHkiLG1peGluKTsKICBoZWlnaHQ6IC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9zaXplRGVmaW5pdGlvbnM6c2l6ZXM6MCIsbWl4aW4pOwogIHBhZGRpbmc6IC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9vdGhlckNvbnN0YW50czpzcGFjaW5nIixtaXhpbik7CiAgbWFyZ2luOiAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vbW9yZVNpemVzOnM6bWVkaXVtOnRvcCIsbWl4aW4pIC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9tb3JlU2l6ZXM6czptZWRpdW06cmlnaHQiLG1peGluKTsKICBsaW5lLWhlaWdodDogLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2JldHRlckZvbnRTaXplczpkZWZhdWx0OmxpbmVIZWlnaHQ6MCIsbWl4aW4pOwp9";
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {

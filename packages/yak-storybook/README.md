@@ -1,6 +1,6 @@
 # @yak/storybook
 
-Storybook addon for [next-yak](https://yak.js.org/) - a CSS-in-JS library that combines styled-components syntax with build-time CSS extraction.
+Storybook addon for [@yak/react](https://yak.js.org/) - a CSS-in-JS library that combines styled-components syntax with build-time CSS extraction.
 
 Supports both Vite and Webpack Storybook builders.
 

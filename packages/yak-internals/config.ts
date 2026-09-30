@@ -31,8 +31,8 @@ export type YakConfigOptions = {
    */
   foldStatic?: boolean;
   /**
-   * Fail the build when a `css` prop has a value next-yak can't handle
-   * (e.g. an array, an object or a plain string). next-yak claims the `css`
+   * Fail the build when a `css` prop has a value @yak/react can't handle
+   * (e.g. an array, an object or a plain string). @yak/react claims the `css`
    * prop, so a malformed value is almost always a mistake worth surfacing.
    *
    * Set to `false` to leave such props untouched instead, e.g. when another

@@ -1,5 +1,5 @@
-import { css, styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { css, styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X0NhdGVnb3J5X203dUJCdSB7CiAgY29sb3I6IGdyZXk7Cn0KLmlucHV0X0NhdGVnb3J5X19fbTd1QkJ1IHsKICBjb2xvcjogY3JpbXNvbjsKfS5pbnB1dF9TaG9ydGN1dF9tN3VCQnUgewogIGNvbG9yOiBncmV5Owp9Ci5pbnB1dF9TaG9ydGN1dF9fX203dUJCdSB7CiAgY29sb3I6IGRvZGdlcmJsdWU7Cn0uaW5wdXRfQ3Jvc3NfbTd1QkJ1IHsKICBjb2xvcjogZ3JleTsKfS5pbnB1dF9FbW9qaV9tN3VCQnUgewogIGNvbG9yOiBncmV5Owp9";
 // JSX attribute strings are decoded before they reach the condition:
 // entities like &amp; and literal backslashes must compare by value,

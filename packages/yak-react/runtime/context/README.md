@@ -36,7 +36,7 @@ declare module "@yak/react/context" {
 ```
 
 > **Note:** The `getYakThemeContext` function can be async, which is useful when you need to access
-> server-side APIs like `cookies()` or `headers()` from Next.js 15+. Next-yak automatically handles
+> server-side APIs like `cookies()` or `headers()` from Next.js 15+. @yak/react automatically handles
 > the promise resolution using React's `use()` hook internally.
 
 In your root layout component you have to forward the entire response of `getYakThemeContext`

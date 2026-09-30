@@ -1,11 +1,11 @@
-import { styled } from "next-yak/internal";
+import { styled } from "@yak/react/internal";
 // @ts-ignore
 import { fonts } from "./fonts";
 // @ts-ignore
 import { fancy } from "./fancy";
 // @ts-ignore
 import { yakMixin } from "./constants.yak";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIC0teWFrLWNzcy1pbXBvcnQ6IHVybCgiLi9mb250czpmb250czpoMSIsbWl4aW4pOwp9LnltN3VCQnUxIHsKICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZm9udHM6Zm9udHM6aDEiLG1peGluKTsKfS55bTd1QkJ1MiB7CiAgLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2ZvbnRzOmZvbnRzOmgxIixtaXhpbik7CiAgY29sb3I6IGdyZWVuOwp9LnltN3VCQnUzIHsKICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZm9udHM6Zm9udHM6aDEiLG1peGluKQotLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZm9udHM6Zm9udHM6dW5kZXJsaW5lIixtaXhpbik7CiAgY29sb3I6IGdyZWVuOwp9LnltN3VCQnU0IHsKICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZm9udHM6Zm9udHM6aDEiLG1peGluKTsKICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZmFuY3k6ZmFuY3k6bWl4aW5zOnNwZWNpYWxFZmZlY3QiLG1peGluKTsKICBjb2xvcjogZ3JlZW47Cn0ueW03dUJCdTUgewogICY6aG92ZXIgewogICAgLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2NvbnN0YW50cy55YWs6eWFrTWl4aW4iLG1peGluKTsKICB9CiAgLS15YWstY3NzLWltcG9ydDogdXJsKCIuL2ZhbmN5OmZhbmN5Om1peGluczpzcGVjaWFsRWZmZWN0IixtaXhpbikKOwogIGNvbG9yOiBncmVlbjsKfS55bTd1QkJ1NiB7CiAgJjpob3ZlciB7CiAgICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vY29uc3RhbnRzLnlhazp5YWtNaXhpbiIsbWl4aW4pOwogIH0KICAtLXlhay1jc3MtaW1wb3J0OiB1cmwoIi4vZmFuY3k6ZmFuY3k6YXNwZWN0UmF0aW86MTYlM0E5IixtaXhpbikKOwogIGNvbG9yOiBncmVlbjsKfQ==";
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {

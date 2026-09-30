@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 
 // JSX attribute strings are decoded before they reach the condition:
 // entities like &amp; and literal backslashes must compare by value,

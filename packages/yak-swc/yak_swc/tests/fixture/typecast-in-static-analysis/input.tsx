@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 // Numeric constants used inside math expressions, in cast form
 const BASE = 16 as const;

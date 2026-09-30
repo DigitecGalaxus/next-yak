@@ -1,5 +1,5 @@
-import { styled, css } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIHdpZHRoOiB2YXIoLS15bTd1QkJ1MSk7CiAgaGVpZ2h0OiAyNHB4Owp9LnltN3VCQnUzIHsKICB3aWR0aDogdmFyKC0teW03dUJCdTQpOwogIGhlaWdodDogMzJweDsKfQ==";
 const SIZES: Record<"sm" | "md", {
     width: string;

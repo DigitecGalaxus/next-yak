@@ -1,4 +1,4 @@
-import { styled, css, keyframes } from "next-yak";
+import { styled, css, keyframes } from "@yak/react";
 
 export const FadeInText = styled.p<{ $reverse?: boolean }>`
   ${({ $reverse }) => $reverse ? css`

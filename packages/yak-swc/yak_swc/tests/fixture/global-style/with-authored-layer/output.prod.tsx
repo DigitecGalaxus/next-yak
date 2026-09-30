@@ -1,4 +1,4 @@
-import { globalStyle } from "next-yak/internal";
+import { globalStyle } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Cascade layers are not added automatically — users opt in by authoring
 // @layer themselves; the at-rule passes through verbatim.

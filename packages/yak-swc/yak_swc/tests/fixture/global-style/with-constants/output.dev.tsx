@@ -1,4 +1,4 @@
-import { globalStyle, css } from "next-yak/internal";
+import { globalStyle, css } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const brand = "#6b21ff";
 const spacing = 8;

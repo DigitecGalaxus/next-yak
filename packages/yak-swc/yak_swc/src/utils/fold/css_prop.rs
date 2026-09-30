@@ -90,7 +90,7 @@ impl CSSProp {
       }
       // We can't compile this value, so the element keeps every attribute as written
       // and another library on it can still own the css prop.
-      // Default strict mode reports the value on top, since in a next-yak project it is almost always a mistake.
+      // Default strict mode reports the value on top, since in a yak project it is almost always a mistake.
       Err(unsupported) => {
         if strict_css_prop {
           unsupported.report();

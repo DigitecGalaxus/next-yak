@@ -1,5 +1,5 @@
-import { styled, css, __yak_unitPostFix } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const buttonStyles = /*#__PURE__*/ css(({ $active })=>$active && /*#__PURE__*/ css("ym7uBBu1", {
         "style": {

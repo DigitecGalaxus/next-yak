@@ -1,4 +1,4 @@
-import { styled, keyframes } from "next-yak";
+import { styled, keyframes } from "@yak/react";
 
 export const Button = styled.button`
   ${keyframes`

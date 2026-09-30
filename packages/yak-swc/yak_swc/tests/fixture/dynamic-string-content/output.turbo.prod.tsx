@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogICY6OmJlZm9yZSB7CiAgICBjb250ZW50OiB2YXIoLS15bTd1QkJ1MSk7CiAgfQogICY6OmFmdGVyIHsKICAgIGNvbnRlbnQ6IHZhcigtLXltN3VCQnUyKTsKICB9Cn0ueW03dUJCdTMgewogIGJhY2tncm91bmQ6IHVybCh2YXIoLS15bTd1QkJ1NCkpOwp9LnltN3VCQnU1IHsKICAmOjpiZWZvcmUgewogICAgY29udGVudDogIkhlbGxvIHZhcigtLXltN3VCQnU2KSI7CiAgfQp9";
 // Dynamic value wrapped in quotes should produce `var(--xxx)` (unquoted),
 // because `var()` references inside string literals are treated as literal

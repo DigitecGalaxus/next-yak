@@ -1,5 +1,5 @@
-import { styled, __yak_unitPostFix } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, __yak_unitPostFix } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Identical prop arrow used in two declarations
 const TwiceSameArrow = /*YAK Extracted CSS:

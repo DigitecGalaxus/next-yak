@@ -1,6 +1,6 @@
-import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "next-yak/internal";
+import { css, styled, __yak_unitPostFix, __yak_mergeClassNames } from "@yak/react/internal";
 import { ImportedCard } from "./imported-card";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const props = {} as any;
 // folds: the class-toggling expression is inlined at the usage

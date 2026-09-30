@@ -1,4 +1,4 @@
-import { globalStyle } from "next-yak/internal";
+import { globalStyle } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 // Markup rendered by third-party code (map widgets, markdown, CMS content)
 // ships fixed class names. On Next.js with webpack, CSS Modules would hash

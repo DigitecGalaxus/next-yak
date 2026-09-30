@@ -1,6 +1,6 @@
-import { css, styled } from "next-yak/internal";
+import { css, styled } from "@yak/react/internal";
 import { typographyMixin } from "./typography";
-import * as __yak from "next-yak/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const textColor = /*#__PURE__*/ css();
 const textStyles = /*#__PURE__*/ css();

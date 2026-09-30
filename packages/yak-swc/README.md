@@ -8,7 +8,7 @@ This package contains the Rust SWC plugin for [next-yak](https://www.npmjs.com/p
 
 `@yak/swc` is a SWC (Speedy Web Compiler) plugin written in rust to transform the CSS-in-JS code at build time
 
-This package is distributed separately from the main next-yak package to provide flexibility in version management. It needs to be compatible with your project's @swc/core version. By keeping it separate, you can choose the appropriate version that matches your SWC setup.
+This package is distributed separately from the main @yak/react package to provide flexibility in version management. It needs to be compatible with your project's @swc/core version. By keeping it separate, you can choose the appropriate version that matches your SWC setup.
 
 ## Installation
 
@@ -24,8 +24,8 @@ Make sure to install a version that is compatible with your project's @swc/core 
 
 ## Usage
 
-This plugin is typically configured automatically when you set up next-yak in your Next.js project.
-For details please refer to the [next-yak documentation](https://yak.js.org/).
+This plugin is typically configured automatically when you set up @yak/react in your Next.js project.
+For details please refer to the [yak documentation](https://yak.js.org/).
 
 ## Contributing
 

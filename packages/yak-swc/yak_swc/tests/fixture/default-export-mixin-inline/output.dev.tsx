@@ -1,4 +1,4 @@
-import { css } from "next-yak/internal";
+import { css } from "@yak/react/internal";
 import { otherMixin } from "./otherMixin";
 export default /*YAK EXPORTED MIXIN:default
 color: red;

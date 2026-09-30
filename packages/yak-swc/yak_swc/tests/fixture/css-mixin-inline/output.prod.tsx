@@ -1,5 +1,5 @@
-import { styled, css } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:ym7uBBu*//*YAK Extracted CSS:
 :global(.ym7uBBu) {

@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 export const Card = styled.div`
   background: url("/card-bg.jpg") no-repeat;

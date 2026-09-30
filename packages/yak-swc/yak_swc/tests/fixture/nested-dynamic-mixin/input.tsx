@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 // example taken from https://github.com/DigitecGalaxus/next-yak/issues/208 
 

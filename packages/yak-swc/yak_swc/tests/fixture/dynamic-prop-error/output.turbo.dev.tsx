@@ -1,5 +1,5 @@
-import { styled, __yak_unitPostFix } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, __yak_unitPostFix } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LmlucHV0X0ZsZXhDb250YWluZXJfbTd1QkJ1IHsKICBkaXNwbGF5OiBmbGV4OwogIHotaW5kZXg6IHZhcigtLWlucHV0X0ZsZXhDb250YWluZXJfX3otaW5kZXhfbTd1QkJ1KTsKICBtYXJnaW4tYm90dG9tOiB2YXIoLS1pbnB1dF9GbGV4Q29udGFpbmVyX19tYXJnaW4tYm90dG9tX203dUJCdSk7Cn0=";
 export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:input_FlexContainer_m7uBBu*//*YAK Extracted CSS:
 .input_FlexContainer_m7uBBu {

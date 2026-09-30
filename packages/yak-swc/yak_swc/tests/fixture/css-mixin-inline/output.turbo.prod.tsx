@@ -1,5 +1,5 @@
-import { styled, css } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled, css } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogICY6aG92ZXIgewogICAgY29sb3I6IGJsYWNrOwogIH0KfQoueW03dUJCdTEgewogICY6aG92ZXIgewogICAgY29sb3I6IHJlZDsKICB9Cn0=";
 export const ThemedButton = /*YAK EXPORTED STYLED:ThemedButton:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {

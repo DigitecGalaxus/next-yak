@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 // @ts-ignore
 import { fonts } from "./fonts";
 // @ts-ignore

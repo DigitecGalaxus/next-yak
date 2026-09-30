@@ -15,12 +15,12 @@ const ruleTester = new RuleTester({
 
 ruleTester.run("@yak/css-global-deprecated", yakPlugin.rules["css-global-deprecated"], {
   valid: [
-    'import { styled } from "next-yak"; styled.div`color: red;`;',
+    'import { styled } from "@yak/react"; styled.div`color: red;`;',
     "const Component = styled.div`:global(body) { color: red; }`;",
   ],
   invalid: [
     {
-      code: 'import { styled } from "next-yak"; styled.div`:global(body) { color: red; }`;',
+      code: 'import { styled } from "@yak/react"; styled.div`:global(body) { color: red; }`;',
       errors: [{ messageId: "globalSelectorDeprecated" }],
     },
   ],
@@ -30,7 +30,7 @@ ruleTester.run("@yak/css-nesting-operator", yakPlugin.rules["css-nesting-operato
   valid: [],
   invalid: [
     {
-      code: ['import { styled } from "next-yak";', "styled.div`", "  > div { }", "`;"].join("\n"),
+      code: ['import { styled } from "@yak/react";', "styled.div`", "  > div { }", "`;"].join("\n"),
       errors: [
         {
           messageId: "missingNestingOperator",
@@ -38,7 +38,7 @@ ruleTester.run("@yak/css-nesting-operator", yakPlugin.rules["css-nesting-operato
             {
               messageId: "missingNestingOperator",
               output: [
-                'import { styled } from "next-yak";',
+                'import { styled } from "@yak/react";',
                 "styled.div`",
                 "  & > div { }",
                 "`;",
@@ -55,8 +55,10 @@ ruleTester.run("@yak/enforce-semicolon", yakPlugin.rules["enforce-semicolon"], {
   valid: [],
   invalid: [
     {
-      code: ['import { styled } from "next-yak";', "styled.div`", "  ${mixin}", "`;"].join("\n"),
-      output: ['import { styled } from "next-yak";', "styled.div`", "  ${mixin};", "`;"].join("\n"),
+      code: ['import { styled } from "@yak/react";', "styled.div`", "  ${mixin}", "`;"].join("\n"),
+      output: ['import { styled } from "@yak/react";', "styled.div`", "  ${mixin};", "`;"].join(
+        "\n",
+      ),
       errors: [{ messageId: "lonelyExpression" }],
     },
   ],
@@ -66,7 +68,7 @@ ruleTester.run("@yak/style-conditions", yakPlugin.rules["style-conditions"], {
   valid: [],
   invalid: [
     {
-      code: "import { css } from 'next-yak'; css`color: ${({ variant }) => (variant ? 'red' : 'blue')}`;",
+      code: "import { css } from '@yak/react'; css`color: ${({ variant }) => (variant ? 'red' : 'blue')}`;",
       errors: [{ messageId: "invalidRuntimeReturnValueWithExample" }],
     },
   ],

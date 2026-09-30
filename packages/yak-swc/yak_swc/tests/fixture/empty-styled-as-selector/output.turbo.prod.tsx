@@ -1,5 +1,5 @@
-import { styled } from "next-yak/internal";
-import * as __yak from "next-yak/internal";
+import { styled } from "@yak/react/internal";
+import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUxIHsKICAueW03dUJCdSB7CiAgICBjb2xvcjogcmVkOwogIH0KfQ==";
 // Non-exported styled component with no CSS rules
 // should still get a class so it can be used as a selector

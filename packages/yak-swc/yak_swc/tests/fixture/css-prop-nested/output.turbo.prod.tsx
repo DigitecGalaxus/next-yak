@@ -1,4 +1,4 @@
-import { css, __yak_mergeCssProp } from "next-yak/internal";
+import { css, __yak_mergeCssProp } from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7Cn0ueW03dUJCdTEgewogIGNvbG9yOiBibHVlOwp9LnltN3VCQnUyIHsKICBjb2xvcjogZ3JlZW47Cn0=";
 <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .ym7uBBu {

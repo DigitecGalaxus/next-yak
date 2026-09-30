@@ -1,6 +1,6 @@
 # isolated-source-eval
 
-> Internal module of next-yak. Not published as a standalone package.
+> Internal module of @yak/react and @yak/solid. Not published as a standalone package.
 
 Evaluate TypeScript and JavaScript modules in isolated worker threads. Get back serializable exports and a full transitive dependency list — used by the Vite plugin to evaluate user code at build time without polluting the host process.
 

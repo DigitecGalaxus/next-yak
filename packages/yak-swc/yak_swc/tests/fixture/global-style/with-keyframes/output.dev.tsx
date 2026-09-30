@@ -1,4 +1,4 @@
-import { globalStyle, keyframes } from "next-yak/internal";
+import { globalStyle, keyframes } from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 const fadeIn = /*YAK Extracted CSS:
 @keyframes :global(fadeIn_m7uBBu) {

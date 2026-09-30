@@ -1,6 +1,6 @@
 # Next.js Example
 
-Example Next.js app using next-yak for CSS-in-JS. Works with both **Webpack** and **Turbopack**.
+Example Next.js app using @yak/react for CSS-in-JS. Works with both **Webpack** and **Turbopack**.
 
 ## Getting Started
 
@@ -13,7 +13,7 @@ pnpm example
 
 ## Key Files
 
-- `next.config.ts` - next-yak configuration via `withYak`
+- `next.config.ts` - @yak/react configuration via `withYak`
 - `app/` - App Router pages and components using `styled`, `css`, and `keyframes`
 - `yak.context.ts` - Theme context configuration
 
