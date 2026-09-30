@@ -1,4 +1,5 @@
 import { createViteYakPlugin } from "yak-internals/vite-plugin-core";
+import { packageName } from "../packageName.js";
 
 export type { ViteYakPluginOptions } from "yak-internals/vite-plugin-core";
 
@@ -21,7 +22,7 @@ export type { ViteYakPluginOptions } from "yak-internals/vite-plugin-core";
  * ```
  */
 export const viteYak = createViteYakPlugin({
-  name: "next-yak",
+  name: packageName,
   reactRefreshReg: true,
   excludePattern: /packages\/next-yak/,
   foldStatic: true,

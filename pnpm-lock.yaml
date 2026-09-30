@@ -1071,6 +1071,9 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 4.1.11(@types/node@26.4.1)(jsdom@29.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))
+      yak-internals:
+        specifier: workspace:*
+        version: link:../yak-internals
 
   packages/next-yak:
     dependencies:
@@ -1148,6 +1151,9 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+      yak-internals:
+        specifier: workspace:*
+        version: link:../yak-internals
 
   packages/yak-internals:
     devDependencies:

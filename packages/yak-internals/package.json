@@ -9,6 +9,7 @@
   ],
   "exports": {
     "./config": "./config.ts",
+    "./package-names": "./packageNames.ts",
     "./vite-plugin-core": "./loaders/vite-plugin-core.ts",
     "./debug-logger": "./loaders/lib/debugLogger.ts",
     "./extract-css": "./loaders/lib/extractCss.ts",

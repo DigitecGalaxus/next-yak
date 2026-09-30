@@ -9,6 +9,7 @@ import { createDebugLogger } from "yak-internals/debug-logger";
 import { extractCss } from "yak-internals/extract-css";
 import { parseExports } from "yak-internals/parse-exports";
 import { getSwcParserOptions } from "yak-internals/swc-parser-options";
+import { packageName } from "../packageName.js";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
 const yakSwcPluginPath = universalRequire.resolve("yak-swc");
@@ -27,8 +28,8 @@ export default async function cssExtractLoader(
 ): Promise<string | void> {
   const callback = this.async();
 
-  // process only files which include next-yak for maximal compile performance
-  if (!code.includes("next-yak")) {
+  // process only files which include the package name (next-yak or @yak/react) for maximal compile performance
+  if (!code.includes(packageName)) {
     return callback(null, code, sourceMap);
   }
 

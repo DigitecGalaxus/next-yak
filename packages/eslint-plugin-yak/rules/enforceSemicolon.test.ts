@@ -95,6 +95,16 @@ ruleTester.run("yak-enforce-semicolons", enforceSemicolons, {
     },
   ],
   invalid: [
+    ...["@yak/react", "@yak/solid"].map((importSource) => ({
+      // Every yak runtime package is detected, not only next-yak
+      code: [`import { styled } from "${importSource}";`, "styled.button`", "${foo}", "`"].join(
+        "\n",
+      ),
+      output: [`import { styled } from "${importSource}";`, "styled.button`", "${foo};", "`"].join(
+        "\n",
+      ),
+      errors: [{ messageId: "lonelyExpression" as const }],
+    })),
     {
       // Mixin with attrs and styled.div
       code: [

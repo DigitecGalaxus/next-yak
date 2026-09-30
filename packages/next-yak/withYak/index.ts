@@ -8,6 +8,7 @@ import {
   resolveYakContext,
   type YakConfigOptions,
 } from "yak-internals/config";
+import { packageName } from "../packageName.js";
 
 export { buildYakPluginOptions, resolveYakContext } from "yak-internals/config";
 export type { YakConfigOptions } from "yak-internals/config";
@@ -92,7 +93,7 @@ function addYakTurbopack(
   const yakContext = resolveYakContext(yakOptions.contextPath, process.cwd());
   if (yakContext) {
     nextConfig.turbopack.resolveAlias ||= {};
-    nextConfig.turbopack.resolveAlias["next-yak/context/baseContext"] =
+    nextConfig.turbopack.resolveAlias[`${packageName}/context/baseContext`] =
       // This is a hack around the fact that turbopack currently only supports relative paths
       // turbopack: "server relative imports are not implemented yet"
       // Relative is quite dangerous here as it relies on the cwd being the starting point
@@ -158,7 +159,7 @@ function addYakWebpack(
       webpackConfig.context || process.cwd(),
     );
     if (yakContext) {
-      webpackConfig.resolve.alias["next-yak/context/baseContext"] = yakContext;
+      webpackConfig.resolve.alias[`${packageName}/context/baseContext`] = yakContext;
     }
 
     return webpackConfig;

@@ -56,10 +56,19 @@
     "@types/node": "catalog:dev",
     "next-yak": "workspace:*",
     "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "typescript": "catalog:dev",
+    "yak-internals": "workspace:*"
   },
   "peerDependencies": {
     "next-yak": "workspace:^",
     "storybook": "^10.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@yak/react": {
+      "optional": true
+    },
+    "next-yak": {
+      "optional": true
+    }
   }
 }

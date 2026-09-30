@@ -5,6 +5,7 @@ import {
   resolveYakContext,
   type YakConfigOptions,
 } from "../withYak/index.js";
+import { packageName } from "../packageName.js";
 
 // Rspack's loader context is webpack-compatible but does NOT implement
 // `this.loadModule` (the webpack API the webpack-loader relies on). It does
@@ -38,7 +39,7 @@ const rspackLoaderPath = fileURLToPath(new URL("../loaders/turbo-loader.cjs", im
  */
 export function pluginYak(yakOptions: YakConfigOptions = {}): RsbuildPlugin {
   return {
-    name: "next-yak",
+    name: packageName,
     setup(api) {
       api.modifyRspackConfig((config) => {
         const rootContext = api.context.rootPath;
@@ -81,7 +82,7 @@ export function pluginYak(yakOptions: YakConfigOptions = {}): RsbuildPlugin {
           config.resolve ??= {};
           config.resolve.alias = {
             ...config.resolve.alias,
-            "next-yak/context/baseContext": yakContext,
+            [`${packageName}/context/baseContext`]: yakContext,
           };
         }
       });

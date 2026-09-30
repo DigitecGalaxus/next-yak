@@ -1,4 +1,34 @@
+import { readFileSync } from "node:fs";
 import { defineConfig, type UserConfig } from "tsdown";
+
+// Published as "next-yak" and as "@yak/react", so every build uses the name in package.json
+const { name: packageName } = JSON.parse(readFileSync("./package.json", "utf8")) as {
+  name: string;
+};
+
+// The runtime imports these entries by package name (so bundlers pick the react-server
+// build and withYak can alias the theme context). Rewrite them to the name in package.json.
+const selfImportPaths = {
+  "next-yak": packageName,
+  "next-yak/context": `${packageName}/context`,
+  "next-yak/context/baseContext": `${packageName}/context/baseContext`,
+};
+
+/** Adds the package name to every build, next to existing `define` and `paths` */
+const withPackageName = (config: UserConfig): UserConfig => {
+  const { outputOptions = {} } = config;
+  if (typeof outputOptions === "function" || typeof outputOptions.paths === "function") {
+    throw new Error("function `outputOptions` or `paths` are not supported by withPackageName");
+  }
+  return {
+    ...config,
+    define: { ...config.define, __YAK_PACKAGE_NAME__: JSON.stringify(packageName) },
+    outputOptions: {
+      ...outputOptions,
+      paths: { ...selfImportPaths, ...outputOptions.paths },
+    },
+  };
+};
 
 const outExtensions: UserConfig["outExtensions"] = ({ format }) => ({
   js: format === "cjs" ? ".cjs" : ".js",
@@ -41,7 +71,7 @@ const loaderConfig: UserConfig = {
   outExtensions,
 };
 
-export default defineConfig([
+const configs: UserConfig[] = [
   // runtime
   {
     entry: ["runtime/index.ts"],
@@ -287,4 +317,6 @@ export default defineConfig([
     outExtensions,
     outputOptions: stripJsdoc,
   },
-]);
+];
+
+export default defineConfig(configs.map(withPackageName));

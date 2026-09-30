@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { packageName } from "../packageName.js";
 
 interface WebpackConfig {
   module?: { rules?: unknown[] };
@@ -79,7 +80,7 @@ export function allowYakGlobalCss(webpackConfig: WebpackConfig) {
   const found = findAppRule(rules);
   if (!found) {
     console.warn(
-      "next-yak: could not find the next.js global-CSS rules. " +
+      `${packageName}: could not find the next.js global-CSS rules. ` +
         "Please report this issue with your Next.js version at " +
         "https://github.com/DigitecGalaxus/next-yak/issues/new",
     );

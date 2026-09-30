@@ -1,9 +1,30 @@
-import { resolveYakContext } from "next-yak/withYak";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path, { dirname } from "node:path";
+import { resolveYakContext } from "yak-internals/config";
+import { reactPackageNames } from "yak-internals/package-names";
 
 const require = createRequire(import.meta.url); // esm only
+
+type ReactPackageName = (typeof reactPackageNames)[number];
+
+let yakPackageName: ReactPackageName | undefined;
+
+/**
+ * Finds the installed yak runtime package. The first installed one wins
+ */
+function findYakPackage(): ReactPackageName {
+  if (yakPackageName) return yakPackageName;
+  for (const packageName of reactPackageNames) {
+    try {
+      require.resolve(`${packageName}/loaders/webpack-loader`);
+      return (yakPackageName = packageName);
+    } catch {
+      // not installed, try the next name
+    }
+  }
+  throw new Error(`storybook-addon-yak could not find a yak runtime. Please install "next-yak".`);
+}
 
 export interface YakAddonOptions {
   /** Path to custom yak context file for theming */
@@ -45,7 +66,7 @@ function getYakOptions(options: StorybookOptions): YakAddonOptions {
  */
 async function findYakSwcPlugin(): Promise<string> {
   try {
-    const loaderPath = require.resolve("next-yak/loaders/webpack-loader");
+    const loaderPath = require.resolve(`${findYakPackage()}/loaders/webpack-loader`);
     const packageJsonPath = require.resolve("yak-swc/package.json", {
       paths: [dirname(loaderPath)],
     });
@@ -63,8 +84,9 @@ async function findYakSwcPlugin(): Promise<string> {
 export async function viteFinal(config: any, options: StorybookOptions) {
   const yakOptions = getYakOptions(options);
 
+  const yakPackage = findYakPackage();
   try {
-    const { viteYak } = await import("next-yak/vite");
+    const { viteYak }: typeof import("next-yak/vite") = await import(`${yakPackage}/vite`);
     const yakPlugin = await viteYak({
       minify: yakOptions.minify,
       contextPath: yakOptions.contextPath,
@@ -77,7 +99,7 @@ export async function viteFinal(config: any, options: StorybookOptions) {
     config.plugins.push(yakPlugin);
   } catch (e) {
     throw new Error(
-      `Failed to load vite-plugin for next-yak. ` +
+      `Failed to load vite-plugin for ${yakPackage}. ` +
         `Make sure you have vite installed. Error: ${e}`,
     );
   }
@@ -121,7 +143,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   config.module.rules = config.module.rules || [];
   config.module.rules.push({
     test: testPattern,
-    loader: require.resolve("next-yak/loaders/webpack-loader"),
+    loader: require.resolve(`${findYakPackage()}/loaders/webpack-loader`),
     options: yakOptions,
   });
 
@@ -203,7 +225,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   if (yakContext) {
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};
-    config.resolve.alias["next-yak/context/baseContext"] = yakContext;
+    config.resolve.alias[`${findYakPackage()}/context/baseContext`] = yakContext;
   }
 
   return config;

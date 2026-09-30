@@ -5,6 +5,7 @@ import {
   ModuleExports,
   UnsupportedExportSource,
 } from "../../cross-file-resolver/parseModule.js";
+import { yakPackageNames } from "../../packageNames.js";
 
 /**
  * Extracts a module's exports for the cross-file resolver by parsing with babel. Nothing is executed.
@@ -21,12 +22,11 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
       plugins: ["jsx", "typescript"] as const,
     });
 
-    // Derive importYak from top-level imports (no traverse needed).
-    // Mirrors the compiler's package list (YakPackage in yak-swc's yak_imports.rs)
+    // Derive importYak from top-level imports (no traverse needed)
     const importYak = ast.program.body.some(
       (node) =>
         node.type === "ImportDeclaration" &&
-        ["next-yak", "@yak/react", "@yak/solid"].includes(node.source.value),
+        (yakPackageNames as readonly string[]).includes(node.source.value),
     );
 
     const moduleExports: ModuleExports = {
