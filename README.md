@@ -326,6 +326,9 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤�
 - https://github.com/webpack/mini-css-extract-plugin/pull/1162 (fix: use matchResource for importModule)
 - https://github.com/solidjs/solid/issues/3090 (register factory-created components with solid-refresh)
 - https://github.com/solidjs/solid/issues/3099 (fail the compile on parser-restructured templates)
+- https://github.com/QwikDev/qwik/pull/9068 (fix n² server render for sibling components with `<Slot/>`)
+- https://github.com/QwikDev/qwik/issues/9084 (n² server render for sibling inline components)
+- https://github.com/QwikDev/qwik/pull/9086 (fix virtual CSS 404 and file watcher crash in router dev)
 
 [![next-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
 
