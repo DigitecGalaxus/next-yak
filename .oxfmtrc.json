@@ -17,7 +17,7 @@
     "docs/playground-wasm/out/",
     "docs/public/types/",
     "docs/content/docs/eslint-plugin.mdx",
-    "packages/eslint-plugin-yak/README.md",
-    "packages/eslint-plugin-yak/docs/"
+    "packages/yak-eslint-plugin/README.md",
+    "packages/yak-eslint-plugin/docs/"
   ]
 }

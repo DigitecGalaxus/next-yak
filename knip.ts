@@ -45,10 +45,10 @@ const config: KnipConfig = {
     "packages/yak-internals": {
       ignore: ["isolated-source-eval/__tests__/fixtures/**"],
     },
-    "packages/eslint-plugin-yak": {
+    "packages/yak-eslint-plugin": {
       ignore: ["rules/fixtures/**"],
     },
-    "packages/storybook-addon-yak": {
+    "packages/yak-storybook": {
       ignoreDependencies: yakSwc,
     },
     docs: {

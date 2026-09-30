@@ -59,7 +59,7 @@ jobs:
       - name: Format (oxfmt)
         run: pnpm format
 
-      - name: Build eslint-plugin-yak (required for oxlint JS plugin)
+      - name: Build @yak/eslint-plugin (required for oxlint JS plugin)
         run: pnpm --filter=@yak/eslint-plugin build
 
       - name: Lint (oxlint)

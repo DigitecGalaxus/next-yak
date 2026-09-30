@@ -359,7 +359,7 @@ importers:
         version: 3.0.1
       '@yak/eslint-plugin':
         specifier: workspace:*
-        version: link:packages/eslint-plugin-yak
+        version: link:packages/yak-eslint-plugin
       knip:
         specifier: catalog:dev
         version: 6.34.0
@@ -842,7 +842,7 @@ importers:
         version: 6.1.1(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
       '@yak/eslint-plugin':
         specifier: workspace:^
-        version: link:../../packages/eslint-plugin-yak
+        version: link:../../packages/yak-eslint-plugin
       eslint:
         specifier: catalog:dev
         version: 10.9.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -928,7 +928,7 @@ importers:
         version: 19.2.5(@types/react@19.2.18)
       '@yak/storybook':
         specifier: workspace:*
-        version: link:../../packages/storybook-addon-yak
+        version: link:../../packages/yak-storybook
       '@yak/swc':
         specifier: workspace:*
         version: link:../../packages/yak-swc
@@ -1038,7 +1038,7 @@ importers:
         specifier: catalog:dev
         version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
 
-  packages/eslint-plugin-yak:
+  packages/yak-eslint-plugin:
     dependencies:
       '@oxlint/plugins':
         specifier: catalog:core
@@ -1075,7 +1075,7 @@ importers:
         specifier: workspace:*
         version: link:../yak-internals
 
-  packages/storybook-addon-yak:
+  packages/yak-storybook:
     dependencies:
       storybook:
         specifier: ^10.0.0

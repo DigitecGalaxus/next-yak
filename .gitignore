@@ -3,8 +3,8 @@ node_modules
 **/docs/dist
 **/yak-react/dist
 **/yak-solid/dist
-**/eslint-plugin-yak/dist
-**/storybook-addon-yak/dist
+**/yak-eslint-plugin/dist
+**/yak-storybook/dist
 examples/**/dist
 storybook-static
 target

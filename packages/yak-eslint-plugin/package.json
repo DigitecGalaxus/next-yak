@@ -51,8 +51,8 @@
     "build": "tsdown",
     "pretest": "pnpm build",
     "test": "vitest run",
-    "check:docs": "pnpm build && eslint-doc-generator --check --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
-    "update:docs": "pnpm build && eslint-doc-generator --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/eslint-plugin-yak/docs/rules/{name}.md",
+    "check:docs": "pnpm build && eslint-doc-generator --check --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/{name}.md",
+    "update:docs": "pnpm build && eslint-doc-generator --url-rule-doc https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/{name}.md",
     "prepublishOnly": "node ../../scripts/check-pnpm.js && pnpm build && pnpm update:docs && pnpm test -- --watch=false",
     "test:watch": "vitest"
   },

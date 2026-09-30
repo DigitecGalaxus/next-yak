@@ -9,8 +9,8 @@ on:
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
-      - "packages/storybook-addon-yak/**"
-      - "packages/eslint-plugin-yak/**"
+      - "packages/yak-storybook/**"
+      - "packages/yak-eslint-plugin/**"
       - ".github/workflows/tests.yml"
   pull_request:
     branches: ["main"]
@@ -20,8 +20,8 @@ on:
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
-      - "packages/storybook-addon-yak/**"
-      - "packages/eslint-plugin-yak/**"
+      - "packages/yak-storybook/**"
+      - "packages/yak-eslint-plugin/**"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
 

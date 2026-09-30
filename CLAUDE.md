@@ -17,7 +17,7 @@ next-yak/
 │   │   ├── yak_swc/       # Core SWC plugin implementation
 │   │   ├── css_in_js_parser/  # CSS-in-JS parser library
 │   │   └── relative_posix_path/  # Path utility
-│   ├── eslint-plugin-yak/ # ESLint plugin
+│   ├── yak-eslint-plugin/ # ESLint and Oxlint plugin (@yak/eslint-plugin)
 │   └── example/           # Next.js example (symlinked to examples/next-js)
 ├── examples/
 │   ├── next-js/           # Next.js example app
