@@ -9,7 +9,7 @@ import { libs, writeBenchmarkSource } from "../_shared.ts";
 const componentCount = 1000;
 
 for (const lib of libs) {
-  const isYak = lib === "@yak/react";
+  const isYak = lib === "yak";
 
   const colorFor = (index: number) =>
     `#${((index * 123456) % 16777215).toString(16).padStart(6, "0")}`;

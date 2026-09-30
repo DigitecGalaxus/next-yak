@@ -2,7 +2,7 @@
 
 Two suites live here:
 
-1. **Runtime benchmarks** under `bench/`. Run on every PR via the [`benchmarks`](../.github/workflows/benchmarks.yml) workflow to catch render-time regressions in the `next-yak` runtime, and to compare against `styled-components` head-to-head on identical workloads. The workflow upserts a single PR comment with the latest results.
+1. **Runtime benchmarks** under `bench/`. Run on every PR via the [`benchmarks`](../.github/workflows/benchmarks.yml) workflow to catch render-time regressions in the `yak` runtime, and to compare against `styled-components` head-to-head on identical workloads. The workflow upserts a single PR comment with the latest results.
 2. **Interactive Next.js demo viewer** under `app/`. The same generated benchmark components, rendered in a real Next.js dev server so you can inspect the DOM, classes, and CSS that each library actually produces.
 
 ## Running
@@ -31,9 +31,9 @@ BENCH_OUTPUT_FILE=./bench-table.html pnpm bench
 
 Every benchmark has the same three layers:
 
-1. **`bench/<case>/gen.ts`** builds a TSX source string for both libraries and hands it to `writeBenchmarkSource()`. The helper writes the source verbatim and, for `next-yak`, also runs the source through the SWC plugin to produce a `.compiled.tsx` (mimicking what the `withYak` loader does at app build time, since the bench harness has no loader).
+1. **`bench/<case>/gen.ts`** builds a TSX source string for both libraries and hands it to `writeBenchmarkSource()`. The helper writes the source verbatim and, for `yak`, also runs the source through the SWC plugin to produce a `.compiled.tsx` (mimicking what the `withYak` loader does at app build time, since the bench harness has no loader).
 
-2. **`bench/index.bench.tsx`** imports the `.compiled.tsx` (yak) and `.tsx` (sc) outputs, registers each as a `Benchmark.Suite` case, and at the end pairs the styled-components and next-yak variants of each workload into the HTML results table.
+2. **`bench/index.bench.tsx`** imports the `.compiled.tsx` (yak) and `.tsx` (sc) outputs, registers each as a `Benchmark.Suite` case, and at the end pairs the styled-components and yak variants of each workload into the HTML results table.
 
 3. **`app/bench/[slug]/page.tsx`** imports the _non-compiled_ `.tsx` outputs and renders them in the browser, so the real `withYak` webpack loader path is exercised. This is useful for checking that what the bench is measuring matches what would ship to a real Next.js app.
 

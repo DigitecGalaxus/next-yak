@@ -104,7 +104,7 @@ const Sierpinski: FunctionComponent<SierpinskiProps> = ({
   );
 };
 
-export const Sierpinski${lib === "@yak/react" ? "Yak" : "Styled"}: FunctionComponent = () => (
+export const Sierpinski${lib === "yak" ? "Yak" : "Styled"}: FunctionComponent = () => (
   <Sierpinski s={${initialSize}} x={0} y={0} />
 );
 `;

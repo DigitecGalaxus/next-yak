@@ -20,7 +20,7 @@ for (const lib of libs) {
   // Conditional CSS *rules* (whole declarations toggled on a prop) must use
   // the host library's idiomatic API:
   //   - styled-components: `${p => p.fixed && 'height: 6px;'}` (raw string).
-  //   - next-yak: `${p => p.$fixed && css`height: 6px;`}` (css tag, so the
+  //   - yak: `${p => p.$fixed && css`height: 6px;`}` (css tag, so the
   //     compiler extracts a class and the runtime just toggles it).
   // Mixing them up makes the comparison meaningless: yak silently drops raw
   // strings, and styled-components doesn't need css`` here.
@@ -107,7 +107,7 @@ const Tree: FunctionComponent<TreeProps> = ({ breadth, depth, id, wrap }) => {
   return result;
 };
 
-export const Tree${lib === "@yak/react" ? "Yak" : "Styled"}: FunctionComponent = () => (
+export const Tree${lib === "yak" ? "Yak" : "Styled"}: FunctionComponent = () => (
   <Tree breadth={${breadth}} depth={${depth}} id={0} wrap={${wrap}} />
 );
 `;

@@ -17,7 +17,7 @@ const wrap = 2;
 
 for (const lib of libs) {
   const styled = styledIdentFor(lib);
-  const isYak = lib === "@yak/react";
+  const isYak = lib === "yak";
 
   const cond = conditionalDecl(lib);
   const switchProp = branch(lib);
