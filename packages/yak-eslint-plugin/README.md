@@ -55,7 +55,6 @@ Add the package to `jsPlugins` and enable the rules with their `@yak/` prefix:
   "jsPlugins": ["@yak/eslint-plugin"],
   "rules": {
     "@yak/css-nesting-operator": "error",
-    "@yak/css-global-deprecated": "warn",
     "@yak/enforce-semicolon": "error",
     "@yak/style-conditions": "warn"
   }
@@ -72,11 +71,10 @@ Add the package to `jsPlugins` and enable the rules with their `@yak/` prefix:
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).\
 💡 Manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
-| Name                                                                                                                                         | Description                                                                                             | 💼 | ⚠️ | 🔧 | 💡 |
-| :------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :- | :- | :- | :- |
-| [css-global-deprecated](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/css-global-deprecated.md) | Deprecates :global() selectors in favor of native CSS transpilation                                     |    | ✅  |    |    |
-| [css-nesting-operator](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/css-nesting-operator.md)   | Enforces css selectors in yak to correctly use the nesting selector (&)                                 | ✅  |    |    | 💡 |
-| [enforce-semicolon](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/enforce-semicolon.md)         | Enforces that expression in styled/css literals from yak use semicolons                                 | ✅  |    | 🔧 |    |
-| [style-conditions](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/style-conditions.md)           | Warns when arrow functions in yak styled/css literals would create unnecessary or invalid CSS variables |    | ✅  |    |    |
+| Name                                                                                                                                       | Description                                                                                             | 💼 | ⚠️ | 🔧 | 💡 |
+| :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :- | :- | :- | :- |
+| [css-nesting-operator](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/css-nesting-operator.md) | Enforces css selectors in yak to correctly use the nesting selector (&)                                 | ✅  |    |    | 💡 |
+| [enforce-semicolon](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/enforce-semicolon.md)       | Enforces that expression in styled/css literals from yak use semicolons                                 | ✅  |    | 🔧 |    |
+| [style-conditions](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/style-conditions.md)         | Warns when arrow functions in yak styled/css literals would create unnecessary or invalid CSS variables |    | ✅  |    |    |
 
 <!-- end auto-generated rules list -->

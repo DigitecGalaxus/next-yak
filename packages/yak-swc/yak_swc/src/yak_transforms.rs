@@ -10,7 +10,7 @@ use swc_core::common::errors::HANDLER;
 use swc_core::common::{source_map::PURE_SP, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::ast::*;
 
-use crate::naming_convention::{NamingConvention, TranspilationMode};
+use crate::naming_convention::{css_class_name, NamingConvention};
 
 /// Represents a CSS result after the transformation
 #[derive(Debug)]
@@ -66,7 +66,6 @@ pub trait YakTransform {
 pub struct TransformNestedCss {
   /// ClassName of the mixin
   class_name: String,
-  transpilation_mode: TranspilationMode,
 }
 
 impl TransformNestedCss {
@@ -75,7 +74,6 @@ impl TransformNestedCss {
     naming_convention: &mut NamingConvention,
     declaration_name: &ScopedVariableReference,
     condition: Vec<String>,
-    transpilation_mode: TranspilationMode,
   ) -> TransformNestedCss {
     let condition_concatenated = condition.as_slice().join("-and-");
     let class_name = naming_convention.get_css_variable_name(&format!(
@@ -83,10 +81,7 @@ impl TransformNestedCss {
       declaration_name.to_readable_string(),
       condition_concatenated
     ));
-    TransformNestedCss {
-      class_name,
-      transpilation_mode,
-    }
+    TransformNestedCss { class_name }
   }
 }
 
@@ -96,7 +91,7 @@ impl YakTransform for TransformNestedCss {
     let mut parser_state = previous_parser_state.clone().unwrap();
     // The first scope is the class name which gets attached to the element
     parser_state.current_scopes[0] = CssScope {
-      name: self.transpilation_mode.css_class_name(&self.class_name),
+      name: css_class_name(&self.class_name),
       scope_type: ScopeType::Selector,
     };
     parser_state
@@ -161,7 +156,6 @@ pub struct TransformCssMixin {
   is_exported: bool,
   is_within_jsx_attribute: bool,
   class_name: String,
-  transpilation_mode: TranspilationMode,
 }
 
 impl TransformCssMixin {
@@ -170,7 +164,6 @@ impl TransformCssMixin {
     declaration_name: ScopedVariableReference,
     is_exported: bool,
     is_within_jsx_attribute: bool,
-    transpilation_mode: TranspilationMode,
   ) -> TransformCssMixin {
     let class_name =
       naming_convention.get_css_variable_name(&declaration_name.to_readable_string());
@@ -179,7 +172,6 @@ impl TransformCssMixin {
       is_exported,
       is_within_jsx_attribute,
       class_name,
-      transpilation_mode,
     }
   }
 }
@@ -188,7 +180,7 @@ impl YakTransform for TransformCssMixin {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: self.transpilation_mode.css_class_name(&self.class_name),
+      name: css_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -316,7 +308,6 @@ pub struct TransformStyled {
   declaration_name: ScopedVariableReference,
   assign_display_name: bool,
   is_exported: bool,
-  transpilation_mode: TranspilationMode,
 }
 
 impl TransformStyled {
@@ -325,7 +316,6 @@ impl TransformStyled {
     declaration_name: ScopedVariableReference,
     assign_display_name: bool,
     is_exported: bool,
-    transpilation_mode: TranspilationMode,
   ) -> TransformStyled {
     let class_name =
       naming_convention.get_css_variable_name(&declaration_name.to_readable_string());
@@ -334,7 +324,6 @@ impl TransformStyled {
       declaration_name,
       assign_display_name,
       is_exported,
-      transpilation_mode,
     }
   }
 
@@ -465,7 +454,7 @@ impl YakTransform for TransformStyled {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: self.transpilation_mode.css_class_name(&self.class_name),
+      name: css_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -538,7 +527,7 @@ impl YakTransform for TransformStyled {
 
   /// Get the selector for the specific styled component to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(self.transpilation_mode.css_class_name(&self.class_name))
+    Some(css_class_name(&self.class_name))
   }
 
   fn get_component_class_name(&self) -> Option<&str> {
@@ -560,17 +549,7 @@ impl YakTransform for TransformStyled {
 /// The only transform without a name or scope of its own: the declarations are
 /// emitted verbatim, unscoped and unlayered. It never wraps the rule in a
 /// generated class, so user-authored selectors reach the stylesheet exactly as
-/// written in both transpilation modes.
-///
-/// This does not mean the extracted CSS is free of `:global()`. Interpolated yak
-/// references (`${StyledComponent}`, a `keyframes` name) are resolved on the same
-/// shared path `styled`/`css` use, so in `CssModule` mode they arrive already
-/// wrapped as `:global(.hash)` / `global(name)` — the marker that stops css-loader
-/// from hashing the already-final identifier a second time. Native mode emits them
-/// bare. That wrapping comes from interpolation resolution, not from this transform.
-///
-/// A user-written class selector that must stay global under css-loader still needs
-/// an explicit `:global(.foo)` (a deprecated, webpack-only escape hatch).
+/// written.
 pub struct TransformGlobalStyle;
 
 impl YakTransform for TransformGlobalStyle {
@@ -613,18 +592,11 @@ impl YakTransform for TransformGlobalStyle {
 pub struct TransformKeyframes {
   /// Animation Name
   animation_name: String,
-  transpilation_mode: TranspilationMode,
 }
 
 impl TransformKeyframes {
-  pub fn with_animation_name(
-    animation_name: String,
-    transpilation_mode: TranspilationMode,
-  ) -> TransformKeyframes {
-    TransformKeyframes {
-      animation_name,
-      transpilation_mode,
-    }
+  pub fn with_animation_name(animation_name: String) -> TransformKeyframes {
+    TransformKeyframes { animation_name }
   }
 }
 
@@ -632,10 +604,7 @@ impl YakTransform for TransformKeyframes {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
     let mut parser_state = ParserState::new();
     parser_state.current_scopes = vec![CssScope {
-      name: match &self.transpilation_mode {
-        TranspilationMode::CssModule => format!("@keyframes :global({})", self.animation_name),
-        TranspilationMode::Css => format!("@keyframes {}", self.animation_name),
-      },
+      name: format!("@keyframes {}", self.animation_name),
       scope_type: ScopeType::AtRule,
     }];
     parser_state
@@ -687,9 +656,6 @@ impl YakTransform for TransformKeyframes {
 
   /// Get the selector for the keyframe to be used in other expressions
   fn get_css_reference_name(&self) -> Option<String> {
-    Some(match &self.transpilation_mode {
-      TranspilationMode::CssModule => format!("global({})", self.animation_name),
-      TranspilationMode::Css => self.animation_name.clone(),
-    })
+    Some(self.animation_name.clone())
   }
 }

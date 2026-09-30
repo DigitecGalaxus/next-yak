@@ -1,15 +1,15 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Button = /*YAK Extracted CSS:
-:global(.input_Button_m7uBBu) {
+.input_Button_m7uBBu {
   background: red;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"
 });
 export const Title = /*YAK EXPORTED STYLED:Title:input_Title_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Title_m7uBBu) {
+.input_Title_m7uBBu {
   color: blue;
   font-size: 24px;
 }
@@ -17,7 +17,7 @@ export const Title = /*YAK EXPORTED STYLED:Title:input_Title_m7uBBu*//*YAK Extra
     "displayName": "Title"
 });
 const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Container_m7uBBu) {
+.input_Container_m7uBBu {
   padding: 20px;
   background: yellow;
 }
@@ -25,7 +25,7 @@ const Container = /*YAK EXPORTED STYLED:Container:input_Container_m7uBBu*//*YAK 
     "displayName": "Container"
 });
 export default /*YAK EXPORTED STYLED:default:input_Container_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Container_m7uBBu) {
+.input_Container_m7uBBu {
   padding: 20px;
   background: yellow;
 }

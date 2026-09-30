@@ -7,7 +7,7 @@
 import { css } from "@yak/react/internal";
 import { ellipsis } from "./typography";
 import * as tokens from "./tokens";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const mixin = /*#__PURE__*/ css();
 // errors: a same-file mixin reference
 const Direct = ()=><div css={mixin}/>;
@@ -23,7 +23,7 @@ const LogicalAnd = ({ on }: {
 const TernaryArm = ({ compact }: {
     compact: boolean;
 })=><div css={compact ? mixin : /*YAK Extracted CSS:
-:global(.input_TernaryArm_m7uBBu) {
+.input_TernaryArm_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ css("input_TernaryArm_m7uBBu")}/>;

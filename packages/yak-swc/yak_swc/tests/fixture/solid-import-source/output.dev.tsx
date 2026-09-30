@@ -1,15 +1,15 @@
 import { styled, css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/solid/internal";
 import * as __yak from "@yak/solid/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Button_m7uBBu) {
+.input_Button_m7uBBu {
   color: red;
 }
 */ /* @refresh component */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button_m7uBBu"), {
     "displayName": "Button"
 });
 export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:input_FlexContainer_m7uBBu*//*YAK Extracted CSS:
-:global(.input_FlexContainer_m7uBBu) {
+.input_FlexContainer_m7uBBu {
   display: flex;
   align-items: var(--input_FlexContainer__align-items_m7uBBu);
   margin-bottom: var(--input_FlexContainer__margin-bottom_m7uBBu);
@@ -23,7 +23,7 @@ export const FlexContainer = /*YAK EXPORTED STYLED:FlexContainer:input_FlexConta
     "displayName": "FlexContainer"
 });
 export const Elem = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.input_Elem_m7uBBu) {
+.input_Elem_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ css("input_Elem_m7uBBu"), {

@@ -14,11 +14,6 @@ export interface YakAddonOptions {
   prefix?: string;
   /** Whether to include display names for debugging */
   displayNames?: boolean;
-  /** Experimental options */
-  experiments?: {
-    /** CSS transpilation mode: "Css" or "CssModule" */
-    transpilationMode?: "Css" | "CssModule";
-  };
 }
 
 interface StorybookOptions {
@@ -70,7 +65,6 @@ export async function viteFinal(config: any, options: StorybookOptions) {
       contextPath: yakOptions.contextPath,
       prefix: yakOptions.prefix,
       displayNames: yakOptions.displayNames,
-      experiments: yakOptions.experiments,
     });
 
     config.plugins = config.plugins || [];
@@ -95,12 +89,6 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
 
   const minify = yakOptions.minify ?? process.env.NODE_ENV === "production";
   const displayNames = yakOptions.displayNames ?? !minify;
-  // Default to "Css" mode for webpack (simpler, no CSS modules complexity)
-  const transpilation = yakOptions.experiments?.transpilationMode ?? "Css";
-
-  // Determine CSS extension based on transpilation mode
-  const cssExtension = transpilation === "Css" ? ".yak.css" : ".yak.module.css";
-
   const yakPluginOptions = {
     minify,
     basePath: process.cwd(),
@@ -108,19 +96,16 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
     displayNames,
     importMode: {
       // Webpack inline match resource pattern for CSS extraction
-      value: `./{{__BASE_NAME__}}${cssExtension}!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}${cssExtension}`,
-      transpilation,
+      value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css",
       encoding: "None",
     },
   };
 
   // Add webpack loader for yak CSS extraction
-  const testPattern = transpilation === "Css" ? /\.yak\.css$/ : /\.yak\.module\.css$/;
-
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
   config.module.rules.push({
-    test: testPattern,
+    test: /\.yak\.css$/,
     loader: require.resolve("@yak/react/loaders/webpack-loader"),
     options: yakOptions,
   });

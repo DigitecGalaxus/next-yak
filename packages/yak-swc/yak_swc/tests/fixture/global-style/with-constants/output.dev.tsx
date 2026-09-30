@@ -1,5 +1,5 @@
 import { globalStyle, css } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const brand = "#6b21ff";
 const spacing = 8;
 const focusRing = /*#__PURE__*/ css();

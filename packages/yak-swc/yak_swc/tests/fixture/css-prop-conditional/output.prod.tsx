@@ -1,9 +1,9 @@
 import { css, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Elem = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: red;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu1"), "ym7uBBu"))}/>;
@@ -11,7 +11,7 @@ const Elem = ()=>{
 const Elem2 = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   color: red;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu3"), "ym7uBBu2"), {
@@ -21,7 +21,7 @@ const Elem2 = ()=>{
 const Elem3 = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu5) {
+.ym7uBBu5 {
   padding: 10px;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu5"), "ym7uBBu4"), {
@@ -33,21 +33,21 @@ const Elem3 = ()=>{
 const Elem4 = (props: any)=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu7) {
+.ym7uBBu7 {
   color: green;
 }
 */ /*#__PURE__*/ css(()=>show && /*#__PURE__*/ css("ym7uBBu7"), "ym7uBBu6"), props)}/>;
 };
 const Elem5 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu9) {
+.ym7uBBu9 {
   color: purple;
 }
 */ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBu9"), "ym7uBBu8"), props.a, props.b)}/>;
 };
 const Elem6 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuB) {
+.ym7uBBuB {
   font-size: 16px;
 }
 */ /*#__PURE__*/ css(()=>props.show && /*#__PURE__*/ css("ym7uBBuB"), "ym7uBBuA"), {
@@ -65,7 +65,7 @@ const Elem7 = (props: any)=>{
 const Elem8 = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuE) {
+.ym7uBBuE {
   color: var(--ym7uBBuF);
 }
 */ /*#__PURE__*/ css({
@@ -77,7 +77,7 @@ const Elem8 = ()=>{
 const Elem9 = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuG) {
+.ym7uBBuG {
   color: var(--ym7uBBuH);
 }
 */ /*#__PURE__*/ css({
@@ -91,7 +91,7 @@ const Elem9 = ()=>{
 const Elem10 = ()=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuI) {
+.ym7uBBuI {
   padding: var(--ym7uBBuJ);
 }
 */ /*#__PURE__*/ css({
@@ -107,7 +107,7 @@ const Elem10 = ()=>{
 const Elem11 = (props: any)=>{
     const show = Math.random() > 0.5;
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuK) {
+.ym7uBBuK {
   color: var(--ym7uBBuL);
 }
 */ /*#__PURE__*/ css({
@@ -118,7 +118,7 @@ const Elem11 = (props: any)=>{
 };
 const Elem12 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuM) {
+.ym7uBBuM {
   color: var(--ym7uBBuN);
 }
 */ /*#__PURE__*/ css({
@@ -129,7 +129,7 @@ const Elem12 = (props: any)=>{
 };
 const Elem13 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuO) {
+.ym7uBBuO {
   font-size: var(--ym7uBBuP);
 }
 */ /*#__PURE__*/ css({
@@ -145,7 +145,7 @@ const Elem13 = (props: any)=>{
 };
 const Elem14 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuQ) {
+.ym7uBBuQ {
   display: var(--ym7uBBuR);
 }
 */ /*#__PURE__*/ css({
@@ -158,7 +158,7 @@ const Elem14 = (props: any)=>{
 };
 const Elem15 = (props: any)=>{
     return <div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBuU) {
+.ym7uBBuU {
   color: var(--ym7uBBuV);
 }
 */ /*#__PURE__*/ css(()=>props.a && /*#__PURE__*/ css("ym7uBBuT", ()=>props.b && /*#__PURE__*/ css("ym7uBBuU", {

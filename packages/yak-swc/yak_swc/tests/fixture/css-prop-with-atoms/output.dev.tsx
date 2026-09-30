@@ -1,6 +1,6 @@
 import { css, styled, atoms, __yak_mergeCssProp } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Elem = ()=><div {...__yak_mergeCssProp(atoms("yellow"))}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp(atoms("blue"), {
         className: "test-class"
@@ -26,7 +26,7 @@ const Elem9 = ({ on }: {
     on: boolean;
 })=><div {...__yak_mergeCssProp(on ? atoms("orange") : undefined)}/>;
 const Text = /*YAK Extracted CSS:
-:global(.input_Text_m7uBBu) {
+.input_Text_m7uBBu {
   font-size: 20px;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_p("input_Text_m7uBBu"), {
@@ -34,7 +34,7 @@ const Text = /*YAK Extracted CSS:
 });
 const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp(atoms("red"))}>test</Text>;
 const CssAndAtoms = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.input_CssAndAtoms_m7uBBu) {
+.input_CssAndAtoms_m7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ css(atoms("yellow"), "input_CssAndAtoms_m7uBBu"), {

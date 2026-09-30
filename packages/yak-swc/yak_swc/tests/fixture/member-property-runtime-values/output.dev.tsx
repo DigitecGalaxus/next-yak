@@ -1,6 +1,6 @@
 import { styled, css } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const SIZES: Record<"sm" | "md", {
     width: string;
     height: string;
@@ -15,7 +15,7 @@ const SIZES: Record<"sm" | "md", {
     }
 };
 const StyledDiv = /*YAK Extracted CSS:
-:global(.input_StyledDiv_m7uBBu) {
+.input_StyledDiv_m7uBBu {
   width: var(--input_StyledDiv__width_m7uBBu);
   height: 24px;
 }
@@ -27,7 +27,7 @@ const StyledDiv = /*YAK Extracted CSS:
     "displayName": "StyledDiv"
 });
 const StyledButton = /*YAK Extracted CSS:
-:global(.input_StyledButton__\$active_m7uBBu) {
+.input_StyledButton__\$active_m7uBBu {
   width: var(--input_StyledButton__width_m7uBBu);
   height: 32px;
 }

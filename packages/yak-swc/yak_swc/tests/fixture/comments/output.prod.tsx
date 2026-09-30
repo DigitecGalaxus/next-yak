@@ -1,9 +1,9 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const primary = "green";
 export const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: green;
   background: red;
 }

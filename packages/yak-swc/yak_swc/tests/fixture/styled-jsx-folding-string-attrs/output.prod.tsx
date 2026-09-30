@@ -1,35 +1,35 @@
 import { css, styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // JSX attribute strings are decoded before they reach the condition:
 // entities like &amp; and literal backslashes must compare by value,
 // not by their JSX source spelling
 const Category = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: grey;
 }
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: crimson;
 }
 */ /*#__PURE__*/ __yak.__yak_li("ym7uBBu", ({ $label })=>$label === "Food & Drink" && /*#__PURE__*/ css("ym7uBBu1"));
 const Shortcut = /*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   color: grey;
 }
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   color: dodgerblue;
 }
 */ /*#__PURE__*/ __yak.__yak_kbd("ym7uBBu2", ({ $keys })=>$keys === "a\\tb" && /*#__PURE__*/ css("ym7uBBu3"));
 // A static merge goes through expression position so a backslash escape in the
 // user className survives the JSX re-parse instead of doubling
 const Cross = /*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: grey;
 }
 */ /*#__PURE__*/ __yak.__yak_span("ym7uBBu4");
 // An emoji is valid UTF-8, so a static merge copies it byte for byte
 const Emoji = /*YAK Extracted CSS:
-:global(.ym7uBBu5) {
+.ym7uBBu5 {
   color: grey;
 }
 */ /*#__PURE__*/ __yak.__yak_span("ym7uBBu5");
