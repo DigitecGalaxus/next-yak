@@ -40,7 +40,6 @@ Versions before 10.x are on npm as [`next-yak`](https://www.npmjs.com/package/ne
 
 | Version | Next.js   | Vite            | react       | swc_core |
 | ------- | --------- | --------------- | ----------- | -------- |
-| 10.x    | >= 16.1.0 | >= 7.0.0        | 19.x        | 56.0.0   |
 | 9.x     | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
 | 8.x     | >= 16.0.0 | -               | 19.x        | 45.0.1   |
 | 7.x     | >= 15.4.4 | -               | 19.x        | 38.0.1   |
