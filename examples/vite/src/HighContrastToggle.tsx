@@ -1,5 +1,5 @@
 "use client";
-import { css, styled, useTheme } from "next-yak";
+import { css, styled, useTheme } from "@yak/react";
 
 const Button = styled.button<{ $primary?: boolean }>`
   ${({ theme }) =>

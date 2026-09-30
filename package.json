@@ -2,7 +2,7 @@
   "name": "next-yak-root",
   "version": "0.0.0",
   "private": true,
-  "description": "Mono repository root for next-yak a performant css-in-js solution",
+  "description": "Mono repository root for yak, a performant css-in-js solution",
   "license": "MIT",
   "author": "Jan Nicklas",
   "workspaces": [
@@ -10,12 +10,12 @@
   ],
   "scripts": {
     "changeset": "changeset",
-    "build": "pnpm run --filter=next-yak --filter=@yak/solid build",
+    "build": "pnpm run --filter=@yak/react --filter=@yak/solid build",
     "build:swc": "pnpm run --filter=yak-swc build",
     "example": "pnpm --filter=next-yak-example run dev",
     "example:vite": "pnpm --filter=vite-yak-example run dev",
     "docs": "pnpm --filter=docs run dev",
-    "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/next-yak",
+    "package:types": "npx --package=@arethetypeswrong/cli attw --pack packages/yak-react",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "pnpm run --filter=eslint-plugin-yak build && oxlint && knip",
@@ -23,11 +23,11 @@
     "lint:knip": "knip",
     "format:rust": "pnpm run --filter=yak-swc format",
     "test": "pnpm run build && pnpm -r --filter='!yak-swc' --filter='!next-yak-e2e' run \"/test($|:types)/\"",
-    "test:watch": "pnpm --filter=next-yak run test:watch",
-    "test:snapshots": "pnpm --filter=next-yak --filter=yak-swc run test:snapshots",
+    "test:watch": "pnpm --filter=@yak/react run test:watch",
+    "test:snapshots": "pnpm --filter=@yak/react --filter=yak-swc run test:snapshots",
     "test:e2e": "pnpm --filter=next-yak-e2e test",
     "test:e2e:build": "pnpm --filter=next-yak-e2e test:build",
-    "watch": "pnpm run --filter=next-yak watch",
+    "watch": "pnpm run --filter=@yak/react watch",
     "release": "pnpm --filter='./packages/*' run build && npm_config_ignore_scripts=true changeset publish"
   },
   "devDependencies": {

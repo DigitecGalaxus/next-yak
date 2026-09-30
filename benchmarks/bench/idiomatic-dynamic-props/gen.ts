@@ -15,7 +15,7 @@ const componentCount = 1000;
 
 for (const lib of libs) {
   const styled = styledIdentFor(lib);
-  const isYak = lib === "next-yak";
+  const isYak = lib === "@yak/react";
 
   const cond = conditionalDecl(lib);
   const switchProp = branch(lib);

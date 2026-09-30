@@ -1,10 +1,10 @@
 {
   "name": "storybook-addon-yak",
   "version": "9.10.2",
-  "description": "Storybook addon for next-yak CSS-in-JS",
+  "description": "Storybook addon for @yak/react CSS-in-JS",
   "keywords": [
+    "@yak/react",
     "css-in-js",
-    "next-yak",
     "react",
     "storybook",
     "storybook-addon"
@@ -54,12 +54,12 @@
   },
   "devDependencies": {
     "@types/node": "catalog:dev",
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev"
   },
   "peerDependencies": {
-    "next-yak": "workspace:^",
+    "@yak/react": "workspace:^",
     "storybook": "^10.0.0"
   }
 }

@@ -1,6 +1,6 @@
 import type { ESTree, SourceCode } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
-import { importsNextYak, isStyledOrCssTag } from "./utils.js";
+import { importsYak, isStyledOrCssTag } from "./utils.js";
 
 type ImportedNames = {
   styled?: string;
@@ -32,7 +32,7 @@ export const styleConditions = createRule("style-conditions", {
     defaultOptions: [],
   },
   createOnce: (context) => {
-    const { before, importedNames, ImportDeclaration } = importsNextYak();
+    const { before, importedNames, ImportDeclaration } = importsYak();
     return {
       before,
       ImportDeclaration,

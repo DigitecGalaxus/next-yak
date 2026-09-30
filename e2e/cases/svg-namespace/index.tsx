@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { useState } from "react";
 
 // `a` and `title` exist in HTML and in SVG. Inside the svg they must get the

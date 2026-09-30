@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 export const Icon = styled.span`
   display: inline-block;

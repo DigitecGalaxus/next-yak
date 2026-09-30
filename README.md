@@ -356,7 +356,7 @@ Special thanks to the contributors and the inspiring projects that influenced ne
 
 ## License
 
-**next-yak** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/next-yak/LICENSE).
+**next-yak** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/LICENSE).
 
 ## Contributing
 

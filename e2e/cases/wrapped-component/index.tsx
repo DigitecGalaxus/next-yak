@@ -1,4 +1,4 @@
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 import type { ReactNode } from "react";
 
 // A styled component target receives the generated class, the author's props

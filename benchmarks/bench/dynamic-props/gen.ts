@@ -70,7 +70,7 @@ ${Array.from({ length: componentCount }, (_, index) => {
 }).join("\n\n")}
 
 export const DynamicPropsComponents${
-    lib === "next-yak" ? "Yak" : "Styled"
+    lib === "@yak/react" ? "Yak" : "Styled"
   }: FunctionComponent = () => {
   const [state, setState] = React.useState(0);
 

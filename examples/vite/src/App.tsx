@@ -1,5 +1,5 @@
-/** @jsxImportSource next-yak */
-import { atoms, css, styled } from "next-yak";
+/** @jsxImportSource @yak/react */
+import { atoms, css, styled } from "@yak/react";
 import styles from "./page.module.css";
 import { queries, colors } from "./theme/constants.yak";
 import { Clock } from "./Clock";

@@ -1,7 +1,8 @@
 import type { ESTree } from "@oxlint/plugins";
+import { yakPackageNames } from "yak-internals/package-names";
 
-export const importsNextYak = () => {
-  /** track the imported names for css and styled from next-yak */
+export const importsYak = () => {
+  /** track the imported names for css and styled from a yak runtime package */
   const importedNames: ImportedNames = {};
 
   return {
@@ -11,7 +12,7 @@ export const importsNextYak = () => {
       importedNames.css = undefined;
     },
     ImportDeclaration(node: ESTree.ImportDeclaration) {
-      if (node.source.value === "next-yak") {
+      if ((yakPackageNames as readonly string[]).includes(node.source.value)) {
         node.specifiers.forEach((specifier) => {
           if (specifier.type === "ImportSpecifier" && specifier.imported.type === "Identifier") {
             if (specifier.imported.name === "styled") {

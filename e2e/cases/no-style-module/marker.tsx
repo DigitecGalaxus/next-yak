@@ -3,7 +3,7 @@
 //
 // The marker text below must stay the first `unde`+`fined` in this file — put that word
 // anywhere above it and the guard stops guarding.
-import { YakThemeProvider } from "next-yak";
+import { YakThemeProvider } from "@yak/react";
 
 export function Marker() {
   return (

@@ -9,7 +9,7 @@
     "build:turbo": "pnpm build:yak && pnpm generate && pnpm build:next:turbo",
     "build:next": "next build --webpack",
     "build:next:turbo": "next build",
-    "build:yak": "pnpm --filter next-yak build",
+    "build:yak": "pnpm --filter @yak/react build",
     "start": "next start",
     "generate": "pnpm run \"/^generate:bench:/\" --parallel",
     "generate:bench:kanji-letter": "tsx ./bench/kanji-letter/gen.ts",
@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@swc/core": "catalog:core",
+    "@yak/react": "workspace:*",
     "next": "catalog:dev",
-    "next-yak": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "styled-components": "catalog:dev",

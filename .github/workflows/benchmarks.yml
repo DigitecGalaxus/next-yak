@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "packages/next-yak/runtime/**"
+      - "packages/yak-react/runtime/**"
       - "benchmarks/**"
       - ".github/workflows/benchmarks.yml"
   workflow_dispatch:

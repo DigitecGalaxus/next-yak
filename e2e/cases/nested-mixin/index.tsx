@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { buttonMixin } from "./mixin.tsx";
 import { primaryButtonMixin } from "./helper/anotherMixin.tsx";
 import { Icon } from "./icon.tsx";

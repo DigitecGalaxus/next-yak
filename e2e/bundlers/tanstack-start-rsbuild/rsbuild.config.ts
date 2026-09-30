@@ -1,7 +1,7 @@
 import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { tanstackStart } from "@tanstack/react-start/plugin/rsbuild";
-import { pluginYak } from "next-yak/rsbuild";
+import { pluginYak } from "@yak/react/rsbuild";
 
 // TanStack Start (SSR) on Rsbuild. tanstackStart() wires the server/client
 // entries and file-based routing; pluginYak() adds the yak-swc pre loader.

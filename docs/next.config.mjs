@@ -1,5 +1,5 @@
 import { createMDX } from "fumadocs-mdx/next";
-import { withYak } from "next-yak/withYak";
+import { withYak } from "@yak/react/withYak";
 
 const withMDX = createMDX();
 

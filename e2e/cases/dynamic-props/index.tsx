@@ -1,4 +1,4 @@
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 const Bar = styled.div<{ $width: number; $active: boolean }>`
   height: 20px;

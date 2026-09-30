@@ -1,4 +1,4 @@
-import { css } from "next-yak";
+import { css } from "@yak/react";
 
 export const tokens = { colors: { orange: "orange" } };
 

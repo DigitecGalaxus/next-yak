@@ -44,7 +44,7 @@ ${Array.from({ length: componentCount }, (_, index) => {
 \`;`;
 }).join("\n\n")}
 
-export const AttrsComponents${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => {
+export const AttrsComponents${lib === "@yak/react" ? "Yak" : "Styled"}: FunctionComponent = () => {
   return (
     <div>
       ${Array.from(

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { benchmarks } from "./bench/manifest";
 
 const Page = styled.div`

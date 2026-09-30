@@ -107,7 +107,7 @@ const Tree: FunctionComponent<TreeProps> = ({ breadth, depth, id, wrap }) => {
   return result;
 };
 
-export const Tree${lib === "next-yak" ? "Yak" : "Styled"}: FunctionComponent = () => (
+export const Tree${lib === "@yak/react" ? "Yak" : "Styled"}: FunctionComponent = () => (
   <Tree breadth={${breadth}} depth={${depth}} id={0} wrap={${wrap}} />
 );
 `;

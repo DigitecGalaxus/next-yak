@@ -16,12 +16,12 @@ const require = createRequire(import.meta.url);
 const generatedDir = join(dirname(fileURLToPath(import.meta.url)), "generated");
 mkdirSync(generatedDir, { recursive: true });
 
-export type Lib = "next-yak" | "styled-components";
+export type Lib = "@yak/react" | "styled-components";
 
-export const libs = ["next-yak", "styled-components"] as const;
+export const libs = ["@yak/react", "styled-components"] as const;
 
 /** Identifier used as the `styled` import alias inside generated source. */
-export const styledIdentFor = (lib: Lib) => (lib === "next-yak" ? "styledYak" : "styled");
+export const styledIdentFor = (lib: Lib) => (lib === "@yak/react" ? "styledYak" : "styled");
 
 /**
  * Standard idiomatic-conditional helper used across benchmarks:
@@ -32,7 +32,7 @@ export const styledIdentFor = (lib: Lib) => (lib === "next-yak" ? "styledYak" : 
  * pattern that the respective library's build tooling optimizes for.
  */
 export const conditionalDecl = (lib: Lib) => (predicate: string, decls: string) =>
-  lib === "next-yak"
+  lib === "@yak/react"
     ? `\${(p) => ${predicate} && css\`${decls}\`}`
     : `\${(p) => ${predicate} && '${decls.replace(/\n\s*/g, " ")}'}`;
 
@@ -49,7 +49,7 @@ export const conditionalDecl = (lib: Lib) => (predicate: string, decls: string) 
  */
 export const branch = (lib: Lib) => (branches: ReadonlyArray<{ when: string; decls: string }>) => {
   const formatValue = (decls: string) =>
-    lib === "next-yak" ? `css\`${decls}\`` : `'${decls.replace(/\n\s*/g, " ")}'`;
+    lib === "@yak/react" ? `css\`${decls}\`` : `'${decls.replace(/\n\s*/g, " ")}'`;
   const chain = branches.reduceRight(
     (acc, { when, decls }) => `${when} ? ${formatValue(decls)} : ${acc}`,
     "false",
@@ -64,8 +64,8 @@ export const branch = (lib: Lib) => (branches: ReadonlyArray<{ when: string; dec
  */
 export const importHeader = (lib: Lib, withCss = true) => {
   const styled = styledIdentFor(lib);
-  if (lib === "next-yak") {
-    return `import ${withCss ? `{ styled as ${styled}, css }` : `{ styled as ${styled} }`} from 'next-yak';`;
+  if (lib === "@yak/react") {
+    return `import ${withCss ? `{ styled as ${styled}, css }` : `{ styled as ${styled} }`} from '@yak/react';`;
   }
   return `import ${withCss ? `{ ${styled}, css }` : `{ ${styled} }`} from 'styled-components';`;
 };
@@ -101,7 +101,7 @@ function compileYak(source: string): string {
 }
 
 /**
- * Write the generated TSX source for a benchmark. For `next-yak` also emit
+ * Write the generated TSX source for a benchmark. For `@yak/react` also emit
  * the precompiled `.compiled.tsx` variant that the bench harness imports
  * directly.
  */
@@ -110,7 +110,7 @@ export function writeBenchmarkSource(benchmarkName: string, lib: Lib, source: st
   writeFileSync(sourcePath, source);
   console.log(`${benchmarkName}.${lib}.tsx`);
 
-  if (lib === "next-yak") {
+  if (lib === "@yak/react") {
     const compiledPath = join(generatedDir, `${benchmarkName}.${lib}.compiled.tsx`);
     writeFileSync(compiledPath, compileYak(source));
     console.log(`${benchmarkName}.${lib}.compiled.tsx`);

@@ -1,4 +1,4 @@
-import { resolveYakContext } from "next-yak/withYak";
+import { resolveYakContext } from "@yak/react/withYak";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path, { dirname } from "node:path";
@@ -45,7 +45,7 @@ function getYakOptions(options: StorybookOptions): YakAddonOptions {
  */
 async function findYakSwcPlugin(): Promise<string> {
   try {
-    const loaderPath = require.resolve("next-yak/loaders/webpack-loader");
+    const loaderPath = require.resolve("@yak/react/loaders/webpack-loader");
     const packageJsonPath = require.resolve("yak-swc/package.json", {
       paths: [dirname(loaderPath)],
     });
@@ -64,7 +64,7 @@ export async function viteFinal(config: any, options: StorybookOptions) {
   const yakOptions = getYakOptions(options);
 
   try {
-    const { viteYak } = await import("next-yak/vite");
+    const { viteYak } = await import("@yak/react/vite");
     const yakPlugin = await viteYak({
       minify: yakOptions.minify,
       contextPath: yakOptions.contextPath,
@@ -77,7 +77,7 @@ export async function viteFinal(config: any, options: StorybookOptions) {
     config.plugins.push(yakPlugin);
   } catch (e) {
     throw new Error(
-      `Failed to load vite-plugin for next-yak. ` +
+      `Failed to load vite-plugin for @yak/react. ` +
         `Make sure you have vite installed. Error: ${e}`,
     );
   }
@@ -121,7 +121,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   config.module.rules = config.module.rules || [];
   config.module.rules.push({
     test: testPattern,
-    loader: require.resolve("next-yak/loaders/webpack-loader"),
+    loader: require.resolve("@yak/react/loaders/webpack-loader"),
     options: yakOptions,
   });
 
@@ -203,7 +203,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
   if (yakContext) {
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};
-    config.resolve.alias["next-yak/context/baseContext"] = yakContext;
+    config.resolve.alias["@yak/react/context/baseContext"] = yakContext;
   }
 
   return config;

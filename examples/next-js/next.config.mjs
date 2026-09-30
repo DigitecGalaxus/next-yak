@@ -1,4 +1,4 @@
-import { withYak } from "next-yak/withYak";
+import { withYak } from "@yak/react/withYak";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

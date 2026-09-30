@@ -1,6 +1,6 @@
 import type { ESTree, Fixer } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
-import { importsNextYak, isStyledOrCssTag } from "./utils.js";
+import { importsYak, isStyledOrCssTag } from "./utils.js";
 
 export const cssNestingOperator = createRule("css-nesting-operator", {
   meta: {
@@ -16,7 +16,7 @@ export const cssNestingOperator = createRule("css-nesting-operator", {
     defaultOptions: [],
   },
   createOnce: (context) => {
-    const { before, importedNames, ImportDeclaration } = importsNextYak();
+    const { before, importedNames, ImportDeclaration } = importsYak();
     return {
       before,
       ImportDeclaration,

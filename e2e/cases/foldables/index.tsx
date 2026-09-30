@@ -1,6 +1,6 @@
-/** @jsxImportSource next-yak */
+/** @jsxImportSource @yak/react */
 import { useState } from "react";
-import { css, styled } from "next-yak";
+import { css, styled } from "@yak/react";
 
 // folds to a plain div
 const Card = styled.div`

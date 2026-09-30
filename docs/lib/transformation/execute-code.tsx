@@ -199,7 +199,7 @@ async function transform(
         transform: {
           react: {
             runtime: "automatic",
-            importSource: "next-yak",
+            importSource: "@yak/react",
           },
         },
       },
@@ -229,7 +229,7 @@ async function transform(
         transform: {
           react: {
             runtime: "automatic",
-            importSource: "next-yak",
+            importSource: "@yak/react",
           },
         },
       },

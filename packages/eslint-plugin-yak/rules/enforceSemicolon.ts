@@ -1,6 +1,6 @@
 import type { ESTree } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
-import { importsNextYak, isStyledOrCssTag } from "./utils.js";
+import { importsYak, isStyledOrCssTag } from "./utils.js";
 
 export const enforceSemicolons = createRule("enforce-semicolons", {
   meta: {
@@ -17,7 +17,7 @@ export const enforceSemicolons = createRule("enforce-semicolons", {
     defaultOptions: [],
   },
   createOnce: (context) => {
-    const { before, importedNames, ImportDeclaration } = importsNextYak();
+    const { before, importedNames, ImportDeclaration } = importsYak();
     return {
       before,
       ImportDeclaration,

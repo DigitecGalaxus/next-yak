@@ -12,7 +12,7 @@
     "build-storybook:webpack": "storybook build --config-dir .storybook-webpack"
   },
   "dependencies": {
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"
   },

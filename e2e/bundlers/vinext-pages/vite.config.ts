@@ -1,4 +1,4 @@
-import { viteYak } from "next-yak/vite";
+import { viteYak } from "@yak/react/vite";
 import vinext from "vinext";
 import { defineConfig } from "vite";
 

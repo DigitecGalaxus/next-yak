@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { typography } from "./typography.yak.ts";
 
 const Headline = styled.h1`

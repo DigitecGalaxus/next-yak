@@ -17,7 +17,7 @@ export default async function HomePage() {
 const getReleasedVersion = async () => {
   const root = await findFileUp("pnpm-lock.yaml", process.cwd());
   const packageJson = await readFile(
-    path.join(root, "packages", "next-yak", "package.json"),
+    path.join(root, "packages", "@yak/react", "package.json"),
     "utf-8",
   );
   return JSON.parse(packageJson).version;

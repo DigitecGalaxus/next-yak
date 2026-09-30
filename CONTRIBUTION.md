@@ -64,7 +64,7 @@ The monorepo is organized into several key packages and directories:
 
 The main package
 
-- [next-yak](./packages/next-yak) - TypeScript/JavaScript code for Next.js
+- [@yak/react](./packages/yak-react) - TypeScript/JavaScript code for React (Next.js, Vite, Rsbuild)
 
 Rust packages under `./packages/yak-swc/`:
 
@@ -82,9 +82,9 @@ Additional directories
 
 ## Developing `next-yak` TypeScript/JavaScript
 
-The main package is written in TypeScript. The package is responsible for transforming components and serving styles to the module CSS system of Next.js. The TypeScript/JavaScript code is located in the `./packages/next-yak` directory.
+The main package is written in TypeScript. The package is responsible for transforming components and serving styles to the module CSS system of Next.js. The TypeScript/JavaScript code is located in the `./packages/yak-react` directory.
 
-Building, from the the `./` or the `./packages/next-yak` directory:
+Building, from the the `./` or the `./packages/yak-react` directory:
 
 ```bash
 pnpm build

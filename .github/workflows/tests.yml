@@ -5,7 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"
@@ -16,7 +16,7 @@ on:
     branches: ["main"]
     paths:
       - "./package.json"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - "packages/yak-internals/**"
       - "packages/yak-solid/**"
       - "packages/yak-swc/**"

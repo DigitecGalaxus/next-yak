@@ -21,7 +21,7 @@ const config: KnipConfig = {
   // System binary used by the e2e runner
   ignoreBinaries: ["pgrep"],
   workspaces: {
-    "packages/next-yak": {
+    "packages/yak-react": {
       entry: ["runtime/__tests__/*.tsx"],
       // Used by the yak-internals code that tsdown bundles into this package
       ignoreDependencies: ["@babel/parser", ...yakSwc],
@@ -78,7 +78,7 @@ const config: KnipConfig = {
       // Mounted into the bundler scaffolds at runtime
       ignore: ["cases/**"],
       // Type-check the cases (tsconfig.json), not imported by the runner
-      ignoreDependencies: ["next-yak", "@types/react"],
+      ignoreDependencies: ["@yak/react", "@types/react"],
     },
     "e2e/bundlers/next-app-turbopack": bundler({ ignoreDependencies: yakSwc }),
     "e2e/bundlers/next-app-webpack": bundler({ ignoreDependencies: yakSwc }),

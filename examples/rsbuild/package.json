@@ -6,11 +6,11 @@
     "dev": "rsbuild dev",
     "build": "rsbuild build",
     "preview": "rsbuild preview",
-    "build:yak": "pnpm run --filter next-yak build",
+    "build:yak": "pnpm run --filter @yak/react build",
     "build:swc": "pnpm run --filter yak-swc build"
   },
   "dependencies": {
-    "next-yak": "workspace:*",
+    "@yak/react": "workspace:*",
     "react": "catalog:dev",
     "react-dom": "catalog:dev"
   },

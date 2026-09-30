@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 /**
  * A mixed module: a JSX component export next to a styled export. Both

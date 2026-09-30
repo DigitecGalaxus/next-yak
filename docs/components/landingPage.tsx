@@ -1,4 +1,4 @@
-import { css, keyframes, styled } from "next-yak";
+import { css, keyframes, styled } from "@yak/react";
 import { AnimatedCode } from "./animatedCode";
 import { breakpoints, colors, theme } from "@/lib/utils/constants";
 import NextLink from "next/link";

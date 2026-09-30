@@ -106,7 +106,7 @@ const Parent: FunctionComponent<ParentProps> = ({ count }) => {
 
 export const RENDER_COUNT = ${renderCount};
 export const CrossRequestCache${
-    lib === "next-yak" ? "Yak" : "Styled"
+    lib === "@yak/react" ? "Yak" : "Styled"
   }: FunctionComponent<{ count: number }> = ({ count }) => (
   <Parent count={count} />
 );

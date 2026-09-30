@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { useState } from "react";
 
 const Button = styled.button.attrs({ type: "button" })`

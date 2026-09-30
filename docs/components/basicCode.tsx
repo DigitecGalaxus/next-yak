@@ -1,6 +1,6 @@
 import { highlighterPromise } from "@/lib/shiki";
 import { colors, theme } from "@/lib/utils/constants";
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { use } from "react";
 
 // Define the structure for code examples
@@ -9,7 +9,7 @@ type CodeExample = {
 };
 
 const initialCodeExample: CodeExample = {
-  tsxInput: `import { styled, css } from "next-yak";
+  tsxInput: `import { styled, css } from "@yak/react";
 
 export const Title = styled.button<{ $primary: boolean }>\`
   font-size: 1.5em;

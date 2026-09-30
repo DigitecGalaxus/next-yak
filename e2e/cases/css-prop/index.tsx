@@ -1,5 +1,5 @@
-/** @jsxImportSource next-yak */
-import { css } from "next-yak";
+/** @jsxImportSource @yak/react */
+import { css } from "@yak/react";
 import { useState } from "react";
 
 // Spreads its props (onClick, data-testid, children) onto a css-prop element —

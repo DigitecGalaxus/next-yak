@@ -2,7 +2,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import React, { useState, use } from "react";
-import { styled, css } from "next-yak";
+import { styled, css } from "@yak/react";
 
 import { benchmarks, type BenchmarkEntry } from "../manifest";
 

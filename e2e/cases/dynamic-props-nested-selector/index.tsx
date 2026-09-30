@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { Icon } from "./icon.tsx";
 
 // The dynamic prop is turned into a CSS variable set on the styled <div>

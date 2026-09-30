@@ -1,5 +1,5 @@
 "use client";
-import { css } from "next-yak";
+import { css } from "@yak/react";
 import { Component, ReactNode, createRef } from "react";
 
 interface Props {

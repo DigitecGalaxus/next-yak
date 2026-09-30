@@ -15,7 +15,7 @@ const wrap = 0;
 
 for (const lib of libs) {
   const styled = styledIdentFor(lib);
-  const isYak = lib === "next-yak";
+  const isYak = lib === "@yak/react";
 
   const cond = conditionalDecl(lib);
   const fixedHeight = cond("p.$fixed", "height: 6px;");

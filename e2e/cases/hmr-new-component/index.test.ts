@@ -23,7 +23,7 @@ test(
 
     // Add a second styled component via HMR (the JSX below is framework-neutral,
     // only the import source differs per framework)
-    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "next-yak";
+    const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "@yak/react";
     await testEnv.writeFile(
       "index.tsx",
       `import { styled } from "${yakPackage}";

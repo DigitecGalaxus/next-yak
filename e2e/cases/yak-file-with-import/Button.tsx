@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { spacing } from "./spacings.yak.ts";
 import { primaryColor } from "./colors.yak.ts";
 

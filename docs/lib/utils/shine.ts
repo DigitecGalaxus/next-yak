@@ -1,4 +1,4 @@
-import { css, keyframes } from "next-yak";
+import { css, keyframes } from "@yak/react";
 
 const shine = keyframes`
   0% {

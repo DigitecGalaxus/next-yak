@@ -10,7 +10,7 @@ on:
     paths:
       - "docs/**"
       - "packages/yak-swc/**"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - ".github/workflows/docs-pr-preview-*.yml"
 
 permissions:

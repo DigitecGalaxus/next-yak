@@ -1,5 +1,5 @@
-/** @jsxImportSource next-yak */
-import { styled } from "next-yak";
+/** @jsxImportSource @yak/react */
+import { styled } from "@yak/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Counter } from "../components/Counter";
 

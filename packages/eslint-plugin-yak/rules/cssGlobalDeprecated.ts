@@ -1,6 +1,6 @@
 import type { ESTree, Location } from "@oxlint/plugins";
 import { createRule } from "../utils.js";
-import { importsNextYak, isStyledOrCssTag } from "./utils.js";
+import { importsYak, isStyledOrCssTag } from "./utils.js";
 
 // Simple regex to find :global() selectors
 // Note: This doesn't handle nested parentheses like :global(html:has(div))
@@ -24,7 +24,7 @@ export const cssGlobalDeprecated = createRule("css-global-deprecated", {
     defaultOptions: [],
   },
   createOnce: (context) => {
-    const { before, importedNames, ImportDeclaration } = importsNextYak();
+    const { before, importedNames, ImportDeclaration } = importsYak();
     return {
       before,
       ImportDeclaration,

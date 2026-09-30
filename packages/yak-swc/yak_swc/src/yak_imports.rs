@@ -114,7 +114,7 @@ pub struct YakImports {
   /// Most of the time it is just `keyframes#0` for `import { keyframes } from "next-yak"` \
   /// but it might also contain renamings like `import { keyframes as keyframes_ } from "next-yak"`
   yak_keyframes_idents: FxHashSet<Id>,
-  /// The detected yak package (next-yak if the file has no yak import)
+  /// The detected yak package (@yak/react if the file has no yak import)
   package: YakPackage,
 }
 
@@ -147,7 +147,7 @@ impl From<YakImportVisitor> for YakImports {
       value.yak_library_imports,
       value.yak_css_idents,
       value.yak_keyframes_idents,
-      value.detected_package.unwrap_or(YakPackage::NextYak),
+      value.detected_package.unwrap_or(YakPackage::YakReact),
     )
   }
 }
@@ -554,7 +554,7 @@ mod tests {
   fn test_yak_import_visitor_default_internal_specifier() {
     let visitor = YakImportVisitor::new();
     let imports: YakImports = visitor.into();
-    assert_eq!(imports.internal_specifier(), "next-yak/internal");
+    assert_eq!(imports.internal_specifier(), "@yak/react/internal");
   }
 
   #[test]

@@ -1,7 +1,7 @@
 .next
 node_modules
 **/docs/dist
-**/next-yak/dist
+**/yak-react/dist
 **/yak-solid/dist
 **/eslint-plugin-yak/dist
 **/storybook-addon-yak/dist

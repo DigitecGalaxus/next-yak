@@ -11,7 +11,7 @@ on:
     paths:
       - "docs/**"
       - "packages/yak-swc/**"
-      - "packages/next-yak/**"
+      - "packages/yak-react/**"
       - ".github/workflows/docs.yml"
   workflow_dispatch: # manual re-deploy of main
 

@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 
 const Input = styled.input.attrs<{ $size?: string }>((props) => ({
   type: "text",

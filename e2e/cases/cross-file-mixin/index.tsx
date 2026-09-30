@@ -1,4 +1,4 @@
-import { styled } from "next-yak";
+import { styled } from "@yak/react";
 import { highlightMixin } from "./mixin.tsx";
 
 const ListItem = styled.li`
