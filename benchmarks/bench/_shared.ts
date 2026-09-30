@@ -85,7 +85,7 @@ function compileYak(source: string): string {
         filename: "/foo/index.tsx",
         jsc: {
           experimental: {
-            plugins: [[require.resolve("yak-swc"), { basePath: "/foo/" }]],
+            plugins: [[require.resolve("@yak/swc"), { basePath: "/foo/" }]],
           },
           target: "es2022",
           loose: false,

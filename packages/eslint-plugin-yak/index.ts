@@ -25,16 +25,20 @@ const plugin = {
   },
 };
 
+// ESLint's prefix for a scoped plugin (@yak/eslint-plugin -> @yak).
+// Oxlint derives the same prefix from `meta.name`
+const prefix = "@yak";
+
 const configs = {
   recommended: {
     plugins: {
-      [pkg.name]: plugin,
+      [prefix]: plugin,
     },
     rules: {
-      [`${pkg.name}/css-nesting-operator`]: "error",
-      [`${pkg.name}/css-global-deprecated`]: "warn",
-      [`${pkg.name}/enforce-semicolon`]: "error",
-      [`${pkg.name}/style-conditions`]: "warn",
+      [`${prefix}/css-nesting-operator`]: "error",
+      [`${prefix}/css-global-deprecated`]: "warn",
+      [`${prefix}/enforce-semicolon`]: "error",
+      [`${prefix}/style-conditions`]: "warn",
     },
   },
 };

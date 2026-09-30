@@ -12,21 +12,21 @@ export const styleConditions = createRule("style-conditions", {
     type: "suggestion",
     docs: {
       description:
-        "Warns when arrow functions in next-yak styled/css literals would create unnecessary or invalid CSS variables",
+        "Warns when arrow functions in yak styled/css literals would create unnecessary or invalid CSS variables",
       recommended: true,
       requiresTypeChecking: false,
     },
     messages: {
       invalidRuntimeReturnValue:
-        "Arrow functions in next-yak styled/css literals should return either a css`...` literal (compiled to a CSS class) or a value derived from the component's props (a runtime CSS variable). Returning a constant does neither. If this is a fixed-set condition, move the declaration into the arrow function and return a css`...` literal. Keep the prop, don't hand-roll a CSS variable.",
+        "Arrow functions in yak styled/css literals should return either a css`...` literal (compiled to a CSS class) or a value derived from the component's props (a runtime CSS variable). Returning a constant does neither. If this is a fixed-set condition, move the declaration into the arrow function and return a css`...` literal. Keep the prop, don't hand-roll a CSS variable.",
       invalidRuntimeReturnValueWithExample:
         "`{{property}}` will be automatically compiled into a CSS variable because of the runtime condition, e.g. `{{property}}: var(--h45cH)`.\nFor your fixed-set condition return a static css declaration like {{example}} instead\n\nnext-yak compiles the static css declaration into a toggleable class name, resulting in better performance optimized JavaScript and HTML\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValueMoveProperty:
-        "`{{property}}` is a static property, but the arrow returns a {{cssLiteral}} literal (a toggleable style chunk, not a value) that next-yak can't splice into a property it already wrote. Move the whole declaration inside the css literal like {{example}} instead.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
+        "`{{property}}` is a static property, but the arrow returns a {{cssLiteral}} literal (a toggleable style chunk, not a value) that yak can't splice into a property it already wrote. Move the whole declaration inside the css literal like {{example}} instead.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValueDropCss:
-        "`{{property}}` wraps the runtime value `{{value}}` in a css`...` literal, which next-yak can't splice into a property it already wrote. Since the value comes from props, drop the css`` and return it directly so it compiles to a CSS variable.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
+        "`{{property}}` wraps the runtime value `{{value}}` in a css`...` literal, which yak can't splice into a property it already wrote. Since the value comes from props, drop the css`` and return it directly so it compiles to a CSS variable.\n\nInstead of:\n  {{before}}\n\nwrite:\n  {{after}}",
       invalidCssReturnValue:
-        "The CSS property is outside the arrow function but its value returns a css`...` literal, which next-yak can't combine into a single declaration. Move the whole declaration inside the css literal so it holds the property too, or drop the css`` and return a plain runtime value.",
+        "The CSS property is outside the arrow function but its value returns a css`...` literal, which yak can't combine into a single declaration. Move the whole declaration inside the css literal so it holds the property too, or drop the css`` and return a plain runtime value.",
     },
     schema: [],
     defaultOptions: [],

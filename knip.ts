@@ -4,7 +4,7 @@ import type { KnipConfig } from "knip";
 type Workspace = NonNullable<KnipConfig["workspaces"]>[string];
 
 // The yak-swc wasm plugin is referenced by name so knip cannot see it
-const yakSwc = ["yak-swc"];
+const yakSwc = ["@yak/swc"];
 
 // Every index file in the e2e tests is an entry and imports that only resolve after copying to `.tmp/` are expected
 const bundler = (extra: Workspace = {}): Workspace => ({

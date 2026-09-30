@@ -39,7 +39,7 @@ export const cssGlobalDeprecated = createRule("css-global-deprecated", {
         if (
           !templateLiteral ||
           templateLiteral.type !== "TemplateLiteral" ||
-          // No next-yak imports
+          // No yak imports
           (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
           !isStyledOrCssTag(node, importedNames) ||

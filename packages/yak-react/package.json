@@ -172,7 +172,7 @@
   "dependencies": {
     "@babel/parser": "catalog:core",
     "@swc/core": "catalog:core",
-    "yak-swc": "9.10.2"
+    "@yak/swc": "9.10.2"
   },
   "devDependencies": {
     "@rsbuild/core": "catalog:dev",

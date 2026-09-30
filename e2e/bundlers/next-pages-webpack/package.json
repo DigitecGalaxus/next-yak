@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@yak/react": "workspace:*",
+    "@yak/swc": "workspace:*",
     "next": "catalog:dev",
     "react": "catalog:dev",
-    "react-dom": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "react-dom": "catalog:dev"
   },
   "devDependencies": {
     "@types/react": "catalog:dev",

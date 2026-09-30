@@ -11,7 +11,7 @@ This folder is part of the monorepo and assumes you are in the project root.
 
 ```bash
 pnpm install
-pnpm --filter yak-swc build
+pnpm --filter @yak/swc build
 pnpm --filter next-yak build
 ```
 

@@ -7,7 +7,7 @@
     "build": "rsbuild build",
     "preview": "rsbuild preview",
     "build:yak": "pnpm run --filter @yak/react build",
-    "build:swc": "pnpm run --filter yak-swc build"
+    "build:swc": "pnpm run --filter @yak/swc build"
   },
   "dependencies": {
     "@yak/react": "workspace:*",

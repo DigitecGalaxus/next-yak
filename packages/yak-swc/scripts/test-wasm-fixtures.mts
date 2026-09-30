@@ -125,7 +125,7 @@ const BASE_SWC_OPTIONS = {
 if (!existsSync(wasmPath)) {
   console.error(
     `Missing wasm plugin at ${relative(process.cwd(), wasmPath)}.\n` +
-      "Build it first with: pnpm --filter yak-swc build:yak",
+      "Build it first with: pnpm --filter @yak/swc build:yak",
   );
   process.exit(1);
 }

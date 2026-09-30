@@ -24,10 +24,10 @@
     "@storybook/react-webpack5": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
+    "@yak/storybook": "workspace:*",
+    "@yak/swc": "workspace:*",
     "storybook": "catalog:dev",
-    "storybook-addon-yak": "workspace:*",
     "typescript": "catalog:dev",
-    "vite": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "vite": "catalog:dev"
   }
 }

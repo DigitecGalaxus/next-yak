@@ -8,7 +8,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   deps: {
-    neverBundle: ["@yak/react", "yak-swc", "storybook"],
+    neverBundle: ["@yak/react", "@yak/swc", "storybook"],
   },
   target: "node20",
   platform: "node",

@@ -1,6 +1,8 @@
-# yak/style-conditions
+# @yak/style-conditions
 
-📝 Warns when arrow functions in next-yak styled/css literals would create unnecessary or invalid CSS variables.
+📝 Warns when arrow functions in yak styled/css literals would create unnecessary or invalid CSS variables.
+
+⚠️ This rule _warns_ in the ✅ `recommended` config.
 
 <!-- end auto-generated rule header -->
 
@@ -8,7 +10,7 @@ Warns if runtime performance could be improved by using css literals.
 
 ## Reason why
 
-next-yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
+yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
 
 1. Class-based Dynamic Styles
 

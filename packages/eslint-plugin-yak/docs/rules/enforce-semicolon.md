@@ -1,6 +1,8 @@
-# yak/enforce-semicolon
+# @yak/enforce-semicolon
 
-📝 Enforces that expression in styled/css literals from next-yak use semicolons.
+📝 Enforces that expression in styled/css literals from yak use semicolons.
+
+💼 This rule is enabled in the ✅ `recommended` config.
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 
@@ -10,7 +12,7 @@ Enforces semicolons after a mixin, to make distinguishing between mixins and nes
 
 ## Reason why
 
-Unlike runtime CSS-in-JS libraries that combine strings at execution time, `next-yak` has to understand the code statically. A variable might have different meanings:
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, yak has to understand the code statically. A variable might have different meanings:
 
 - **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
 - **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules

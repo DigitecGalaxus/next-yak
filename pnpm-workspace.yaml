@@ -7,7 +7,7 @@ packages:
   - e2e/bundlers/*
 
 overrides:
-  yak-swc: workspace:*
+  "@yak/swc": workspace:*
   # Every copy of @swc/core in the workspace must stay on the ABI line the
   # yak-swc wasm plugin is built for (see the core catalog). Storybook's
   # webpack builder runs the plugin through its own swc-loader, so a second,

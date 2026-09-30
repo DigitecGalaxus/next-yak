@@ -1,4 +1,4 @@
-import yakPlugin from "eslint-plugin-yak";
+import yakPlugin from "@yak/eslint-plugin";
 import { defineConfig, globalIgnores } from "eslint/config";
 import eslintNextPlugin from "@next/eslint-plugin-next";
 import nextTs from "eslint-config-next/typescript";

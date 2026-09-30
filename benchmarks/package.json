@@ -32,11 +32,11 @@
   "dependencies": {
     "@swc/core": "catalog:core",
     "@yak/react": "workspace:*",
+    "@yak/swc": "workspace:*",
     "next": "catalog:dev",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
-    "styled-components": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "styled-components": "catalog:dev"
   },
   "devDependencies": {
     "@types/benchmark": "catalog:dev",

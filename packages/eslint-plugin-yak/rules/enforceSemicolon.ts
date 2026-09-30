@@ -6,7 +6,7 @@ export const enforceSemicolons = createRule("enforce-semicolons", {
   meta: {
     type: "problem",
     docs: {
-      description: "Enforces that expression in styled/css literals from next-yak use semicolons",
+      description: "Enforces that expression in styled/css literals from yak use semicolons",
     },
     messages: {
       lonelyExpression:

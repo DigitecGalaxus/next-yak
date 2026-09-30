@@ -347,7 +347,7 @@ catalogs:
       version: 0.15.0
 
 overrides:
-  yak-swc: workspace:*
+  '@yak/swc': workspace:*
   '@swc/core': ~1.15.47
 
 importers:
@@ -357,7 +357,7 @@ importers:
       '@changesets/cli':
         specifier: catalog:dev
         version: 3.0.1
-      eslint-plugin-yak:
+      '@yak/eslint-plugin':
         specifier: workspace:*
         version: link:packages/eslint-plugin-yak
       knip:
@@ -390,7 +390,7 @@ importers:
       styled-components:
         specifier: catalog:dev
         version: 6.5.3(css-to-react-native@3.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../packages/yak-swc
     devDependencies:
@@ -484,7 +484,7 @@ importers:
       shiki:
         specifier: catalog:dev
         version: 4.4.3
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../packages/yak-swc
     devDependencies:
@@ -554,7 +554,7 @@ importers:
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../../packages/yak-swc
     devDependencies:
@@ -582,7 +582,7 @@ importers:
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../../packages/yak-swc
     devDependencies:
@@ -610,7 +610,7 @@ importers:
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../../packages/yak-swc
     devDependencies:
@@ -638,7 +638,7 @@ importers:
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../../packages/yak-swc
     devDependencies:
@@ -821,7 +821,7 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../packages/yak-swc
     devDependencies:
@@ -846,7 +846,7 @@ importers:
       eslint-config-next:
         specifier: catalog:dev
         version: 16.3.4(@typescript-eslint/parser@8.57.2(eslint@10.9.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.9.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
-      eslint-plugin-yak:
+      '@yak/eslint-plugin':
         specifier: workspace:^
         version: link:../../packages/eslint-plugin-yak
       jest:
@@ -929,7 +929,7 @@ importers:
       storybook:
         specifier: catalog:dev
         version: 10.6.0(@types/react@19.2.18)(prettier@3.9.4)(react@19.2.8)
-      storybook-addon-yak:
+      '@yak/storybook':
         specifier: workspace:*
         version: link:../../packages/storybook-addon-yak
       typescript:
@@ -938,7 +938,7 @@ importers:
       vite:
         specifier: catalog:dev
         version: 8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../../packages/yak-swc
 
@@ -1083,7 +1083,7 @@ importers:
       '@swc/core':
         specifier: ~1.15.47
         version: 1.15.47(@swc/helpers@0.5.23)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../yak-swc
     devDependencies:
@@ -1184,7 +1184,7 @@ importers:
       '@swc/core':
         specifier: ~1.15.47
         version: 1.15.47(@swc/helpers@0.5.23)
-      yak-swc:
+      '@yak/swc':
         specifier: workspace:*
         version: link:../yak-swc
     devDependencies:

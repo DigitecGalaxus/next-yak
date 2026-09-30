@@ -8,7 +8,7 @@
     "build:next": "next build --webpack",
     "build:next:turbo": "next build",
     "build:yak": "pnpm run --filter @yak/react build",
-    "build:swc": "pnpm run --filter yak-swc build",
+    "build:swc": "pnpm run --filter @yak/swc build",
     "build:wasm:opt": "wasm-pack build ./playground-wasm --out-dir ./out --out-name index --target web",
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
@@ -23,6 +23,7 @@
     "@shikijs/transformers": "catalog:dev",
     "@vercel/analytics": "catalog:dev",
     "@yak/react": "workspace:*",
+    "@yak/swc": "workspace:*",
     "fflate": "catalog:dev",
     "fumadocs-core": "catalog:dev",
     "fumadocs-mdx": "catalog:dev",
@@ -37,8 +38,7 @@
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "react-resizable-panels": "catalog:dev",
-    "shiki": "catalog:dev",
-    "yak-swc": "workspace:*"
+    "shiki": "catalog:dev"
   },
   "devDependencies": {
     "@swc/helpers": "catalog:dev",

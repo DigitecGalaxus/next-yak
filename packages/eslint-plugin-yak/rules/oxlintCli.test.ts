@@ -24,11 +24,11 @@ describe("Oxlint CLI integration", () => {
     }>;
     expect(
       diagnostics
-        .filter((diagnostic) => diagnostic.code === "yak(css-nesting-operator)")
+        .filter((diagnostic) => diagnostic.code === "@yak(css-nesting-operator)")
         .map(({ code, filename }) => ({ code, filename })),
     ).toEqual([
       {
-        code: "yak(css-nesting-operator)",
+        code: "@yak(css-nesting-operator)",
         filename: "input.ts",
       },
     ]);

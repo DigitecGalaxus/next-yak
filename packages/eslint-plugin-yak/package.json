@@ -1,13 +1,14 @@
 {
-  "name": "eslint-plugin-yak",
+  "name": "@yak/eslint-plugin",
   "version": "1.4.0",
-  "description": "ESLint and Oxlint plugin for next-yak",
+  "description": "ESLint and Oxlint plugin for yak (@yak/react and @yak/solid)",
   "keywords": [
     "css-in-js",
     "eslint",
     "eslint-plugin",
     "eslintplugin",
     "oxlint",
+    "oxlint-plugin",
     "react",
     "styled-components",
     "typescript"

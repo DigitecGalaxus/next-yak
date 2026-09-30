@@ -8,7 +8,7 @@ const config = {
   reactStrictMode: true,
   serverExternalPackages: ["typescript", "twoslash"],
   experimental: {
-    optimizePackageImports: ["shiki", "@shikijs/monaco", "yak-swc"],
+    optimizePackageImports: ["shiki", "@shikijs/monaco", "@yak/swc"],
   },
   // use the raw-loader for .d.ts files (used by the playground)
   webpack: (config) => {

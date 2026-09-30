@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:yak": "pnpm run --filter @yak/solid build",
-    "build:swc": "pnpm run --filter yak-swc build",
+    "build:swc": "pnpm run --filter @yak/swc build",
     "preview": "vite preview"
   },
   "dependencies": {

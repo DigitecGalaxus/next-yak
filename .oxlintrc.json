@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import", "react"],
-  "jsPlugins": ["eslint-plugin-yak"],
+  "jsPlugins": ["@yak/eslint-plugin"],
   "categories": {
     "correctness": "error"
   },
@@ -11,10 +11,10 @@
     "no-var": "off",
     "no-control-regex": "off",
     "typescript/no-empty-object-type": "off",
-    "yak/css-nesting-operator": "error",
-    "yak/css-global-deprecated": "warn",
-    "yak/enforce-semicolon": "error",
-    "yak/style-conditions": "warn"
+    "@yak/css-nesting-operator": "error",
+    "@yak/css-global-deprecated": "warn",
+    "@yak/enforce-semicolon": "error",
+    "@yak/style-conditions": "warn"
   },
   "overrides": [
     {
@@ -27,8 +27,8 @@
         "typescript/triple-slash-reference": "off",
         "oxc/number-arg-out-of-range": "off",
         "react/purity": "off",
-        "yak/enforce-semicolon": "off",
-        "yak/style-conditions": "off"
+        "@yak/enforce-semicolon": "off",
+        "@yak/style-conditions": "off"
       }
     },
     {

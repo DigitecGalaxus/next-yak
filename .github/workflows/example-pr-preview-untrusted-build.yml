@@ -49,7 +49,7 @@ jobs:
         run: pnpm install
 
       - name: Build linter
-        run: pnpm --filter eslint-plugin-yak build
+        run: pnpm --filter @yak/eslint-plugin build
 
       - name: Lint example
         run: pnpm --filter next-yak-example lint

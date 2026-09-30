@@ -35,7 +35,7 @@ interface StorybookOptions {
  */
 function getYakOptions(options: StorybookOptions): YakAddonOptions {
   const yakAddon = options.presetsList?.find(
-    (p) => p.name === "storybook-addon-yak" || p.preset?.name === "storybook-addon-yak",
+    (p) => p.name === "@yak/storybook" || p.preset?.name === "@yak/storybook",
   );
   return yakAddon?.options ?? yakAddon?.preset?.options ?? {};
 }
@@ -46,7 +46,7 @@ function getYakOptions(options: StorybookOptions): YakAddonOptions {
 async function findYakSwcPlugin(): Promise<string> {
   try {
     const loaderPath = require.resolve("@yak/react/loaders/webpack-loader");
-    const packageJsonPath = require.resolve("yak-swc/package.json", {
+    const packageJsonPath = require.resolve("@yak/swc/package.json", {
       paths: [dirname(loaderPath)],
     });
     const packageRoot = dirname(packageJsonPath);
@@ -147,7 +147,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
     use.options.jsc.experimental.plugins = use.options.jsc.experimental.plugins || [];
     // Check if plugin is already added
     const hasYakPlugin = use.options.jsc.experimental.plugins.some(
-      (p: any) => Array.isArray(p) && p[0]?.includes?.("yak-swc"),
+      (p: any) => Array.isArray(p) && p[0]?.includes?.("yak_swc"),
     );
     if (!hasYakPlugin) {
       use.options.jsc.experimental.plugins.push([yakSwcPath, yakPluginOptions]);
@@ -174,7 +174,7 @@ export async function webpackFinal(config: any, options: StorybookOptions) {
       rule.options.jsc.experimental = rule.options.jsc.experimental || {};
       rule.options.jsc.experimental.plugins = rule.options.jsc.experimental.plugins || [];
       const hasYakPlugin = rule.options.jsc.experimental.plugins.some(
-        (p: any) => Array.isArray(p) && p[0]?.includes?.("yak-swc"),
+        (p: any) => Array.isArray(p) && p[0]?.includes?.("yak_swc"),
       );
       if (!hasYakPlugin) {
         rule.options.jsc.experimental.plugins.push([yakSwcPath, yakPluginOptions]);

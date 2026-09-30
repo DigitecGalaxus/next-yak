@@ -332,7 +332,7 @@ async function viteYakImpl(
  */
 async function findYakSwcPlugin() {
   try {
-    const packageJsonPath = require.resolve("yak-swc/package.json");
+    const packageJsonPath = require.resolve("@yak/swc/package.json");
     const packageRoot = dirname(packageJsonPath);
 
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));

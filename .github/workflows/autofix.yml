@@ -60,7 +60,7 @@ jobs:
         run: pnpm format
 
       - name: Build eslint-plugin-yak (required for oxlint JS plugin)
-        run: pnpm --filter=eslint-plugin-yak build
+        run: pnpm --filter=@yak/eslint-plugin build
 
       - name: Lint (oxlint)
         run: pnpm lint:fix

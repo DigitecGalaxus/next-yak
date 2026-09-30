@@ -11,7 +11,7 @@ import { parseExports } from "yak-internals/parse-exports";
 import { getSwcParserOptions } from "yak-internals/swc-parser-options";
 
 const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
-const yakSwcPluginPath = universalRequire.resolve("yak-swc");
+const yakSwcPluginPath = universalRequire.resolve("@yak/swc");
 const dataUrlImportPrefix = 'import "data:text/css;base64,';
 
 /**

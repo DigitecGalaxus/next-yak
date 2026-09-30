@@ -13,7 +13,7 @@ const ruleTester = new RuleTester({
   },
 });
 
-ruleTester.run("yak/css-global-deprecated", yakPlugin.rules["css-global-deprecated"], {
+ruleTester.run("@yak/css-global-deprecated", yakPlugin.rules["css-global-deprecated"], {
   valid: [
     'import { styled } from "next-yak"; styled.div`color: red;`;',
     "const Component = styled.div`:global(body) { color: red; }`;",
@@ -26,7 +26,7 @@ ruleTester.run("yak/css-global-deprecated", yakPlugin.rules["css-global-deprecat
   ],
 });
 
-ruleTester.run("yak/css-nesting-operator", yakPlugin.rules["css-nesting-operator"], {
+ruleTester.run("@yak/css-nesting-operator", yakPlugin.rules["css-nesting-operator"], {
   valid: [],
   invalid: [
     {
@@ -51,7 +51,7 @@ ruleTester.run("yak/css-nesting-operator", yakPlugin.rules["css-nesting-operator
   ],
 });
 
-ruleTester.run("yak/enforce-semicolon", yakPlugin.rules["enforce-semicolon"], {
+ruleTester.run("@yak/enforce-semicolon", yakPlugin.rules["enforce-semicolon"], {
   valid: [],
   invalid: [
     {
@@ -62,7 +62,7 @@ ruleTester.run("yak/enforce-semicolon", yakPlugin.rules["enforce-semicolon"], {
   ],
 });
 
-ruleTester.run("yak/style-conditions", yakPlugin.rules["style-conditions"], {
+ruleTester.run("@yak/style-conditions", yakPlugin.rules["style-conditions"], {
   valid: [],
   invalid: [
     {

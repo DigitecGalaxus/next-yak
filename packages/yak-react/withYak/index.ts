@@ -126,7 +126,7 @@ function addYakWebpack(
   // Add SWC plugin for Webpack
   nextConfig.experimental ||= {};
   nextConfig.experimental.swcPlugins ||= [];
-  nextConfig.experimental.swcPlugins.push(["yak-swc", yakPluginOptions]);
+  nextConfig.experimental.swcPlugins.push(["@yak/swc", yakPluginOptions]);
 
   // Configure webpack loader
   const previousConfig = nextConfig.webpack;

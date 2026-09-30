@@ -1,4 +1,4 @@
-# yak-swc
+# @yak/swc
 
 This package contains the Rust SWC plugin for [next-yak](https://www.npmjs.com/package/next-yak), a build time CSS-in-JS solution.
 
@@ -6,7 +6,7 @@ This package contains the Rust SWC plugin for [next-yak](https://www.npmjs.com/p
 
 ## Overview
 
-`yak-swc` is a SWC (Speedy Web Compiler) plugin written in rust to transform the CSS-in-JS code at build time
+`@yak/swc` is a SWC (Speedy Web Compiler) plugin written in rust to transform the CSS-in-JS code at build time
 
 This package is distributed separately from the main next-yak package to provide flexibility in version management. It needs to be compatible with your project's @swc/core version. By keeping it separate, you can choose the appropriate version that matches your SWC setup.
 
@@ -15,9 +15,9 @@ This package is distributed separately from the main next-yak package to provide
 To install the plugin, use npm or yarn:
 
 ```bash
-npm install yak-swc
+npm install @yak/swc
 # or
-yarn add yak-swc
+yarn add @yak/swc
 ```
 
 Make sure to install a version that is compatible with your project's @swc/core version

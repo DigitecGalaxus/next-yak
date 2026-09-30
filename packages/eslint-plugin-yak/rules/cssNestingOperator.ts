@@ -6,7 +6,7 @@ export const cssNestingOperator = createRule("css-nesting-operator", {
   meta: {
     type: "problem",
     docs: {
-      description: "Enforces css selectors in next-yak to correctly use the nesting selector (&)",
+      description: "Enforces css selectors in yak to correctly use the nesting selector (&)",
     },
     messages: {
       missingNestingOperator: "Nesting selector missing.\nDid you forget the &?",
@@ -31,7 +31,7 @@ export const cssNestingOperator = createRule("css-nesting-operator", {
         if (
           !templateLiteral ||
           templateLiteral.type !== "TemplateLiteral" ||
-          // No next-yak imports
+          // No yak imports
           (importedNames.styled === undefined && importedNames.css === undefined) ||
           // Not a styled or css tag
           !isStyledOrCssTag(node, importedNames) ||
