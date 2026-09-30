@@ -14,10 +14,10 @@ const convertDictionaryIndexToToken = (n: number) => {
 
 const dictionary = [
   // Common Imports (next-yak and react)
-  `import { styled, css } from "@yak/react";`,
-  `import { styled } from "@yak/react";`,
-  `import { css } from "@yak/react";`,
-  `} from "@yak/react";`,
+  `import { styled, css } from "next-yak";`,
+  `import { styled } from "next-yak";`,
+  `import { css } from "next-yak";`,
+  `} from "next-yak";`,
   " from 'react';",
   // Imports
   `import { `,
@@ -95,7 +95,7 @@ const dictionary = [
 ]
   // Sorting the dictionary by length in descending order
   // to ensure that longer tokens are replaced first
-  // e.g. `import { styled, css } from "@yak/react";` before `import`
+  // e.g. `import { styled, css } from "next-yak";` before `import`
   .sort((a, b) => b.length - a.length);
 
 // The delimiter is a special token that is used to separate

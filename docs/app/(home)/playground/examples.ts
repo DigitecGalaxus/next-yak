@@ -9,7 +9,7 @@ export const examples = {
     title: "Next Yak Logo",
     description: "A simple example of using Next Yak to create a styled component with a logo.",
     files: {
-      index: `import { styled, css } from "@yak/react";
+      index: `import { styled, css } from "next-yak";
 import { useState } from "react";
 import { Title } from "./other";
 
@@ -48,7 +48,7 @@ const Center = styled.div\`
   height: 100%;
   place-items: center;
 \`;`,
-      other: `import { styled } from "@yak/react";
+      other: `import { styled } from "next-yak";
 
 export const theme = {
   dark: "html.dark &",

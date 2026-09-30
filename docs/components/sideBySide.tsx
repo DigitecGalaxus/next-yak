@@ -1,4 +1,4 @@
-import { styled } from "@yak/react";
+import { styled } from "next-yak";
 import { ReactNode } from "react";
 
 const Grid = styled.div`

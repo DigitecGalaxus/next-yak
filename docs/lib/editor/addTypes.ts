@@ -1,7 +1,7 @@
 import reactDts from "../../node_modules/@types/react/index.d.ts?raw";
 import reactJSXDts from "../../node_modules/@types/react/jsx-runtime.d.ts?raw";
-import yakDts from "../../node_modules/@yak/react/dist/index.d.ts?raw";
-import yakJSXDts from "../../node_modules/@yak/react/dist/jsx-runtime.d.ts?raw";
+import yakDts from "../../node_modules/next-yak/dist/index.d.ts?raw";
+import yakJSXDts from "../../node_modules/next-yak/dist/jsx-runtime.d.ts?raw";
 import type { Monaco } from "@monaco-editor/react";
 
 export const addTypesToMonaco = (monaco: Monaco) => {

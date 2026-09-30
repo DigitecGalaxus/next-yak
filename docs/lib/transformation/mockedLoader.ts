@@ -1,6 +1,6 @@
 import { type Compilation } from "webpack";
 // @ts-ignore
-import webpackLoader = require("@yak/react/loaders/webpack-loader");
+import webpackLoader = require("next-yak/loaders/webpack-loader");
 
 export async function runLoaderForSingleFile(
   originalContent: string,

@@ -1,4 +1,4 @@
-import { css } from "@yak/react";
+import { css } from "next-yak";
 
 export const theme = {
   dark: "html.dark &",

@@ -4,7 +4,7 @@ import { ShikiMagicMove } from "@shikijs/magic-move/react";
 import { highlighterPromise } from "@/lib/shiki";
 import { useTheme } from "next-themes";
 import "@shikijs/magic-move/style.css";
-import { styled } from "@yak/react";
+import { styled } from "next-yak";
 import { breakpoints, colors, theme } from "@/lib/utils/constants";
 
 // Define the structure for code examples
@@ -52,7 +52,7 @@ const App = () => (
 
 const finalCodeExample: CodeExample = {
   tsxInput: `// change import to next-yak
-import { styled } from "@yak/react";
+import { styled } from "next-yak";
 
 const Title = styled.h1\`
   font-size: 1.5em;

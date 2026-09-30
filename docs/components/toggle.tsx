@@ -1,6 +1,6 @@
 "use client";
 import * as Switch from "@radix-ui/react-switch";
-import { css, styled } from "@yak/react";
+import { css, styled } from "next-yak";
 import { FC } from "react";
 
 interface ToggleProps {

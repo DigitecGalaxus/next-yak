@@ -375,12 +375,15 @@ importers:
       '@swc/core':
         specifier: ~1.15.47
         version: 1.15.47(@swc/helpers@0.5.23)
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:dev
         version: 19.2.8
@@ -390,9 +393,6 @@ importers:
       styled-components:
         specifier: catalog:dev
         version: 6.5.3(css-to-react-native@3.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../packages/yak-swc
     devDependencies:
       '@types/benchmark':
         specifier: catalog:dev
@@ -463,9 +463,9 @@ importers:
       next-themes:
         specifier: catalog:dev
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@yak/react':
-        specifier: workspace:*
-        version: link:../packages/yak-react
+      next-yak:
+        specifier: 9.10.2
+        version: 9.10.2(@rsbuild/core@2.2.2)(@swc/helpers@0.5.23)(@types/react@19.2.18)(next@16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.1.1(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))
       prettier:
         specifier: catalog:dev
         version: 3.9.6
@@ -484,9 +484,9 @@ importers:
       shiki:
         specifier: catalog:dev
         version: 4.4.3
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../packages/yak-swc
+      yak-swc:
+        specifier: 9.10.2
+        version: 9.10.2
     devDependencies:
       '@swc/helpers':
         specifier: catalog:dev
@@ -542,21 +542,21 @@ importers:
 
   e2e/bundlers/next-app-turbopack:
     dependencies:
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../../../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:dev
         version: 19.2.8
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../../packages/yak-swc
     devDependencies:
       '@types/react':
         specifier: catalog:dev
@@ -570,21 +570,21 @@ importers:
 
   e2e/bundlers/next-app-webpack:
     dependencies:
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../../../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:dev
         version: 19.2.8
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../../packages/yak-swc
     devDependencies:
       '@types/react':
         specifier: catalog:dev
@@ -598,21 +598,21 @@ importers:
 
   e2e/bundlers/next-pages-turbopack:
     dependencies:
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../../../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:dev
         version: 19.2.8
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../../packages/yak-swc
     devDependencies:
       '@types/react':
         specifier: catalog:dev
@@ -626,21 +626,21 @@ importers:
 
   e2e/bundlers/next-pages-webpack:
     dependencies:
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../../../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:dev
         version: 19.2.8
       react-dom:
         specifier: catalog:dev
         version: 19.2.8(react@19.2.8)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../../packages/yak-swc
     devDependencies:
       '@types/react':
         specifier: catalog:dev
@@ -803,12 +803,15 @@ importers:
       '@types/react-dom':
         specifier: catalog:dev
         version: 19.2.5(@types/react@19.2.18)
-      next:
-        specifier: catalog:dev
-        version: 16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@yak/react':
         specifier: workspace:*
         version: link:../../packages/yak-react
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../packages/yak-swc
+      next:
+        specifier: catalog:dev
+        version: 16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       postcss-nested:
         specifier: catalog:dev
         version: 7.0.2(postcss@8.5.26)
@@ -821,9 +824,6 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../packages/yak-swc
     devDependencies:
       '@next/eslint-plugin-next':
         specifier: catalog:dev
@@ -840,15 +840,15 @@ importers:
       '@vitejs/plugin-react':
         specifier: catalog:dev
         version: 6.1.1(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+      '@yak/eslint-plugin':
+        specifier: workspace:^
+        version: link:../../packages/eslint-plugin-yak
       eslint:
         specifier: catalog:dev
         version: 10.9.1(jiti@2.7.0)(supports-color@8.1.1)
       eslint-config-next:
         specifier: catalog:dev
         version: 16.3.4(@typescript-eslint/parser@8.57.2(eslint@10.9.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.9.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
-      '@yak/eslint-plugin':
-        specifier: workspace:^
-        version: link:../../packages/eslint-plugin-yak
       jest:
         specifier: catalog:dev
         version: 30.5.1(@types/node@26.4.1)(esbuild-register@3.6.0(esbuild@0.28.1)(supports-color@8.1.1))(supports-color@8.1.1)
@@ -926,21 +926,21 @@ importers:
       '@types/react-dom':
         specifier: catalog:dev
         version: 19.2.5(@types/react@19.2.18)
-      storybook:
-        specifier: catalog:dev
-        version: 10.6.0(@types/react@19.2.18)(prettier@3.9.4)(react@19.2.8)
       '@yak/storybook':
         specifier: workspace:*
         version: link:../../packages/storybook-addon-yak
+      '@yak/swc':
+        specifier: workspace:*
+        version: link:../../packages/yak-swc
+      storybook:
+        specifier: catalog:dev
+        version: 10.6.0(@types/react@19.2.18)(prettier@3.9.4)(react@19.2.8)
       typescript:
         specifier: catalog:dev
         version: 6.0.3
       vite:
         specifier: catalog:dev
         version: 8.2.2(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
-      '@yak/swc':
-        specifier: workspace:*
-        version: link:../../packages/yak-swc
 
   examples/tanstack-start:
     dependencies:
@@ -1075,6 +1075,49 @@ importers:
         specifier: workspace:*
         version: link:../yak-internals
 
+  packages/storybook-addon-yak:
+    dependencies:
+      storybook:
+        specifier: ^10.0.0
+        version: 10.6.0(@types/react@19.2.18)(prettier@3.9.4)(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:dev
+        version: 26.4.1
+      '@yak/react':
+        specifier: workspace:*
+        version: link:../yak-react
+      tsdown:
+        specifier: catalog:dev
+        version: 0.22.14(oxc-resolver@11.21.3)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.37(synckit@0.11.11))
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
+  packages/yak-internals:
+    devDependencies:
+      '@babel/parser':
+        specifier: catalog:core
+        version: 8.0.4
+      '@babel/types':
+        specifier: catalog:dev
+        version: 8.0.4
+      '@swc/core':
+        specifier: ~1.15.47
+        version: 1.15.47(@swc/helpers@0.5.23)
+      '@types/node':
+        specifier: catalog:dev
+        version: 26.4.1
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+      vite:
+        specifier: catalog:dev
+        version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:dev
+        version: 4.1.11(@types/node@26.4.1)(jsdom@29.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+
   packages/yak-react:
     dependencies:
       '@babel/parser':
@@ -1132,49 +1175,6 @@ importers:
       yak-internals:
         specifier: workspace:*
         version: link:../yak-internals
-
-  packages/storybook-addon-yak:
-    dependencies:
-      storybook:
-        specifier: ^10.0.0
-        version: 10.6.0(@types/react@19.2.18)(prettier@3.9.4)(react@19.2.8)
-    devDependencies:
-      '@types/node':
-        specifier: catalog:dev
-        version: 26.4.1
-      '@yak/react':
-        specifier: workspace:*
-        version: link:../yak-react
-      tsdown:
-        specifier: catalog:dev
-        version: 0.22.14(oxc-resolver@11.21.3)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.37(synckit@0.11.11))
-      typescript:
-        specifier: catalog:dev
-        version: 6.0.3
-
-  packages/yak-internals:
-    devDependencies:
-      '@babel/parser':
-        specifier: catalog:core
-        version: 8.0.4
-      '@babel/types':
-        specifier: catalog:dev
-        version: 8.0.4
-      '@swc/core':
-        specifier: ~1.15.47
-        version: 1.15.47(@swc/helpers@0.5.23)
-      '@types/node':
-        specifier: catalog:dev
-        version: 26.4.1
-      typescript:
-        specifier: catalog:dev
-        version: 6.0.3
-      vite:
-        specifier: catalog:dev
-        version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
-      vitest:
-        specifier: catalog:dev
-        version: 4.1.11(@types/node@26.4.1)(jsdom@29.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/yak-solid:
     dependencies:
@@ -4586,21 +4586,6 @@ packages:
   '@solidjs/signals@2.0.0-rc.10':
     resolution: {integrity: sha512-+5JN0259Scjqft7kTCv1pc3rMRniAxNr1We748UU2zz7MrE8MVn65IPt8VS3rA/7DubRCxoiBdDl+aUlJY9v5g==}
     engines: {node: '>=22.12.0'}
-
-  '@solidjs/vite-plugin@3.0.0-next.38':
-    resolution: {integrity: sha512-6XiolrrjNcw3g+EZyxrh/ifGNJ3zk+zePQ61jRs5YuXwmcSQENN7dNE0X0beb3wow/UoZyRUtxaRkhVNPGKgiQ==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    peerDependencies:
-      '@solidjs/start-devtools': ^1.0.0-next.2
-      '@solidjs/web': ^2.0.0-rc.0
-      '@testing-library/jest-dom': ^5.16.6 || ^5.17.0 || ^6.*
-      solid-js: ^2.0.0-rc.0
-      vite: ^8.0.0 || ^9.0.0
-    peerDependenciesMeta:
-      '@solidjs/start-devtools':
-        optional: true
-      '@testing-library/jest-dom':
-        optional: true
 
   '@solidjs/vite-plugin@3.0.0-next.46':
     resolution: {integrity: sha512-iKVgtv5xroO6FgNkt6jYQYUsjlk6luv4EsXuSwzSP1Wslj9tKN7X9bWMHBq9EtlOtNCTRb+e579mmL+6c1xkpw==}
@@ -8472,6 +8457,26 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
+  next-yak@9.10.2:
+    resolution: {integrity: sha512-f+YP0gT+/0VUU2MwxtW2xby+WgEqxU7ScpCJkWQH1suxbx/0ROSIXo6b62MS/rQHhwcyXGPNI2LclrAszIZi/Q==}
+    peerDependencies:
+      '@rsbuild/core': '>=2.0.0'
+      '@types/react': '>=19'
+      next: '>=16.1.0'
+      react: '>=19.0.0'
+      vite: '>=7.0.0'
+    peerDependenciesMeta:
+      '@rsbuild/core':
+        optional: true
+      '@types/react':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      vite:
+        optional: true
+
   next@16.3.4:
     resolution: {integrity: sha512-/Ztf6CeRH+ejEXUrYtqI4gkS66eFIHuSwqi60RgcpWKodxFZx2/dqVCMKBwILfAHXQ+F1b1vAudgj3mnxqtoIA==}
     engines: {node: '>=20.9.0'}
@@ -10213,6 +10218,9 @@ packages:
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
+
+  yak-swc@9.10.2:
+    resolution: {integrity: sha512-v0Vk1fbVnftUA06DdV6FqQdokfc1MCEYSBbIrWRrQGspFfhtdSvLO9fIC51OSu9FHwKRjJx4nLGACoy21Z1HjQ==}
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -12994,7 +13002,7 @@ snapshots:
 
   '@solidjs/signals@2.0.0-rc.10': {}
 
-  '@solidjs/vite-plugin@3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))':
+  '@solidjs/vite-plugin@3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@babel/core': 7.29.7(supports-color@8.1.1)
@@ -13006,25 +13014,6 @@ snapshots:
       solid-js: 2.0.0-rc.10
       vite: 8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0)
       vitefu: 1.1.3(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))
-    optionalDependencies:
-      '@testing-library/jest-dom': 6.9.1
-    transitivePeerDependencies:
-      - '@tsrx/core'
-      - supports-color
-    optional: true
-
-  '@solidjs/vite-plugin@3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))':
-    dependencies:
-      '@ampproject/remapping': 2.3.0
-      '@babel/core': 7.29.7(supports-color@8.1.1)
-      '@solidjs/babel-plugin': 2.0.0-rc.10(@babel/core@7.29.7(supports-color@8.1.1))
-      '@solidjs/compiler': 2.0.0-rc.10
-      '@solidjs/web': 2.0.0-rc.10(solid-js@2.0.0-rc.10)
-      '@types/babel__core': 7.20.5
-      merge-anything: 5.1.7
-      solid-js: 2.0.0-rc.10
-      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
     optionalDependencies:
       '@testing-library/jest-dom': 6.9.1
     transitivePeerDependencies:
@@ -17875,6 +17864,20 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
+  next-yak@9.10.2(@rsbuild/core@2.2.2)(@swc/helpers@0.5.23)(@types/react@19.2.18)(next@16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.1.1(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0)):
+    dependencies:
+      '@babel/parser': 8.0.4
+      '@swc/core': 1.15.47(@swc/helpers@0.5.23)
+      yak-swc: 9.10.2
+    optionalDependencies:
+      '@rsbuild/core': 2.2.2
+      '@types/react': 19.2.18
+      next: 16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react: 19.2.8
+      vite: 8.1.1(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+
   next@16.3.4(@babel/core@7.29.0(supports-color@8.1.1))(@playwright/test@1.62.1)(@types/node@26.0.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@next/env': 16.3.4
@@ -19870,7 +19873,7 @@ snapshots:
 
   vite-plugin-solid@3.0.0-next.27(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:
-      '@solidjs/vite-plugin': 3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))
+      '@solidjs/vite-plugin': 3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.1.1(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@solidjs/start-devtools'
       - '@solidjs/web'
@@ -19883,7 +19886,7 @@ snapshots:
 
   vite-plugin-solid@3.0.0-next.27(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:
-      '@solidjs/vite-plugin': 3.0.0-next.38(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
+      '@solidjs/vite-plugin': 3.0.0-next.46(@solidjs/web@2.0.0-rc.10(solid-js@2.0.0-rc.10))(@testing-library/jest-dom@6.9.1)(solid-js@2.0.0-rc.10)(supports-color@8.1.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.44.1)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@solidjs/start-devtools'
       - '@solidjs/web'
@@ -20397,6 +20400,10 @@ snapshots:
   xmlchars@2.2.0: {}
 
   y18n@5.0.8: {}
+
+  yak-swc@9.10.2:
+    dependencies:
+      '@swc/counter': 0.1.3
 
   yallist@3.1.1: {}
 

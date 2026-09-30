@@ -10,7 +10,7 @@ import { highlighterPromise } from "@/lib/shiki";
 import dynamic from "next/dynamic";
 import { useTranspile } from "@/lib/transformation/useTranspile";
 import { ErrorBoundaryWithSnapshot } from "./errorBoundaryWithSnapshot";
-import { css } from "@yak/react";
+import { css } from "next-yak";
 import * as prettier from "prettier";
 import * as tsParser from "prettier/plugins/typescript";
 import * as estreePlugin from "prettier/plugins/estree";
@@ -360,7 +360,7 @@ export default dynamic(
                     addTypesToMonaco(monaco);
                     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
                       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-                      jsxImportSource: "@yak/react",
+                      jsxImportSource: "next-yak",
                       esModuleInterop: true,
                       paths: {
                         react: ["/node_modules/@types/react"],

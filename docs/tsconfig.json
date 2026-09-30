@@ -13,7 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "@yak/react",
+    "jsxImportSource": "next-yak",
     "incremental": true,
     "paths": {
       "@/*": ["./*"]

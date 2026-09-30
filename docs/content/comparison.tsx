@@ -1,6 +1,6 @@
 "use client";
 import { theme } from "@/lib/utils/constants";
-import { css, styled } from "@yak/react";
+import { css, styled } from "next-yak";
 import { useState } from "react";
 
 type Features =

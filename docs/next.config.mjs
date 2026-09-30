@@ -1,5 +1,5 @@
 import { createMDX } from "fumadocs-mdx/next";
-import { withYak } from "@yak/react/withYak";
+import { withYak } from "next-yak/withYak";
 
 const withMDX = createMDX();
 
@@ -8,7 +8,7 @@ const config = {
   reactStrictMode: true,
   serverExternalPackages: ["typescript", "twoslash"],
   experimental: {
-    optimizePackageImports: ["shiki", "@shikijs/monaco", "@yak/swc"],
+    optimizePackageImports: ["shiki", "@shikijs/monaco", "yak-swc"],
   },
   // use the raw-loader for .d.ts files (used by the playground)
   webpack: (config) => {

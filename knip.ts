@@ -58,8 +58,9 @@ const config: KnipConfig = {
       ignore: ["public/**", ...(hasPlaygroundWasm ? ["playground-wasm/out/**"] : [])],
       // Without the wasm-pack output the two imports of it cannot resolve.
       ignoreUnresolved: hasPlaygroundWasm ? [] : [/playground-wasm\/out$/],
-      // Referenced by name in the webpack rule in next.config.mjs
-      ignoreDependencies: ["raw-loader", ...yakSwc],
+      // Referenced by name in the webpack rule in next.config.mjs. The docs use the
+      // published next-yak 9.x, so its compiler keeps the old name yak-swc
+      ignoreDependencies: ["raw-loader", "yak-swc"],
     },
     // yak.context.ts is picked up by convention by the yak loaders (see yak-internals/config.ts)
     "examples/next-js": { entry: ["yak.context.ts"], ignoreDependencies: yakSwc },
