@@ -11,8 +11,8 @@ import {
 // provide `this.fs.readFile`, `this.getResolve` and `this.addDependency` — which
 // is exactly what the turbopack loader uses — so the turbopack loader runs as-is
 // on Rspack. The compiled loader lives next to this file under dist/
-// (dist/rsbuild/index.js and dist/loaders/turbo-loader.cjs are siblings).
-const rspackLoaderPath = fileURLToPath(new URL("../loaders/turbo-loader.cjs", import.meta.url));
+// (dist/rsbuild/index.js and dist/loaders/turbo-loader.js are siblings).
+const rspackLoaderPath = fileURLToPath(new URL("../loaders/turbo-loader.js", import.meta.url));
 
 /**
  * Rsbuild plugin for @yak/react.

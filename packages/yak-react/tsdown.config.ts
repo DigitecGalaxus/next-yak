@@ -1,9 +1,6 @@
 import { defineConfig, type UserConfig } from "tsdown";
 
-const outExtensions: UserConfig["outExtensions"] = ({ format }) => ({
-  js: format === "cjs" ? ".cjs" : ".js",
-  dts: format === "cjs" ? ".d.cts" : ".d.ts",
-});
+const outExtensions: UserConfig["outExtensions"] = () => ({ js: ".js", dts: ".d.ts" });
 
 // Strip JSDoc to match esbuild defaults (tsup parity); keep annotation
 // comments like `@__PURE__` so downstream tree-shakers can still see them.
@@ -11,7 +8,7 @@ const stripJsdoc = { comments: { jsdoc: false } } as const;
 
 // Shared by the webpack and turbo loader builds below.
 const loaderConfig: UserConfig = {
-  format: ["cjs"],
+  format: ["esm"],
   minify: false,
   sourcemap: true,
   clean: false,
@@ -45,7 +42,7 @@ export default defineConfig([
   // runtime
   {
     entry: ["runtime/index.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: true,
     sourcemap: true,
     clean: true,
@@ -58,10 +55,10 @@ export default defineConfig([
   },
   // runtime types: separate so `YakTheme` is inlined into dist/index.d.ts
   // (consumers augment via `declare module "@yak/react"`). The plugin works
-  // around tsdown ignoring `dts.emitDtsOnly` on the CJS main build.
+  // around tsdown ignoring `dts.emitDtsOnly`.
   {
     entry: ["runtime/index.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     dts: { emitDtsOnly: true },
     deps: { neverBundle: [/^react($|\/)/] },
     target: "es2022",
@@ -81,7 +78,7 @@ export default defineConfig([
   // internal
   {
     entry: ["runtime/internal.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     dts: true,
@@ -94,7 +91,7 @@ export default defineConfig([
   // static
   {
     entry: ["static/index.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: true,
     sourcemap: true,
     clean: true,
@@ -108,7 +105,7 @@ export default defineConfig([
   // baseContext
   {
     entry: ["runtime/context/baseContext.tsx"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,
@@ -122,7 +119,7 @@ export default defineConfig([
   // client context
   {
     entry: ["runtime/context/index.tsx"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,
@@ -136,7 +133,7 @@ export default defineConfig([
   // server context
   {
     entry: ["runtime/context/index.server.tsx"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,
@@ -152,7 +149,7 @@ export default defineConfig([
   // withYak (next.js config plugin)
   {
     entry: ["withYak/index.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: false,
     sourcemap: true,
     clean: false,
@@ -254,15 +251,15 @@ export default defineConfig([
     outDir: "dist/rsbuild",
     outExtensions,
   },
-  // webpack-loader and turbo-loader each need to be a self-contained CJS file
+  // webpack-loader and turbo-loader each need to be a self-contained file
   // (loaded by path, no sibling chunks), so they're built separately with
-  // codeSplitting disabled. The rsbuild plugin reuses turbo-loader.cjs as-is.
+  // codeSplitting disabled. The rsbuild plugin reuses turbo-loader.js as-is.
   { entry: ["loaders/webpack-loader.ts"], ...loaderConfig },
   { entry: ["loaders/turbo-loader.ts"], ...loaderConfig },
   // jsx-runtime
   {
     entry: ["runtime/jsx-runtime.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: true,
     sourcemap: true,
     clean: true,
@@ -276,7 +273,7 @@ export default defineConfig([
   // jsx-runtime-dev
   {
     entry: ["runtime/jsx-dev-runtime.ts"],
-    format: ["cjs", "esm"],
+    format: ["esm"],
     minify: true,
     sourcemap: true,
     clean: true,
