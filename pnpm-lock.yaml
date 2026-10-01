@@ -117,8 +117,8 @@ catalogs:
       specifier: 2.0.0-beta.47
       version: 2.0.0-beta.47
     '@qwik.dev/router':
-      specifier: 2.0.0-beta.43
-      version: 2.0.0-beta.43
+      specifier: 2.0.0-beta.47
+      version: 2.0.0-beta.47
     '@solidjs/web':
       specifier: ^2.0.0-rc.10
       version: 2.0.0-rc.13
@@ -280,9 +280,6 @@ catalogs:
 overrides:
   '@yak/swc': workspace:*
   '@swc/core': ~1.15.47
-
-patchedDependencies:
-  '@qwik.dev/router@2.0.0-beta.43': 12b03140a8503505a67e8079e1e0f40ec871bd0cc000cc29cc249efd72f4042d
 
 importers:
 
@@ -602,7 +599,7 @@ importers:
         version: 2.0.0-beta.47(@oxc-project/types@0.151.0)(@rsbuild/core@2.2.2)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(prettier@3.9.9)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5))
       '@qwik.dev/router':
         specifier: catalog:core
-        version: 2.0.0-beta.43(patch_hash=12b03140a8503505a67e8079e1e0f40ec871bd0cc000cc29cc249efd72f4042d)(@qwik.dev/core@2.0.0-beta.47(@oxc-project/types@0.151.0)(@rsbuild/core@2.2.2)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(prettier@3.9.9)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+        version: 2.0.0-beta.47(@qwik.dev/core@2.0.0-beta.47(@oxc-project/types@0.151.0)(@rsbuild/core@2.2.2)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(prettier@3.9.9)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
       '@yak/qwik':
         specifier: workspace:*
         version: link:../../../packages/yak-qwik
@@ -860,10 +857,10 @@ importers:
     devDependencies:
       '@qwik.dev/core':
         specifier: catalog:core
-        version: 2.0.0-beta.43(prettier@3.9.4)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)))
+        version: 2.0.0-beta.47(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))
       '@qwik.dev/router':
         specifier: catalog:core
-        version: 2.0.0-beta.43(patch_hash=12b03140a8503505a67e8079e1e0f40ec871bd0cc000cc29cc249efd72f4042d)(@qwik.dev/core@2.0.0-beta.43(prettier@3.9.4)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))))(rollup@4.54.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+        version: 2.0.0-beta.47(@qwik.dev/core@2.0.0-beta.47(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))
       '@types/node':
         specifier: catalog:dev
         version: 26.4.1
@@ -875,7 +872,7 @@ importers:
         version: 6.0.3
       vite:
         specifier: catalog:dev
-        version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
+        version: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
   examples/vite-solid:
     dependencies:
@@ -3424,11 +3421,11 @@ packages:
     resolution: {integrity: sha512-PKZedb4+/Goi5KS7HCiJXZO9g3prbmI7lTi+yhy0GBPHUFlmRWVCXhllGrgRBHbvuPxfLTOAfZ5d/sG2QufTXQ==}
     engines: {node: ^20.3.0 || >=21.0.0}
 
-  '@qwik.dev/router@2.0.0-beta.43':
-    resolution: {integrity: sha512-swkQaPYEXlMLnoCveDcU4C99MlVXF+pzfV1aVOQWXO5UI9OHrXmk4hiPxjWwKHdnKGEEfPd7Qh2EW0dSbNj+qg==}
+  '@qwik.dev/router@2.0.0-beta.47':
+    resolution: {integrity: sha512-XVe3PcOJhDGdXfPPWxanc6+iZDQJBW5AwQ781kOFRQnHIDkWW3/xGr6vt6MYaIf6nuk6n0pig7DNEIUgmF1IGQ==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     peerDependencies:
-      '@qwik.dev/core': 2.0.0-beta.43
+      '@qwik.dev/core': 2.0.0-beta.47
       vite: '>=8 <9'
 
   '@resvg/resvg-wasm@2.4.0':
@@ -5160,6 +5157,10 @@ packages:
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
+  commander@11.1.0:
+    resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
+    engines: {node: '>=16'}
+
   commander@14.0.3:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
@@ -5244,6 +5245,9 @@ packages:
   css-select@5.2.2:
     resolution: {integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
 
+  css-select@6.0.0:
+    resolution: {integrity: sha512-rZZVSLle8v0+EY8QAkDWrKhpgt6SA5OtHsgBnsj6ZaLb5dmDVOWUDtQitd9ydxxvEjhewNudS6eTVU7uOyzvXw==}
+
   css-to-react-native@3.2.0:
     resolution: {integrity: sha512-e8RKaLXMOFii+02mOlqwjbD00KSEKqblnpO9e++1aXS1fPQOpS1YoqdVHBqPjHNoxeF2mimzVqawm2KCbEdtHQ==}
 
@@ -5261,6 +5265,10 @@ packages:
 
   css-what@6.2.2:
     resolution: {integrity: sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA==}
+    engines: {node: '>= 6'}
+
+  css-what@7.0.0:
+    resolution: {integrity: sha512-wD5oz5xibMOPHzy13CyGmogB3phdvcDaB5t0W/Nr5Z2O/agcB8YwOz6e2Lsp10pNDzBoDO9nVa3RGs/2BttpHQ==}
     engines: {node: '>= 6'}
 
   css.escape@1.5.1:
@@ -8091,6 +8099,11 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
+  svgo@4.1.0:
+    resolution: {integrity: sha512-bkxnTg1kSU0guhIBmibA6UUhrQmPVA1XsQLN+ylCd+UWzbnLkySOcXpyk1mrl05f+pcaCx2eHb+sp6BgMZWX+Q==}
+    engines: {node: '>=16'}
+    hasBin: true
+
   swc-loader@0.2.7:
     resolution: {integrity: sha512-nwYWw3Fh9ame3Rtm7StS9SBLpHRRnYcK7bnpF3UKZmesAK0gw2/ADvlURFAINmPvKtDLzp+GBiP9yLoEjg6S9w==}
     peerDependencies:
@@ -10689,9 +10702,38 @@ snapshots:
       - unloader
       - webpack
 
+  '@qwik.dev/core@2.0.0-beta.47(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))':
+    dependencies:
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
+      '@qwik.dev/optimizer': 2.1.0-beta.9
+      csstype: 3.2.3
+      launch-editor: 2.14.1
+      magic-regexp: 0.11.2(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))
+      magic-string: 0.30.21
+      oxc-parser: 0.144.0
+      oxc-transform: 0.144.0
+      oxc-walker: 1.1.1(@oxc-project/types@0.151.0)(oxc-parser@0.144.0)(rolldown@1.2.11)
+      pathe: 2.0.3
+      siphash: 1.2.0
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@oxc-project/types'
+      - '@rsbuild/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rolldown
+      - rollup
+      - unloader
+      - webpack
+
   '@qwik.dev/optimizer@2.1.0-beta.9': {}
 
-  '@qwik.dev/router@2.0.0-beta.43(patch_hash=12b03140a8503505a67e8079e1e0f40ec871bd0cc000cc29cc249efd72f4042d)(@qwik.dev/core@2.0.0-beta.47(@oxc-project/types@0.151.0)(@rsbuild/core@2.2.2)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(prettier@3.9.9)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))':
+  '@qwik.dev/router@2.0.0-beta.47(@qwik.dev/core@2.0.0-beta.47(@oxc-project/types@0.151.0)(@rsbuild/core@2.2.2)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(prettier@3.9.9)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))':
     dependencies:
       '@azure/functions': 3.5.1
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
@@ -10712,13 +10754,48 @@ snapshots:
       remark-gfm: 4.0.1(supports-color@8.1.1)
       set-cookie-parser: 2.7.2
       source-map: 0.7.6
-      svgo: 3.3.5
+      svgo: 4.1.0
       unified: 11.0.5
       unist-util-visit: 5.1.0
       valibot: 1.5.0(typescript@6.0.3)
       vfile: 6.0.3
       vite: 8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       vite-imagetools: 10.0.0(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      yaml: 2.9.1
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
+      - typescript
+
+  '@qwik.dev/router@2.0.0-beta.47(@qwik.dev/core@2.0.0-beta.47(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))':
+    dependencies:
+      '@azure/functions': 3.5.1
+      '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
+      '@netlify/edge-functions': 3.0.8
+      '@qwik.dev/core': 2.0.0-beta.47(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))
+      '@types/mdx': 2.0.14
+      estree-util-value-to-estree: 3.5.0
+      github-slugger: 2.0.0
+      hast-util-heading-rank: 2.1.1
+      hast-util-to-string: 2.0.0
+      kleur: 4.1.5
+      marked: 12.0.2
+      mdast-util-mdx: 3.0.0(supports-color@8.1.1)
+      mlly: 1.8.2
+      refractor: 4.9.0
+      rehype-autolink-headings: 7.1.0
+      remark-frontmatter: 5.0.0(supports-color@8.1.1)
+      remark-gfm: 4.0.1(supports-color@8.1.1)
+      set-cookie-parser: 2.7.2
+      source-map: 0.7.6
+      svgo: 4.1.0
+      unified: 11.0.5
+      unist-util-visit: 5.1.0
+      valibot: 1.5.0(typescript@6.0.3)
+      vfile: 6.0.3
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+      vite-imagetools: 10.0.0(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))
       yaml: 2.9.1
       zod: 3.25.76
     transitivePeerDependencies:
@@ -12187,6 +12264,15 @@ snapshots:
     optionalDependencies:
       vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
+  '@vitest/mocker@4.1.11(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))':
+    dependencies:
+      '@vitest/spy': 4.1.11
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+    optional: true
+
   '@vitest/mocker@4.1.11(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))':
     dependencies:
       '@vitest/spy': 4.1.11
@@ -12787,11 +12873,14 @@ snapshots:
 
   comma-separated-tokens@2.0.3: {}
 
+  commander@11.1.0: {}
+
   commander@14.0.3: {}
 
   commander@2.20.3: {}
 
-  commander@7.2.0: {}
+  commander@7.2.0:
+    optional: true
 
   commander@8.3.0: {}
 
@@ -12866,6 +12955,15 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.2.2
       nth-check: 2.1.1
+    optional: true
+
+  css-select@6.0.0:
+    dependencies:
+      boolbase: 1.0.0
+      css-what: 7.0.0
+      domhandler: 5.0.3
+      domutils: 3.2.2
+      nth-check: 2.1.1
 
   css-to-react-native@3.2.0:
     dependencies:
@@ -12882,6 +12980,7 @@ snapshots:
     dependencies:
       mdn-data: 2.0.30
       source-map-js: 1.2.1
+    optional: true
 
   css-tree@3.2.1:
     dependencies:
@@ -12889,6 +12988,8 @@ snapshots:
       source-map-js: 1.2.1
 
   css-what@6.2.2: {}
+
+  css-what@7.0.0: {}
 
   css.escape@1.5.1: {}
 
@@ -14943,6 +15044,24 @@ snapshots:
       - vite
       - webpack
 
+  magic-regexp@0.11.2(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)):
+    dependencies:
+      magic-string: 1.4.2
+      regexp-tree: 0.1.27
+      type-level-regexp: 0.1.17
+      unplugin: 3.4.0(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rsbuild/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rolldown
+      - rollup
+      - unloader
+      - vite
+      - webpack
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -15145,7 +15264,8 @@ snapshots:
 
   mdn-data@2.0.28: {}
 
-  mdn-data@2.0.30: {}
+  mdn-data@2.0.30:
+    optional: true
 
   mdn-data@2.27.1: {}
 
@@ -15522,6 +15642,24 @@ snapshots:
       postcss: 8.5.28
       sharp: 0.35.5(@types/node@26.4.1)
       svgo: 3.3.5
+    optional: true
+
+  minimizer-webpack-plugin@5.12.0(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      jest-worker: 27.5.1
+      schema-utils: 4.5.0
+      terser: 5.51.2
+      webpack: 5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)
+    optionalDependencies:
+      '@swc/core': 1.15.47(@swc/helpers@0.5.23)
+      clean-css: 5.3.3
+      csso: 5.0.5
+      html-minifier-terser: 6.1.0
+      lightningcss: 1.33.0
+      postcss: 8.5.28
+      sharp: 0.35.5(@types/node@26.4.1)
+      svgo: 4.1.0
     optional: true
 
   minipass@7.1.3: {}
@@ -16879,6 +17017,17 @@ snapshots:
       csso: 5.0.5
       picocolors: 1.1.1
       sax: 1.6.1
+    optional: true
+
+  svgo@4.1.0:
+    dependencies:
+      commander: 11.1.0
+      css-select: 6.0.0
+      css-tree: 3.2.1
+      css-what: 7.0.0
+      csso: 5.0.5
+      picocolors: 1.1.1
+      sax: 1.6.1
 
   swc-loader@0.2.7(@swc/core@1.15.47(@swc/helpers@0.5.23))(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.3))(svgo@3.3.5)):
     dependencies:
@@ -17215,6 +17364,18 @@ snapshots:
       vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       webpack: 5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@3.3.5)
 
+  unplugin@3.4.0(@rsbuild/core@2.2.2)(@rspack/core@2.2.8)(rolldown@1.2.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)):
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      picomatch: 4.0.7
+      webpack-virtual-modules: 0.6.2
+    optionalDependencies:
+      '@rsbuild/core': 2.2.2
+      '@rspack/core': 2.2.8(@swc/helpers@0.5.23)
+      rolldown: 1.2.11
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+      webpack: 5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)
+
   unrs-resolver@1.12.2:
     dependencies:
       napi-postinstall: 0.3.4
@@ -17301,6 +17462,15 @@ snapshots:
       '@vitejs/plugin-rsc': 0.5.34(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
     transitivePeerDependencies:
       - next
+
+  vite-imagetools@10.0.0(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)):
+    dependencies:
+      '@rollup/pluginutils': 5.4.0
+      imagetools-core: 9.1.0
+      sharp: 0.34.5
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+    transitivePeerDependencies:
+      - rollup
 
   vite-imagetools@10.0.0(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
@@ -17389,6 +17559,35 @@ snapshots:
       jsdom: 30.0.1
     transitivePeerDependencies:
       - msw
+
+  vitest@4.1.11(@types/node@26.4.1)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2)):
+    dependencies:
+      '@vitest/expect': 4.1.11
+      '@vitest/mocker': 4.1.11(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(terser@5.51.2))
+      '@vitest/pretty-format': 4.1.11
+      '@vitest/runner': 4.1.11
+      '@vitest/snapshot': 4.1.11
+      '@vitest/spy': 4.1.11
+      '@vitest/utils': 4.1.11
+      es-module-lexer: 2.3.2
+      expect-type: 1.4.0
+      magic-string: 0.30.21
+      obug: 2.2.1
+      pathe: 2.0.3
+      picomatch: 4.0.7
+      std-env: 4.3.0
+      tinybench: 2.9.0
+      tinyexec: 1.3.1
+      tinyglobby: 0.2.17
+      tinyrainbow: 3.1.1
+      vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 26.4.1
+      jsdom: 30.0.1
+    transitivePeerDependencies:
+      - msw
+    optional: true
 
   vitest@4.1.11(@types/node@26.6.3)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
@@ -17544,6 +17743,44 @@ snapshots:
       graceful-fs: 4.2.11
       mime-db: 1.54.0
       minimizer-webpack-plugin: 5.12.0(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@3.3.5)(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@3.3.5))
+      schema-utils: 4.5.0
+      tapable: 2.3.3
+      watchpack: 2.5.2
+      webpack-sources: 3.6.0
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@napi-rs/image'
+      - '@swc/core'
+      - '@swc/css'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - imagemin
+      - lightningcss
+      - postcss
+      - sharp
+      - svgo
+      - uglify-js
+    optional: true
+
+  webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0):
+    dependencies:
+      '@types/estree': 1.0.9
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      browserslist: 4.29.3
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.26.0
+      es-module-lexer: 2.3.2
+      events: 3.3.0
+      graceful-fs: 4.2.11
+      mime-db: 1.54.0
+      minimizer-webpack-plugin: 5.12.0(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0)(webpack@5.111.1(@swc/core@1.15.47)(clean-css@5.3.3)(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.4.1))(svgo@4.1.0))
       schema-utils: 4.5.0
       tapable: 2.3.3
       watchpack: 2.5.2
