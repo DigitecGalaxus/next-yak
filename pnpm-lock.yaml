@@ -258,9 +258,6 @@ catalogs:
     tsdown:
       specifier: 0.22.14
       version: 0.22.14
-    tsx:
-      specifier: 4.23.13
-      version: 4.23.13
     typescript:
       specifier: 6.0.3
       version: 6.0.3
@@ -337,9 +334,6 @@ importers:
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(oxc-resolver@11.21.3)(tsx@4.23.13)(typescript@6.0.3)(unrun@0.2.37(synckit@0.11.11))
-      tsx:
-        specifier: catalog:dev
-        version: 4.23.13
       typescript:
         specifier: catalog:dev
         version: 6.0.3
@@ -15951,6 +15945,7 @@ snapshots:
       esbuild: 0.28.2
     optionalDependencies:
       fsevents: 2.3.3
+    optional: true
 
   turbo-stream@3.2.1: {}
 
