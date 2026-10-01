@@ -104,6 +104,7 @@ const Parent: FunctionComponent<ParentProps> = ({ count }) => {
   );
 };
 
+/** @public index.bench.tsx reads it from the compiled yak file */
 export const RENDER_COUNT = ${renderCount};
 export const CrossRequestCache${
     lib === "yak" ? "Yak" : "Styled"

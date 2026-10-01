@@ -25,13 +25,7 @@ const config: KnipConfig = {
     },
     "packages/yak-solid": {
       entry: ["runtime/__tests__/*.tsx"],
-      ignoreDependencies: [
-        "@babel/parser",
-        ...yakSwc,
-        // vite-plugin-solid registers `@testing-library/jest-dom/vitest` as a
-        // vitest setup file whenever the package is installed.
-        "@testing-library/jest-dom",
-      ],
+      ignoreDependencies: ["@babel/parser", ...yakSwc],
     },
     "packages/yak-swc": {
       // Rust fixture inputs/snapshots for the SWC plugin tests
