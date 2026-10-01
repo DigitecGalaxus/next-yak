@@ -107,7 +107,6 @@ function getParseContext(loader: LoaderContext<YakConfigOptions>): ParseContext 
     async evaluateYakModule(modulePath) {
       return loader.importModule(modulePath);
     },
-    transpilationMode: loader.getOptions().experiments?.transpilationMode,
   };
 }
 

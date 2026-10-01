@@ -12,7 +12,6 @@
     "no-control-regex": "off",
     "typescript/no-empty-object-type": "off",
     "@yak/css-nesting-operator": "error",
-    "@yak/css-global-deprecated": "warn",
     "@yak/enforce-semicolon": "error",
     "@yak/style-conditions": "warn"
   },

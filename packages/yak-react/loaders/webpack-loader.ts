@@ -33,7 +33,7 @@ export default async function cssExtractLoader(
     );
 
     debugLog("ts", source, this.resourcePath);
-    const css = extractCss(source, experiments?.transpilationMode);
+    const css = extractCss(source);
     debugLog("css", css, this.resourcePath);
 
     return resolveCrossFileConstant(this, this.context, css).then((result) => {

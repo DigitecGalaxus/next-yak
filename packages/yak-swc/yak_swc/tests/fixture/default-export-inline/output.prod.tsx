@@ -1,8 +1,8 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export default /*YAK EXPORTED STYLED:default:ym7uBBu*//*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: blue;
   font-size: 24px;
 }
