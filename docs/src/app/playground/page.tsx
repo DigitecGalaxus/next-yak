@@ -3,7 +3,7 @@ import { styled } from "@yak/react";
 import { PlaygroundLoader } from "@/components/playground/playground-loader";
 import { pageMetadata } from "@/lib/page-metadata";
 import { overline } from "@/lib/mixins";
-import { light, dark, maxContentWidth, screen } from "@/tokens";
+import { light, dark, headerHeight, maxContentWidth, screen } from "@/tokens";
 
 export const metadata: Metadata = pageMetadata({
   title: "Playground",
@@ -39,10 +39,25 @@ const Page = styled.main`
   @media (max-width: ${screen.nav}) {
     padding: 24px 16px 64px;
   }
+
+  /* wide screens give the room to the editor and the preview: the page fills the window
+     below the site header, and the playground takes what the intro leaves */
+  @media (min-width: ${screen.toc}) {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - ${headerHeight});
+    min-height: 640px;
+    max-width: none;
+    padding: 20px 32px 24px;
+  }
 `;
 
 const Intro = styled.div`
   margin-bottom: 28px;
+
+  @media (min-width: ${screen.toc}) {
+    margin-bottom: 16px;
+  }
 `;
 
 const Eyebrow = styled.span`
@@ -50,6 +65,10 @@ const Eyebrow = styled.span`
   font-size: 13px;
   letter-spacing: 0.6px;
   color: light-dark(${light.red}, ${dark.red});
+
+  @media (min-width: ${screen.toc}) {
+    display: none;
+  }
 `;
 
 const Title = styled.h1`
@@ -57,6 +76,10 @@ const Title = styled.h1`
   font-size: 34px;
   line-height: 1.2;
   color: light-dark(${light.violet}, ${dark.white});
+
+  @media (min-width: ${screen.toc}) {
+    margin: 0 0 4px;
+  }
 `;
 
 const Lead = styled.p`
@@ -64,4 +87,8 @@ const Lead = styled.p`
   margin: 0;
   font-size: 17px;
   line-height: 1.6;
+
+  @media (min-width: ${screen.toc}) {
+    max-width: none;
+  }
 `;
