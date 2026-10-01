@@ -65,7 +65,7 @@ jobs:
       - name: Lint (oxlint)
         run: pnpm lint:fix
 
-      - name: Build @yak/react and @yak/solid (needed by knip)
+      - name: Build @yak/react, @yak/solid and @yak/qwik (needed by knip)
         run: pnpm build
 
       - name: Lint (knip)
