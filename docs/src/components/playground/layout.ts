@@ -16,6 +16,8 @@ export const Workspace = styled.div`
   @media (min-width: ${screen.toc}) {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: stretch;
+    flex: 1;
+    min-height: 0;
   }
 `;
 
@@ -99,6 +101,13 @@ export const Spacer = styled.div`
 
 export const EditorBody = styled.div`
   height: clamp(420px, 72vh, 760px);
+
+  /* the page sets the height on wide screens */
+  @media (min-width: ${screen.toc}) {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
 `;
 
 export const PreviewCard = styled.section`
