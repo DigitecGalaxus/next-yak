@@ -48,6 +48,11 @@ const config: KnipConfig = {
     "packages/yak-storybook": {
       ignoreDependencies: yakSwc,
     },
+    docs: {
+      // wasm-pack output of the playground
+      ignore: ["src/lib/playground/wasm/**"],
+      ignoreDependencies: yakSwc,
+    },
     // yak.context.ts is picked up by convention by the yak loaders (see yak-internals/config.ts)
     "examples/next-js": { entry: ["yak.context.ts"], ignoreDependencies: yakSwc },
     "examples/rsbuild": { entry: ["src/index.tsx"] },

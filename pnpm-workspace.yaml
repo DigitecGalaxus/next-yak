@@ -2,7 +2,7 @@ packages:
   - packages/*
   - examples/*
   - benchmarks
-  - docs-vnext
+  - docs
   - e2e
   - e2e/bundlers/*
 
@@ -13,6 +13,10 @@ overrides:
   # webpack builder runs the plugin through its own swc-loader, so a second,
   # newer @swc/core would break it.
   "@swc/core": catalog:core
+  # Types for the docs playground editor (the editor itself loads from a CDN).
+  # @monaco-editor/react 4.7 imports `monaco-editor/esm/vs/editor/editor.api`,
+  # which the export map of 0.55 and later does not resolve.
+  monaco-editor: 0.54.0
 
 # Only install versions published at least a day ago
 minimumReleaseAge: 1440
@@ -23,6 +27,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  wasm-pack: true
 
 catalogs:
   core:
@@ -40,13 +45,16 @@ catalogs:
     "@rsbuild/core": 2.2.2
     "@rsbuild/plugin-react": 2.1.0
     "@changesets/cli": 3.0.1
+    "@monaco-editor/react": 4.7.0
     "@next/eslint-plugin-next": 16.3.4
     "@playwright/test": 1.62.1
+    "@shikijs/monaco": 4.4.3
     "@storybook/addon-docs": 10.6.0
     "@storybook/addon-webpack5-compiler-swc": 4.0.3
     "@storybook/react": 10.6.0
     "@storybook/react-vite": 10.6.0
     "@storybook/react-webpack5": 10.6.0
+    "@swc/helpers": 0.5.23
     "@tanstack/react-router": 1.170.32
     "@tanstack/react-start": 1.168.49
     "@testing-library/dom": 10.4.1
@@ -67,9 +75,14 @@ catalogs:
     eslint: 10.9.1
     eslint-config-next: 16.3.4
     eslint-doc-generator: 3.7.1
+    fflate: 0.8.3
+    fumadocs-core: 16.15.17
+    fumadocs-mdx: 15.4.5
+    fumadocs-twoslash: 4.0.1
     jest: 30.5.1
     "@testing-library/jest-dom": 7.0.1
     jest-environment-jsdom: 30.5.1
+    js-base64: 3.9.4
     jsdom: 30.0.1
     knip: 6.34.0
     next: 16.3.4
@@ -79,8 +92,10 @@ catalogs:
     # via `require(name)(options)`, which cannot consume that (Turbopack is fine),
     # so the Next.js example stays on 7.x until Next handles ESM plugins.
     postcss-nested: 7.0.2
+    prettier: 3.9.9
     react: 19.2.8
     react-dom: 19.2.8
+    shiki: 4.4.3
     storybook: 10.6.0
     styled-components: 6.5.3
     tsdown: 0.22.14
@@ -91,7 +106,7 @@ catalogs:
     vinext: 1.0.0-beta.9
     vite: 8.2.2
     "@solidjs/vite-plugin": 3.0.0-next.46
-    "@solidjs/babel-plugin": 2.0.0-rc.6
+    "@solidjs/babel-plugin": 2.0.0-rc.10
     vitest: 4.1.11
     wasm-pack: 0.15.0
-    zod: 4.4.3
+    zod: 4.6.5
