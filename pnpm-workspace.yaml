@@ -80,7 +80,6 @@ catalogs:
     storybook: 10.6.0
     styled-components: 6.5.3
     tsdown: 0.22.14
-    tsx: 4.23.13
     # TypeScript 7 (the native compiler) ships no programmatic API yet, which
     # typescript-eslint, twoslash and the dts bundler need, so stay on 6.x.
     typescript: 6.0.3
