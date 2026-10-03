@@ -70,6 +70,34 @@ test("resolve css with cross-file constant from 2 depth named import", async () 
   expect(dependencies).to.have.members(["/foo/constant.ts", "/foo/proxy.ts"]);
 });
 
+test("resolve css with cross-file constant from local export list", async () => {
+  const { resolved, dependencies } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/constant.ts": `export { color, color as alias };\nconst color = "red";`,
+    }),
+    "/foo/bar.ts",
+    `color: --yak-css-import: url("./constant.ts:color",mixin); background: --yak-css-import: url("./constant.ts:alias",mixin);`,
+  );
+
+  assert.strictEqual(resolved, "color: red; background: red;");
+  assert.deepEqual(dependencies, ["/foo/constant.ts"]);
+});
+
+test("resolve css with cross-file constant from exported import binding", async () => {
+  const { resolved, dependencies } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/proxy.ts": `import { RED_500 } from "./constant.ts";\nexport { RED_500 as primaryColor };`,
+      "/foo/default.ts": `import { RED_500 } from "./constant.ts";\nexport default RED_500;`,
+      "/foo/constant.ts": `export const RED_500 = "red";`,
+    }),
+    "/foo/bar.ts",
+    `color: --yak-css-import: url("./proxy.ts:primaryColor",mixin); background: --yak-css-import: url("./default.ts:default",mixin);`,
+  );
+
+  assert.strictEqual(resolved, "color: red; background: red;");
+  expect(dependencies).to.have.members(["/foo/constant.ts", "/foo/proxy.ts", "/foo/default.ts"]);
+});
+
 test("resolve css with cross-file constant from namespace re-export", async () => {
   const { resolved, dependencies } = await resolveCrossFileConstant(
     createParseContext({
