@@ -207,9 +207,7 @@ Enable debug logging in Next.js config:
 
 ```js
 export default withYak({
-  experiments: {
-    debug: true, // or regex like 'component.tsx.css$'
-  },
+  debug: true, // or { pattern: "component.tsx", types: ["css"] }
 });
 ```
 
