@@ -1,6 +1,6 @@
 import { css, styled, atoms, __yak_mergeCssProp } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Elem = ()=><div {...__yak_mergeCssProp(atoms("yellow"))}/>;
 const Elem2 = ()=><div {...__yak_mergeCssProp(atoms("blue"), {
         className: "test-class"
@@ -26,13 +26,13 @@ const Elem9 = ({ on }: {
     on: boolean;
 })=><div {...__yak_mergeCssProp(on ? atoms("orange") : undefined)}/>;
 const Text = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   font-size: 20px;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBu");
 const StyledComponentWithCSSProp = ()=><Text {...__yak_mergeCssProp(atoms("red"))}>test</Text>;
 const CssAndAtoms = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: red;
 }
 */ /*#__PURE__*/ css(atoms("yellow"), "ym7uBBu1"), {

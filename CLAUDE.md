@@ -178,8 +178,8 @@ UPDATE=1 cargo test
 
 Each fixture generates 4 tests:
 
-- `fixture_dev` - Development mode with CSS modules
-- `fixture_prod` - Production mode with CSS modules
+- `fixture_dev` - Development mode with the webpack CSS import
+- `fixture_prod` - Production mode with the webpack CSS import
 - `fixture_dev_turbo` - Development mode with Turbopack (DataUrl)
 - `fixture_prod_turbo` - Production mode with Turbopack (DataUrl)
 

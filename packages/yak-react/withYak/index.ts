@@ -18,15 +18,11 @@ const currentDir =
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const yakPluginOptions = buildYakPluginOptions(yakOptions, currentDir);
 
-  const transpilation = yakOptions.experiments?.transpilationMode ?? "CssModule";
-  const cssExtension = transpilation === "CssModule" ? ".yak.module.css" : ".yak.css";
-
   if (process.env.TURBOPACK === "1" || process.env.TURBOPACK === "auto") {
     addYakTurbopack(nextConfig, yakOptions, {
       ...yakPluginOptions,
       importMode: {
         value: "data:text/css;base64,",
-        transpilation: "Css",
         encoding: "Base64",
       },
     });
@@ -34,8 +30,7 @@ const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
     addYakWebpack(nextConfig, yakOptions, {
       ...yakPluginOptions,
       importMode: {
-        value: `./{{__BASE_NAME__}}${cssExtension}!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}${cssExtension}`,
-        transpilation,
+        value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css",
         encoding: "None",
       },
     });
@@ -61,7 +56,6 @@ function addYakTurbopack(
     strictCssProp: boolean;
     importMode: {
       value: string;
-      transpilation: string;
       encoding: string;
     };
   },
@@ -118,7 +112,6 @@ function addYakWebpack(
     strictCssProp: boolean;
     importMode: {
       value: string;
-      transpilation: string;
       encoding: string;
     };
   },
@@ -135,18 +128,13 @@ function addYakWebpack(
       webpackConfig = previousConfig(webpackConfig, options);
     }
 
-    if (
-      yakOptions.experiments?.transpilationMode === "Css" &&
-      !options.isServer &&
-      !hasAppDir(options.dir)
-    ) {
+    if (!options.isServer && !hasAppDir(options.dir)) {
       // Next.js restricts global CSS imports only in the client build of a pages-only project, so only patch its rules there
       allowYakGlobalCss(webpackConfig);
     }
 
     webpackConfig.module.rules.push({
-      test:
-        yakOptions.experiments?.transpilationMode === "Css" ? /\.yak\.css$/ : /\.yak\.module\.css$/,
+      test: /\.yak\.css$/,
       loader: path.join(currentDir, "../loaders/webpack-loader.cjs"),
       options: yakOptions,
     });

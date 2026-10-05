@@ -44,7 +44,7 @@ mod utils {
   pub(crate) mod native_elements;
 }
 pub mod naming_convention;
-use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
+use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention};
 
 mod yak_transforms;
 use yak_transforms::{
@@ -76,9 +76,6 @@ pub struct Config {
   /// Influences how class names and selectors are transpiled
   #[serde(default = "Config::import_mode_default")]
   pub import_mode: CssImportConfig,
-  /// Suppress deprecation warnings for :global() selectors
-  #[serde(default)]
-  pub suppress_deprecation_warnings: bool,
   /// Append `$RefreshReg$` calls for every exported styled component so that
   /// React Fast Refresh treats the module as a refresh boundary.
   /// Enable this in development to prevent full-page reloads on CSS-only edits.
@@ -125,8 +122,8 @@ impl Config {
 
   fn import_mode_default() -> CssImportConfig {
     CssImportConfig {
-      value: "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css".to_string(),
-      transpilation: naming_convention::TranspilationMode::CssModule,
+      value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"
+        .to_string(),
       encoding: ImportModeEncoding::None,
     }
   }
@@ -140,7 +137,6 @@ impl Default for Config {
       prefix: Default::default(),
       display_names: Default::default(),
       import_mode: Config::import_mode_default(),
-      suppress_deprecation_warnings: Default::default(),
       react_refresh_reg: Default::default(),
       fold_static: Config::fold_static_default(),
       strict_css_prop: Config::strict_css_prop_default(),
@@ -157,6 +153,12 @@ Dynamic values are not supported in global styles because there is no element to
 Declare a CSS custom property instead and toggle it via an attribute/class on the root element:\n\n\
 globalStyle`:root { --spacing: 4px; } :root[data-compact] { --spacing: 2px; }`\n\n\
 See https://yak.js.org/docs/features#globalstyle";
+
+/// Emitted for a user-written `:global()` selector. yak writes plain CSS, so the
+/// wrapper has no effect and the browser would drop the whole rule.
+const GLOBAL_SELECTOR_ERROR: &str = "\
+`:global()` is not supported. yak writes plain CSS, so every selector is global already.\n\
+Remove the `:global()` wrapper, for example write `.foo` instead of `:global(.foo)`.";
 
 /// Emitted when `globalStyle` is used anywhere but module scope (inside a
 /// component, function or another css template literal), where the styles would
@@ -215,10 +217,6 @@ where
   all_css_rules: Vec<String>,
   /// Comment string to be added to the default export
   default_export_comment: Option<String>,
-  /// Flag to track if user-written :global() selectors were detected
-  has_user_global: bool,
-  /// Flag to suppress deprecation warnings
-  suppress_deprecation_warnings: bool,
   /// Flag to track if we are inside a runtime expression (arrow function body)
   /// Used to suppress errors for non-static member expressions
   inside_runtime_expression: bool,
@@ -261,7 +259,6 @@ where
     prefix: Option<String>,
     display_names: bool,
     import_mode: CssImportConfig,
-    suppress_deprecation_warnings: bool,
     react_refresh_reg: bool,
     fold_static: bool,
     strict_css_prop: bool,
@@ -285,8 +282,6 @@ where
       import_mode,
       all_css_rules: Vec::new(),
       default_export_comment: None,
-      has_user_global: false,
-      suppress_deprecation_warnings,
       inside_runtime_expression: false,
       react_refresh_reg,
       exported_styled_names: Vec::new(),
@@ -382,22 +377,16 @@ where
       css_code_offset = 0;
       css_state = Some(new_state);
 
-      // Check for user-written :global() selectors in the raw quasi string
-      // This checks the original source code, not the transformed CSS.
-      // :global() is deprecated the same way in every context (styled, css and
-      // globalStyle) — all of them steer users to native CSS transpilation mode.
-      if !self.suppress_deprecation_warnings && !self.has_user_global {
-        if quasi.raw.contains(":global(") {
-          self.has_user_global = true;
-          eprintln!(
-            "\n:global() selectors are deprecated and will be removed in the next major version.\
-            \n --> {}
-            \n\nTo migrate to native CSS transpilation, add to your next.config.js:\
-            \n  experiments: {{ transpilationMode: 'Css' }}\
-            \n\nSee https://yak.js.org/docs/migration-to-native-css for migration guide.\n",
-            self.naming_convention.get_file_name()
-          );
-        }
+      // Reject user-written :global() selectors in the raw quasi string (the
+      // original source code, not the transformed CSS) in every context:
+      // styled, css and globalStyle.
+      // This error can be removed in version >= 11.x
+      if quasi.raw.contains(":global(") {
+        HANDLER.with(|handler| {
+          handler
+            .struct_span_err(quasi.span, GLOBAL_SELECTOR_ERROR)
+            .emit();
+        });
       }
 
       // Add the extracted CSS to the the root styled component
@@ -508,12 +497,7 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = match &self.import_mode.transpilation_mode() {
-                  TranspilationMode::CssModule => {
-                    parse_css(&format!("global({})", keyframe_name), css_state)
-                  }
-                  TranspilationMode::Css => parse_css(&keyframe_name, css_state),
-                };
+                let (new_state, _) = parse_css(&keyframe_name, css_state);
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
@@ -780,7 +764,7 @@ where
 
   /// Inject the css module import to the current file so webpack can process
   /// the css separately add HMR and extract it as a static asset
-  /// e.g. import __styleYak from "./App.yak.module.css!=!./App?App.yak.module.css"
+  /// e.g. import __styleYak from "./App.yak.css!=!./App?App.yak.css"
   /// !=! is a webpack-specific syntax that tells webpack to override the default loaders for this import
   /// ? is a fix for Next.js loaders which ignore the !=! statement
   fn visit_mut_module(&mut self, module: &mut Module) {
@@ -1241,7 +1225,6 @@ where
           current_variable_id.clone(),
           self.display_names,
           self.current_exported || is_default_exported,
-          self.import_mode.transpilation_mode(),
         ))
       }
       // Global styles work only at module scope (not nested in another
@@ -1269,7 +1252,6 @@ where
               .naming_convention
               .get_keyframe_name(&current_variable_id.to_readable_string())
           }),
-        self.import_mode.transpilation_mode(),
       )),
 
       // CSS Mixin e.g. const highlight = css`color: red;`
@@ -1278,14 +1260,12 @@ where
         current_variable_id.clone(),
         self.current_exported || is_default_exported,
         self.inside_element_with_css_attribute,
-        self.import_mode.transpilation_mode(),
       )),
       // CSS Inline mixin e.g. styled.button`${() => css`color: red;`}`
       "css" => Box::new(TransformNestedCss::new(
         &mut self.naming_convention,
         &current_variable_id,
         self.current_condition.clone(),
-        self.import_mode.transpilation_mode(),
       )),
       _ => {
         if !is_top_level {
@@ -1598,7 +1578,6 @@ mod tests {
         display_names,
         import_mode,
         false,
-        false,
         options.fold_static,
         options.strict_css_prop,
         options.emit_css_comments,
@@ -1609,7 +1588,6 @@ mod tests {
   fn data_url_import_config() -> CssImportConfig {
     CssImportConfig {
       value: "data:text/css;base64,".to_string(),
-      transpilation: TranspilationMode::Css,
       encoding: ImportModeEncoding::Base64,
     }
   }

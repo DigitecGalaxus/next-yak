@@ -1,25 +1,25 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Button = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   background: red;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBu");
 export const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu1*//*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: blue;
   font-size: 24px;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu1");
 const Container = /*YAK EXPORTED STYLED:Container:ym7uBBu2*//*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   padding: 20px;
   background: yellow;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
 export default /*YAK EXPORTED STYLED:default:ym7uBBu2*//*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   padding: 20px;
   background: yellow;
 }

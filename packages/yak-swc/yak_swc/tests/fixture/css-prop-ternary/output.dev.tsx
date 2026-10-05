@@ -1,15 +1,15 @@
 import { css, __yak_unitPostFix, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // folds: both arms are fully static
 const Elem = ({ active }: {
     active: boolean;
 })=>{
     return <div className={active ? /*YAK Extracted CSS:
-:global(.input_Elem_m7uBBu) {
+.input_Elem_m7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ "input_Elem_m7uBBu" : /*YAK Extracted CSS:
-:global(.input_Elem_m7uBBu-01) {
+.input_Elem_m7uBBu-01 {
   color: blue;
 }
 */ /*#__PURE__*/ "input_Elem_m7uBBu-01"}/>;
@@ -20,14 +20,14 @@ const Elem2 = ({ active, big }: {
     big: boolean;
 })=>{
     return <div className={active ? /*YAK Extracted CSS:
-:global(.input_Elem2_m7uBBu) {
+.input_Elem2_m7uBBu {
   color: red;
 }
-:global(.input_Elem2__big_m7uBBu) {
+.input_Elem2__big_m7uBBu {
   font-size: 20px;
 }
 */ /*#__PURE__*/ "input_Elem2_m7uBBu" + (big ? " input_Elem2__big_m7uBBu" : "") : /*YAK Extracted CSS:
-:global(.input_Elem2_m7uBBu-01) {
+.input_Elem2_m7uBBu-01 {
   color: blue;
 }
 */ /*#__PURE__*/ "input_Elem2_m7uBBu-01"}/>;
@@ -38,7 +38,7 @@ const Elem3 = ({ active, width }: {
     width: number;
 })=>{
     return <div {...__yak_mergeCssProp(active ? /*YAK Extracted CSS:
-:global(.input_Elem3_m7uBBu) {
+.input_Elem3_m7uBBu {
   width: var(--input_Elem3__width_m7uBBu);
 }
 */ /*#__PURE__*/ css({
@@ -46,7 +46,7 @@ const Elem3 = ({ active, width }: {
             "--input_Elem3__width_m7uBBu": /*#__PURE__*/ __yak_unitPostFix(()=>width, "px")
         }
     }, "input_Elem3_m7uBBu") : /*YAK Extracted CSS:
-:global(.input_Elem3_m7uBBu-01) {
+.input_Elem3_m7uBBu-01 {
   color: blue;
 }
 */ /*#__PURE__*/ css("input_Elem3_m7uBBu-01"))}/>;
@@ -56,7 +56,7 @@ const Elem4 = ({ active }: {
     active: boolean;
 })=>{
     return <div className={active ? "" : /*YAK Extracted CSS:
-:global(.input_Elem4_m7uBBu-01) {
+.input_Elem4_m7uBBu-01 {
   color: blue;
 }
 */ /*#__PURE__*/ "input_Elem4_m7uBBu-01"}/>;
@@ -74,7 +74,7 @@ const Elem6 = ({ active }: {
     active: boolean;
 })=>{
     return <div className={/*YAK Extracted CSS:
-:global(.input_Elem6__not_active_m7uBBu) {
+.input_Elem6__not_active_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ "input_Elem6_m7uBBu" + (active ? "" : " input_Elem6__not_active_m7uBBu")}/>;

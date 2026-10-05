@@ -1,11 +1,9 @@
 import { globalStyle } from "@yak/react/internal";
-import "data:text/css;base64,Omdsb2JhbCgubWFwcykgewogIGJvcmRlcjogMXB4IHNvbGlkIGJsYWNrOwp9";
+import "data:text/css;base64,Lm1hcHMgewogIGJvcmRlcjogMXB4IHNvbGlkIGJsYWNrOwp9";
 // Markup rendered by third-party code (map widgets, markdown, CMS content)
-// ships fixed class names. On Next.js with webpack, CSS Modules would hash
-// them, so wrap them in `:global()` to keep them intact — css-loader unwraps
-// it downstream. Other bundlers don't scope class names and need no wrapper.
+// ships fixed class names. yak writes plain CSS, so the class name stays as written.
 /*YAK Extracted CSS:
-:global(.maps) {
+.maps {
   border: 1px solid black;
 }
 */ /*#__PURE__*/ globalStyle();

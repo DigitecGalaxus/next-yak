@@ -46,7 +46,6 @@ export function pluginYak(yakOptions: YakConfigOptions = {}): RsbuildPlugin {
           ...buildYakPluginOptions(yakOptions, rootContext),
           importMode: {
             value: "data:text/css;base64,",
-            transpilation: "Css",
             encoding: "Base64",
           },
         };

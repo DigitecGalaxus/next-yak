@@ -17,8 +17,7 @@ globalStyle`
     font-family: sans-serif;
   }
 
-  /* class selectors that must stay global in CssModule mode use :global() */
-  :global(.sr-only) {
+  .sr-only {
     position: absolute;
     width: 1px;
   }

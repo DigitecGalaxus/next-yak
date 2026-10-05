@@ -67,7 +67,7 @@ export async function uncachedParseModule(
 
   const transformed = await context.getTransformed(modulePath);
   const mixins = parseMixins(transformed.code);
-  const styledComponents = parseStyledComponents(transformed.code, context.transpilationMode);
+  const styledComponents = parseStyledComponents(transformed.code);
 
   return {
     type: "regular",
@@ -101,10 +101,7 @@ function parseMixins(sourceContents: string): Record<string, Mixin> {
   return mixins;
 }
 
-function parseStyledComponents(
-  sourceContents: string,
-  transpilationMode?: "Css" | "CssModule",
-): Record<string, StyledComponent> {
+function parseStyledComponents(sourceContents: string): Record<string, StyledComponent> {
   // cross-file Styled Components are always in the following format:
   // /*YAK EXPORTED STYLED:ComponentName:ClassName*/
   const styledParts = sourceContents.split("/*YAK EXPORTED STYLED:");
@@ -116,7 +113,7 @@ function parseStyledComponents(
     styledComponents[componentName] = {
       type: "styled-component",
       nameParts: componentName.split("."),
-      value: transpilationMode === "Css" ? `.${className}` : `:global(.${className})`,
+      value: `.${className}`,
     };
   }
 
@@ -139,7 +136,6 @@ function objectToModuleExport(object: object) {
 
 export type ParseContext = {
   cache?: { parse?: Cache<ParsedModule> };
-  transpilationMode?: "Css" | "CssModule";
   evaluateYakModule?: (
     modulePath: string,
   ) => Promise<Record<string, unknown>> | Record<string, unknown>;

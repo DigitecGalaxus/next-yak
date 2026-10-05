@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
 import { ImportedCard } from "./imported-card";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const someRef = {
     current: null
 } as any;
@@ -10,25 +10,25 @@ const props = {} as any;
 const mixin = /*#__PURE__*/ css();
 // folds
 const Card = /*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu1");
 // folds: styled("...") string form
 const Box = /*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   color: blue;
 }
 */ /*#__PURE__*/ (styled("section"))("ym7uBBu2");
 // exported: local usages fold, the declaration stays
 export const Title = /*YAK EXPORTED STYLED:Title:ym7uBBu3*//*YAK Extracted CSS:
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   font-size: 2rem;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu3");
 // bails: dynamic css
 const Dynamic = /*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: var(--ym7uBBu5);
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu4", {
@@ -38,7 +38,7 @@ const Dynamic = /*YAK Extracted CSS:
 });
 // bails: attrs
 const WithAttrs = /*YAK Extracted CSS:
-:global(.ym7uBBu6) {
+.ym7uBBu6 {
   color: green;
 }
 */ /*#__PURE__*/ (__yak.__yak_button.attrs({
@@ -46,116 +46,116 @@ const WithAttrs = /*YAK Extracted CSS:
 }))("ym7uBBu6");
 // collapses: parent is a same-file static component
 const Extended = /*YAK Extracted CSS:
-:global(.ym7uBBu7) {
+.ym7uBBu7 {
   color: yellow;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu1 ym7uBBu7");
 // collapses: three-level chain, classes merged parent-first
 const ExtendedTwice = /*YAK Extracted CSS:
-:global(.ym7uBBu8) {
+.ym7uBBu8 {
   color: coral;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu1 ym7uBBu7 ym7uBBu8");
 // collapses: exported chain keeps its folded declaration
 export const FancyTitle = /*YAK EXPORTED STYLED:FancyTitle:ym7uBBu9*//*YAK Extracted CSS:
-:global(.ym7uBBu9) {
+.ym7uBBu9 {
   letter-spacing: 1px;
 }
 */ /*#__PURE__*/ __yak.__yak_h1("ym7uBBu3 ym7uBBu9");
 // folds to the wrapped component: a cross-file parent never collapses
 const ExtendedImport = /*YAK Extracted CSS:
-:global(.ym7uBBuA) {
+.ym7uBBuA {
   color: silver;
 }
 */ /*#__PURE__*/ (styled(ImportedCard))("ym7uBBuA");
 // dynamic: class-toggling condition
 const ToggleBase = /*YAK Extracted CSS:
-:global(.ym7uBBuC) {
+.ym7uBBuC {
   color: red;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBuB", ({ $on })=>$on && /*#__PURE__*/ css("ym7uBBuC"));
 // folds to the wrapped component: a dynamic parent never collapses
 const OfDynamic = /*YAK Extracted CSS:
-:global(.ym7uBBuD) {
+.ym7uBBuD {
   color: teal;
 }
 */ /*#__PURE__*/ (styled(ToggleBase))("ym7uBBuD");
 // folds to the wrapped component: an attrs parent never collapses
 const OfAttrs = /*YAK Extracted CSS:
-:global(.ym7uBBuE) {
+.ym7uBBuE {
   color: maroon;
 }
 */ /*#__PURE__*/ (styled(WithAttrs))("ym7uBBuE");
 // bails: a lowercase name would be parsed as an intrinsic element in JSX
 const lowercaseComponent = (p: any)=><i {...p}/>;
 const ExtendedLowercase = /*YAK Extracted CSS:
-:global(.ym7uBBuF) {
+.ym7uBBuF {
   color: gold;
 }
 */ /*#__PURE__*/ (styled(lowercaseComponent))("ym7uBBuF");
 // bails: the wrapped component binding can be reassigned
 let MutableTarget = (p: any)=><b {...p}/>;
 const ExtendedMutable = /*YAK Extracted CSS:
-:global(.ym7uBBuG) {
+.ym7uBBuG {
   color: ivory;
 }
 */ /*#__PURE__*/ (styled(MutableTarget))("ym7uBBuG");
 // bails: let declaration
 let Mutable = /*YAK Extracted CSS:
-:global(.ym7uBBuH) {
+.ym7uBBuH {
   color: pink;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuH");
 // bails: a let parent keeps the whole chain on the runtime path
 const OfLet = /*YAK Extracted CSS:
-:global(.ym7uBBuI) {
+.ym7uBBuI {
   color: khaki;
 }
 */ /*#__PURE__*/ (styled(Mutable))("ym7uBBuI");
 // bails: parent declared after the child (const temporal dead zone) - collapsing
 // would turn the guaranteed ReferenceError into silently working output
 const OfLater = /*YAK Extracted CSS:
-:global(.ym7uBBuJ) {
+.ym7uBBuJ {
   color: wheat;
 }
 */ /*#__PURE__*/ (styled(Later))("ym7uBBuJ");
 const Later = /*YAK Extracted CSS:
-:global(.ym7uBBuK) {
+.ym7uBBuK {
   color: linen;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuK");
 // bails: var redeclaration - both declarations share a single binding
 var Redeclared = /*YAK Extracted CSS:
-:global(.ym7uBBuL) {
+.ym7uBBuL {
   color: peru;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuL");
 var Redeclared = /*YAK Extracted CSS:
-:global(.ym7uBBuM) {
+.ym7uBBuM {
   color: plum;
 }
 */ /*#__PURE__*/ __yak.__yak_span("ym7uBBuM");
 // folds although the declaration comes after the usage
 const Early = ()=><p className="ym7uBBuN">before declaration</p>;
 const Late = /*YAK Extracted CSS:
-:global(.ym7uBBuN) {
+.ym7uBBuN {
   color: gray;
 }
 */ /*#__PURE__*/ __yak.__yak_p("ym7uBBuN");
 // bails: wrapped in an HOC - folding would drop the wrapper
 const Memoized = memo(/*YAK Extracted CSS:
-:global(.ym7uBBuO) {
+.ym7uBBuO {
   color: teal;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuO"));
 // folds: type casts are unwrapped
 const Cast = /*YAK Extracted CSS:
-:global(.ym7uBBuP) {
+.ym7uBBuP {
   color: brown;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuP") as unknown as typeof Card;
 const BoxWithMixin = /*YAK Extracted CSS:
-:global(.ym7uBBuQ) {
+.ym7uBBuQ {
   background: white;
   color: red;
 }
@@ -176,7 +176,7 @@ const Optimizable = ({ active }: {
       every $prop is dropped, whatever its value
     </div>
     <div className={/*YAK Extracted CSS:
-:global(.ym7uBBuR) {
+.ym7uBBuR {
   color: orange;
 }
 */ /*#__PURE__*/ "ym7uBBu1 ym7uBBuR"}>
@@ -207,17 +207,17 @@ const Optimizable = ({ active }: {
   </>;
 // bails: wrapped in React.memo - the HOC result must not fold to a bare DOM element
 const ReactMemoized = React.memo(/*YAK Extracted CSS:
-:global(.ym7uBBuS) {
+.ym7uBBuS {
   color: olive;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBuS"));
 // bails: conditional initializer - the branch is only known at runtime
 const Conditional = props.flag ? /*YAK Extracted CSS:
-:global(.ym7uBBuT) {
+.ym7uBBuT {
   color: crimson;
 }
 */ /*#__PURE__*/ __yak.__yak_a("ym7uBBuT") : /*YAK Extracted CSS:
-:global(.ym7uBBuU) {
+.ym7uBBuU {
   color: navy;
 }
 */ /*#__PURE__*/ __yak.__yak_button("ym7uBBuU");
