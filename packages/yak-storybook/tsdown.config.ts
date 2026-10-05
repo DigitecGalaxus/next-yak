@@ -12,8 +12,5 @@ export default defineConfig({
   },
   target: "node20",
   platform: "node",
-  outExtensions: ({ format }) => ({
-    js: format === "cjs" ? ".cjs" : ".js",
-    dts: format === "cjs" ? ".d.cts" : ".d.ts",
-  }),
+  outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
 });
