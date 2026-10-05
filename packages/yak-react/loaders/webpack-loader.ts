@@ -26,11 +26,8 @@ export default async function cssExtractLoader(
     if (!source) {
       return callback(new Error(`Source code for ${this.resourcePath} is empty`));
     }
-    const { experiments } = this.getOptions();
-    const debugLog = createDebugLogger(
-      experiments?.debug,
-      this._compiler?.context ?? process.cwd(),
-    );
+    const { debug } = this.getOptions();
+    const debugLog = createDebugLogger(debug, this._compiler?.context ?? process.cwd());
 
     debugLog("ts", source, this.resourcePath);
     const css = extractCss(source);
