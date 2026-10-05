@@ -9,6 +9,8 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["plugin"]
 plugin = ["swc_core/ecma_plugin_transform"]
+# TypeScript types for the config, used by the docs playground
+tsify = ["dep:tsify", "dep:wasm-bindgen"]
 
 [dependencies]
 lazy_static.workspace = true
@@ -21,6 +23,8 @@ itertools.workspace = true
 percent-encoding.workspace = true
 rustc-hash.workspace = true
 base64.workspace = true
+tsify = { version = "0.5.8", optional = true }
+wasm-bindgen = { version = "0.2.127", optional = true }
 
 [dev-dependencies]
 divan.workspace = true

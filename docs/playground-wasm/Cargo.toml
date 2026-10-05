@@ -2,7 +2,6 @@
 name = "playground-wasm"
 version = "0.1.0"
 edition = "2021"
-workspace = "../../packages/yak-swc"
 
 [lib]
 crate-type = ["cdylib"]
@@ -22,16 +21,29 @@ serde-wasm-bindgen = { version = "0.6.5" }
 # a wider range would resolve to a newer major and split the dependency,
 # leaving the transitive copy without the wasm_js feature)
 getrandom = { version = "0.3", features = ["wasm_js"] }
-swc_core = { workspace = true, features = [
+# Keep in sync with swc_core in packages/yak-swc/Cargo.toml
+swc_core = { version = "=75.0.0", features = [
   "ecma_ast_serde",
   "binding_macro_wasm",
   "ecma_transforms_module",
   "base_module",
 ] }
 wasm-bindgen = "0.2.127"
-yak_swc = { version = "0.1.0", path = "../../packages/yak-swc/yak_swc", default-features = false }
+# `tsify` generates the TypeScript type of the plugin config (YakConfig)
+yak_swc = { version = "0.1.0", path = "../../packages/yak-swc/yak_swc", default-features = false, features = [
+  "tsify",
+] }
 either = "1.18.0"
-tsify = "0.5.8"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.77"
+
+# Its own workspace, so the compiler crates stay out of the lockfile of the yak-swc plugin
+[workspace]
+
+[profile.release]
+# The same size-first settings as the yak-swc workspace
+strip = "debuginfo"
+codegen-units = 1
+lto = true
+opt-level = "z"
