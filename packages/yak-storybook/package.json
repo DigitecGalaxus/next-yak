@@ -37,11 +37,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./preset": {
       "types": "./dist/preset.d.ts",
-      "import": "./dist/preset.js"
+      "default": "./dist/preset.js"
     }
   },
   "publishConfig": {
@@ -61,5 +61,8 @@
   "peerDependencies": {
     "@yak/react": "workspace:^",
     "storybook": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

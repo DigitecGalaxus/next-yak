@@ -38,34 +38,24 @@
   "types": "./dist/",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./internal": {
-      "import": {
-        "types": "./dist/internal.d.ts",
-        "default": "./dist/internal.js"
-      }
+      "types": "./dist/internal.d.ts",
+      "default": "./dist/internal.js"
     },
     "./context": {
-      "import": {
-        "types": "./dist/context/index.d.ts",
-        "default": "./dist/context/index.js"
-      }
+      "types": "./dist/context/index.d.ts",
+      "default": "./dist/context/index.js"
     },
     "./context/baseContext": {
-      "import": {
-        "types": "./dist/context/baseContext.d.ts",
-        "default": "./dist/context/baseContext.js"
-      }
+      "types": "./dist/context/baseContext.d.ts",
+      "default": "./dist/context/baseContext.js"
     },
     "./vite": {
-      "import": {
-        "types": "./dist/loaders/vite-plugin.d.ts",
-        "default": "./dist/loaders/vite-plugin.js"
-      }
+      "types": "./dist/loaders/vite-plugin.d.ts",
+      "default": "./dist/loaders/vite-plugin.js"
     }
   },
   "publishConfig": {
@@ -105,5 +95,8 @@
     "vite": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }
