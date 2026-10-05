@@ -21,7 +21,7 @@ const config: KnipConfig = {
     "packages/yak-react": {
       entry: ["runtime/__tests__/*.tsx"],
       // Used by the yak-internals code that tsdown bundles into this package
-      ignoreDependencies: ["@babel/parser", ...yakSwc],
+      ignoreDependencies: ["@babel/parser"],
     },
     "packages/yak-solid": {
       entry: ["runtime/__tests__/*.tsx"],
