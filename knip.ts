@@ -7,7 +7,7 @@ const yakSwc = ["@yak/swc"];
 
 // Every index file in the e2e tests is an entry and imports that only resolve after copying to `.tmp/` are expected
 const bundler = (extra: Workspace = {}): Workspace => ({
-  entry: ["**/*.{ts,tsx,mjs}"],
+  entry: ["**/*.{ts,tsx,mts,mjs}"],
   ignoreUnresolved: [/\/cases\/\[case-name\]\/index\.tsx$/],
   ...extra,
 });
