@@ -176,9 +176,7 @@ Debugging the SWC plugin in the example app, you can enable debug logging
 ```js
 // ./examples/next-js/next.config.mjs
 export default withYak({
-  experiments: {
-    debug: true, // or { filter: 'component.tsx.css$' }
-  },
+  debug: true, // or { pattern: "component.tsx", types: ["css"] }
 });
 ```
 

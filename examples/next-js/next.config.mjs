@@ -11,9 +11,7 @@ const nextConfig = {
    * - `'css'` - Show extracted CSS
    * - `'css resolved'` - Show CSS after resolving imports
    */
-  // experiments: {
-  //   debug: { filter: (path) => path.includes('component.tsx'), type: 'css' }
-  // },
+  // debug: { pattern: "component.tsx", types: ["css"] },
 };
 
 export default withYak(nextConfig);

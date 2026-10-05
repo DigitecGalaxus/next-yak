@@ -40,17 +40,15 @@ export type YakConfigOptions = {
    * @defaultValue true
    */
   strictCssProp?: boolean;
-  experiments?: {
-    /**
-     * Debug logging for transformed files.
-     * - `true` - log all files
-     * - `object` - filter by pattern and/or output types (at least one required)
-     */
-    debug?:
-      | true
-      | { pattern: string; types?: Array<"ts" | "css" | "css-resolved"> }
-      | { pattern?: string; types: Array<"ts" | "css" | "css-resolved"> };
-  };
+  /**
+   * Debug logging for transformed files.
+   * - `true` - log all files
+   * - `object` - filter by pattern and/or output types (at least one required)
+   */
+  debug?:
+    | true
+    | { pattern: string; types?: Array<"ts" | "css" | "css-resolved"> }
+    | { pattern?: string; types: Array<"ts" | "css" | "css-resolved"> };
 };
 
 /**
