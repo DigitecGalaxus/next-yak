@@ -129,7 +129,10 @@ function runSwc(
       minify: false,
     },
     {
+      // the file names are relative, so the base path has no effect
+      basePath: "/",
       minify: options.minify,
+      displayNames: !options.minify,
       foldStatic: options.foldStatic,
     },
   ).code;

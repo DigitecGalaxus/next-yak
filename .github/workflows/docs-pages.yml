@@ -53,7 +53,9 @@ jobs:
       - name: Enable caching
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
-          workspaces: packages/yak-swc
+          workspaces: |
+            packages/yak-swc
+            docs/playground-wasm
 
       - name: Build SWC plugin
         run: pnpm run build:swc
