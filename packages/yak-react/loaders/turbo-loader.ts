@@ -10,8 +10,8 @@ import { extractCss } from "yak-internals/extract-css";
 import { parseExports } from "yak-internals/parse-exports";
 import { getSwcParserOptions } from "yak-internals/swc-parser-options";
 
-const universalRequire = typeof require === "undefined" ? createRequire(import.meta.url) : require;
-const yakSwcPluginPath = universalRequire.resolve("@yak/swc");
+const require = createRequire(import.meta.url);
+const yakSwcPluginPath = require.resolve("@yak/swc");
 const dataUrlImportPrefix = 'import "data:text/css;base64,';
 
 /**

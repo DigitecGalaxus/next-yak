@@ -1,7 +1,6 @@
 /// <reference types="node" />
 import type { NextConfig } from "next";
-import path, { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { allowYakGlobalCss, hasAppDir } from "./allow-global-css.ts";
 import {
   buildYakPluginOptions,
@@ -12,8 +11,7 @@ import {
 export { buildYakPluginOptions, resolveYakContext } from "yak-internals/config";
 export type { YakConfigOptions } from "yak-internals/config";
 
-const currentDir =
-  typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
+const currentDir = import.meta.dirname;
 
 const addYak = (yakOptions: YakConfigOptions, nextConfig: NextConfig) => {
   const yakPluginOptions = buildYakPluginOptions(yakOptions, currentDir);
