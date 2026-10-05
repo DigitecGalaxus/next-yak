@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { pluginYak } from "next-yak/rsbuild";
+import { pluginSourceMapCheck } from "./source-map-check.mts";
 
 // One entry per case (entries/<case-name>.tsx). Rsbuild emits a <case-name>.html
 // page for each, served at /<case-name>.html — matching the playwright urlPattern.
@@ -21,5 +22,5 @@ const yakOptions = process.env.YAK_E2E_FOLD_STATIC === "false" ? { foldStatic: f
 export default defineConfig({
   source: { entry },
   server: { port: 5273 },
-  plugins: [pluginReact(), pluginYak(yakOptions)],
+  plugins: [pluginReact(), pluginYak(yakOptions), pluginSourceMapCheck()],
 });
