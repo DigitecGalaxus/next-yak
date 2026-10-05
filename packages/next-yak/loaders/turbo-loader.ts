@@ -116,7 +116,12 @@ export default async function cssExtractLoader(
     const codeWithCrossFileResolved = replaceDataUrlImport(result.code, resolved);
 
     debugLog("css-resolved", resolved, this.resourcePath);
-    return callback(null, codeWithCrossFileResolved, result.map);
+    // swc returns a JSON string, which babel-loader rejects as inputSourceMap
+    return callback(
+      null,
+      codeWithCrossFileResolved,
+      result.map ? JSON.parse(result.map) : undefined,
+    );
   } catch (error) {
     // Register cross-file dependencies even on error so turbopack re-runs
     // this loader when a broken dependency is fixed.
