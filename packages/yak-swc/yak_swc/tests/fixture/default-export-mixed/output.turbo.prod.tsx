@@ -1,7 +1,7 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
 import "data:text/css;base64,LnltN3VCQnUgewogIGJhY2tncm91bmQ6IHJlZDsKfS55bTd1QkJ1MSB7CiAgY29sb3I6IGJsdWU7CiAgZm9udC1zaXplOiAyNHB4Owp9LnltN3VCQnUyIHsKICBwYWRkaW5nOiAyMHB4OwogIGJhY2tncm91bmQ6IHllbGxvdzsKfQ==";
-const Button = /*YAK Extracted CSS:
+const Button = /*YAK EXPORTED STYLED:Button:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {
   background: red;
 }

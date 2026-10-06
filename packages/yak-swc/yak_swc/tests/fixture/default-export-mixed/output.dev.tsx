@@ -1,7 +1,7 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
-const Button = /*YAK Extracted CSS:
+const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
 :global(.input_Button_m7uBBu) {
   background: red;
 }
