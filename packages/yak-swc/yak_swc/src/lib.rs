@@ -1223,12 +1223,19 @@ where
     let is_top_level = !self.is_inside_css_expression();
     let current_variable_id = self.get_current_component_id();
     let is_default_exported = self.is_default_exported(&current_variable_id);
+    // Exported through a local export list e.g. `export { Button, Button as Alias }`
+    let local_export_names = self
+      .variables
+      .get_local_export_names(&current_variable_id.id)
+      .to_vec();
+    let is_exported =
+      self.current_exported || is_default_exported || !local_export_names.is_empty();
 
     let mut is_exported_styled = false;
     let mut transform: Box<dyn YakTransform> = match yak_library_function_name.deref() {
       // Styled Components transform works only on top level
       "styled" if is_top_level => {
-        is_exported_styled = self.current_exported || is_default_exported;
+        is_exported_styled = is_exported;
         // Track exported styled component names for $RefreshReg$ injection
         if self.react_refresh_reg && is_exported_styled {
           let name = current_variable_id.to_readable_string();
@@ -1240,7 +1247,7 @@ where
           &mut self.naming_convention,
           current_variable_id.clone(),
           self.display_names,
-          self.current_exported || is_default_exported,
+          is_exported,
           self.import_mode.transpilation_mode(),
         ))
       }
@@ -1276,7 +1283,7 @@ where
       "css" if is_top_level => Box::new(TransformCssMixin::new(
         &mut self.naming_convention,
         current_variable_id.clone(),
-        self.current_exported || is_default_exported,
+        is_exported,
         self.inside_element_with_css_attribute,
         self.import_mode.transpilation_mode(),
       )),
@@ -1358,7 +1365,7 @@ where
     let result_span = transform_result.expression.span();
     // A globalStyle literal that errored produced malformed declarations; keep the
     // bare `globalStyle()` call as the anchor but emit no extracted CSS for it.
-    if (!css_code.is_empty() || self.current_exported) && is_top_level && !self.global_style_error {
+    if (!css_code.is_empty() || is_exported) && is_top_level && !self.global_style_error {
       if let Some(comment_prefix) = transform_result.css.comment_prefix {
         // Don't add invalid CSS rules to the list of all CSS rules
         // Mixin code should always be used in other components so that they target the correct element
@@ -1384,6 +1391,24 @@ where
               text: format!("{}\n{}\n", comment_prefix, css_code.trim()).into(),
             },
           );
+          // One more marker for every other name in a local export list
+          // e.g. `export { Button as Alias }` or `export { Button as default }`
+          let local_name = current_variable_id.parts.first();
+          for exported_name in &local_export_names {
+            if Some(exported_name) == local_name {
+              continue;
+            }
+            if let Some(text) = transform.get_export_name_comment(exported_name, css_code.trim()) {
+              self.comments.add_leading(
+                result_span.lo,
+                Comment {
+                  kind: swc_core::common::comments::CommentKind::Block,
+                  span: DUMMY_SP,
+                  text: text.into(),
+                },
+              );
+            }
+          }
         }
       }
     }

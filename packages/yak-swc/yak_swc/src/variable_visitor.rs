@@ -24,6 +24,9 @@ pub struct VariableVisitor {
   variables: FxHashMap<Id, Box<Expr>>,
   imports: FxHashMap<Id, ImportKind>,
   default_export: Option<ScopedVariableReference>,
+  /// Names each local binding is exported as through a local export list
+  /// e.g. `export { foo, foo as bar, foo as default }` -> foo#3: [foo, bar, default]
+  local_exports: FxHashMap<Id, Vec<Wtf8Atom>>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -67,6 +70,7 @@ impl VariableVisitor {
       variables: FxHashMap::default(),
       imports: FxHashMap::default(),
       default_export: None,
+      local_exports: FxHashMap::default(),
     }
   }
 
@@ -157,6 +161,16 @@ impl VariableVisitor {
   pub fn get_default_export(&self) -> Option<ScopedVariableReference> {
     self.default_export.clone()
   }
+
+  /// Returns the names a local binding is exported as through a local export list
+  /// e.g. `export { foo as bar }` -> [bar]
+  pub fn get_local_export_names(&self, id: &Id) -> &[Wtf8Atom] {
+    self
+      .local_exports
+      .get(id)
+      .map(Vec::as_slice)
+      .unwrap_or_default()
+  }
 }
 
 impl Fold for VariableVisitor {}
@@ -170,6 +184,31 @@ impl VisitMut for VariableVisitor {
         ident.to_id(),
         vec![ident.sym.clone().into()],
       ));
+    }
+    n.visit_mut_children_with(self);
+  }
+  /// Scans local export lists (without a `from`) to store the exported names
+  /// e.g. `export { foo, foo as bar, foo as default }`
+  fn visit_mut_named_export(&mut self, n: &mut NamedExport) {
+    if n.src.is_none() {
+      for specifier in &n.specifiers {
+        if let ExportSpecifier::Named(named) = specifier {
+          if let ModuleExportName::Ident(local) = &named.orig {
+            let exported: Wtf8Atom = match &named.exported {
+              Some(ModuleExportName::Ident(ident)) => ident.sym.clone().into(),
+              Some(ModuleExportName::Str(name)) => name.value.clone(),
+              None => local.sym.clone().into(),
+              #[cfg(swc_ast_unknown)]
+              Some(_) => continue,
+            };
+            self
+              .local_exports
+              .entry(local.to_id())
+              .or_default()
+              .push(exported);
+          }
+        }
+      }
     }
     n.visit_mut_children_with(self);
   }

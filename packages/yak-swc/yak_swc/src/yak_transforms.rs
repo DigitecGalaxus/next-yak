@@ -1,4 +1,5 @@
 use rustc_hash::FxHashMap;
+use swc_core::atoms::Wtf8Atom;
 use swc_core::common::util::move_map::MoveMap;
 
 use crate::utils::ast_helper::expr_hash_map_to_object;
@@ -51,6 +52,11 @@ pub trait YakTransform {
   }
   /// Get a comment prefix for the current variable as default export
   fn get_default_export_comment_prefix(&self) -> Option<String> {
+    None
+  }
+  /// Get a comment marker for the current variable exported under another name
+  /// through a local export list e.g. `export { foo as bar }` or `export { foo as default }`
+  fn get_export_name_comment(&self, _exported_name: &Wtf8Atom, _css_code: &str) -> Option<String> {
     None
   }
   /// The root class name a compiled styled component carries as the first
@@ -306,6 +312,19 @@ impl YakTransform for TransformCssMixin {
         .join(":"),
     ))
   }
+
+  /// Same marker as for the variable itself, with the first name part replaced by the exported name
+  fn get_export_name_comment(&self, exported_name: &Wtf8Atom, css_code: &str) -> Option<String> {
+    if !self.is_exported || self.is_within_jsx_attribute {
+      return None;
+    }
+    let name = std::iter::once(exported_name)
+      .chain(self.export_name.parts.iter().skip(1))
+      .map(|atom| encode_percent(atom.to_string_lossy().as_ref()))
+      .collect::<Vec<_>>()
+      .join(":");
+    Some(format!("YAK EXPORTED MIXIN:{}\n{}\n", name, css_code))
+  }
 }
 
 /// Transform styled component api
@@ -551,6 +570,19 @@ impl YakTransform for TransformStyled {
       "YAK EXPORTED STYLED:default:{}*//*YAK Extracted CSS:",
       self.class_name.clone()
     ))
+  }
+
+  /// Marker only (the CSS is already extracted with the variable itself)
+  fn get_export_name_comment(&self, exported_name: &Wtf8Atom, _css_code: &str) -> Option<String> {
+    if !self.is_exported {
+      return None;
+    }
+    let name = std::iter::once(exported_name)
+      .chain(self.declaration_name.parts.iter().skip(1))
+      .map(|atom| atom.to_string_lossy())
+      .collect::<Vec<_>>()
+      .join(".");
+    Some(format!("YAK EXPORTED STYLED:{}:{}", name, self.class_name))
   }
 }
 
