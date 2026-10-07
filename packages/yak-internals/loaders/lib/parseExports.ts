@@ -10,7 +10,8 @@ import { yakPackageNames } from "../../packageNames.js";
 /**
  * Extracts a module's exports for the cross-file resolver by parsing with babel. Nothing is executed.
  *
- * Handles `export const`, re-exports with a `from`, `export *`, and `export default`.
+ * Handles `export const`, export lists (`export { x }`), re-exports with a `from`,
+ * `export *`, and `export default`.
  * Anything else becomes an `unsupported` entry with its source location, or is skipped.
  *
  * Throws if the source doesn't parse.
@@ -37,9 +38,40 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
 
     // Track variable declarations for default export lookup
     const variableDeclarations: Record<string, Expression> = {};
+    // Track top-level import bindings so exported imports become re-exports
+    const importBindings: Record<string, ModuleExport> = {};
+    // Local export lists (`export { x }`), resolved after the loop
+    // because the list can come before the declaration
+    const localExportSpecifiers: { local: string; exported: string }[] = [];
     let defaultIdentifier: string | null = null;
 
     for (const node of ast.program.body) {
+      if (node.type === "ImportDeclaration") {
+        for (const specifier of node.specifiers) {
+          if (specifier.type === "ImportSpecifier") {
+            importBindings[specifier.local.name] = {
+              type: "re-export",
+              from: node.source.value,
+              name:
+                specifier.imported.type === "Identifier"
+                  ? specifier.imported.name
+                  : specifier.imported.value,
+            };
+          } else if (specifier.type === "ImportDefaultSpecifier") {
+            importBindings[specifier.local.name] = {
+              type: "re-export",
+              from: node.source.value,
+              name: "default",
+            };
+          } else if (specifier.type === "ImportNamespaceSpecifier") {
+            importBindings[specifier.local.name] = {
+              type: "namespace-re-export",
+              from: node.source.value,
+            };
+          }
+        }
+      }
+
       // Track top-level variable declarations for default export lookup
       if (node.type === "VariableDeclaration") {
         for (const decl of node.declarations) {
@@ -75,7 +107,21 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
               };
             }
           }
-        } else if (node.declaration?.type === "VariableDeclaration") {
+        } else if (!node.declaration) {
+          // export { x }, export { x as y }
+          for (const specifier of node.specifiers) {
+            if (
+              specifier.type === "ExportSpecifier" &&
+              specifier.exported.type === "Identifier" &&
+              specifier.local.type === "Identifier"
+            ) {
+              localExportSpecifiers.push({
+                local: specifier.local.name,
+                exported: specifier.exported.name,
+              });
+            }
+          }
+        } else if (node.declaration.type === "VariableDeclaration") {
           // export const x = ...
           for (const declaration of node.declaration.declarations) {
             if (declaration.id.type === "Identifier" && declaration.init) {
@@ -119,12 +165,27 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
       }
     }
 
+    // Look up the value of an exported identifier from local declarations or imports
+    const resolveIdentifier = (name: string): ModuleExport | undefined => {
+      if (variableDeclarations[name]) {
+        return parseExportValueExpression(variableDeclarations[name], sourceContents);
+      }
+      return importBindings[name];
+    };
+
+    for (const { local, exported } of localExportSpecifiers) {
+      const resolved = resolveIdentifier(local);
+      if (resolved) {
+        moduleExports.named[exported] = resolved;
+      }
+    }
+
     // If we found a default export that's an identifier, look up its value
-    if (defaultIdentifier && variableDeclarations[defaultIdentifier]) {
-      moduleExports.named["default"] = parseExportValueExpression(
-        variableDeclarations[defaultIdentifier],
-        sourceContents,
-      );
+    if (defaultIdentifier) {
+      const resolved = resolveIdentifier(defaultIdentifier);
+      if (resolved) {
+        moduleExports.named["default"] = resolved;
+      }
     }
 
     return moduleExports;
