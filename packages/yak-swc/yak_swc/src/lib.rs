@@ -54,6 +54,7 @@ use yak_transforms::{
 
 /// Static plugin configuration.
 #[derive(Deserialize)]
+#[cfg_attr(feature = "tsify", derive(tsify::Tsify), tsify(rename = "YakConfig"))]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -94,7 +95,7 @@ pub struct Config {
   /// when another library on the same element uses its own `css` prop.
   #[serde(default = "Config::strict_css_prop_default")]
   pub strict_css_prop: bool,
-  /// Emit the /*YAK Extracted CSS:*/ comments (and their exported-component
+  /// Emit the `YAK Extracted CSS:` comments (and their exported-component
   /// metadata) that loaders parse to extract the CSS. Enabled by default.
   /// A bundler plugin that reads the CSS through a separate transform (e.g.
   /// the Vite plugin's virtual CSS modules) can disable this for the JS it
@@ -294,6 +295,25 @@ where
       strict_css_prop,
       emit_css_comments,
     }
+  }
+
+  /// Creates the visitor from the plugin config
+  pub fn from_config(comments: Option<GenericComments>, filename: &str, config: Config) -> Self {
+    // Get a relative posix path to generate always the same hash
+    // on different machines or operating systems
+    let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, filename);
+    Self::new(
+      comments,
+      deterministic_path,
+      config.minify,
+      config.prefix,
+      config.display_names,
+      config.import_mode,
+      config.react_refresh_reg,
+      config.fold_static,
+      config.strict_css_prop,
+      config.emit_css_comments,
+    )
   }
 
   /// Check if we are inside a yak css expression

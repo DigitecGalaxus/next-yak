@@ -1,0 +1,27 @@
+---
+title: Your styled components disappear at build time
+description: How yak compiles a styled component into a plain DOM element, and what that does to render speed.
+date: 2026-10-06
+author: The yak team
+draft: true
+type: deep-dive
+---
+
+<Callout title="Draft">
+  This post is not written yet. The outline below is what it will cover.
+</Callout>
+
+## What this post will cover
+
+- The cost of a styled component: one extra component in the tree for each usage, on each render.
+- Folding: when the compiler knows what a usage renders, it writes the DOM element directly.
+- Static `css` props: the compiler turns them into a plain `className` string.
+- When yak keeps the wrapper, and why that is correct.
+- The runtime work for the cases that do not fold: the string class name collector and chain
+  flattening.
+- The numbers: every server rendering benchmark cell is faster than styled-components.
+
+## Trying it today
+
+Open the [playground](/playground) and switch the `foldStatic` toggle. The
+[folding guide](/docs/folding) shows every case.

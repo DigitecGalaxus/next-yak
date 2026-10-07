@@ -208,12 +208,14 @@ pub fn css_class_name(input: &str) -> String {
 /// - `"./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"` (Webpack)
 /// - `"data:text/css;base64,"` with `encoding: Base64` (Turbopack)
 #[derive(Deserialize, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "tsify", derive(tsify::Tsify))]
 pub struct CssImportConfig {
   pub value: String,
   pub encoding: ImportModeEncoding,
 }
 
 #[derive(Deserialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "tsify", derive(tsify::Tsify))]
 pub enum ImportModeEncoding {
   Base64,
   None,

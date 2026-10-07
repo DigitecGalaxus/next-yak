@@ -1,0 +1,25 @@
+{
+  "title": "ui",
+  "root": true,
+  "pages": [
+    "---Guide---",
+    "getting-started",
+    "vite",
+    "rsbuild",
+    "migration-from-styled-components",
+    "migration-to-native-css",
+    "eslint-plugin",
+    "storybook",
+    "faq",
+    "---Details---",
+    "why-next-yak",
+    "features",
+    "how-does-it-work",
+    "folding",
+    "comparison",
+    "examples",
+    "roadmap",
+    "---Links---",
+    "[Next-Yak](https://github.com/DigitecGalaxus/next-yak)"
+  ]
+}
