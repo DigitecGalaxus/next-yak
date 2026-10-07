@@ -1,6 +1,6 @@
 {
   "name": "@yak/swc",
-  "version": "10.0.0-rc.0",
+  "version": "10.0.0-rc.1",
   "description": "Rust based SWC plugin of @yak/react and @yak/solid to compile styled components at build time",
   "keywords": [
     "css-in-js",
