@@ -20,10 +20,16 @@ pub enum YakPackage {
   YakReact,
   /// "@yak/solid"
   YakSolid,
+  /// "@yak/qwik"
+  YakQwik,
 }
 
 impl YakPackage {
-  const ALL: [YakPackage; 2] = [YakPackage::YakReact, YakPackage::YakSolid];
+  const ALL: [YakPackage; 3] = [
+    YakPackage::YakReact,
+    YakPackage::YakSolid,
+    YakPackage::YakQwik,
+  ];
 
   /// Match an import source against the known yak packages
   pub fn from_import_source(source: &str) -> Option<YakPackage> {
@@ -37,6 +43,7 @@ impl YakPackage {
     match self {
       YakPackage::YakReact => "@yak/react",
       YakPackage::YakSolid => "@yak/solid",
+      YakPackage::YakQwik => "@yak/qwik",
     }
   }
 
@@ -46,6 +53,7 @@ impl YakPackage {
     match self {
       YakPackage::YakReact => "@yak/react/internal",
       YakPackage::YakSolid => "@yak/solid/internal",
+      YakPackage::YakQwik => "@yak/qwik/internal",
     }
   }
 
@@ -54,6 +62,7 @@ impl YakPackage {
     match self {
       YakPackage::YakReact => YakRuntime::React,
       YakPackage::YakSolid => YakRuntime::Solid,
+      YakPackage::YakQwik => YakRuntime::Qwik,
     }
   }
 }
@@ -63,16 +72,19 @@ impl YakPackage {
 pub enum YakRuntime {
   React,
   Solid,
+  /// Qwik: `class` like Solid, folding like React (a Qwik component's render
+  /// function re-runs, so an element-wrap keeps its bound values live)
+  Qwik,
 }
 
 impl YakRuntime {
-  const ALL: [YakRuntime; 2] = [YakRuntime::React, YakRuntime::Solid];
+  const ALL: [YakRuntime; 3] = [YakRuntime::React, YakRuntime::Solid, YakRuntime::Qwik];
 
   /// The JSX attribute that carries class names in this runtime
   pub fn class_attr(self) -> &'static str {
     match self {
       YakRuntime::React => "className",
-      YakRuntime::Solid => "class",
+      YakRuntime::Solid | YakRuntime::Qwik => "class",
     }
   }
 
@@ -557,6 +569,28 @@ mod tests {
     let imports: YakImports = visitor.into();
     assert!(imports.is_using_next_yak());
     assert_eq!(imports.internal_specifier(), "@yak/solid/internal");
+  }
+
+  #[test]
+  fn test_yak_import_visitor_qwik_package() {
+    let mut visitor = YakImportVisitor::new();
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      r#"
+        import { styled, css } from "@yak/qwik";
+        const styles = css`color: red;`;
+      "#,
+      r#"
+        import { styled, css } from "@yak/qwik/internal";
+        const styles = css`color: red;`;
+      "#,
+    );
+    let imports: YakImports = visitor.into();
+    assert!(imports.is_using_next_yak());
+    assert_eq!(imports.internal_specifier(), "@yak/qwik/internal");
+    assert_eq!(imports.runtime().class_attr(), "class");
   }
 
   #[test]
