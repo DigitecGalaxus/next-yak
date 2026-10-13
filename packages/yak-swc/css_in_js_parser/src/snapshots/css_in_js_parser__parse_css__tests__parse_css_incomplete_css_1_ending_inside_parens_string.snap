@@ -26,6 +26,7 @@ expression: "(state, declarations)"
         },
         pending_css_segment: "background: url(https://example.com\n    ",
         paren_depth: 1,
+        scope_floor: 0,
     },
     [],
 )

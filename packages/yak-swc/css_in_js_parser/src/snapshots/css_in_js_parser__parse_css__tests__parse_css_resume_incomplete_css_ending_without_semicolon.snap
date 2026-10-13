@@ -22,6 +22,7 @@ expression: "(state1, state2, all_declarations)"
         },
         pending_css_segment: "color: orange\n",
         paren_depth: 0,
+        scope_floor: 0,
     },
     ParserState {
         is_inside_string: None,
@@ -42,6 +43,7 @@ expression: "(state1, state2, all_declarations)"
         },
         pending_css_segment: "",
         paren_depth: 0,
+        scope_floor: 0,
     },
     [
         Declaration {

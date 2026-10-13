@@ -1,4 +1,4 @@
-use css_in_js_parser::{parse_css, to_css};
+use css_in_js_parser::{parse_css, to_css, ParsedCss};
 
 // This example demonstrates how to resume parsing from a previous state.
 // This is useful when processing styled-components style css-in-js code
@@ -7,7 +7,11 @@ use css_in_js_parser::{parse_css, to_css};
 // In this example, we parse three incomplete CSS snippets, and merge them
 // into a final css string
 fn main() {
-  let (state1, declarations1) = parse_css(
+  let ParsedCss {
+    state: state1,
+    declarations: declarations1,
+    ..
+  } = parse_css(
     r#"
         .foo {
             .fancy {
@@ -17,7 +21,11 @@ fn main() {
     None,
   );
 
-  let (state2, declarations2) = parse_css(
+  let ParsedCss {
+    state: state2,
+    declarations: declarations2,
+    ..
+  } = parse_css(
     r#"
         &:hover {
             color: orange;
@@ -26,7 +34,10 @@ fn main() {
     Some(state1),
   );
 
-  let (_, declarations3) = parse_css(
+  let ParsedCss {
+    declarations: declarations3,
+    ..
+  } = parse_css(
     r#"
             .bar {
                 color: red;
