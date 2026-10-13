@@ -99,7 +99,7 @@ impl TransformNestedCss {
 impl YakTransform for TransformNestedCss {
   fn create_css_state(&self, previous_parser_state: Option<ParserState>) -> ParserState {
     // It is safe to unwrap here because the previous_parser_state is always set for a nested css
-    let mut parser_state = previous_parser_state.clone().unwrap();
+    let mut parser_state = previous_parser_state.unwrap().nested();
     // The first scope is the class name which gets attached to the element
     parser_state.current_scopes[0] = CssScope {
       name: self.transpilation_mode.css_class_name(&self.class_name),
@@ -192,12 +192,10 @@ impl TransformCssMixin {
 
 impl YakTransform for TransformCssMixin {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
-    let mut parser_state = ParserState::new();
-    parser_state.current_scopes = vec![CssScope {
+    ParserState::with_scopes(vec![CssScope {
       name: self.transpilation_mode.css_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
-    }];
-    parser_state
+    }])
   }
 
   fn transform_expression(
@@ -273,7 +271,8 @@ impl YakTransform for TransformCssMixin {
         comment_prefix,
         declarations: declarations.to_vec().move_map(|mut declaration| {
           // TODO: Fix nested mixins
-          if !self.is_within_jsx_attribute {
+          // The scope is never empty, the check only prevents a panic
+          if !self.is_within_jsx_attribute && !declaration.scope.is_empty() {
             declaration.scope.remove(0);
           }
           declaration
@@ -482,12 +481,10 @@ fn transform_styled_usages(expression: Box<Expr>, yak_imports: &mut YakImports) 
 
 impl YakTransform for TransformStyled {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
-    let mut parser_state = ParserState::new();
-    parser_state.current_scopes = vec![CssScope {
+    ParserState::with_scopes(vec![CssScope {
       name: self.transpilation_mode.css_class_name(&self.class_name),
       scope_type: ScopeType::AtRule,
-    }];
-    parser_state
+    }])
   }
 
   fn transform_expression(
@@ -662,15 +659,13 @@ impl TransformKeyframes {
 
 impl YakTransform for TransformKeyframes {
   fn create_css_state(&self, _previous_parser_state: Option<ParserState>) -> ParserState {
-    let mut parser_state = ParserState::new();
-    parser_state.current_scopes = vec![CssScope {
+    ParserState::with_scopes(vec![CssScope {
       name: match &self.transpilation_mode {
         TranspilationMode::CssModule => format!("@keyframes :global({})", self.animation_name),
         TranspilationMode::Css => format!("@keyframes {}", self.animation_name),
       },
       scope_type: ScopeType::AtRule,
-    }];
-    parser_state
+    }])
   }
 
   fn transform_expression(

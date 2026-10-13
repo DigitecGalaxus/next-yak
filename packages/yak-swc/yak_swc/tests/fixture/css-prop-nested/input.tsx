@@ -13,7 +13,7 @@ import { css } from "@yak/react";
     <span
       css={css`
         color: green;
-      }`}
+      `}
     >
       hello
     </span>

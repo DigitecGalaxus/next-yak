@@ -1,0 +1,36 @@
+  x This block has no selector, so its CSS applies to no element. Add a selector before the `{`, for example `&:hover {`.
+   ,-[input.js:5:1]
+ 4 |   color: red;
+ 5 |   { color: blue; }
+   :   ^
+ 6 | `;
+   `----
+  x A selector cannot come from a function, because CSS variables work only in property values.
+  | Use a static selector like `[data-theme="dark"] & {`, or use a constant instead of a function.
+    ,-[input.js:9:1]
+  8 | export const DynamicSelector = styled.div<{ $selector: string }>`
+  9 |   ${(p) => p.$selector} {
+    :     ^^^^^^^^^^^^^^^^^^
+ 10 |     color: red;
+    `----
+  x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
+    ,-[input.js:15:1]
+ 14 | export const MissingColon = styled.div`
+ 15 |   color red;
+    :   ^^^^^^^^^
+ 16 |   .foo { margin 0 }
+    `----
+  x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
+    ,-[input.js:16:1]
+ 15 |   color red;
+ 16 |   .foo { margin 0 }
+    :          ^^^^^^^^^
+ 17 |   padding: 0;
+    `----
+  x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
+    ,-[input.js:22:1]
+ 21 |   padding: 0;
+ 22 |   color red
+    :   ^^^^^^^^^
+ 23 | `;
+    `----

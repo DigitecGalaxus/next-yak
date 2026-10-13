@@ -1,4 +1,4 @@
-use css_in_js_parser::{parse_css, to_css};
+use css_in_js_parser::{parse_css, to_css, ParsedCss};
 
 fn main() {
   let css = r#"
@@ -10,7 +10,7 @@ fn main() {
         }
     "#;
 
-  let (_, declarations) = parse_css(css, None);
+  let ParsedCss { declarations, .. } = parse_css(css, None);
   println!("Parsed declarations: {:?}", declarations);
 
   let regenerated_css = to_css(&declarations);

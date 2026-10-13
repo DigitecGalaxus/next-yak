@@ -1,7 +1,7 @@
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use css_in_js_parser::{find_char, parse_css, to_css, CommentStateType};
-use css_in_js_parser::{Declaration, ParserState};
+use css_in_js_parser::{CssError, Declaration, ParsedCss, ParserState};
 use rustc_hash::FxHashMap;
 use serde::Deserialize;
 use std::ops::Deref;
@@ -22,6 +22,7 @@ use utils::cross_file_selectors::ImportType;
 use utils::css_variable_dedup::CssVariableDedup;
 use utils::fold::css_prop::HasCSSProp;
 use utils::fold::StyledFold;
+use utils::parse_quasi::{parse_quasi, ParsedQuasi};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -42,6 +43,7 @@ mod utils {
   pub(crate) mod css_variable_dedup;
   pub(crate) mod fold;
   pub(crate) mod native_elements;
+  pub(crate) mod parse_quasi;
 }
 pub mod naming_convention;
 use naming_convention::{CssImportConfig, ImportModeEncoding, NamingConvention, TranspilationMode};
@@ -164,6 +166,33 @@ See https://yak.js.org/docs/features#globalstyle";
 const GLOBAL_STYLE_SCOPE_ERROR: &str =
   "globalStyle must be declared at module scope, not inside a component, function or another css template literal.";
 
+/// Emitted for a `}` without an open block, e.g. css`color: red; }`
+const UNEXPECTED_CLOSING_BRACE_ERROR: &str = "\
+This `}` has no open block to close.\n\
+Remove the `}`, or add the missing `{` before it.";
+
+/// Emitted for a `{` without a selector, e.g. styled.div`{ color: red; }`
+const EMPTY_SELECTOR_ERROR: &str = "\
+This block has no selector, so its CSS applies to no element. \
+Add a selector before the `{`, for example `&:hover {`.";
+
+/// Emitted for a function interpolation as a selector,
+/// e.g. styled.div`${(p) => p.$selector} { color: red; }`
+const DYNAMIC_SELECTOR_ERROR: &str = "\
+A selector cannot come from a function, because CSS variables work only in property values.\n\
+Use a static selector like `[data-theme=\"dark\"] & {`, or use a constant instead of a function.";
+
+/// Emitted for a string constant with a whole declaration or rule,
+/// e.g. const reset = "margin: 0; padding: 0;";
+const STRING_CONSTANT_CSS_ERROR: &str = "\
+A constant can only be a CSS value or part of a selector, not a declaration or a rule.\n\
+Use a css mixin instead, for example: const hover = css`&:hover { color: red; }`";
+
+/// Emitted for a declaration without a `:`, e.g. styled.div`color red;`
+const MISSING_COLON_ERROR: &str = "\
+This declaration has no `:`, so the browser ignores it. \
+Use the form `property: value;`.";
+
 pub struct TransformVisitor<GenericComments>
 where
   // SWC provides different comment types for production and testing
@@ -248,6 +277,10 @@ where
   strict_css_prop: bool,
   /// Emit the /*YAK Extracted CSS:*/ comments loaders parse to extract the CSS
   emit_css_comments: bool,
+  /// True while a constant mixin is expanded into the literal which uses it
+  /// e.g. ${highlight} in styled.button`&:hover { ${highlight}; }`
+  /// The declaration of the mixin reports its css errors, so the copy does not
+  expanding_constant_mixin: bool,
 }
 
 impl<GenericComments> TransformVisitor<GenericComments>
@@ -298,6 +331,7 @@ where
       function_depth: 0,
       strict_css_prop,
       emit_css_comments,
+      expanding_constant_mixin: false,
     }
   }
 
@@ -358,6 +392,8 @@ where
     let mut template_iter = TemplateIterator::new(&mut n.tpl);
     // Javascript Quasi (TplElement) and Expressions (Exprs) are interleaved
     // e.g. styled.button`color: ${primary};` => [TplElement, Expr, TplElement]
+    // Span of the function interpolation before the current quasi
+    let mut previous_function_span: Option<Span> = None;
     while let Some(pair) = template_iter.next() {
       let is_last_pair = pair.is_last;
       let quasi = pair.quasi;
@@ -375,10 +411,40 @@ where
       };
       // The offset value is set by a previous expression when a unit is moved into a css variable
       // e.g. styled.button`left: ${({$x}) => $x}px;` -> `left: var(--left);`
-      // The escaping of the css code is removed as a slash requires escaping in js string literals
-      // e.g. styled.button`content: "\\2022"` -> `content: "\2022"`
-      let quasi_css_code = &css_code[css_code_offset..].replace("\\\\", "\\");
-      let (new_state, new_declarations) = parse_css(quasi_css_code, css_state);
+      let ParsedQuasi {
+        state: new_state,
+        declarations: new_declarations,
+        errors,
+      } = parse_quasi(quasi, &css_code, css_code_offset, css_state);
+      if !self.expanding_constant_mixin {
+        for (span, error) in errors {
+          let (span, message) = match error {
+            CssError::UnexpectedClosingBrace { .. } => (span, UNEXPECTED_CLOSING_BRACE_ERROR),
+            // The `{` follows a function with only whitespace between them
+            // e.g. styled.div`${(p) => p.$selector} { color: red; }`
+            CssError::EmptySelector { .. }
+              if previous_function_span.is_some()
+                && quasi.raw[..(span.lo - quasi.span.lo).0 as usize]
+                  .trim()
+                  .is_empty() =>
+            {
+              (previous_function_span.unwrap(), DYNAMIC_SELECTOR_ERROR)
+            }
+            CssError::EmptySelector { .. } => (span, EMPTY_SELECTOR_ERROR),
+            CssError::MissingColon { .. } => (span, MISSING_COLON_ERROR),
+          };
+          HANDLER.with(|handler| {
+            handler.struct_span_err(span, message).emit();
+          });
+        }
+      }
+      // The span of a function after this quasi
+      // e.g. (p) => p.$selector in styled.div`${(p) => p.$selector} { color: red; }`
+      previous_function_span = pair
+        .expr
+        .as_ref()
+        .filter(|expr| expr.is_arrow() || expr.is_fn_expr())
+        .map(|expr| expr.span());
       css_code_offset = 0;
       css_state = Some(new_state);
 
@@ -418,12 +484,17 @@ where
         // e.g. styled.button`width: ${100 + 20}px;`
         if let Some(evaluated_math_calculation) = try_evaluate(expr, &self.variables) {
           // Format to 4 decimal places
-          let (new_state, new_declarations) = parse_css(
+          let ParsedCss {
+            state: new_state,
+            declarations: new_declarations,
+            errors,
+          } = parse_css(
             format!("{:.4}", evaluated_math_calculation)
               .trim_end_matches('0')
               .trim_end_matches('.'),
             css_state,
           );
+          debug_assert!(errors.is_empty());
           css_state = Some(new_state);
           self.current_declaration.extend(new_declarations);
         }
@@ -433,7 +504,12 @@ where
         else if let Some(scoped_name) = extract_ident_and_parts(expr, true) {
           // Known StyledComponents, Mixin or Animations in the same file
           if let Some(referenced_yak_css) = self.variable_name_selector_mapping.get(&scoped_name) {
-            let (new_state, new_declarations) = parse_css(referenced_yak_css, css_state);
+            let ParsedCss {
+              state: new_state,
+              declarations: new_declarations,
+              errors,
+            } = parse_css(referenced_yak_css, css_state);
+            debug_assert!(errors.is_empty());
             css_state = Some(new_state);
             self.current_declaration.extend(new_declarations);
           }
@@ -470,7 +546,12 @@ where
               import_kind.encode_module_import(import_type, scoped_name.parts);
 
             // TODO Track Dynamic Mixins as runtime dependency to pass props: `runtime_expressions.push(*expr.clone());`
-            let (new_state, _) = parse_css(&cross_file_import_token, css_state);
+            let ParsedCss {
+              state: new_state,
+              errors,
+              declarations: _,
+            } = parse_css(&cross_file_import_token, css_state);
+            debug_assert!(errors.is_empty());
             css_state = Some(new_state);
           }
           // Constants
@@ -483,15 +564,44 @@ where
               Expr::Lit(Lit::Num(num)) => Some(num.value.to_string()),
               _ => None,
             } {
-              let (new_state, _) = parse_css(&literal_value, css_state);
-              css_state = Some(new_state);
+              let state_before = css_state.clone();
+              let ParsedCss {
+                state: new_state,
+                declarations,
+                errors,
+              } = parse_css(&literal_value, css_state);
+              // The constant must not end a declaration or open or close a block
+              // e.g. const reset = "margin: 0; padding: 0;";
+              let is_value = declarations.is_empty()
+                && errors.is_empty()
+                && state_before
+                  .as_ref()
+                  .is_none_or(|state| state.current_scopes == new_state.current_scopes);
+              if is_value {
+                css_state = Some(new_state);
+              } else {
+                // Skip the constant, so it causes no follow-up errors
+                css_state = state_before;
+                if !self.expanding_constant_mixin {
+                  HANDLER.with(|handler| {
+                    handler
+                      .struct_span_err(expr.span(), STRING_CONSTANT_CSS_ERROR)
+                      .emit();
+                  });
+                }
+              }
             } else if let Expr::TaggedTpl(tagged_tpl) = *value {
               // constant mixins e.g.
               // const highlight = css`color: red;`
               // const Button = styled.button`&:hover { ${highlight}; }`
               if is_valid_tagged_tpl(&tagged_tpl, self.yak_imports().yak_css_idents()) {
-                let (inline_runtime_exprs, inline_runtime_css_vars) =
-                  self.process_yak_literal(&mut tagged_tpl.clone(), css_state.clone());
+                let was_expanding_constant_mixin = self.expanding_constant_mixin;
+                self.expanding_constant_mixin = true;
+                let (inline_runtime_exprs, inline_runtime_css_vars) = self.process_yak_literal(
+                  &mut tagged_tpl.clone(),
+                  css_state.as_ref().map(ParserState::nested),
+                );
+                self.expanding_constant_mixin = was_expanding_constant_mixin;
                 runtime_expressions.extend(inline_runtime_exprs);
                 runtime_css_variables.extend(inline_runtime_css_vars);
               }
@@ -508,12 +618,17 @@ where
                 self
                   .variable_name_selector_mapping
                   .insert(scoped_name.clone(), keyframe_name.clone());
-                let (new_state, _) = match &self.import_mode.transpilation_mode() {
+                let ParsedCss {
+                  state: new_state,
+                  errors,
+                  declarations: _,
+                } = match &self.import_mode.transpilation_mode() {
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
                   }
                   TranspilationMode::Css => parse_css(&keyframe_name, css_state),
                 };
+                debug_assert!(errors.is_empty());
                 css_state = Some(new_state);
               } else {
                 HANDLER.with(|handler| {
@@ -580,7 +695,7 @@ ${{() => {var}}};\n",
         else if let Expr::TaggedTpl(tpl) = &mut **expr {
           if is_valid_tagged_tpl(tpl, self.yak_imports().yak_css_idents()) {
             let (inline_runtime_exprs, inline_runtime_css_vars) =
-              self.process_yak_literal(tpl, css_state.clone());
+              self.process_yak_literal(tpl, css_state.as_ref().map(ParserState::nested));
             runtime_expressions.extend(inline_runtime_exprs);
             runtime_css_variables.extend(inline_runtime_css_vars);
           } else {
@@ -729,7 +844,12 @@ ${{() => {var}}};\n",
               runtime_css_variables.insert(format!("--{}", name), css_variable_runtime_expr);
               name
             });
-            let (new_state, _) = parse_css(&format!("var(--{})", css_variable_name), css_state);
+            let ParsedCss {
+              state: new_state,
+              errors,
+              declarations: _,
+            } = parse_css(&format!("var(--{})", css_variable_name), css_state);
+            debug_assert!(errors.is_empty());
             css_state = Some(new_state);
           }
 
