@@ -8,15 +8,15 @@ const Nested = ()=><div className={on ? big ? /*YAK Extracted CSS:
 :global(.ym7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu" : /*YAK Extracted CSS:
+*/ "ym7uBBu" : /*YAK Extracted CSS:
 :global(.ym7uBBu1) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu1" : /*YAK Extracted CSS:
+*/ "ym7uBBu1" : /*YAK Extracted CSS:
 :global(.ym7uBBu2) {
   color: green;
 }
-*/ /*#__PURE__*/ "ym7uBBu2"}/>;
+*/ "ym7uBBu2"}/>;
 // folds: a `&&` chain with an impure condition inlines the condition into the
 // className, evaluating it once
 const AndChain = ()=><div className={/*YAK Extracted CSS:
@@ -29,7 +29,7 @@ const AndChain = ()=><div className={/*YAK Extracted CSS:
 :global(.ym7uBBu5) {
   text-decoration: underline;
 }
-*/ /*#__PURE__*/ "ym7uBBu3" + (Math.random() > 0.5 ? " ym7uBBu4" : "") + (Math.random() > 0.5 ? " ym7uBBu5" : "")}/>;
+*/ "ym7uBBu3" + (Math.random() > 0.5 ? " ym7uBBu4" : "") + (Math.random() > 0.5 ? " ym7uBBu5" : "")}/>;
 // folds: a css prop next to a `style` attribute keeps the style and folds the
 // class in (style is the only mergeable attribute the fold allows)
 const WithStyle = ()=><div style={{
@@ -38,7 +38,7 @@ const WithStyle = ()=><div style={{
 :global(.ym7uBBu6) {
   color: teal;
 }
-*/ /*#__PURE__*/ "ym7uBBu6"}/>;
+*/ "ym7uBBu6"}/>;
 // bails: a className is not a style, so the fold hands off to the runtime merge
 const WithClassName = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.ym7uBBu7) {

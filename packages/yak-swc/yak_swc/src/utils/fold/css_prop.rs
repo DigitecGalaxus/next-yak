@@ -1,12 +1,14 @@
 //! Folds a static `css` prop into a plain `className`, skipping the runtime
 //! `mergeCssProp` spread
 
+use crate::remove_pure_annotation;
 use crate::utils::ast_helper::unwrap_type_casts;
 use crate::utils::fold::css_expr::{
   class_name_attr, expr_attr_value, fold_css_expr, is_yak_css_callee, is_yak_style_callee,
 };
 use crate::yak_imports::{YakImports, YakRuntime};
 use swc_core::{
+  common::comments::Comments,
   common::errors::HANDLER,
   common::{Span, Spanned, SyntaxContext, DUMMY_SP},
   ecma::ast::{
@@ -69,6 +71,7 @@ impl CSSProp {
     &self,
     opening_element: &mut JSXOpeningElement,
     yak_imports: &mut YakImports,
+    comments: &impl Comments,
     strict_css_prop: bool,
     fold_static: bool,
   ) {
@@ -76,7 +79,7 @@ impl CSSProp {
       opening_element.attrs.remove(self.index);
       return;
     }
-    if fold_static && self.try_fold(opening_element, yak_imports) {
+    if fold_static && self.try_fold(opening_element, yak_imports, comments) {
       return;
     }
     // The parts are collected from borrowed attributes before anything is
@@ -167,7 +170,12 @@ impl CSSProp {
   /// <div css={css(() => on && css("b"), "a")} />  // -> <div className={"a" + (on ? " b" : "")} />
   /// <div css={on ? css("a") : css("b")} />        // -> <div className={on ? "a" : "b"} />
   /// ```
-  fn try_fold(&self, opening_element: &mut JSXOpeningElement, yak_imports: &YakImports) -> bool {
+  fn try_fold(
+    &self,
+    opening_element: &mut JSXOpeningElement,
+    yak_imports: &YakImports,
+    comments: &impl Comments,
+  ) -> bool {
     // a spread or className may carry class names only known at runtime
     if self
       .relevant_props
@@ -188,9 +196,13 @@ impl CSSProp {
       // invalid css attribute - the runtime path reports the error
       return false;
     };
-    let Some(class_name_expr) = fold_css_expr(css_expr, yak_imports) else {
+    let Some((class_name_expr, folded_call_spans)) = fold_css_expr(css_expr, yak_imports) else {
       return false;
     };
+    // a folded class name is a string, not a call, so the `/*#__PURE__*/` comment it inherits from its css call is invalid
+    for span in folded_call_spans {
+      remove_pure_annotation(comments, span.lo);
+    }
     opening_element.attrs[self.index] =
       class_name_attr(yak_imports.runtime(), expr_attr_value(class_name_expr));
     true

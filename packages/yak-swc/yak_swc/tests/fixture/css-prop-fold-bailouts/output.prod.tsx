@@ -12,7 +12,7 @@ const LogicalAnd = ({ on }: {
 :global(.ym7uBBu) {
   color: blue;
 }
-*/ /*#__PURE__*/ on ? "ym7uBBu" : ""}/>;
+*/ on ? "ym7uBBu" : ""}/>;
 // folds: several condition segments in one template concatenate
 const ManySegments = ({ a, b }: {
     a: boolean;
@@ -27,7 +27,7 @@ const ManySegments = ({ a, b }: {
 :global(.ym7uBBu3) {
   font-weight: bold;
 }
-*/ /*#__PURE__*/ "ym7uBBu1" + (a ? " ym7uBBu2" : "") + (b ? " ym7uBBu3" : "")}/>;
+*/ "ym7uBBu1" + (a ? " ym7uBBu2" : "") + (b ? " ym7uBBu3" : "")}/>;
 // folds: a falsy ternary branch applies no styles and yields no class name
 const TernaryUndefined = ({ on }: {
     on: boolean;
@@ -35,7 +35,7 @@ const TernaryUndefined = ({ on }: {
 :global(.ym7uBBu4) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu4" : ""}/>;
+*/ "ym7uBBu4" : ""}/>;
 // bails: the `&&` right hand side carries a runtime css variable, so the css
 // call has more than a single static class argument and stays on the runtime
 // path

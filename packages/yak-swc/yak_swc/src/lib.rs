@@ -9,9 +9,10 @@ use std::vec;
 use swc_core::atoms::Wtf8Atom;
 
 use swc_core::common::comments::Comment;
+use swc_core::common::comments::CommentKind;
 use swc_core::common::comments::Comments;
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{Span, Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{BytePos, Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
@@ -1117,6 +1118,7 @@ where
       css_prop.transform(
         n,
         self.yak_library_imports.as_mut().unwrap(),
+        &self.comments,
         self.strict_css_prop,
         self.fold_static,
       );
@@ -1512,6 +1514,16 @@ fn pure_annotation() -> Comment {
     kind: swc_core::common::comments::CommentKind::Block,
     span: DUMMY_SP,
     text: "#__PURE__".to_string().into(),
+  }
+}
+
+fn remove_pure_annotation(comments: &impl Comments, pos: BytePos) {
+  let Some(mut leading) = comments.take_leading(pos) else {
+    return;
+  };
+  leading.retain(|c| !(c.kind == CommentKind::Block && c.text.trim() == "#__PURE__"));
+  if !leading.is_empty() {
+    comments.add_leading_comments(pos, leading);
   }
 }
 
