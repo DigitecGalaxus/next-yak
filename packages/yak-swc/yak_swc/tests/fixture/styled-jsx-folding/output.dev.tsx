@@ -227,7 +227,7 @@ const Optimizable = ({ active }: {
 .input_Optimizable_m7uBBu {
   color: orange;
 }
-*/ /*#__PURE__*/ "input_Card_m7uBBu input_Optimizable_m7uBBu"}>
+*/ "input_Card_m7uBBu input_Optimizable_m7uBBu"}>
       css prop merge
     </div>
     <div className="input_Card_m7uBBu">

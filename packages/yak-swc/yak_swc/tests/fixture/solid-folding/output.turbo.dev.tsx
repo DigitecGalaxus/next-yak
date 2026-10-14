@@ -69,7 +69,7 @@ export const CssProp = ()=><p class={/*YAK Extracted CSS:
 .input_CssProp_m7uBBu {
   color: green;
 }
-*/ /*#__PURE__*/ "input_CssProp_m7uBBu"}/>;
+*/ "input_CssProp_m7uBBu"}/>;
 // an existing class attribute keeps the runtime merge
 export const CssPropMerge = ()=><p {...__yak_mergeCssProp(/*YAK Extracted CSS:
 .input_CssPropMerge_m7uBBu {
