@@ -179,7 +179,7 @@ const Optimizable = ({ active }: {
 :global(.ym7uBBuR) {
   color: orange;
 }
-*/ /*#__PURE__*/ "ym7uBBu1 ym7uBBuR"}>
+*/ "ym7uBBu1 ym7uBBuR"}>
       css prop merge
     </div>
     <div className="ym7uBBu1">

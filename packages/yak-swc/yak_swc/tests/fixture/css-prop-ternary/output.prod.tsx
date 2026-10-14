@@ -8,11 +8,11 @@ const Elem = ({ active }: {
 :global(.ym7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "ym7uBBu" : /*YAK Extracted CSS:
+*/ "ym7uBBu" : /*YAK Extracted CSS:
 :global(.ym7uBBu1) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu1"}/>;
+*/ "ym7uBBu1"}/>;
 };
 // folds: one arm carries its own condition
 const Elem2 = ({ active, big }: {
@@ -26,11 +26,11 @@ const Elem2 = ({ active, big }: {
 :global(.ym7uBBu3) {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ "ym7uBBu2" + (big ? " ym7uBBu3" : "") : /*YAK Extracted CSS:
+*/ "ym7uBBu2" + (big ? " ym7uBBu3" : "") : /*YAK Extracted CSS:
 :global(.ym7uBBu4) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu4"}/>;
+*/ "ym7uBBu4"}/>;
 };
 // stays on the runtime path: one arm holds a dynamic value
 const Elem3 = ({ active, width }: {
@@ -59,7 +59,7 @@ const Elem4 = ({ active }: {
 :global(.ym7uBBu9) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBu9"}/>;
+*/ "ym7uBBu9"}/>;
 };
 // folds: a nested empty mixin contributes nothing instead of keeping the
 // whole css prop on the runtime path - the outer class is still minted as
@@ -67,7 +67,7 @@ const Elem4 = ({ active }: {
 const Elem5 = ({ active }: {
     active: boolean;
 })=>{
-    return <div className={/*#__PURE__*/ "ym7uBBuA" + (active ? "" : "")}/>;
+    return <div className={"ym7uBBuA" + (active ? "" : "")}/>;
 };
 // folds: a nested empty ternary arm becomes an empty string
 const Elem6 = ({ active }: {
@@ -77,5 +77,5 @@ const Elem6 = ({ active }: {
 :global(.ym7uBBuE) {
   color: blue;
 }
-*/ /*#__PURE__*/ "ym7uBBuC" + (active ? "" : " ym7uBBuE")}/>;
+*/ "ym7uBBuC" + (active ? "" : " ym7uBBuE")}/>;
 };

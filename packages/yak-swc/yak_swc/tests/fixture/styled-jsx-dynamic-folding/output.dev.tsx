@@ -320,7 +320,7 @@ const Optimizable = ({ active, size, i: i1 }: {
 :global(.input_Optimizable_m7uBBu) {
   color: orange;
 }
-*/ /*#__PURE__*/ " input_Optimizable_m7uBBu"}>
+*/ " input_Optimizable_m7uBBu"}>
       css prop merge
     </span>
     <p className={"input_Many_m7uBBu" + ("primary" === "primary" ? " input_Many___m7uBBu" : " input_Many___m7uBBu-01") + (true ? " input_Many__$bold_m7uBBu" : "")}>

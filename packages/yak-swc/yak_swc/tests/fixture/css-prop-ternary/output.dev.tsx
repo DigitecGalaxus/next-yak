@@ -8,11 +8,11 @@ const Elem = ({ active }: {
 :global(.input_Elem_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "input_Elem_m7uBBu" : /*YAK Extracted CSS:
+*/ "input_Elem_m7uBBu" : /*YAK Extracted CSS:
 :global(.input_Elem_m7uBBu-01) {
   color: blue;
 }
-*/ /*#__PURE__*/ "input_Elem_m7uBBu-01"}/>;
+*/ "input_Elem_m7uBBu-01"}/>;
 };
 // folds: one arm carries its own condition
 const Elem2 = ({ active, big }: {
@@ -26,11 +26,11 @@ const Elem2 = ({ active, big }: {
 :global(.input_Elem2__big_m7uBBu) {
   font-size: 20px;
 }
-*/ /*#__PURE__*/ "input_Elem2_m7uBBu" + (big ? " input_Elem2__big_m7uBBu" : "") : /*YAK Extracted CSS:
+*/ "input_Elem2_m7uBBu" + (big ? " input_Elem2__big_m7uBBu" : "") : /*YAK Extracted CSS:
 :global(.input_Elem2_m7uBBu-01) {
   color: blue;
 }
-*/ /*#__PURE__*/ "input_Elem2_m7uBBu-01"}/>;
+*/ "input_Elem2_m7uBBu-01"}/>;
 };
 // stays on the runtime path: one arm holds a dynamic value
 const Elem3 = ({ active, width }: {
@@ -59,7 +59,7 @@ const Elem4 = ({ active }: {
 :global(.input_Elem4_m7uBBu-01) {
   color: blue;
 }
-*/ /*#__PURE__*/ "input_Elem4_m7uBBu-01"}/>;
+*/ "input_Elem4_m7uBBu-01"}/>;
 };
 // folds: a nested empty mixin contributes nothing instead of keeping the
 // whole css prop on the runtime path - the outer class is still minted as
@@ -67,7 +67,7 @@ const Elem4 = ({ active }: {
 const Elem5 = ({ active }: {
     active: boolean;
 })=>{
-    return <div className={/*#__PURE__*/ "input_Elem5_m7uBBu" + (active ? "" : "")}/>;
+    return <div className={"input_Elem5_m7uBBu" + (active ? "" : "")}/>;
 };
 // folds: a nested empty ternary arm becomes an empty string
 const Elem6 = ({ active }: {
@@ -77,5 +77,5 @@ const Elem6 = ({ active }: {
 :global(.input_Elem6__not_active_m7uBBu) {
   color: blue;
 }
-*/ /*#__PURE__*/ "input_Elem6_m7uBBu" + (active ? "" : " input_Elem6__not_active_m7uBBu")}/>;
+*/ "input_Elem6_m7uBBu" + (active ? "" : " input_Elem6__not_active_m7uBBu")}/>;
 };

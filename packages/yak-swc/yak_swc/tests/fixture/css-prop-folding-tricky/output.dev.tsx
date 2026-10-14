@@ -8,15 +8,15 @@ const Nested = ()=><div className={on ? big ? /*YAK Extracted CSS:
 :global(.input_Nested_m7uBBu) {
   color: red;
 }
-*/ /*#__PURE__*/ "input_Nested_m7uBBu" : /*YAK Extracted CSS:
+*/ "input_Nested_m7uBBu" : /*YAK Extracted CSS:
 :global(.input_Nested_m7uBBu-01) {
   color: blue;
 }
-*/ /*#__PURE__*/ "input_Nested_m7uBBu-01" : /*YAK Extracted CSS:
+*/ "input_Nested_m7uBBu-01" : /*YAK Extracted CSS:
 :global(.input_Nested_m7uBBu-02) {
   color: green;
 }
-*/ /*#__PURE__*/ "input_Nested_m7uBBu-02"}/>;
+*/ "input_Nested_m7uBBu-02"}/>;
 // folds: a `&&` chain with an impure condition inlines the condition into the
 // className, evaluating it once
 const AndChain = ()=><div className={/*YAK Extracted CSS:
@@ -29,7 +29,7 @@ const AndChain = ()=><div className={/*YAK Extracted CSS:
 :global(.input_AndChain___m7uBBu-01) {
   text-decoration: underline;
 }
-*/ /*#__PURE__*/ "input_AndChain_m7uBBu" + (Math.random() > 0.5 ? " input_AndChain___m7uBBu" : "") + (Math.random() > 0.5 ? " input_AndChain___m7uBBu-01" : "")}/>;
+*/ "input_AndChain_m7uBBu" + (Math.random() > 0.5 ? " input_AndChain___m7uBBu" : "") + (Math.random() > 0.5 ? " input_AndChain___m7uBBu-01" : "")}/>;
 // folds: a css prop next to a `style` attribute keeps the style and folds the
 // class in (style is the only mergeable attribute the fold allows)
 const WithStyle = ()=><div style={{
@@ -38,7 +38,7 @@ const WithStyle = ()=><div style={{
 :global(.input_WithStyle_m7uBBu) {
   color: teal;
 }
-*/ /*#__PURE__*/ "input_WithStyle_m7uBBu"}/>;
+*/ "input_WithStyle_m7uBBu"}/>;
 // bails: a className is not a style, so the fold hands off to the runtime merge
 const WithClassName = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
 :global(.input_WithClassName_m7uBBu) {
