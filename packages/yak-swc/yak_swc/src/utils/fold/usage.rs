@@ -43,8 +43,8 @@ use swc_core::{
   atoms::{Atom, Wtf8Atom},
   common::{SyntaxContext, DUMMY_SP},
   ecma::ast::{
-    ArrowExpr, AssignPatProp, BinExpr, BinaryOp, BlockStmt, BlockStmtOrExpr, Bool, CallExpr,
-    Callee, Expr, ExprOrSpread, Id, Ident, IdentName, Invalid, JSXAttr, JSXAttrName,
+    ArrowExpr, ArrowFunctionBody, AssignPatProp, BinExpr, BinaryOp, Bool, CallExpr, Callee, Expr,
+    ExprOrSpread, FunctionBody, Id, Ident, IdentName, Invalid, JSXAttr, JSXAttrName,
     JSXAttrOrSpread, JSXAttrValue, JSXElement, JSXElementChild, JSXElementName, JSXEmptyExpr,
     JSXExpr, JSXExprContainer, KeyValueProp, Lit, MemberProp, Module, Number, ObjectPatProp, Pat,
     Prop, PropName, Stmt, UnaryExpr, UnaryOp,
@@ -390,7 +390,7 @@ fn bind_params(class_name: Box<Expr>, bindings: Vec<Binding>) -> Box<Expr> {
       span: DUMMY_SP,
       ctxt: SyntaxContext::empty(),
       params,
-      body: Box::new(BlockStmtOrExpr::Expr(class_name)),
+      body: Box::new(ArrowFunctionBody::Expr(class_name)),
       is_async: false,
       is_generator: false,
       type_params: None,
@@ -687,8 +687,8 @@ fn inline_expression(
   let (params, body): (Vec<&Pat>, &Expr) = match expression {
     Expr::Arrow(arrow) if !arrow.is_async && !arrow.is_generator => {
       let body = match &*arrow.body {
-        BlockStmtOrExpr::Expr(expr) => &**expr,
-        BlockStmtOrExpr::BlockStmt(block) => single_return_expr(block)?,
+        ArrowFunctionBody::Expr(expr) => &**expr,
+        ArrowFunctionBody::FunctionBody(block) => single_return_expr(block)?,
         #[cfg(swc_ast_unknown)]
         _ => return None,
       };
@@ -1029,7 +1029,7 @@ impl VisitMut for BakeParams<'_> {
 }
 
 /// Matches a function body holding a single `return <expr>;`
-fn single_return_expr(block: &BlockStmt) -> Option<&Expr> {
+fn single_return_expr(block: &FunctionBody) -> Option<&Expr> {
   let [Stmt::Return(return_stmt)] = block.stmts.as_slice() else {
     return None;
   };

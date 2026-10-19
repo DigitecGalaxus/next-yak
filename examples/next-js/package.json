@@ -26,7 +26,6 @@
     "@yak/react": "workspace:*",
     "@yak/swc": "workspace:*",
     "next": "catalog:dev",
-    "postcss-nested": "catalog:dev",
     "react": "catalog:dev",
     "react-dom": "catalog:dev",
     "typescript": "catalog:dev"

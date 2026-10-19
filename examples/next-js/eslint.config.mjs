@@ -27,7 +27,6 @@ export default defineConfig([
     ".swc/**",
     "public/**",
     "next.config.mjs",
-    "postcss.config.js",
     "jest.config.cjs",
     "next-env.d.ts",
   ]),

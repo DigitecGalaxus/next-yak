@@ -12,7 +12,7 @@ use swc_core::{
   atoms::{wtf8::Wtf8Buf, Wtf8Atom},
   common::{Span, Spanned, DUMMY_SP},
   ecma::ast::{
-    ArrowExpr, BinExpr, BinaryOp, BlockStmtOrExpr, CallExpr, Callee, CondExpr, Expr, IdentName,
+    ArrowExpr, ArrowFunctionBody, BinExpr, BinaryOp, CallExpr, Callee, CondExpr, Expr, IdentName,
     JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXAttrValue, JSXExpr, JSXExprContainer, Lit, Str,
   },
 };
@@ -149,7 +149,7 @@ fn fold_condition_arrow(arrow: &ArrowExpr, yak_imports: &YakImports) -> Option<C
   if !arrow.params.is_empty() || arrow.is_async || arrow.is_generator {
     return None;
   }
-  let BlockStmtOrExpr::Expr(body) = &*arrow.body else {
+  let ArrowFunctionBody::Expr(body) = &*arrow.body else {
     return None;
   };
   fold_condition_body(body, yak_imports)

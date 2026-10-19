@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cd .tmp && vinext dev -p 3006",
+    "dev": "cd .tmp && vinext dev --port 3006",
     "build": "cd .tmp && vinext build",
     "start": "cd .tmp && vinext start -p 3006"
   },

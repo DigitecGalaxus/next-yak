@@ -69,10 +69,10 @@ impl VisitMut for Normalize {
     arrow.visit_mut_children_with(self);
     // A block body which only returns is the same function as an expression
     // body: `({ $x }) => { return $x }` equals `({ $x }) => $x`
-    if let BlockStmtOrExpr::BlockStmt(block) = &mut *arrow.body {
+    if let ArrowFunctionBody::FunctionBody(block) = &mut *arrow.body {
       if let [Stmt::Return(return_stmt)] = &mut block.stmts[..] {
         if let Some(value) = return_stmt.arg.take() {
-          arrow.body = Box::new(BlockStmtOrExpr::Expr(value));
+          arrow.body = Box::new(ArrowFunctionBody::Expr(value));
         }
       }
     }
