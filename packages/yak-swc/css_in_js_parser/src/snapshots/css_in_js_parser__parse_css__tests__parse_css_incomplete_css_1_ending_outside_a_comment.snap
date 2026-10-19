@@ -26,6 +26,7 @@ expression: "(state, declarations)"
         },
         pending_css_segment: "color: blue\n",
         paren_depth: 0,
+        scope_floor: 0,
     },
     [],
 )

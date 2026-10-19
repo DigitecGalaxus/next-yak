@@ -1,0 +1,24 @@
+  x A constant can only be a CSS value or part of a selector, not a declaration or a rule.
+  | Use a css mixin instead, for example: const hover = css`&:hover { color: red; }`
+    ,-[input.js:24:1]
+ 23 | export const Invalid = styled.div`
+ 24 |   ${hover};
+    :     ^^^^^
+ 25 |   ${reset};
+    `----
+  x A constant can only be a CSS value or part of a selector, not a declaration or a rule.
+  | Use a css mixin instead, for example: const hover = css`&:hover { color: red; }`
+    ,-[input.js:25:1]
+ 24 |   ${hover};
+ 25 |   ${reset};
+    :     ^^^^^
+ 26 |   .foo {
+    `----
+  x A constant can only be a CSS value or part of a selector, not a declaration or a rule.
+  | Use a css mixin instead, for example: const hover = css`&:hover { color: red; }`
+    ,-[input.js:27:1]
+ 26 |   .foo {
+ 27 |     color: ${value};
+    :              ^^^^^
+ 28 |   }
+    `----

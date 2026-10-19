@@ -51,9 +51,9 @@ export const Button6 = /*YAK EXPORTED STYLED:Button6:input_Button6_m7uBBu*//*YAK
 :global(.input_Button6_m7uBBu) {
   &:hover {
     --yak-css-import: url("./constants.yak:yakMixin",mixin);
-  }
-  --yak-css-import: url("./fancy:fancy:mixins:specialEffect",mixin)
+    --yak-css-import: url("./fancy:fancy:mixins:specialEffect",mixin)
 ;
+  }
   color: green;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button6_m7uBBu"), {
@@ -63,9 +63,9 @@ export const Button7 = /*YAK EXPORTED STYLED:Button7:input_Button7_m7uBBu*//*YAK
 :global(.input_Button7_m7uBBu) {
   &:hover {
     --yak-css-import: url("./constants.yak:yakMixin",mixin);
-  }
-  --yak-css-import: url("./fancy:fancy:aspectRatio:16%3A9",mixin)
+    --yak-css-import: url("./fancy:fancy:aspectRatio:16%3A9",mixin)
 ;
+  }
   color: green;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Button7_m7uBBu"), {

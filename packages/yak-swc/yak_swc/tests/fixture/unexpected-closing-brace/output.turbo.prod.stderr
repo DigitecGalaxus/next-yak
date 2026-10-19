@@ -1,0 +1,61 @@
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+   ,-[input.js:4:1]
+ 3 | export const trailing = css`
+ 4 |   color: red }
+   :              ^
+ 5 | `;
+   `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+   ,-[input.js:7:1]
+ 6 | 
+ 7 | export const leading = css`} color: red;`;
+   :                            ^
+   `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+   ,-[input.js:9:1]
+ 8 | 
+ 9 | export const between = css`color: red; } color: blue;`;
+   :                                        ^
+   `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+    ,-[input.js:13:1]
+ 12 |   color: red
+ 13 | };
+    : ^
+ 14 | `;
+    `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+    ,-[input.js:17:1]
+ 16 | export const Button = styled.button`
+ 17 |   color: red; } color: blue;
+    :               ^
+ 18 | `;
+    `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+    ,-[input.js:20:1]
+ 19 | 
+ 20 | const inlined = css`color: green; } padding: 0;`;
+    :                                   ^
+    `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+    ,-[input.js:31:1]
+ 30 | export const Escaped = styled.div`
+ 31 |   content: "\\2022"; }
+    :                      ^
+ 32 | `;
+    `----
+  x This `}` has no open block to close.
+  | Remove the `}`, or add the missing `{` before it.
+    ,-[input.js:35:1]
+ 34 | globalStyle`
+ 35 |   body { margin: 0; } }
+    :                       ^
+ 36 | `;
+    `----
