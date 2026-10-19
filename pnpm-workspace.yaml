@@ -39,11 +39,11 @@ catalogs:
     "@changesets/cli": 3.0.1
     "@next/eslint-plugin-next": 16.3.4
     "@playwright/test": 1.62.1
-    "@storybook/addon-docs": 10.6.0
+    "@storybook/addon-docs": 11.0.0-alpha.6
     "@storybook/addon-webpack5-compiler-swc": 4.0.3
-    "@storybook/react": 10.6.0
-    "@storybook/react-vite": 10.6.0
-    "@storybook/react-webpack5": 10.6.0
+    "@storybook/react": 11.0.0-alpha.6
+    "@storybook/react-vite": 11.0.0-alpha.6
+    "@storybook/react-webpack5": 11.0.0-alpha.6
     "@tanstack/react-router": 1.170.32
     "@tanstack/react-start": 1.168.49
     "@testing-library/dom": 10.4.1
@@ -77,7 +77,7 @@ catalogs:
     postcss-nested: 7.0.2
     react: 19.2.8
     react-dom: 19.2.8
-    storybook: 10.6.0
+    storybook: 11.0.0-alpha.6
     styled-components: 6.5.3
     tsdown: 0.22.14
     # TypeScript 7 (the native compiler) ships no programmatic API yet, which
