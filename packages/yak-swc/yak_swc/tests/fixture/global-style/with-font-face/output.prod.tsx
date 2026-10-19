@@ -1,5 +1,5 @@
 import { globalStyle } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 /*YAK Extracted CSS:
 @property --progress {
   syntax: "<percentage>";

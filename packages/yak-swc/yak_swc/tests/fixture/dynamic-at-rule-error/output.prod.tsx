@@ -1,10 +1,10 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // Dynamic interpolation inside @media query is not valid CSS:
 // the browser cannot read CSS variables before the media query is evaluated.
 const Box = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   background: red;
   @media {
     display: none;

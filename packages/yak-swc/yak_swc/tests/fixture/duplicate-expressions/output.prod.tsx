@@ -1,9 +1,9 @@
 import { styled, __yak_unitPostFix } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // Identical prop arrow used in two declarations
 const TwiceSameArrow = /*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   left: var(--ym7uBBu1);
   right: var(--ym7uBBu1);
 }
@@ -14,7 +14,7 @@ const TwiceSameArrow = /*YAK Extracted CSS:
 });
 // Identical logic, but one side carries a TS parameter annotation
 const TypedVsUntyped = /*YAK Extracted CSS:
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   top: var(--ym7uBBu3);
   bottom: var(--ym7uBBu3);
 }
@@ -25,7 +25,7 @@ const TypedVsUntyped = /*YAK Extracted CSS:
 });
 // Identical calculation including a Math.min call
 const WithCalculation = /*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   width: var(--ym7uBBu5);
   max-width: var(--ym7uBBu5);
 }
@@ -36,7 +36,7 @@ const WithCalculation = /*YAK Extracted CSS:
 });
 // Same expression but different trailing units: must stay separate
 const DifferentUnits = /*YAK Extracted CSS:
-:global(.ym7uBBu6) {
+.ym7uBBu6 {
   width: var(--ym7uBBu7);
   height: var(--ym7uBBu8);
 }
@@ -48,7 +48,7 @@ const DifferentUnits = /*YAK Extracted CSS:
 });
 // Parenthesized arrow vs plain arrow
 const Parens = /*YAK Extracted CSS:
-:global(.ym7uBBu9) {
+.ym7uBBu9 {
   margin-left: var(--ym7uBBuA);
   margin-right: var(--ym7uBBuA);
 }
@@ -59,7 +59,7 @@ const Parens = /*YAK Extracted CSS:
 });
 // Different props: must stay separate
 const DifferentProps = /*YAK Extracted CSS:
-:global(.ym7uBBuB) {
+.ym7uBBuB {
   padding-left: var(--ym7uBBuC);
   padding-right: var(--ym7uBBuD);
 }
@@ -71,7 +71,7 @@ const DifferentProps = /*YAK Extracted CSS:
 });
 // Same bindings, different destructuring order in the parameter
 const DestructureOrder = /*YAK Extracted CSS:
-:global(.ym7uBBuE) {
+.ym7uBBuE {
   width: var(--ym7uBBuF);
   height: var(--ym7uBBuF);
 }
@@ -82,7 +82,7 @@ const DestructureOrder = /*YAK Extracted CSS:
 });
 // A sibling-referencing default: reordering changes behavior
 const DefaultReferencesSibling = /*YAK Extracted CSS:
-:global(.ym7uBBuG) {
+.ym7uBBuG {
   min-width: var(--ym7uBBuH);
   min-height: var(--ym7uBBuI);
 }
@@ -94,7 +94,7 @@ const DefaultReferencesSibling = /*YAK Extracted CSS:
 });
 // Repeated interpolations inside a single declaration value
 const Dot = /*YAK Extracted CSS:
-:global(.ym7uBBuJ) {
+.ym7uBBuJ {
   animation-range: max(0%, calc((var(--ym7uBBuK) - 1) * 100% / (var(--ym7uBBuL) - 1)))
 min(100%, calc((var(--ym7uBBuK) + 1) * 100% / (var(--ym7uBBuL) - 1)));
 }
@@ -105,7 +105,7 @@ min(100%, calc((var(--ym7uBBuK) + 1) * 100% / (var(--ym7uBBuL) - 1)));
     }
 });
 const Nested = /*YAK Extracted CSS:
-:global(.ym7uBBuM) {
+.ym7uBBuM {
   left: var(--ym7uBBuN);
   right: var(--ym7uBBuO);
   @media (min-width: 768px) {

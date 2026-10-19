@@ -13,7 +13,6 @@ const wasmPath = join(packageRoot, "target/wasm32-wasip1/release/yak_swc.wasm");
 
 type ImportMode = {
   value: string;
-  transpilation: string;
   encoding: string;
 };
 
@@ -58,16 +57,13 @@ const EXACT_MATCH_EXCEPTIONS = new Set<string>([
   "typecast-styled-component",
 ]);
 
-const CSS_MODULE_IMPORT: ImportMode = {
-  value:
-    "./{{__BASE_NAME__}}.yak.module.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.module.css",
-  transpilation: "CssModule",
+const WEBPACK_IMPORT: ImportMode = {
+  value: "./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css",
   encoding: "None",
 };
 
 const TURBO_IMPORT: ImportMode = {
   value: "data:text/css;base64,",
-  transpilation: "Css",
   encoding: "Base64",
 };
 
@@ -76,13 +72,13 @@ const MODES: Mode[] = [
     name: "dev",
     output: "output.dev.tsx",
     stderr: "output.dev.stderr",
-    options: { minify: false, displayNames: true, importMode: CSS_MODULE_IMPORT },
+    options: { minify: false, displayNames: true, importMode: WEBPACK_IMPORT },
   },
   {
     name: "prod",
     output: "output.prod.tsx",
     stderr: "output.prod.stderr",
-    options: { minify: true, displayNames: false, importMode: CSS_MODULE_IMPORT },
+    options: { minify: true, displayNames: false, importMode: WEBPACK_IMPORT },
   },
   {
     name: "turbo.dev",

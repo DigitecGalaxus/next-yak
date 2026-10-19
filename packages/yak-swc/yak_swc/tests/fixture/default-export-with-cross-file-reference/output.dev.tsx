@@ -1,9 +1,9 @@
 import { styled } from "@yak/react/internal";
 import Text from "./text";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const Box = /*YAK EXPORTED STYLED:Box:input_Box_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Box_m7uBBu) {
+.input_Box_m7uBBu {
   padding: 32px;
   background: #333;
   --yak-css-import: url("./text:default",selector) {
@@ -15,7 +15,7 @@ const Box = /*YAK EXPORTED STYLED:Box:input_Box_m7uBBu*//*YAK Extracted CSS:
     "displayName": "Box"
 });
 export default /*YAK EXPORTED STYLED:default:input_Box_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Box_m7uBBu) {
+.input_Box_m7uBBu {
   padding: 32px;
   background: #333;
   --yak-css-import: url("./text:default",selector) {

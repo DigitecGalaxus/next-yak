@@ -1,6 +1,6 @@
 import { css, styled, __yak_mergeClassNames } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 const on = Math.random() > 0.5;
 const props = {} as any;
 const cn = (value: unknown)=>String(value);
@@ -9,10 +9,10 @@ const f = ()=>Math.random() > 0.5;
 const g = ()=>"id-value";
 // dynamic component: a class-toggling $prop drives the conditional class
 const Toggle = /*YAK Extracted CSS:
-:global(.input_Toggle_m7uBBu) {
+.input_Toggle_m7uBBu {
   color: black;
 }
-:global(.input_Toggle__\$on_m7uBBu) {
+.input_Toggle__\$on_m7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_Toggle_m7uBBu", ({ $on })=>$on && /*#__PURE__*/ css("input_Toggle__$on_m7uBBu")), {
@@ -21,10 +21,10 @@ const Toggle = /*YAK Extracted CSS:
 // dynamic component reading two $props, to place an impure obstacle between the
 // bound props
 const Range = /*YAK Extracted CSS:
-:global(.input_Range__\$a_m7uBBu) {
+.input_Range__\$a_m7uBBu {
   color: red;
 }
-:global(.input_Range__\$b_m7uBBu) {
+.input_Range__\$b_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Range_m7uBBu", ({ $a })=>$a && /*#__PURE__*/ css("input_Range__$a_m7uBBu"), ({ $b })=>$b && /*#__PURE__*/ css("input_Range__$b_m7uBBu")), {
@@ -33,7 +33,7 @@ const Range = /*YAK Extracted CSS:
 // dynamic component whose condition reads a non-$ prop that also stays on the
 // DOM element
 const ActionButton = /*YAK Extracted CSS:
-:global(.input_ActionButton___m7uBBu) {
+.input_ActionButton___m7uBBu {
   cursor: pointer;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_button("input_ActionButton_m7uBBu", ({ disabled })=>!disabled && /*#__PURE__*/ css("input_ActionButton___m7uBBu")), {
@@ -41,7 +41,7 @@ const ActionButton = /*YAK Extracted CSS:
 });
 // static component for the plain className merges
 const Card = /*YAK Extracted CSS:
-:global(.input_Card_m7uBBu) {
+.input_Card_m7uBBu {
   color: green;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu"), {
@@ -49,7 +49,7 @@ const Card = /*YAK Extracted CSS:
 });
 // collapses: parent Card is a same-file static component
 const Fancy = /*YAK Extracted CSS:
-:global(.input_Fancy_m7uBBu) {
+.input_Fancy_m7uBBu {
   padding: 4px;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Card_m7uBBu input_Fancy_m7uBBu"), {
@@ -57,7 +57,7 @@ const Fancy = /*YAK Extracted CSS:
 });
 // bails: an .attrs() chain is never registered as foldable
 const WithAttrs = /*YAK Extracted CSS:
-:global(.input_WithAttrs_m7uBBu) {
+.input_WithAttrs_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ (__yak.__yak_input.attrs({
@@ -67,7 +67,7 @@ const WithAttrs = /*YAK Extracted CSS:
 });
 // bails: a let binding can be reassigned, so its usages keep the runtime path
 let Mutable = /*YAK Extracted CSS:
-:global(.input_Mutable_m7uBBu) {
+.input_Mutable_m7uBBu {
   color: teal;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_span("input_Mutable_m7uBBu"), {

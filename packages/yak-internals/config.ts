@@ -50,12 +50,6 @@ export type YakConfigOptions = {
       | true
       | { pattern: string; types?: Array<"ts" | "css" | "css-resolved"> }
       | { pattern?: string; types: Array<"ts" | "css" | "css-resolved"> };
-    transpilationMode?: "CssModule" | "Css";
-    /**
-     * Suppress deprecation warnings for :global() selectors during migration period
-     * @defaultValue false
-     */
-    suppressDeprecationWarnings?: boolean;
   };
 };
 
@@ -76,7 +70,6 @@ export function buildYakPluginOptions(yakOptions: YakConfigOptions, basePath: st
     displayNames: yakOptions.displayNames ?? !minify,
     foldStatic: yakOptions.foldStatic ?? true,
     strictCssProp: yakOptions.strictCssProp ?? true,
-    suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings ?? false,
     reactRefreshReg: true,
   };
 }

@@ -1,12 +1,12 @@
 import { css, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // A real yak style keeps the module recognized as using yak, so the css
 // prop below is still processed by the plugin.
 const yakClass = /*#__PURE__*/ css();
 // A css prop yak owns is still compiled and merged with className and
 // style. Non-strict only changes what happens to a value it can not compile.
 const Merged = ()=><div {...__yak_mergeCssProp(/*YAK Extracted CSS:
-:global(.input_Merged_m7uBBu) {
+.input_Merged_m7uBBu {
   color: red;
 }
 */ /*#__PURE__*/ css("input_Merged_m7uBBu"), {

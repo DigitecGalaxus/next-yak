@@ -6,9 +6,9 @@ import * as constants from "./otherConstants";
 import { s as renamedSize } from "./moreSizes";
 import defaultImport from "./betterFontSizes";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 export const Button = /*YAK EXPORTED STYLED:Button:input_Button_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Button_m7uBBu) {
+.input_Button_m7uBBu {
   font-size: --yak-css-import: url("./fontDefinitions:fonts:sm",mixin);
   color: --yak-css-import: url("./colorDefinitions:colors:dark:primary",mixin);
   border-color: --yak-css-import: url("./colorDefinitions:colors:shadows:dark:primary",mixin);

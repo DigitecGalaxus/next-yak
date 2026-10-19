@@ -1,6 +1,6 @@
 import { styled, css } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // Numeric constants used inside math expressions, in cast form
 const BASE = 16 as const;
 const SIZES = {
@@ -9,7 +9,7 @@ const SIZES = {
 } as const;
 // Math evaluator: cast-wrapped numbers and references must still evaluate
 const A = /*YAK Extracted CSS:
-:global(.input_A_m7uBBu) {
+.input_A_m7uBBu {
   width: 32px;
   margin: 24px;
   padding: 8px;
@@ -22,8 +22,8 @@ const Box = /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Box
     "displayName": "Box"
 });
 const B = /*YAK Extracted CSS:
-:global(.input_B_m7uBBu) {
-  :global(.input_Box_m7uBBu) {
+.input_B_m7uBBu {
+  .input_Box_m7uBBu {
     color: red;
   }
 }
@@ -33,7 +33,7 @@ const B = /*YAK Extracted CSS:
 // Constant lookup through a non-null assertion
 const COLOR = "blue";
 const C = /*YAK Extracted CSS:
-:global(.input_C_m7uBBu) {
+.input_C_m7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_C_m7uBBu"), {
@@ -41,14 +41,14 @@ const C = /*YAK Extracted CSS:
 });
 // Default export through a TS cast
 const Page = /*YAK EXPORTED STYLED:Page:input_Page_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Page_m7uBBu) {
+.input_Page_m7uBBu {
   display: block;
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Page_m7uBBu"), {
     "displayName": "Page"
 });
 export default /*YAK EXPORTED STYLED:default:input_Page_m7uBBu*//*YAK Extracted CSS:
-:global(.input_Page_m7uBBu) {
+.input_Page_m7uBBu {
   display: block;
 }
 */ Page as typeof Page;

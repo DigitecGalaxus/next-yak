@@ -69,7 +69,7 @@ export default async function cssExtractLoader(
     const result = await transform(code, this.resourcePath, this.rootContext, sourceMap);
     debugLog("ts", result.code, this.resourcePath);
 
-    let css = extractCss(result.code, "Css");
+    let css = extractCss(result.code);
     debugLog("css", css, this.resourcePath);
 
     const { resolved } = await resolveCrossFileConstant(
@@ -77,7 +77,6 @@ export default async function cssExtractLoader(
         parse: (modulePath) => {
           return parseModule(
             {
-              transpilationMode: "Css",
               extractExports: async (modulePath) => {
                 const sourceContents = await fsReadFile(modulePath);
                 return parseExports(sourceContents);

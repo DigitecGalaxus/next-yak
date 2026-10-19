@@ -13,19 +13,6 @@ const ruleTester = new RuleTester({
   },
 });
 
-ruleTester.run("@yak/css-global-deprecated", yakPlugin.rules["css-global-deprecated"], {
-  valid: [
-    'import { styled } from "@yak/react"; styled.div`color: red;`;',
-    "const Component = styled.div`:global(body) { color: red; }`;",
-  ],
-  invalid: [
-    {
-      code: 'import { styled } from "@yak/react"; styled.div`:global(body) { color: red; }`;',
-      errors: [{ messageId: "globalSelectorDeprecated" }],
-    },
-  ],
-});
-
 ruleTester.run("@yak/css-nesting-operator", yakPlugin.rules["css-nesting-operator"], {
   valid: [],
   invalid: [

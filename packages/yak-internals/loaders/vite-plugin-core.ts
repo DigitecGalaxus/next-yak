@@ -101,11 +101,7 @@ async function viteYakImpl(
   userOptions: ViteYakPluginOptions,
 ): Promise<Plugin> {
   const yakOptions: ViteYakPluginOptions = {
-    experiments: {
-      transpilationMode: "Css",
-      suppressDeprecationWarnings: false,
-      ...userOptions.experiments,
-    },
+    experiments: userOptions.experiments,
     minify: userOptions.minify ?? process.env.NODE_ENV === "production",
     prefix: userOptions.prefix,
     foldStatic: userOptions.foldStatic ?? library.foldStatic,
@@ -199,7 +195,7 @@ async function viteYakImpl(
         this.addWatchFile(originalId);
         const code = await transform(sourceContent, originalId, basePath, yakSwcPath, yakOptions);
         debugLog("ts", code.code, originalId);
-        const extractedCss = extractCss(code.code, "Css");
+        const extractedCss = extractCss(code.code);
         debugLog("css", extractedCss, originalId);
 
         const { resolved } = await resolveCrossFileConstant(
@@ -207,7 +203,6 @@ async function viteYakImpl(
             parse: (modulePath) => {
               return parseModule(
                 {
-                  transpilationMode: "Css",
                   extractExports: async (modulePath) => {
                     const sourceContent = await readSource(modulePath);
 
@@ -381,12 +376,10 @@ function transform(
               displayNames: yakOptions.displayNames,
               foldStatic: yakOptions.foldStatic ?? true,
               strictCssProp: yakOptions.strictCssProp ?? true,
-              suppressDeprecationWarnings: yakOptions.experiments?.suppressDeprecationWarnings,
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               ...(emitCssComments === false ? { emitCssComments: false } : {}),
               importMode: {
                 value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
-                transpilation: "Css",
                 encoding: "None",
               },
             },

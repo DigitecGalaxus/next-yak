@@ -2,14 +2,14 @@
 // ternaries and a top level `&&`, so every shape below pins either the fold or
 // the bail-out that keeps it on the runtime path
 import { css, __yak_mergeCssProp } from "@yak/react/internal";
-import "./input.yak.module.css!=!./input?./input.yak.module.css";
+import "./input.yak.css!=!./input?./input.yak.css";
 // folds: a top level `&&` becomes `on ? "class" : ""`
 // the fold has to keep the /*YAK Extracted CSS:*/ comment the loader parses,
 // otherwise the component ships unstyled
 const LogicalAnd = ({ on }: {
     on: boolean;
 })=><div className={/*YAK Extracted CSS:
-:global(.ym7uBBu) {
+.ym7uBBu {
   color: blue;
 }
 */ /*#__PURE__*/ on ? "ym7uBBu" : ""}/>;
@@ -18,13 +18,13 @@ const ManySegments = ({ a, b }: {
     a: boolean;
     b: boolean;
 })=><div className={/*YAK Extracted CSS:
-:global(.ym7uBBu1) {
+.ym7uBBu1 {
   color: black;
 }
-:global(.ym7uBBu2) {
+.ym7uBBu2 {
   color: red;
 }
-:global(.ym7uBBu3) {
+.ym7uBBu3 {
   font-weight: bold;
 }
 */ /*#__PURE__*/ "ym7uBBu1" + (a ? " ym7uBBu2" : "") + (b ? " ym7uBBu3" : "")}/>;
@@ -32,7 +32,7 @@ const ManySegments = ({ a, b }: {
 const TernaryUndefined = ({ on }: {
     on: boolean;
 })=><div className={on ? /*YAK Extracted CSS:
-:global(.ym7uBBu4) {
+.ym7uBBu4 {
   color: blue;
 }
 */ /*#__PURE__*/ "ym7uBBu4" : ""}/>;
@@ -43,7 +43,7 @@ const LogicalAndDynamic = ({ on, color }: {
     on: boolean;
     color: string;
 })=><div {...__yak_mergeCssProp(on && /*YAK Extracted CSS:
-:global(.ym7uBBu5) {
+.ym7uBBu5 {
   color: var(--ym7uBBu6);
 }
 */ /*#__PURE__*/ css({
