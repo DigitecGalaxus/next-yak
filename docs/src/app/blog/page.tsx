@@ -12,7 +12,7 @@ import {
 import { pageMetadata } from "@/lib/page-metadata";
 import { asset } from "@/lib/site";
 import { sectionLabel } from "@/lib/mixins";
-import { ArticleLayout, Title, Description } from "@/components/docs/page-layout";
+import { ArticleLayout, Title } from "@/components/docs/page-layout";
 import { PostTag } from "@/components/blog/post-tag";
 import { fonts, fontSize, fontWeight, radii, screen, light, dark } from "@/tokens";
 
@@ -31,7 +31,6 @@ export default async function BlogIndex() {
   return (
     <ArticleLayout>
       <Title>Blog</Title>
-      <Description>{description}</Description>
       {/* Every post can be a draft, and the production build drops drafts. */}
       {featured ? null : <Empty>No posts yet.</Empty>}
       {featured ? (

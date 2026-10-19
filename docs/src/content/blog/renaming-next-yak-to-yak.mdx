@@ -1,34 +1,253 @@
 ---
-title: next-yak is now yak
-description: Why the project changed its name, what moved, and what you have to do.
-date: 2026-10-08
+title: "next-yak is now @yak/react"
+description: "Why next-yak became @yak/react, and how to migrate."
+date: 2026-10-19
 author: The yak team
-draft: true
+draft: false
 type: announcement
 featured: true
 ---
 
-<Callout title="Draft">
-  This post is not written yet. The outline below is what it will cover.
-</Callout>
+<ThemeImage
+  light="/img/blog/renaming-next-yak-to-yak.webp"
+  dark="/img/blog/renaming-next-yak-to-yak-dark.webp"
+  width={1774}
+  height={887}
+  alt="The yak mascot moves from a small hut with a next-yak sign into a big red barn with an @yak sign. It carries boxes labeled webpack, Turbopack, Vite, Rsbuild, Solid and Qwik."
+/>
 
-## What this post will cover
+**`next-yak` is now `@yak/react`, and all other yak packages move to the `@yak` scope.** New
+barn. Same yak. The team and the API stay the same, and the new name finally fits a yak that
+runs on many bundlers and frameworks, not only on Next.js.
 
-- Why the name changed, and why now. The name `next-yak` says "Next.js and React only". Both
-  parts are no longer true.
-- yak runs on every major bundler, not only Next.js. See
-  [One compiler, every bundler](/blog/one-compiler-every-bundler).
-- yak runs on React, Solid and Qwik. See [yak for Solid](/blog/yak-solid) and
-  [yak for Qwik](/blog/yak-qwik).
-- yak is fast. See
-  [Your styled components disappear at build time](/blog/build-time-folding).
-- The new package names: `@yak/react`, `@yak/solid` and `@yak/qwik`.
-- What you have to change in your project, and what keeps working untouched.
-- How long `next-yak` keeps receiving releases.
-- The new site: new documentation, a playground for all three frameworks, and this blog.
+## What is renamed
 
-## Migrating today
+| Old package           | New package          | Works with                          |
+| --------------------- | -------------------- | ----------------------------------- |
+| `next-yak`            | `@yak/react`         | webpack, Turbopack, Vite, Rsbuild   |
+| `eslint-plugin-yak`   | `@yak/eslint-plugin` | ESLint, Oxlint                      |
+| `storybook-addon-yak` | `@yak/storybook`     | Storybook with webpack or Vite      |
+| `yak-swc`             | `@yak/swc`           | The SWC plugin behind all of them   |
+| `@yak/solid`          | `@yak/solid`         | Already in the scope. No change.    |
+| `@yak/qwik`           | `@yak/qwik`          | Already in the scope. No change.    |
 
-The rename guide shows the changes from `next-yak` to `@yak/react`. The
-[migration guide](/docs/migration-from-styled-components) covers the move from
-styled-components.
+`next-yak` 9.x gets bug fixes until the end of 2026. After that, all work happens in
+`@yak/react` 10. `next-yak` 10 has no styling code at all. It only contains the codemod that
+moves your project to `@yak/react`. The old packages are deprecated on npm and point to the new
+names.
+[Jump to the migration steps](#how-to-migrate-from-next-yak-to-yakreact).
+
+## Why the rename
+
+Some of the first yak code came to life on a conference floor in Berlin. We had problems with
+`styled-components` in our Next.js app and wanted to try one idea: move the CSS out of the
+JavaScript at build time. Between the hotel lobby and the floor of the venue, the proof of concept
+came together. It worked in a small Next.js setup, and that was enough to keep going.
+
+Naming things is hard, so for a while the project was just `yacijs`, short for "yet another
+CSS-in-JS solution". Finding a real name turned into a small yak shave of its own. The whole
+team brainstormed, and `next-yak` won: close to `yacijs`, honest about being Next.js first, and
+a tribute to the [yak shaving](https://en.wiktionary.org/wiki/yak_shaving) behind it.
+
+Then the yak started to grow:
+
+- **Turbopack** We talked with the Turbopack team, especially Tobias Koppers, about how yak
+  could fit in. We found a way, reported a few issues along the road, and the team fixed them.
+- **Vite** With Turbopack done, Vite was a short walk. We talked in the Vite Discord about the
+  best way to build our plugin, and the same SWC plugin ran in a second bundler.
+- **Rsbuild and Storybook** Both came naturally and needed only a little work.
+- **Solid** Ryan Carniato, the creator of Solid, helped us a lot to get `@yak/solid` right.
+- **Qwik** The Qwik team is fixing the issues we reported, so `@yak/qwik` keeps getting better.
+
+The plan was simple to be the best replacement for `styled-components` in Next.js. Yak did that, and then kept going but the name did not keep up. New users saw "next" and assumed that yak was not for their Vite app.
+
+The obvious new name was `yak`, but on npm it looked squatted. We asked npm support about it, and luckily, they gave it to us once we explained why we needed it. Thank you, npm!
+
+## How to migrate from next-yak to @yak/react
+
+The API does not change. `styled`, `css`, `keyframes`, `globalStyle` and the `css` prop work the same and only the steps below change.
+
+### Codemod
+
+We wrote a codemod that does all of it for you. Run it in the root of your project:
+
+```bash
+npx next-yak@10 migrate
+```
+
+Check the diff, run your tests, done. If you prefer to do it by hand, or want to know what the codemod changes, here are the steps:
+
+### 1. Replace the packages
+
+Remove the old packages and install the new ones:
+
+```bash
+npm uninstall next-yak eslint-plugin-yak storybook-addon-yak
+npm install @yak/react
+npm install -D @yak/eslint-plugin @yak/storybook
+```
+
+Only install the packages you used before. If you have `yak-swc` as a direct dependency,
+replace it with `@yak/swc`.
+
+### 2. Update the imports
+
+Replace every `next-yak` import with `@yak/react`. The subpaths stay the same:
+
+```tsx
+import { styled, css } from "next-yak"; // [!code --]
+import { styled, css } from "@yak/react"; // [!code ++]
+
+import { withYak } from "next-yak/withYak"; // [!code --]
+import { withYak } from "@yak/react/withYak"; // [!code ++]
+
+import { viteYak } from "next-yak/vite"; // [!code --]
+import { viteYak } from "@yak/react/vite"; // [!code ++]
+```
+
+Search the whole project, not only the source files: `package.json`, the TypeScript paths,
+the Storybook config, the Jest config, and all the others you might have.
+
+`@yak/swc` only transforms imports from the new package names. If one file still imports from `next-yak`, that file is not compiled, and its styles do not show.
+
+### 3. Update the options
+
+We removed `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings`. Additionally, `experiments.debug` moves to `debug`:
+
+```js title="next.config.mjs"
+export default withYak(
+  {
+    experiments: { // [!code --]
+      transpilationMode: "Css", // [!code --]
+      suppressDeprecationWarnings: true, // [!code --]
+      debug: true, // [!code --]
+    }, // [!code --]
+    debug: true, // [!code ++]
+  },
+  nextConfig,
+);
+```
+
+The Vite and Rsbuild plugins take the same options.
+
+### 4. Remove the :global() wrappers
+
+yak now always compiles to plain CSS. In v9, the Next.js webpack setup compiled to CSS
+Modules, and you needed `:global()` to escape the local scope. That wrapper was deprecated in v9 and `@yak/react` does not support it any more. Remove the wrapper and keep the selector:
+
+```tsx
+const Wrapper = styled.div`
+  :global(.external-class) { // [!code --]
+  .external-class { // [!code ++]
+    color: red;
+  }
+`;
+```
+
+### 5. Update the lint config
+
+The rule `css-global-deprecated` is gone, because `:global()` is gone. Remove it from your
+config. The prefix of all other rules changes to `@yak/`.
+
+For ESLint:
+
+```js title="eslint.config.mjs"
+import yakPlugin from "eslint-plugin-yak"; // [!code --]
+import yakPlugin from "@yak/eslint-plugin"; // [!code ++]
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([yakPlugin.configs.recommended]);
+```
+
+For Oxlint:
+
+```json title=".oxlintrc.json"
+{
+  "jsPlugins": ["eslint-plugin-yak"], // [!code --]
+  "jsPlugins": ["@yak/eslint-plugin"], // [!code ++]
+  "rules": {
+    "yak/css-nesting-operator": "error", // [!code --]
+    "yak/css-global-deprecated": "warn", // [!code --]
+    "yak/enforce-semicolon": "error", // [!code --]
+    "yak/style-conditions": "warn", // [!code --]
+    "@yak/css-nesting-operator": "error", // [!code ++]
+    "@yak/enforce-semicolon": "error", // [!code ++]
+    "@yak/style-conditions": "warn" // [!code ++]
+  }
+}
+```
+
+If you use custom rule names in ESLint, change `yak/` to `@yak/` there too.
+
+### 6. Update Storybook
+
+```ts title=".storybook/main.ts"
+const config = {
+  addons: [
+    "storybook-addon-yak", // [!code --]
+    "@yak/storybook", // [!code ++]
+  ],
+};
+```
+
+### 7. Jest with next/jest
+
+`@yak/react` is ESM only. If you use `next/jest`, add `@yak/react` to `transpilePackages` in your Next.js config. Then Jest can load it:
+
+```js title="next.config.mjs"
+const nextConfig = {
+  transpilePackages: ["@yak/react"],
+};
+```
+
+Then start the dev server and check that your styles show. If something breaks,
+[open an issue](https://github.com/galaxus-labs/yak/issues). We want to know.
+
+## What else is new
+
+The yak got a haircut. The site has new documentation, a new look and this blog. The project is more grown up now, but it still likes to play.
+
+The best toy is the new iteration of our [playground](/playground). Type a styled component and see what yak makes of it: the CSS, the JavaScript, and the folded output. As a bonus, it now shows `@yak/solid` too.
+
+## What stays the same
+
+The team stays the same. We still build and maintain every yak package, and we still look at new frameworks and bundlers. (Parcel v3, we see you. 👀)
+
+yak is possible because of our employer, [Digitec Galaxus](https://www.galaxus.ch). Thank you for the time to work on this project.
+
+Bug, idea, or a question? [Open an issue on GitHub](https://github.com/galaxus-labs/yak/issues),
+or talk to us directly:
+
+- Jan on [Bluesky](https://bsky.app/profile/jantimon.bsky.social) or [X](https://x.com/jantimon)
+- Luca on [Bluesky](https://bsky.app/profile/luca.schneider.is)
+
+## FAQ
+
+### Is next-yak deprecated?
+
+Yes. `next-yak` is deprecated in favor of `@yak/react`. The last version with styling code is
+9.x. `next-yak` 10 only contains the codemod.
+
+### Does next-yak still get updates?
+
+`next-yak` 9.x gets bug fixes until the end of 2026. New features ship only in `@yak/react`.
+
+### Is @yak/react a drop-in replacement for next-yak?
+
+Almost. The API is the same. You change the imports, remove `:global()` wrappers and update a
+few options. `npx next-yak@10 migrate` does that for you. The
+[migration steps](#how-to-migrate-from-next-yak-to-yakreact) show all of it.
+
+### Does @yak/react only work with Next.js?
+
+No. `@yak/react` works with Next.js (webpack and Turbopack), Vite and Rsbuild.
+
+### Is the GitHub repository renamed too?
+
+Yes. `DigitecGalaxus/next-yak` moves to the `galaxus-labs` organization and is now
+[galaxus-labs/yak](https://github.com/galaxus-labs/yak). GitHub redirects the old links, so
+your bookmarks and stars keep working.
+
+### What about Solid and Qwik?
+
+`@yak/solid` and `@yak/qwik` keep their names as they're already in the new naming scheme.

@@ -1,25 +1,134 @@
 ---
 title: yak for Solid
-description: The Solid runtime, what it shares with React, and where the two differ.
+description: "Styled components for Solid 2, with the CSS compiled away at build time. And how Ryan Carniato helped make it fast."
 date: 2026-09-02
 author: The yak team
 draft: true
 type: release
 ---
 
-<Callout title="Draft">
-  This post is not written yet. The outline below is what it will cover.
-</Callout>
+With `@yak/solid`, you write your CSS right next to your Solid components, in template literals,
+with props for the parts that change. At build time, yak moves that CSS into real stylesheets. In
+the browser, only class names and a few CSS variables are left, and your signals drive them.
 
-## What this post will cover
+```tsx
+import { createSignal } from "solid-js";
+import { styled, css } from "@yak/solid";
 
-- What `@yak/solid` is, and which Solid version it needs.
-- The one compiler, the two runtimes: the SWC plugin extracts the same CSS for both.
-- What reactive props mean for a styled component, and why Solid needs its own runtime.
-- Server rendering, and what the e2e suite checks on every commit.
-- What is not supported yet.
+const Hand = styled.div<{ $angle: number }>`
+  background: #009688;
+  transform: rotate(${(props) => props.$angle}deg);
+`;
 
-## Trying it today
+const Button = styled.button<{ $primary?: boolean }>`
+  color: #009688;
+  ${(props) =>
+    props.$primary &&
+    css`
+      background: #009688;
+      color: white;
+    `}
+`;
 
-Install `@yak/solid` and read the [Vite guide](/docs/vite). The Solid setup uses
-the same plugin.
+export default function Clock() {
+  const [angle, setAngle] = createSignal(0);
+  return (
+    <>
+      <Hand $angle={angle()} />
+      <Button $primary onClick={() => setAngle(angle() + 30)}>
+        Tick
+      </Button>
+    </>
+  );
+}
+```
+
+## What yak does
+
+yak is a CSS-in-JS library that does its work at build time. A compiler, written in Rust as an
+SWC plugin, reads your styled components while Vite builds the app:
+
+- The CSS becomes a real stylesheet with generated class names. Vite bundles it like any other
+  CSS file, so the browser downloads and caches it as CSS, not as JavaScript.
+- The component keeps only what it needs at runtime: the class names, and one CSS variable for
+  each dynamic value, like `$angle` above. Nothing injects or parses CSS in the browser.
+
+yak started for React and Next.js. As `@yak/react`, it runs in production at
+[Digitec Galaxus](https://www.galaxus.ch), the largest online shop in Switzerland.
+`@yak/solid` uses the same compiler. Only the small runtime on top is new, and it is written for
+Solid.
+
+[Open the full clock in the playground](/playground?q=H4sIAEPl1WoCA11TXY%2FSQBSdZ37FjYubErdLF1YC5cMPEuO7vhkThjKws0xnmumwQpAQY6I%2BrE9qYkg0%2Fpb%2BMu9MC63y0PZ%2BzLnnnLkEhJLsj318jjSjhr3iC0kFyb6kSvCZf5s%2B6NewmJqNYLMLiNIUa083dNl0DVitEWz%2FOhYqWnoN2NYASHZ4Q%2BVCsAtImXlmv97CEKoDvKDRJ9knD7sBBmMmDdMjF2D4gkbsGGD4ksoZ1B3gcOteXmMHzVN7s9o%2FeL4yRkmoJ5rHVG9AybHg0XK4RXLD0YmQVwDBI2gHjV057jU2n5BzsLw4aJY0G%2F3aDoVnhzxF9iT7hbrTPtbmgq39GdcsMlzJECIlVrG0FSpQu88Ni1NMu5M2fbtKDZ9v%2FEhhRppqaUGTEFrXydoGMZc%2Byb7BVRA87Ncm1vnsYLUfx2f3oJmght8x20%2Byn3DVCfLD7mAZfAcEBXeFcNZqBd3ryBUSeFwBt86T%2FYzfDbbFBYQgV%2FGUadiNJg7oHugUYVbGjRRsbvlTEXmIAz60kzV6BTBVaGQc5ug5tU5JrFMoxPF4IM9%2BCOEsCHqdbtfGRlOZzpWOfaX5gqOtOWLFK5J9BK0MrphX33qJVknqbtx9Xeb0dzO2cHzI%2BxISgss23lyhOb9ysp%2B6txVebNITO1MJRuVJ%2FI8Qumhjq2Jrq7S1ZI%2B6er1eRdm7G9yCPPr9j8457kAIXN4wzY1riO2zKsgtYyHquOTn5y6L%2F05LzP7%2BNzDP4bDTaIDJzor%2BC%2BhPtqADBAAA&output=css&framework=solid) to see the output. It adds a clock
+face and some layout to the example above. Click "Tick" to turn the hand, and look at the CSS and the
+JavaScript that yak generates.
+
+## Built for components that run once
+
+A Solid component runs once, so there is no re-render that could compute the styles again. A styled-components runtime that copies its props at that moment freezes them, and
+your button never turns primary.
+
+`@yak/solid` never copies props. Each styled component does its work in one memo:
+
+- A static `styled.div` becomes a plain CSS class and a single `class` binding.
+- A dynamic value like `${(props) => props.$angle}` becomes a CSS variable on the element's inline
+  `style`. When the signal changes, only the `class` and `style` bindings update. The element
+  stays.
+- Reads inside your CSS are tracked like any other read in Solid. If the CSS never reads
+  `props.theme()`, the component never subscribes to the theme.
+
+## Built with help from Ryan Carniato
+
+We built `@yak/solid` on the Solid 2 release candidates, and Ryan Carniato helped us the whole
+way. He fixed the compiler issues we ran into, for hot reload
+([#3090](https://github.com/solidjs/solid/issues/3090)) and for invalid HTML
+([#3099](https://github.com/solidjs/solid/issues/3099)).
+
+We also spent a lot of time on speed. A rewrite of the runtime
+([#644](https://github.com/DigitecGalaxus/next-yak/pull/644)) made server rendering 6.6 times
+faster. Ryan then used yak as a [benchmark for Solid itself](https://github.com/solidjs/solid/issues/3389),
+made Solid's own primitives as fast as our hand-written code, and sent us
+[a pull request](https://github.com/DigitecGalaxus/next-yak/pull/659) so that `@yak/solid` uses
+them. Thank you, Ryan!
+
+## If you know styled-components
+
+The API follows styled-components: `styled.tag`, `styled(Component)`, `css`, `keyframes`,
+`.attrs()`, transient `$` props that never reach the DOM, and a `css` prop on every element. A few
+things are shaped by Solid:
+
+- `useTheme()` returns an accessor, like a signal. Read `theme().highContrast`, and
+  `props.theme()` inside your CSS. Reading it subscribes to theme changes.
+- Use `class` instead of `className`, also inside `.attrs({ ... })`.
+- Solid compiles JSX itself, so the `css` prop types work as soon as you import `@yak/solid`.
+
+## Status
+
+`@yak/solid` is experimental, because Solid 2 is still a release candidate. We track it closely,
+and breaking changes are possible until Solid 2 is stable. It needs `solid-js` and `@solidjs/web`
+2.0.0-rc.10 or newer, so Solid 1 is not supported.
+
+## Try it
+
+Install the package and the Solid 2 Vite plugin:
+
+```bash
+npm install @yak/solid
+npm install -D @solidjs/vite-plugin@next
+```
+
+Add the yak plugin before `solid()`:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import solid from "@solidjs/vite-plugin";
+import { yak } from "@yak/solid/vite";
+
+export default defineConfig({
+  plugins: [yak(), solid()],
+});
+```
+
+The [`@yak/solid` README](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak-solid)
+covers theming and the `css` prop, and
+[`examples/vite-solid`](https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite-solid)
+is a full app.

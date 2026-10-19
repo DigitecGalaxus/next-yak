@@ -7,6 +7,7 @@ import { CodeBlock } from "@/components/mdx/code-block";
 import { SideBySide } from "@/components/mdx/sideBySide";
 import { Step, Steps } from "@/components/mdx/steps";
 import { Tab, Tabs } from "@/components/mdx/tabs";
+import { ThemeImage } from "@/components/mdx/theme-image";
 import { Popup, PopupContent, PopupTrigger } from "@/components/mdx/twoslash";
 import { externalLinkProps, isExternalHref } from "@/lib/external-link";
 
@@ -29,6 +30,7 @@ export function getMDXComponents(
     Steps,
     Step,
     SideBySide,
+    ThemeImage,
     Popup,
     PopupTrigger,
     PopupContent,
@@ -54,8 +56,10 @@ function MdxImage({ src, width, height, alt = "", ...props }: ComponentPropsWith
 }
 
 const Image = styled.img`
+  display: block;
   max-width: 100%;
   height: auto;
+  margin: 32px 0;
 `;
 
 function makeAnchor(pageUrl?: string) {
