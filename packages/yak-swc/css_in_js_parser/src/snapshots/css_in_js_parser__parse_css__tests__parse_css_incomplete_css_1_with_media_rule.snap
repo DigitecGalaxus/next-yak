@@ -34,6 +34,7 @@ expression: "(state, declarations)"
         },
         pending_css_segment: "",
         paren_depth: 0,
+        brace_depth: 0,
         scope_floor: 0,
     },
     [

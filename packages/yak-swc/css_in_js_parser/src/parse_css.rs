@@ -12,6 +12,9 @@ pub struct ParserState {
   pub current_declaration: Declaration,
   pub pending_css_segment: String,
   pub paren_depth: usize,
+  /// The depth of `{` inside a custom property value
+  /// e.g. --foo: { color: red };
+  pub brace_depth: usize,
   /// The number of locked scopes at the start of `current_scopes`
   /// A `}` can not close a locked scope
   scope_floor: usize,
@@ -28,6 +31,7 @@ impl ParserState {
       current_declaration: Declaration::new(),
       pending_css_segment: String::new(),
       paren_depth: 0,
+      brace_depth: 0,
       scope_floor: 0,
     }
   }
@@ -105,6 +109,11 @@ pub struct ParsedCss {
   pub state: ParserState,
   pub declarations: Vec<Declaration>,
   pub errors: Vec<CssError>,
+  /// The byte position of the `(` or `{` which is still open at the end of the css string
+  /// `None` if all brackets are closed or if the bracket opened in a previous `parse_css` call
+  /// e.g. @media (min-width: 600px {
+  ///             ^
+  pub unclosed_bracket: Option<usize>,
 }
 
 /// All offsets are byte positions in the css string of the `parse_css` call
@@ -162,6 +171,7 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
     state.is_inside_property_value = false;
     state.is_inside_at_rule = false;
     state.paren_depth = 0;
+    state.brace_depth = 0;
     state.current_declaration = Declaration::new();
     state.pending_css_segment.clone() + css_string
   } else {
@@ -174,6 +184,8 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
   let mut errors = Vec::new();
   // Byte position of the current property
   let mut property_start = 0;
+  // Byte position of the outermost open `(` or `{` in a value or an at-rule
+  let mut open_bracket_position = None;
 
   let bytes = css_to_parse.as_bytes();
   // Byte position in `css_string` (without the pending css segment of the previous call)
@@ -239,10 +251,14 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
       }
     }
 
-    // Detect parens outside of strings for property values
+    // Detect parens outside of strings for property values and at-rules
     // e.g.
     // .foo { background: url('https://example.com'); }
-    if state.is_inside_string.is_none() && state.is_inside_property_value {
+    // @apply --foo({ color: red });
+    let was_inside_brackets = state.paren_depth + state.brace_depth > 0;
+    if state.is_inside_string.is_none()
+      && (state.is_inside_property_value || state.is_inside_at_rule)
+    {
       if current_character == '(' {
         state.paren_depth += 1;
       } else if current_character == ')' && state.paren_depth > 0 {
@@ -250,9 +266,37 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
       }
     }
 
-    // Inside a string, just add the character to the current code no matter what
+    // Detect a block as the value of a custom property
+    // e.g. --foo: { color: red };
+    // A `{` after other value text opens a scope
+    // e.g. --foo: red .bar { color: blue; }
+    let is_custom_property_brace = state.is_inside_string.is_none()
+      && state.paren_depth == 0
+      && state.is_inside_property_value
+      && state.current_declaration.property.starts_with("--")
+      && match current_character {
+        '{' => state.brace_depth > 0 || state.current_declaration.value.is_empty(),
+        '}' => state.brace_depth > 0,
+        _ => false,
+      };
+    if is_custom_property_brace {
+      if current_character == '{' {
+        state.brace_depth += 1;
+      } else {
+        state.brace_depth -= 1;
+      }
+    }
+
+    let is_inside_brackets = state.paren_depth + state.brace_depth > 0;
+    if !is_inside_brackets {
+      open_bracket_position = None;
+    } else if !was_inside_brackets {
+      open_bracket_position = Some(position);
+    }
+
+    // Inside a string or brackets, just add the character to the current code no matter what
     // e.g. content: "{ ; } @ !"
-    if state.is_inside_string.is_some() || state.paren_depth > 0 {
+    if state.is_inside_string.is_some() || is_inside_brackets || is_custom_property_brace {
       current_code.push(current_character);
       state.current_declaration.value.push(current_character);
       position += current_character.len_utf8();
@@ -436,6 +480,10 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
     state,
     declarations,
     errors,
+    // A bracket in the pending css segment opened in a previous call
+    unclosed_bracket: open_bracket_position
+      .filter(|&position| position >= pending_css_segment_length)
+      .map(offset),
   }
 }
 
@@ -450,6 +498,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -469,6 +518,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -487,6 +537,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -505,6 +556,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -523,6 +575,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -541,6 +594,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -560,6 +614,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
                 .foo {
@@ -585,6 +640,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
     .foo {
@@ -615,6 +671,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -632,6 +689,7 @@ mod tests {
       state: state1,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -644,6 +702,7 @@ mod tests {
       state: state2,
       declarations: declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
         ;
@@ -664,6 +723,7 @@ mod tests {
       state,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         }
@@ -682,6 +742,7 @@ mod tests {
       state: state1,
       declarations: _,
       errors,
+      ..
     } = parse_css(
       r#"
           .foo {
@@ -693,12 +754,14 @@ mod tests {
       state: state2,
       declarations: _,
       errors,
+      ..
     } = parse_css(r#"20deg) translate(0, -88px) rotate("#, Some(state1));
     assert!(errors.is_empty());
     let ParsedCss {
       state: _,
       declarations: declarations3,
       errors,
+      ..
     } = parse_css(r#"90deg);"#, Some(state2));
     assert!(errors.is_empty());
     assert_eq!(declarations3.len(), 1);
@@ -808,5 +871,134 @@ mod tests {
     assert_eq!(result.errors.len(), 2);
     assert_eq!(&css[result.errors[0].range()], "ä red");
     assert_eq!(&css[result.errors[1].range()], "}");
+  }
+
+  #[test]
+  fn test_parse_css_custom_property_with_block_value() {
+    let result = parse_css(".foo { --a: { color: red }; --b: { foo; bar } }", None);
+    assert!(result.errors.is_empty());
+    assert_eq!(result.state.current_scopes.len(), 0);
+    assert_eq!(result.declarations.len(), 2);
+    assert_eq!(result.declarations[0].property, "--a");
+    assert_eq!(result.declarations[0].value.trim(), "{ color: red }");
+    assert_eq!(result.declarations[1].property, "--b");
+    assert_eq!(result.declarations[1].value.trim(), "{ foo; bar }");
+    for declaration in &result.declarations {
+      assert_eq!(declaration.scope.len(), 1);
+      assert_eq!(declaration.scope[0].name, ".foo");
+    }
+  }
+
+  #[test]
+  fn test_parse_css_block_in_normal_property_value_opens_a_scope() {
+    let result = parse_css(".foo { color: red &:hover { color: blue; } }", None);
+    assert_eq!(result.state.current_scopes.len(), 0);
+    assert_eq!(result.declarations[0].scope.len(), 2);
+    // Only a block at the start of a custom property value is part of the value
+    let result = parse_css(".foo { --a: url(a.css) .bar { color: blue; } }", None);
+    assert_eq!(result.state.current_scopes.len(), 0);
+    assert_eq!(result.declarations[0].property, "color");
+    assert_eq!(result.declarations[0].scope.len(), 2);
+  }
+
+  #[test]
+  fn test_parse_css_block_in_at_rule_parens() {
+    let result = parse_css(
+      ".foo { @apply --mixin({ color: red; }); padding: 0; }",
+      None,
+    );
+    assert!(result.errors.is_empty());
+    assert_eq!(result.state.current_scopes.len(), 0);
+    let padding = result.declarations.last().unwrap();
+    assert_eq!(padding.property, "padding");
+    assert_eq!(padding.scope.len(), 1);
+    assert_eq!(padding.scope[0].name, ".foo");
+  }
+
+  #[test]
+  fn test_parse_css_nested_at_rules() {
+    let result = parse_css(
+      r#"
+        @media (min-width: 600px) {
+          @supports (display: grid) and (not (display: inline-grid)) {
+            .foo {
+              @apply --mixin({ color: red; });
+              --a: { color: red };
+              color: blue;
+            }
+          }
+        }
+      "#,
+      None,
+    );
+    assert!(result.errors.is_empty());
+    assert_eq!(result.state.current_scopes.len(), 0);
+    let color = result.declarations.last().unwrap();
+    assert_eq!(color.property, "color");
+    assert_eq!(
+      color
+        .scope
+        .iter()
+        .map(|scope| scope.name.as_str())
+        .collect::<Vec<_>>(),
+      vec![
+        "@media (min-width: 600px)",
+        "@supports (display: grid) and (not (display: inline-grid))",
+        ".foo"
+      ]
+    );
+  }
+
+  #[test]
+  fn test_parse_css_newer_at_rules() {
+    for css in [
+      "@scope (.card) to (.content) { img { border: 1px solid; } }",
+      ".foo { @container style(--a: 1) { color: red; } }",
+      "@function --double(--a) { result: calc(var(--a) * 2); }",
+      "@starting-style { .foo { opacity: 0; } }",
+      "@layer base, components;",
+    ] {
+      let result = parse_css(css, None);
+      assert!(result.errors.is_empty(), "{css}");
+      assert_eq!(result.state.current_scopes.len(), 0, "{css}");
+      assert_eq!(result.unclosed_bracket, None, "{css}");
+    }
+  }
+
+  #[test]
+  fn test_parse_css_unclosed_bracket() {
+    let css = "@media (min-width: 600px { color: red; }";
+    let result = parse_css(css, None);
+    assert_eq!(result.unclosed_bracket, Some(7));
+    assert_eq!(result.state.paren_depth, 1);
+    let css = ".foo { background: rgb(0 0 0; }";
+    assert_eq!(
+      &css[parse_css(css, None).unclosed_bracket.unwrap()..][..1],
+      "("
+    );
+    let css = ".foo { --a: { color: red; ";
+    assert_eq!(
+      &css[parse_css(css, None).unclosed_bracket.unwrap()..][..1],
+      "{"
+    );
+    // Closed brackets
+    let result = parse_css(".foo { transform: rotate(1deg) scale(2); }", None);
+    assert_eq!(result.unclosed_bracket, None);
+  }
+
+  #[test]
+  fn test_parse_css_unclosed_bracket_of_a_previous_call() {
+    let first = parse_css(".foo { transform: rotate(", None);
+    assert_eq!(first.unclosed_bracket, Some(24));
+    // The bracket opened in the first call
+    let second = parse_css("1deg", Some(first.state));
+    assert_eq!(second.unclosed_bracket, None);
+    assert_eq!(second.state.paren_depth, 1);
+    let third = parse_css(") scale(", Some(second.state));
+    assert_eq!(third.unclosed_bracket, Some(7));
+    let fourth = parse_css("2); }", Some(third.state));
+    assert_eq!(fourth.unclosed_bracket, None);
+    assert_eq!(fourth.state.paren_depth, 0);
+    assert!(fourth.errors.is_empty());
   }
 }

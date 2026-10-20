@@ -134,6 +134,7 @@ mod tests {
       state: _,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
             .foo {
@@ -153,6 +154,7 @@ mod tests {
       state: _,
       declarations: declarations1,
       errors,
+      ..
     } = parse_css(
       r#"
             .foo {
@@ -167,6 +169,7 @@ mod tests {
       state: _,
       declarations: declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
           .foo {
@@ -187,6 +190,7 @@ mod tests {
       state: state1,
       declarations: declarations1,
       errors,
+      ..
     } = parse_css(
       r#"
       .foo {
@@ -201,6 +205,7 @@ mod tests {
       state: _,
       declarations: declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
       }
@@ -231,6 +236,7 @@ mod tests {
       state: state1,
       declarations: declarations1,
       errors,
+      ..
     } = parse_css(
       r#"
       .foo
@@ -242,6 +248,7 @@ mod tests {
       state: _,
       declarations: declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
         {
@@ -266,6 +273,7 @@ mod tests {
       state: state1,
       declarations: declarations1,
       errors,
+      ..
     } = parse_css(
       r#"
       .foo {
@@ -280,6 +288,7 @@ mod tests {
       state: _,
       declarations: mut declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
       }
@@ -306,6 +315,7 @@ mod tests {
       state: _,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
             .foo {
@@ -324,6 +334,7 @@ mod tests {
       state: state1,
       declarations: declarations1,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {
@@ -336,6 +347,7 @@ mod tests {
       state: _,
       declarations: declarations2,
       errors,
+      ..
     } = parse_css(
       r#"
           bar {*/
@@ -361,6 +373,7 @@ mod tests {
       state: _,
       declarations,
       errors,
+      ..
     } = parse_css(
       r#"
         .foo {

@@ -45,3 +45,19 @@ export const AtRules = styled.div`
     color: red;
   }
 `;
+
+export const UnclosedMediaQuery = styled.div`
+  @media (min-width: 600px {
+    color: red;
+  }
+`;
+
+export const UnclosedFunction = styled.div<{ $deg: number }>`
+  transform: rotate(${(p) => p.$deg}deg;
+  color: red;
+`;
+
+export const CustomPropertyBlock = styled.div`
+  --mixin: { color: red };
+  color: blue;
+`;

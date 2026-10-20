@@ -1,6 +1,6 @@
-import { styled, css } from "@yak/react/internal";
+import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7CiAgIHsKICAgIGNvbG9yOiBibHVlOwogIH0KfS55bTd1QkJ1MSB7CiAgIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9LnltN3VCQnUyIHsKICAgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTMgewogIEBtZWRpYSAobWluLXdpZHRoOiA3NjhweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTQgewogIGNvbG9yIHJlZDogOwogIC5mb28gewogICAgbWFyZ2luIDAgOiA7CiAgfQogIHBhZGRpbmc6IDA7Cn0ueW03dUJCdTYgewogIEBtZWRpYSAobWluLXdpZHRoOiA2NDBweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0=";
+import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7CiAgIHsKICAgIGNvbG9yOiBibHVlOwogIH0KfS55bTd1QkJ1MSB7CiAgIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9LnltN3VCQnUyIHsKICAgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTMgewogIEBtZWRpYSAobWluLXdpZHRoOiA3NjhweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTQgewogIGNvbG9yIHJlZDogOwogIC5mb28gewogICAgbWFyZ2luIDAgOiA7CiAgfQogIHBhZGRpbmc6IDA7Cn0ueW03dUJCdTYgewogIEBtZWRpYSAobWluLXdpZHRoOiA2NDBweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdUEgewogIC0tbWl4aW46IHsgY29sb3I6IHJlZCB9OwogIGNvbG9yOiBibHVlOwp9";
 export const EmptySelector = /*YAK EXPORTED STYLED:EmptySelector:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {
   color: red;
@@ -54,3 +54,19 @@ export const AtRules = /*YAK EXPORTED STYLED:AtRules:ym7uBBu6*//*YAK Extracted C
   }
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu6");
+export const UnclosedMediaQuery = /*YAK EXPORTED STYLED:UnclosedMediaQuery:ym7uBBu7*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu7");
+export const UnclosedFunction = /*YAK EXPORTED STYLED:UnclosedFunction:ym7uBBu8*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu8", {
+    "style": {
+        "--ym7uBBu9": /*#__PURE__*/ __yak_unitPostFix((p)=>p.$deg, "deg")
+    }
+});
+export const CustomPropertyBlock = /*YAK EXPORTED STYLED:CustomPropertyBlock:ym7uBBuA*//*YAK Extracted CSS:
+.ym7uBBuA {
+  --mixin: { color: red };
+  color: blue;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuA");

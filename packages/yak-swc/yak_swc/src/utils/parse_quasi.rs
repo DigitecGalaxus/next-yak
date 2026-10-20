@@ -7,6 +7,8 @@ pub struct ParsedQuasi {
   pub declarations: Vec<Declaration>,
   /// Each error with its position in the source file
   pub errors: Vec<(Span, CssError)>,
+  /// The byte position of an open `(` or `{` in the parsed css, see `source_position`
+  pub unclosed_bracket: Option<usize>,
 }
 
 /// Parses the css code of a template quasi
@@ -26,23 +28,13 @@ pub fn parse_quasi(
   let source = &css_code[start..];
   let parsed = parse_css(&source.replace("\\\\", "\\"), state);
 
-  // Each `\\` before the offset is one byte longer in the source than in the parsed css
-  let source_position = |offset: usize| {
-    let escaped_backslashes = source
-      .match_indices("\\\\")
-      .enumerate()
-      .take_while(|(index, (position, _))| position - index < offset)
-      .count();
-    let position = (start + offset + escaped_backslashes).min(quasi.raw.len());
-    quasi.span.lo + BytePos(position as u32)
-  };
   let errors = parsed
     .errors
     .into_iter()
     .map(|error| {
       let range = error.range();
-      let lo = source_position(range.start);
-      let hi = source_position(range.end).max(lo + BytePos(1));
+      let lo = source_position(quasi, start, range.start);
+      let hi = source_position(quasi, start, range.end).max(lo + BytePos(1));
       (Span::new(lo, hi), error)
     })
     .collect();
@@ -51,7 +43,24 @@ pub fn parse_quasi(
     state: parsed.state,
     declarations: parsed.declarations,
     errors,
+    unclosed_bracket: parsed.unclosed_bracket,
   }
+}
+
+/// Maps a byte offset in the parsed css of a quasi to its position in the source file
+/// `start` is the same as in `parse_quasi`
+pub fn source_position(quasi: &TplElement, start: usize, offset: usize) -> BytePos {
+  // Each `\\` before the offset is one byte longer in the source than in the parsed css
+  let escaped_backslashes = quasi
+    .raw
+    .get(start..)
+    .unwrap_or_default()
+    .match_indices("\\\\")
+    .enumerate()
+    .take_while(|(index, (position, _))| position - index < offset)
+    .count();
+  let position = (start + offset + escaped_backslashes).min(quasi.raw.len());
+  quasi.span.lo + BytePos(position as u32)
 }
 
 #[cfg(test)]

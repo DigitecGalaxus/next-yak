@@ -1,4 +1,4 @@
-import { styled, css } from "@yak/react/internal";
+import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const EmptySelector = /*YAK EXPORTED STYLED:EmptySelector:ym7uBBu*//*YAK Extracted CSS:
@@ -54,3 +54,19 @@ export const AtRules = /*YAK EXPORTED STYLED:AtRules:ym7uBBu6*//*YAK Extracted C
   }
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu6");
+export const UnclosedMediaQuery = /*YAK EXPORTED STYLED:UnclosedMediaQuery:ym7uBBu7*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu7");
+export const UnclosedFunction = /*YAK EXPORTED STYLED:UnclosedFunction:ym7uBBu8*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu8", {
+    "style": {
+        "--ym7uBBu9": /*#__PURE__*/ __yak_unitPostFix((p)=>p.$deg, "deg")
+    }
+});
+export const CustomPropertyBlock = /*YAK EXPORTED STYLED:CustomPropertyBlock:ym7uBBuA*//*YAK Extracted CSS:
+:global(.ym7uBBuA) {
+  --mixin: { color: red };
+  color: blue;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBuA");

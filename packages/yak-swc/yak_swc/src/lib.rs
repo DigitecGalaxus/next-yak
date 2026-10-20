@@ -11,7 +11,7 @@ use swc_core::atoms::Wtf8Atom;
 use swc_core::common::comments::Comment;
 use swc_core::common::comments::Comments;
 use swc_core::common::errors::HANDLER;
-use swc_core::common::{Span, Spanned, SyntaxContext, DUMMY_SP};
+use swc_core::common::{BytePos, Span, Spanned, SyntaxContext, DUMMY_SP};
 use swc_core::ecma::visit::{Fold, VisitMutWith};
 use swc_core::ecma::{ast::*, visit::VisitMut};
 use utils::add_suffix_to_expr::add_suffix_to_expr;
@@ -22,7 +22,7 @@ use utils::cross_file_selectors::ImportType;
 use utils::css_variable_dedup::CssVariableDedup;
 use utils::fold::css_prop::HasCSSProp;
 use utils::fold::StyledFold;
-use utils::parse_quasi::{parse_quasi, ParsedQuasi};
+use utils::parse_quasi::{parse_quasi, source_position, ParsedQuasi};
 
 mod variable_visitor;
 use variable_visitor::{ScopedVariableReference, VariableVisitor};
@@ -194,6 +194,12 @@ Use a css mixin instead, for example: const hover = css`&:hover { color: red; }`
 const MISSING_COLON_ERROR: &str = "\
 This declaration has no `:`, so the browser ignores it. \
 Use the form `property: value;`.";
+
+/// Emitted for a `(` or `{` which is still open at the end of a literal,
+/// e.g. styled.div`@media (min-width: 600px { color: red; }`
+const UNCLOSED_BRACKET_ERROR: &str = "\
+This bracket is never closed, so yak reads all CSS after it as part of the same statement.\n\
+Add the missing `)` or `}`.";
 
 pub struct TransformVisitor<GenericComments>
 where
@@ -396,6 +402,12 @@ where
     // e.g. styled.button`color: ${primary};` => [TplElement, Expr, TplElement]
     // Span of the runtime interpolation before the current quasi
     let mut previous_runtime_span: Option<Span> = None;
+    // A nested literal can start inside the brackets of its parent
+    let initial_bracket_depth = css_state
+      .as_ref()
+      .map_or(0, |state| state.paren_depth + state.brace_depth);
+    // The quasi index, the quasi offset and the parsed css offset of the open bracket
+    let mut open_bracket: Option<(usize, usize, usize)> = None;
     while let Some(pair) = template_iter.next() {
       let is_last_pair = pair.is_last;
       let quasi = pair.quasi;
@@ -417,6 +429,7 @@ where
         state: new_state,
         declarations: new_declarations,
         errors,
+        unclosed_bracket,
       } = parse_quasi(quasi, &css_code, css_code_offset, css_state);
       if !self.expanding_constant_mixin {
         for (span, error) in errors {
@@ -439,6 +452,23 @@ where
             handler.struct_span_err(span, message).emit();
           });
         }
+      }
+      // The span is only computed for the error
+      // e.g. styled.div`@media (min-width: 600px { color: red; }`
+      if let Some(offset) = unclosed_bracket {
+        open_bracket = Some((pair.index, css_code_offset, offset));
+      }
+      if is_last_pair
+        && !self.expanding_constant_mixin
+        && new_state.paren_depth + new_state.brace_depth > initial_bracket_depth
+      {
+        let span = open_bracket.map_or(quasi.span, |(index, start, offset)| {
+          let lo = source_position(&quasis[index], start, offset);
+          Span::new(lo, lo + BytePos(1))
+        });
+        HANDLER.with(|handler| {
+          handler.struct_span_err(span, UNCLOSED_BRACKET_ERROR).emit();
+        });
       }
       // Set again below if the expression after this quasi is a runtime value
       previous_runtime_span = None;
@@ -485,6 +515,7 @@ where
             state: new_state,
             declarations: new_declarations,
             errors,
+            ..
           } = parse_css(
             format!("{:.4}", evaluated_math_calculation)
               .trim_end_matches('0')
@@ -505,6 +536,7 @@ where
               state: new_state,
               declarations: new_declarations,
               errors,
+              ..
             } = parse_css(referenced_yak_css, css_state);
             debug_assert!(errors.is_empty());
             css_state = Some(new_state);
@@ -547,6 +579,7 @@ where
               state: new_state,
               errors,
               declarations: _,
+              ..
             } = parse_css(&cross_file_import_token, css_state);
             debug_assert!(errors.is_empty());
             css_state = Some(new_state);
@@ -566,6 +599,7 @@ where
                 state: new_state,
                 declarations,
                 errors,
+                ..
               } = parse_css(&literal_value, css_state);
               // The constant must not end a declaration or open or close a block
               // e.g. const reset = "margin: 0; padding: 0;";
@@ -619,6 +653,7 @@ where
                   state: new_state,
                   errors,
                   declarations: _,
+                  ..
                 } = match &self.import_mode.transpilation_mode() {
                   TranspilationMode::CssModule => {
                     parse_css(&format!("global({})", keyframe_name), css_state)
@@ -845,6 +880,7 @@ ${{() => {var}}};\n",
               state: new_state,
               errors,
               declarations: _,
+              ..
             } = parse_css(&format!("var(--{})", css_variable_name), css_state);
             debug_assert!(errors.is_empty());
             css_state = Some(new_state);

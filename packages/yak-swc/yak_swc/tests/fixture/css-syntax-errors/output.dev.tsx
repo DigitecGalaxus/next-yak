@@ -1,4 +1,4 @@
-import { styled, css } from "@yak/react/internal";
+import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
 import "./input.yak.module.css!=!./input?./input.yak.module.css";
 export const EmptySelector = /*YAK EXPORTED STYLED:EmptySelector:input_EmptySelector_m7uBBu*//*YAK Extracted CSS:
@@ -65,4 +65,26 @@ export const AtRules = /*YAK EXPORTED STYLED:AtRules:input_AtRules_m7uBBu*//*YAK
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_AtRules_m7uBBu"), {
     "displayName": "AtRules"
+});
+export const UnclosedMediaQuery = /*YAK EXPORTED STYLED:UnclosedMediaQuery:input_UnclosedMediaQuery_m7uBBu*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_UnclosedMediaQuery_m7uBBu"), {
+    "displayName": "UnclosedMediaQuery"
+});
+export const UnclosedFunction = /*YAK EXPORTED STYLED:UnclosedFunction:input_UnclosedFunction_m7uBBu*//*YAK Extracted CSS:
+
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_UnclosedFunction_m7uBBu", {
+    "style": {
+        "--input_UnclosedFunction__transform_m7uBBu": /*#__PURE__*/ __yak_unitPostFix((p)=>p.$deg, "deg")
+    }
+}), {
+    "displayName": "UnclosedFunction"
+});
+export const CustomPropertyBlock = /*YAK EXPORTED STYLED:CustomPropertyBlock:input_CustomPropertyBlock_m7uBBu*//*YAK Extracted CSS:
+:global(.input_CustomPropertyBlock_m7uBBu) {
+  --mixin: { color: red };
+  color: blue;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_CustomPropertyBlock_m7uBBu"), {
+    "displayName": "CustomPropertyBlock"
 });

@@ -48,3 +48,19 @@
     :   ^^^^^^^^^
  41 | `;
     `----
+  x This bracket is never closed, so yak reads all CSS after it as part of the same statement.
+  | Add the missing `)` or `}`.
+    ,-[input.js:50:1]
+ 49 | export const UnclosedMediaQuery = styled.div`
+ 50 |   @media (min-width: 600px {
+    :          ^
+ 51 |     color: red;
+    `----
+  x This bracket is never closed, so yak reads all CSS after it as part of the same statement.
+  | Add the missing `)` or `}`.
+    ,-[input.js:56:1]
+ 55 | export const UnclosedFunction = styled.div<{ $deg: number }>`
+ 56 |   transform: rotate(${(p) => p.$deg}deg;
+    :                    ^
+ 57 |   color: red;
+    `----
