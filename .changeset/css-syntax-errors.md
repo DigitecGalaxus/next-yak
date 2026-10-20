@@ -9,7 +9,7 @@ Before, yak dropped or moved this CSS without an error, or crashed:
 - a `}` with no matching `{`
 - a `{` with no selector before it
 - a declaration with no `:`, like `color red;`
-- a selector that comes from a function, like `${(p) => p.$selector} {`
+- a selector or media query that comes from a runtime value, like `${media.up("md")} {`
 - a string constant with a whole declaration or rule, like `const reset = "margin: 0;"`
 
 Also fix `&:hover { color: blue }` without a semicolon. Yak applied `color: blue` without the hover.

@@ -176,11 +176,13 @@ const EMPTY_SELECTOR_ERROR: &str = "\
 This block has no selector, so its CSS applies to no element. \
 Add a selector before the `{`, for example `&:hover {`.";
 
-/// Emitted for a function interpolation as a selector,
-/// e.g. styled.div`${(p) => p.$selector} { color: red; }`
-const DYNAMIC_SELECTOR_ERROR: &str = "\
-A selector cannot come from a function, because CSS variables work only in property values.\n\
-Use a static selector like `[data-theme=\"dark\"] & {`, or use a constant instead of a function.";
+/// Emitted for a runtime value before a `{`,
+/// e.g. styled.div`${({ theme }) => theme.breakpoints.up("md")} { color: red; }`
+const DYNAMIC_BLOCK_ERROR: &str = "\
+A block cannot start with a runtime value, because the selector or media query must be known at build time.\n\
+Use a constant instead, for example:\n\n\
+const desktop = \"@media (min-width: 768px)\";\n\
+styled.div`${desktop} { ... }`";
 
 /// Emitted for a string constant with a whole declaration or rule,
 /// e.g. const reset = "margin: 0; padding: 0;";
@@ -392,8 +394,8 @@ where
     let mut template_iter = TemplateIterator::new(&mut n.tpl);
     // Javascript Quasi (TplElement) and Expressions (Exprs) are interleaved
     // e.g. styled.button`color: ${primary};` => [TplElement, Expr, TplElement]
-    // Span of the function interpolation before the current quasi
-    let mut previous_function_span: Option<Span> = None;
+    // Span of the runtime interpolation before the current quasi
+    let mut previous_runtime_span: Option<Span> = None;
     while let Some(pair) = template_iter.next() {
       let is_last_pair = pair.is_last;
       let quasi = pair.quasi;
@@ -420,15 +422,15 @@ where
         for (span, error) in errors {
           let (span, message) = match error {
             CssError::UnexpectedClosingBrace { .. } => (span, UNEXPECTED_CLOSING_BRACE_ERROR),
-            // The `{` follows a function with only whitespace between them
-            // e.g. styled.div`${(p) => p.$selector} { color: red; }`
+            // The `{` follows a runtime value with only whitespace between them
+            // e.g. styled.div`${media.up("md")} { color: red; }`
             CssError::EmptySelector { .. }
-              if previous_function_span.is_some()
+              if previous_runtime_span.is_some()
                 && quasi.raw[..(span.lo - quasi.span.lo).0 as usize]
                   .trim()
                   .is_empty() =>
             {
-              (previous_function_span.unwrap(), DYNAMIC_SELECTOR_ERROR)
+              (previous_runtime_span.unwrap(), DYNAMIC_BLOCK_ERROR)
             }
             CssError::EmptySelector { .. } => (span, EMPTY_SELECTOR_ERROR),
             CssError::MissingColon { .. } => (span, MISSING_COLON_ERROR),
@@ -438,13 +440,8 @@ where
           });
         }
       }
-      // The span of a function after this quasi
-      // e.g. (p) => p.$selector in styled.div`${(p) => p.$selector} { color: red; }`
-      previous_function_span = pair
-        .expr
-        .as_ref()
-        .filter(|expr| expr.is_arrow() || expr.is_fn_expr())
-        .map(|expr| expr.span());
+      // Set again below if the expression after this quasi is a runtime value
+      previous_runtime_span = None;
       css_code_offset = 0;
       css_state = Some(new_state);
 
@@ -862,6 +859,7 @@ ${{() => {var}}};\n",
           // it is probably a nested css expression
           if !is_inside_property_value {
             runtime_expressions.push(*expr.clone());
+            previous_runtime_span = Some(expr.span());
           }
 
           // revert to the css state before the current expression or literal

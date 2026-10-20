@@ -5,32 +5,46 @@
    :   ^
  6 | `;
    `----
-  x A selector cannot come from a function, because CSS variables work only in property values.
-  | Use a static selector like `[data-theme="dark"] & {`, or use a constant instead of a function.
+  x A block cannot start with a runtime value, because the selector or media query must be known at build time.
+  | Use a constant instead, for example:
+  | 
+  | const desktop = "@media (min-width: 768px)";
+  | styled.div`${desktop} { ... }`
     ,-[input.js:9:1]
   8 | export const DynamicSelector = styled.div<{ $selector: string }>`
   9 |   ${(p) => p.$selector} {
     :     ^^^^^^^^^^^^^^^^^^
  10 |     color: red;
     `----
-  x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
-    ,-[input.js:15:1]
- 14 | export const MissingColon = styled.div`
- 15 |   color red;
-    :   ^^^^^^^^^
- 16 |   .foo { margin 0 }
+  x A block cannot start with a runtime value, because the selector or media query must be known at build time.
+  | Use a constant instead, for example:
+  | 
+  | const desktop = "@media (min-width: 768px)";
+  | styled.div`${desktop} { ... }`
+    ,-[input.js:19:1]
+ 18 | export const DynamicMediaQuery = styled.div`
+ 19 |   ${media.up("768px")} {
+    :     ^^^^^^^^^^^^^^^^^
+ 20 |     color: red;
     `----
   x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
-    ,-[input.js:16:1]
- 15 |   color red;
- 16 |   .foo { margin 0 }
+    ,-[input.js:33:1]
+ 32 | export const MissingColon = styled.div`
+ 33 |   color red;
+    :   ^^^^^^^^^
+ 34 |   .foo { margin 0 }
+    `----
+  x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
+    ,-[input.js:34:1]
+ 33 |   color red;
+ 34 |   .foo { margin 0 }
     :          ^^^^^^^^^
- 17 |   padding: 0;
+ 35 |   padding: 0;
     `----
   x This declaration has no `:`, so the browser ignores it. Use the form `property: value;`.
-    ,-[input.js:22:1]
- 21 |   padding: 0;
- 22 |   color red
+    ,-[input.js:40:1]
+ 39 |   padding: 0;
+ 40 |   color red
     :   ^^^^^^^^^
- 23 | `;
+ 41 | `;
     `----

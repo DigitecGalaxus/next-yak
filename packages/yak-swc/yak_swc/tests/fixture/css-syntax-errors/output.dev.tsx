@@ -20,6 +20,28 @@ export const DynamicSelector = /*YAK EXPORTED STYLED:DynamicSelector:input_Dynam
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_DynamicSelector_m7uBBu", (p)=>p.$selector), {
     "displayName": "DynamicSelector"
 });
+const media = {
+    up: (width: string)=>`@media (min-width: ${width})`
+};
+export const DynamicMediaQuery = /*YAK EXPORTED STYLED:DynamicMediaQuery:input_DynamicMediaQuery_m7uBBu*//*YAK Extracted CSS:
+:global(.input_DynamicMediaQuery_m7uBBu) {
+   {
+    color: red;
+  }
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_DynamicMediaQuery_m7uBBu", media.up("768px")), {
+    "displayName": "DynamicMediaQuery"
+});
+const desktop = "@media (min-width: 768px)";
+export const ConstantMediaQuery = /*YAK EXPORTED STYLED:ConstantMediaQuery:input_ConstantMediaQuery_m7uBBu*//*YAK Extracted CSS:
+:global(.input_ConstantMediaQuery_m7uBBu) {
+  @media (min-width: 768px) {
+    color: red;
+  }
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_ConstantMediaQuery_m7uBBu"), {
+    "displayName": "ConstantMediaQuery"
+});
 export const MissingColon = /*YAK EXPORTED STYLED:MissingColon:input_MissingColon_m7uBBu*//*YAK Extracted CSS:
 :global(.input_MissingColon_m7uBBu) {
   color red: ;

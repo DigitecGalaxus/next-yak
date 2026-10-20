@@ -1,6 +1,6 @@
 import { styled, css } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7CiAgIHsKICAgIGNvbG9yOiBibHVlOwogIH0KfS55bTd1QkJ1MSB7CiAgIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9LnltN3VCQnUyIHsKICBjb2xvciByZWQ6IDsKICAuZm9vIHsKICAgIG1hcmdpbiAwIDogOwogIH0KICBwYWRkaW5nOiAwOwp9LnltN3VCQnU0IHsKICBAbWVkaWEgKG1pbi13aWR0aDogNjQwcHgpIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9";
+import "data:text/css;base64,LnltN3VCQnUgewogIGNvbG9yOiByZWQ7CiAgIHsKICAgIGNvbG9yOiBibHVlOwogIH0KfS55bTd1QkJ1MSB7CiAgIHsKICAgIGNvbG9yOiByZWQ7CiAgfQp9LnltN3VCQnUyIHsKICAgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTMgewogIEBtZWRpYSAobWluLXdpZHRoOiA3NjhweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0ueW03dUJCdTQgewogIGNvbG9yIHJlZDogOwogIC5mb28gewogICAgbWFyZ2luIDAgOiA7CiAgfQogIHBhZGRpbmc6IDA7Cn0ueW03dUJCdTYgewogIEBtZWRpYSAobWluLXdpZHRoOiA2NDBweCkgewogICAgY29sb3I6IHJlZDsKICB9Cn0=";
 export const EmptySelector = /*YAK EXPORTED STYLED:EmptySelector:ym7uBBu*//*YAK Extracted CSS:
 .ym7uBBu {
   color: red;
@@ -16,23 +16,41 @@ export const DynamicSelector = /*YAK EXPORTED STYLED:DynamicSelector:ym7uBBu1*//
   }
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu1", (p)=>p.$selector);
-export const MissingColon = /*YAK EXPORTED STYLED:MissingColon:ym7uBBu2*//*YAK Extracted CSS:
+const media = {
+    up: (width: string)=>`@media (min-width: ${width})`
+};
+export const DynamicMediaQuery = /*YAK EXPORTED STYLED:DynamicMediaQuery:ym7uBBu2*//*YAK Extracted CSS:
 .ym7uBBu2 {
+   {
+    color: red;
+  }
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2", media.up("768px"));
+const desktop = "@media (min-width: 768px)";
+export const ConstantMediaQuery = /*YAK EXPORTED STYLED:ConstantMediaQuery:ym7uBBu3*//*YAK Extracted CSS:
+.ym7uBBu3 {
+  @media (min-width: 768px) {
+    color: red;
+  }
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu3");
+export const MissingColon = /*YAK EXPORTED STYLED:MissingColon:ym7uBBu4*//*YAK Extracted CSS:
+.ym7uBBu4 {
   color red: ;
   .foo {
     margin 0 : ;
   }
   padding: 0;
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu4");
 export const missingColonAtEnd = /*YAK EXPORTED MIXIN:missingColonAtEnd
 padding: 0;
 color red: ;
 */ /*#__PURE__*/ css();
-export const AtRules = /*YAK EXPORTED STYLED:AtRules:ym7uBBu4*//*YAK Extracted CSS:
-.ym7uBBu4 {
+export const AtRules = /*YAK EXPORTED STYLED:AtRules:ym7uBBu6*//*YAK Extracted CSS:
+.ym7uBBu6 {
   @media (min-width: 640px) {
     color: red;
   }
 }
-*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu4");
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu6");

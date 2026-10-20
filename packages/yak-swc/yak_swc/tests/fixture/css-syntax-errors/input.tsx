@@ -11,6 +11,24 @@ export const DynamicSelector = styled.div<{ $selector: string }>`
   }
 `;
 
+const media = {
+  up: (width: string) => `@media (min-width: ${width})`,
+};
+
+export const DynamicMediaQuery = styled.div`
+  ${media.up("768px")} {
+    color: red;
+  }
+`;
+
+const desktop = "@media (min-width: 768px)";
+
+export const ConstantMediaQuery = styled.div`
+  ${desktop} {
+    color: red;
+  }
+`;
+
 export const MissingColon = styled.div`
   color red;
   .foo { margin 0 }
