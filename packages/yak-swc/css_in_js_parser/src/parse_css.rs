@@ -172,24 +172,17 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
   let mut back_slashes = 0;
   let mut declarations = Vec::new();
   let mut errors = Vec::new();
-  // Char position of the current property
+  // Byte position of the current property
   let mut property_start = 0;
 
-  let chars: Vec<char> = css_to_parse.chars().collect();
+  let bytes = css_to_parse.as_bytes();
   // Byte position in `css_string` (without the pending css segment of the previous call)
-  // Only errors need it, so it is not tracked for each char
-  let offset = |char_position: usize| {
-    css_to_parse
-      .char_indices()
-      .nth(char_position)
-      .map_or(css_to_parse.len(), |(byte_position, _)| byte_position)
-      .saturating_sub(pending_css_segment_length)
-  };
-  let mut char_position = 0;
+  let offset = |position: usize| position.saturating_sub(pending_css_segment_length);
+  // Byte position in `css_to_parse`
+  let mut position = 0;
 
-  while char_position < chars.len() {
+  while let Some(current_character) = css_to_parse[position..].chars().next() {
     let previous_back_slashes = back_slashes;
-    let current_character = chars[char_position];
 
     // Count backslashes to detect escaped characters
     // e.g.:
@@ -204,27 +197,25 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
     match state.current_comment_state {
       // Parse until the end of the current multi line comment is reached
       CommentStateType::MultiLine => {
-        while char_position < chars.len() {
-          if chars[char_position] == '*'
-            && char_position + 1 < chars.len()
-            && chars[char_position + 1] == '/'
-          {
+        // The search is bytewise, as no byte of a multi-byte char matches an ASCII char
+        while position < bytes.len() {
+          if bytes[position] == b'*' && bytes.get(position + 1) == Some(&b'/') {
             state.current_comment_state = CommentStateType::None;
-            char_position += 2;
+            position += 2;
             break;
           }
-          char_position += 1;
+          position += 1;
         }
         continue;
       }
       // Parse until the end of the current multi line comment is reached
       CommentStateType::SingleLine => {
-        while char_position < chars.len() {
-          if chars[char_position] == '\n' {
+        while position < bytes.len() {
+          if bytes[position] == b'\n' {
             state.current_comment_state = CommentStateType::None;
             break;
           }
-          char_position += 1;
+          position += 1;
         }
         continue;
       }
@@ -264,31 +255,25 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
     if state.is_inside_string.is_some() || state.paren_depth > 0 {
       current_code.push(current_character);
       state.current_declaration.value.push(current_character);
-      char_position += 1;
+      position += current_character.len_utf8();
       continue;
     }
     // Detect multi-line comments
     // e.g.
     // .foo { color: red; } /* This is a comment */
     //                      ^
-    else if current_character == '/'
-      && char_position + 1 < chars.len()
-      && chars[char_position + 1] == '*'
-    {
+    else if current_character == '/' && bytes.get(position + 1) == Some(&b'*') {
       state.current_comment_state = CommentStateType::MultiLine;
-      char_position += 2;
+      position += 2;
       continue;
     }
     // Detect single line comments
     // e.g.
     // .foo { color: red; } // This is a comment
     //                       ^
-    else if current_character == '/'
-      && char_position + 1 < chars.len()
-      && chars[char_position + 1] == '/'
-    {
+    else if current_character == '/' && bytes.get(position + 1) == Some(&b'/') {
       state.current_comment_state = CommentStateType::SingleLine;
-      char_position += 2;
+      position += 2;
       continue;
     }
     // Detect scope closing
@@ -302,7 +287,7 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
       if is_missing_colon(&state) {
         errors.push(CssError::MissingColon {
           start: offset(property_start),
-          end: offset(char_position),
+          end: offset(position),
         });
       }
       current_code.clear();
@@ -325,7 +310,7 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
         state.current_scopes.pop();
       } else {
         errors.push(CssError::UnexpectedClosingBrace {
-          offset: offset(char_position),
+          offset: offset(position),
         });
       }
     }
@@ -341,7 +326,7 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
       //                  ^
       if current_code.trim().is_empty() {
         errors.push(CssError::EmptySelector {
-          offset: offset(char_position),
+          offset: offset(position),
         });
       }
       state.current_scopes.push(CssScope {
@@ -366,7 +351,7 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
       if is_missing_colon(&state) {
         errors.push(CssError::MissingColon {
           start: offset(property_start),
-          end: offset(char_position),
+          end: offset(position),
         });
       }
       current_code.clear();
@@ -408,13 +393,13 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
     // ^
     // Trim any leading whitespace in front of the value
     else {
-      let previous_character = if char_position == 0 {
+      let previous_character = if position == 0 {
         state.current_declaration.value.chars().last()
       } else {
-        Some(chars[char_position - 1])
+        css_to_parse[..position].chars().next_back()
       };
 
-      let is_previous_character_empty = (char_position > 0 && current_code.is_empty())
+      let is_previous_character_empty = (position > 0 && current_code.is_empty())
         || previous_character.is_none_or(|c| c.is_whitespace());
       let is_current_character_empty = current_character.is_whitespace();
 
@@ -426,14 +411,14 @@ pub fn parse_css(css_string: &str, initial_state: Option<ParserState>) -> Parsed
           }
         } else {
           if state.current_declaration.property.is_empty() {
-            property_start = char_position;
+            property_start = position;
           }
           state.current_declaration.property.push(current_character);
         }
       }
     }
 
-    char_position += 1;
+    position += current_character.len_utf8();
   }
 
   // Store any uncategorized CSS code for later parsing
@@ -817,5 +802,11 @@ mod tests {
       vec![CssError::UnexpectedClosingBrace { offset: 15 }]
     );
     assert_eq!(&"content: \"ä\"; }"[result.errors[0].range()], "}");
+    // Multi-byte chars in comments and in a property
+    let css = "/* ä */ // ü\n ä red; }";
+    let result = parse_css(css, None);
+    assert_eq!(result.errors.len(), 2);
+    assert_eq!(&css[result.errors[0].range()], "ä red");
+    assert_eq!(&css[result.errors[1].range()], "}");
   }
 }
