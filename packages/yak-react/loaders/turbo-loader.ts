@@ -34,9 +34,9 @@ export default async function cssExtractLoader(
 
   const {
     yakPluginOptions,
-    yakOptions: { experiments },
+    yakOptions: { debug },
   } = this.getOptions();
-  const debugLog = createDebugLogger(experiments?.debug, this.rootContext);
+  const debugLog = createDebugLogger(debug, this.rootContext);
   const resolveTurbopack = this.getResolve({});
   const transform = createTransform(yakPluginOptions, yakSwcPluginPath);
 

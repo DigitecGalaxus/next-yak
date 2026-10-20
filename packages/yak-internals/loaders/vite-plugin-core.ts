@@ -101,7 +101,7 @@ async function viteYakImpl(
   userOptions: ViteYakPluginOptions,
 ): Promise<Plugin> {
   const yakOptions: ViteYakPluginOptions = {
-    experiments: userOptions.experiments,
+    debug: userOptions.debug,
     minify: userOptions.minify ?? process.env.NODE_ENV === "production",
     prefix: userOptions.prefix,
     foldStatic: userOptions.foldStatic ?? library.foldStatic,
@@ -158,7 +158,7 @@ async function viteYakImpl(
     },
     configResolved(config) {
       basePath = basePath ? resolve(config.root, basePath) : config.root;
-      debugLog = createDebugLogger(yakOptions.experiments?.debug, basePath);
+      debugLog = createDebugLogger(yakOptions.debug, basePath);
       isServe = config.command === "serve";
     },
     resolveId: {
