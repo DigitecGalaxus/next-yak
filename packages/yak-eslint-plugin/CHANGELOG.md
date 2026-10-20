@@ -1,5 +1,12 @@
 # eslint-plugin-yak
 
+## 2.0.0-rc.1
+
+### Major Changes
+
+- 3724852: `@yak/eslint-plugin` needs Node.js 22.18 or later. CommonJS configs can now load it with `require()`.
+- e030a2d: Remove the rule `css-global-deprecated`. The compiler now rejects `:global()` with a build error.
+
 ## 2.0.0-rc.0
 
 ### Major Changes

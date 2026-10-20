@@ -1,5 +1,23 @@
 # next-yak
 
+## 10.0.0-rc.1
+
+### Major Changes
+
+- e030a2d: Remove CSS Modules. `@yak/react` now always writes plain CSS. Remove the options `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings` from the config.
+- c04e52c: Move the option `experiments.debug` to `debug`.
+- 9496360: `@yak/react` is now ESM only and needs Node.js 22.18 or later.
+
+### Patch Changes
+
+- 5d9ada3: Update dependencies and add support for next.js 16.4
+- b48da1f: Resolve cross-file constants, mixins and styled components that are exported with a local export list (`export { x }`, `export { x as y }`, `export { x as default }`) or re-exported from an import.
+- daacb46: Fix Rsbuild builds with `@rsbuild/plugin-babel` failing with ".inputSourceMap must be a boolean, object, or undefined"
+- Updated dependencies [5d9ada3]
+- Updated dependencies [e030a2d]
+- Updated dependencies [e030a2d]
+  - @yak/swc@10.0.0-rc.1
+
 ## 10.0.0-rc.0
 
 ### Major Changes

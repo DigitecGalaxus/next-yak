@@ -1,5 +1,19 @@
 # @yak/solid
 
+## 0.4.0-rc.1
+
+### Minor Changes
+
+- c04e52c: Move the option `experiments.debug` of the Vite plugin to `debug`.
+- 3724852: `@yak/solid` needs Node.js 22.18 or later. CommonJS code can now load it with `require()`.
+
+### Patch Changes
+
+- Updated dependencies [5d9ada3]
+- Updated dependencies [e030a2d]
+- Updated dependencies [e030a2d]
+  - @yak/swc@10.0.0-rc.1
+
 ## 0.3.1-rc.0
 
 ### Patch Changes
