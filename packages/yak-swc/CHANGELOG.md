@@ -1,5 +1,16 @@
 # yak-swc
 
+## 10.0.0-rc.1
+
+### Major Changes
+
+- e030a2d: Remove the CSS Modules output. The option `importMode.transpilation` and the option `suppressDeprecationWarnings` no longer exist.
+- e030a2d: A `:global()` selector is now a build error.
+
+### Patch Changes
+
+- 5d9ada3: Update dependencies and add support for next.js 16.4
+
 ## 10.0.0-rc.0
 
 ### Major Changes
