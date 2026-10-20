@@ -1,5 +1,13 @@
 # next-yak
 
+## 9.10.3
+
+### Patch Changes
+
+- e85d8b7: Resolve cross-file constants, mixins and styled components that are exported with a local export list (`export { x }`, `export { x as y }`, `export { x as default }`) or re-exported from an import.
+- 134de05: Fix Rsbuild builds with `@rsbuild/plugin-babel` failing with ".inputSourceMap must be a boolean, object, or undefined"
+- yak-swc@9.10.3
+
 ## 9.10.2
 
 ### Patch Changes
