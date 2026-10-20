@@ -21,20 +21,26 @@ use swc_core::{
 /// for the truthy branch and an optional class name for the falsy branch
 pub(super) type ConditionSegment = (Box<Expr>, Wtf8Atom, Option<Wtf8Atom>);
 
-/// Folds a compiled css expression into a className expression
+/// Folds a compiled css expression into a className expression and the spans
+/// of the folded css calls
 /// Returns `None` if the expression is not statically foldable
-pub(super) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
+pub(super) fn fold_css_expr(
+  expr: &Expr,
+  yak_imports: &YakImports,
+) -> Option<(Box<Expr>, Vec<Span>)> {
   match unwrap_type_casts(expr) {
     Expr::Call(call) => fold_css_call(call, yak_imports),
     Expr::Cond(cond) => {
-      let cons = fold_css_branch(&cond.cons, yak_imports)?;
-      let alt = fold_css_branch(&cond.alt, yak_imports)?;
-      Some(Box::new(Expr::Cond(CondExpr {
+      let (cons, mut folded_call_spans) = fold_css_branch(&cond.cons, yak_imports)?;
+      let (alt, alt_folded_call_spans) = fold_css_branch(&cond.alt, yak_imports)?;
+      folded_call_spans.extend(alt_folded_call_spans);
+      let class_name_expr = Box::new(Expr::Cond(CondExpr {
         span: cond.span,
         test: cond.test.clone(),
         cons,
         alt,
-      })))
+      }));
+      Some((class_name_expr, folded_call_spans))
     }
     // `cond && css("x")` folds to `cond ? "x" : ""`. There is no base class to
     // concatenate onto, so the class name carries no leading space
@@ -43,12 +49,13 @@ pub(super) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box
       // keep the span of the css call so the /*YAK Extracted CSS:*/ comment
       // (parsed by extractCss.ts) stays attached
       let css_call_span = unwrap_type_casts(&bin.right).span();
-      Some(Box::new(Expr::Cond(CondExpr {
+      let class_name_expr = Box::new(Expr::Cond(CondExpr {
         span: css_call_span,
         test: bin.left.clone(),
         cons: str_expr(class_name),
         alt: str_expr("".into()),
-      })))
+      }));
+      Some((class_name_expr, vec![css_call_span]))
     }
     _ => None,
   }
@@ -56,9 +63,9 @@ pub(super) fn fold_css_expr(expr: &Expr, yak_imports: &YakImports) -> Option<Box
 
 /// Folds one branch of a css prop ternary: either a foldable css expression or
 /// a falsy value, which applies no styles and therefore yields no class name
-fn fold_css_branch(expr: &Expr, yak_imports: &YakImports) -> Option<Box<Expr>> {
+fn fold_css_branch(expr: &Expr, yak_imports: &YakImports) -> Option<(Box<Expr>, Vec<Span>)> {
   if is_falsy_css_value(expr) {
-    return Some(str_expr("".into()));
+    return Some((str_expr("".into()), Vec::new()));
   }
   fold_css_expr(expr, yak_imports)
 }
@@ -79,7 +86,7 @@ fn is_falsy_css_value(expr: &Expr) -> bool {
 /// Folds one compiled `css(...)` call: one optional static class string plus
 /// zero or more `() => cond && css("x")` or `() => cond ? css("x") : css("y")`
 /// condition arrows
-fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>> {
+fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<(Box<Expr>, Vec<Span>)> {
   if !is_yak_css_callee(&call.callee, yak_imports) {
     return None;
   }
@@ -116,7 +123,7 @@ fn fold_css_call(call: &CallExpr, yak_imports: &YakImports) -> Option<Box<Expr>>
     Expr::Bin(bin) => bin.span = call.span,
     _ => {}
   }
-  Some(class_name_expr)
+  Some((class_name_expr, vec![call.span]))
 }
 
 /// Appends one conditional class name segment to a className expression:

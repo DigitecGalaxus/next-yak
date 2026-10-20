@@ -266,7 +266,7 @@ const Optimizable = ({ active, size, i: i1 }: {
 .ym7uBBu- {
   color: orange;
 }
-*/ /*#__PURE__*/ " ym7uBBu-"}>
+*/ " ym7uBBu-"}>
       css prop merge
     </span>
     <p className={"ym7uBBu2" + ("primary" === "primary" ? " ym7uBBu3" : " ym7uBBu4") + (true ? " ym7uBBu5" : "")}>
