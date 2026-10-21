@@ -920,3 +920,93 @@ test("Error: unsupported value from an evaluated .yak.ts file explains supported
   help: replace it with a string, number, or plain object/array of those
   see:  https://yak.js.org/docs/migration-from-styled-components#move-some-code-to-yak-files`);
 });
+
+test("relative url() paths in a mixin from another directory point from the consuming file", async () => {
+  const mixins = {
+    sun: `background: url("./sun.avif");`,
+    moon: `background: url( '../shared/moon.png' ) , url(./stars.png);`,
+    kept: `background: url("/abs.png"), url(data:image/png;base64,AA==), url("https://x.dev/a.png");`,
+  };
+  const parsed: Record<string, ParsedModule> = {
+    "/src/icons/mixins.ts": mixinModule("/src/icons/mixins.ts", mixins),
+  };
+  const context = {
+    parse: (modulePath: string) => parsed[modulePath],
+    resolve: (specifier: string, importer: string) =>
+      path.posix.resolve(path.posix.dirname(importer), specifier),
+  };
+
+  const { resolved } = await resolveCrossFileConstant(
+    context,
+    "/src/pages/home.tsx",
+    `--yak-css-import: url("../icons/mixins.ts:sun",mixin);` +
+      `--yak-css-import: url("../icons/mixins.ts:moon",mixin);` +
+      `--yak-css-import: url("../icons/mixins.ts:kept",mixin);`,
+  );
+  expect(resolved).toBe(
+    `background: url("../icons/sun.avif");` +
+      `background: url('../shared/moon.png') , url(../icons/stars.png);` +
+      `background: url("/abs.png"), url(data:image/png;base64,AA==), url("https://x.dev/a.png");`,
+  );
+
+  const { resolved: nested } = await resolveCrossFileConstant(
+    context,
+    "/src/icons/deep/card.tsx",
+    `--yak-css-import: url("../mixins.ts:sun",mixin);`,
+  );
+  expect(nested).toBe(`background: url("../sun.avif");`);
+});
+
+test("relative url() paths survive a mixin that inlines a mixin from a third directory", async () => {
+  const parsed: Record<string, ParsedModule> = {
+    "/src/theme/background.ts": mixinModule("/src/theme/background.ts", {
+      sun: `background: url("./img/sun.avif");`,
+    }),
+    "/src/components/hero.ts": mixinModule("/src/components/hero.ts", {
+      hero: `--yak-css-import: url("../theme/background.ts:sun",mixin);`,
+    }),
+  };
+  const { resolved } = await resolveCrossFileConstant(
+    {
+      parse: (modulePath) => parsed[modulePath],
+      resolve: (specifier, importer) => path.posix.resolve(path.posix.dirname(importer), specifier),
+    },
+    "/src/pages/home.tsx",
+    `--yak-css-import: url("../components/hero.ts:hero",mixin);`,
+  );
+  expect(resolved).toBe(`background: url("../theme/img/sun.avif");`);
+});
+
+test("relative url() paths keep working with Windows paths", async () => {
+  const { rewriteRelativeCssUrls } = await import("../rewriteRelativeCssUrls.js");
+  expect(
+    rewriteRelativeCssUrls(`url("./sun.avif")`, "C:\\src\\icons\\a.ts", "C:\\src\\pages\\b.tsx"),
+  ).toBe(`url("../icons/sun.avif")`);
+  expect(
+    rewriteRelativeCssUrls(`url("./sun.avif")`, "C:/src/icons/a.ts", "C:/src/pages/b.tsx"),
+  ).toBe(`url("../icons/sun.avif")`);
+  expect(
+    rewriteRelativeCssUrls(`url("./sun.avif")`, "D:\\src\\icons\\a.ts", "C:\\src\\pages\\b.tsx"),
+  ).toBe(`url("./sun.avif")`);
+});
+
+/** A module that exports only mixins, as parseModule reports it: name -> css */
+function mixinModule(modulePath: string, mixins: Record<string, string>): ParsedModule {
+  return {
+    path: modulePath,
+    type: "regular",
+    mixins: Object.fromEntries(
+      Object.entries(mixins).map(([name, value]) => [
+        name,
+        { type: "mixin", value, nameParts: [name] },
+      ]),
+    ),
+    exports: {
+      importYak: true,
+      named: Object.fromEntries(
+        Object.keys(mixins).map((name) => [name, { type: "tag-template" }]),
+      ),
+      all: [],
+    },
+  };
+}

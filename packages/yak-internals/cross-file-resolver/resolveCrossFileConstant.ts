@@ -6,6 +6,7 @@ import type {
   UnsupportedExportSource,
 } from "./parseModule.js";
 import { Cache } from "./types.js";
+import { rewriteRelativeCssUrls } from "./rewriteRelativeCssUrls.js";
 import {
   CauseError,
   CircularDependencyError,
@@ -145,6 +146,11 @@ export async function uncachedResolveCrossFileConstant(
               // For mixins the semicolon is already included in the value
               // but for constants it has to be added manually
               (["}", ";"].includes(String(resolved.value).trimEnd().slice(-1)) ? "" : semicolon);
+      }
+
+      // A mixin from another file keeps its own relative url() paths, see rewriteRelativeCssUrls
+      if (resolved.type !== "unresolved-tag" && resolved.source !== filePath) {
+        replacement = rewriteRelativeCssUrls(String(replacement), resolved.source, filePath);
       }
 
       result = result.slice(0, position) + String(replacement) + result.slice(position + size);
