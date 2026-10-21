@@ -16,16 +16,16 @@ This page shows how to:
 
 ## Install dependencies
 
-Install next-yak alongside Vite and React (if you havent already):
+Install `@yak/react` alongside Vite and React (if you haven't already):
 
 ```bash
-npm i next-yak
+npm i @yak/react
 # or
-pnpm i next-yak
+pnpm add @yak/react
 # or
-yarn add next-yak
+yarn add @yak/react
 # or
-bun add next-yak
+bun add @yak/react
 ```
 
 ## Configure Vite
@@ -58,17 +58,15 @@ viteYak({
   // useful in monorepo setups where source files live outside the Vite root
   // relative paths are resolved from Vite's project root
   basePath: "../..",
-  experiments: {
-    // enable logging of transformed TS/CSS
-    debug: false,
-  },
+  // enable logging of transformed TS/CSS
+  debug: false,
 });
 ```
 
 ## Theme context (`yak.context.ts`)
 
 If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root.
-The Vite plugin automatically aliases `next-yak/context/baseContext` to this file.
+The Vite plugin automatically aliases `@yak/react/context/baseContext` to this file.
 
 ```ts title="yak.context.ts"
 export function getYakThemeContext() {
@@ -90,7 +88,7 @@ declare module "@yak/react" {
 }
 ```
 
-Then wrap your app in `YakThemeProvider` and read the theme from `next-yak/context/baseContext`:
+Then wrap your app in `YakThemeProvider` and read the theme from `@yak/react/context/baseContext`:
 
 ```tsx title="src/main.tsx"
 import { StrictMode } from "react";
@@ -112,12 +110,12 @@ createRoot(document.getElementById("root")!).render(
 ## JSX runtime / `css` prop
 
 If you want to use the `css` prop or compile-time JSX transforms (like in the example app),
-configure the JSX import source so that `next-yak` provides the JSX factory:
+configure the JSX import source so that `@yak/react` provides the JSX factory:
 
 **Per-file (quick start):**
 
 ```tsx title="App.tsx"
-/** @jsxImportSource next-yak */
+/** @jsxImportSource @yak/react */
 import { styled, css } from "@yak/react";
 
 const Title = styled.h1`
@@ -161,9 +159,9 @@ work the same. For details and edge cases, see the
 
 ## Starting without any CSS-in-JS
 
-If you dont use any CSS-in-JS today, you can:
+If you don't use any CSS-in-JS today, you can:
 
-1. Install next-yak and configure `viteYak` as shown above.
+1. Install `@yak/react` and configure `viteYak` as shown above.
 2. Start using `styled` components alongside your existing CSS files.
 
 ```tsx title="src/Button.tsx"
@@ -184,7 +182,7 @@ export default Button;
 ```
 
 You can mix next-yak with regular CSS / CSS Modules. next-yak styles are extracted at build time and
-end up in regular CSS files handled by Vites CSS pipeline.
+end up in regular CSS files handled by Vite's CSS pipeline.
 
 ## Yak constant files in Vite
 
@@ -218,7 +216,7 @@ export const colors = Array.from({ length: 9 }, (_, i) => {
 Usage in your components:
 
 ```tsx title="src/App.tsx"
-/** @jsxImportSource next-yak */
+/** @jsxImportSource @yak/react */
 import { styled } from "@yak/react";
 import { spacing, colors } from "./theme/tokens.yak";
 

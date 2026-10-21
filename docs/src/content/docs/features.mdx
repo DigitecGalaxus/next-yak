@@ -1,6 +1,6 @@
 ---
 title: Features
-description: Next-yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
+description: yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
 ---
 
 import { Callout } from "../../components/mdx/callout";
@@ -179,7 +179,7 @@ font-weight: bold;
 
 ## Compatible with utility-first CSS frameworks (e.g. Tailwind)
 
-Next-yak is fully compatible with utility-first CSS frameworks like Tailwind. Just use the `atoms` function to
+yak is fully compatible with utility-first CSS frameworks like Tailwind. Just use the `atoms` function to
 reference classes from these frameworks.
 
 <Tabs title="Tailwind with atoms" groupId="language" items={["typescript", "javascript"]}>
@@ -450,16 +450,6 @@ body {
   `.maps` to `.maps_a4f5e`, it would no longer match the real element and your styles would silently
   do nothing.
 
-  Vite, Turbopack, and rsbuild keep such classes literal automatically. Next.js with **webpack** is
-  the exception: it defaults to CSS Modules, which rewrites every class name. Two ways to keep `.maps`
-  intact:
-
-  1. **Recommended**: set [`transpilationMode: 'Css'`](/docs/migration-to-native-css). next-yak then
-     emits plain global CSS instead of CSS Modules, so class names are left as-is — same as the
-     native-CSS bundlers.
-  2. **Deprecated**: wrap the selector as `:global(.maps)`. Still works, but `:global()` is being
-     removed; prefer option 1.
-
   The same rules for referencing external styles apply here as well. For further documentation visit:
   [Reference external styles](/docs/migration-from-styled-components#reference-external-styles).
 </Callout>
@@ -614,7 +604,7 @@ const Box = styled.div('.Box', {
 ## Theming
 
 <Callout type="info">
-  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. Next-yak
+  As of Next.js ≥15.0.0, dynamic functions like `cookies()` and `headers()` are async. yak
   supports async `getYakThemeContext()` functions, allowing you to await these server-side APIs.
 </Callout>
 
@@ -653,7 +643,7 @@ This approach has better performance because these values can be extracted and o
 
 ### Dynamic Theming with Context
 
-Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. Next-yak integrates it for both Server Components and Client Components, with no difference in usage. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
+Use the context approach described below when you need dynamic theming that changes based on user preferences, server state, or runtime conditions. yak integrates it for both Server Components and Client Components, with no difference in usage. Wrap your root with the ThemeProvider and add a yak.context.ts file to your root directory and you're ready to go.
 
 ```tsx twoslash title="yak.context.ts"
 // @noErrors
@@ -738,7 +728,7 @@ const Button = styled.button`
 
 ### Using Async Server Functions in Next.js 15.0.0+
 
-Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). Next-yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs:
+Starting with Next.js 15.0.0, dynamic functions at request time have been changed to be asynchronous (<a href="https://nextjs.org/blog/next-15#async-request-apis-breaking-change">read this blog post about it</a>). yak now fully supports async `getYakThemeContext()` functions, allowing you to use these APIs:
 
 ```tsx
 import { cookies } from "next/headers";
@@ -827,7 +817,7 @@ const Component = (props) => {
 To use it with the correct types just add the following line to the top of the file
 
 ```tsx title="my-component.tsx"
-/** @jsxImportSource next-yak */ // [!code hl]
+/** @jsxImportSource @yak/react */ // [!code hl]
 
 import { css } from "@yak/react";
 

@@ -1,33 +1,33 @@
 ---
 title: Eslint plugin
-description: The eslint-plugin-yak provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
+description: The @yak/eslint-plugin provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
 ---
 import { Step, Steps } from '../../components/mdx/steps';
 import { Tab, Tabs } from '../../components/mdx/tabs';
 
 ## Installation
 
-Install eslint-plugin-yak in your project:
+Install `@yak/eslint-plugin` in your project:
 
-<Tabs title="Install eslint-plugin-yak" items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tabs title="Install @yak/eslint-plugin" items={['npm', 'pnpm', 'yarn', 'bun']}>
 <Tab value="npm">
 ```bash
-npm install -D eslint-plugin-yak
+npm i -D @yak/eslint-plugin
 ```
 </Tab>
 <Tab value="pnpm">
 ```bash
-pnpm i -D eslint-plugin-yak
+pnpm add -D @yak/eslint-plugin
 ```
 </Tab>
 <Tab value="yarn">
 ```bash
-yarn i -D eslint-plugin-yak
+yarn add -D @yak/eslint-plugin
 ```
 </Tab>
 <Tab value="bun">
 ```bash
-bun i -D eslint-plugin-yak
+bun add -D @yak/eslint-plugin
 ```
 </Tab>
 </Tabs>
@@ -35,7 +35,7 @@ bun i -D eslint-plugin-yak
 Add it to your eslint config:
 
 ```js title="eslint.config.mjs"
-import yakPlugin from "eslint-plugin-yak";
+import yakPlugin from "@yak/eslint-plugin";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -54,18 +54,17 @@ const myDiv = styled.div`
 
 ## Other linters (oxlint & rslint)
 
-`eslint-plugin-yak` fully supports oxlint and rslint. A good starting configuration for each:
+`@yak/eslint-plugin` fully supports oxlint and rslint. All linters use the rule prefix `@yak/`. A good starting configuration for each:
 
 <Tabs items={['oxlint', 'rslint']}>
 <Tab value="oxlint">
 ```json title=".oxlintrc.json"
 {
-  "jsPlugins": ["eslint-plugin-yak"],
+  "jsPlugins": ["@yak/eslint-plugin"],
   "rules": {
-    "yak/css-nesting-operator": "error",
-    "yak/css-global-deprecated": "warn",
-    "yak/enforce-semicolon": "error",
-    "yak/style-conditions": "warn"
+    "@yak/css-nesting-operator": "error",
+    "@yak/enforce-semicolon": "error",
+    "@yak/style-conditions": "warn"
   }
 }
 ```
@@ -73,16 +72,15 @@ const myDiv = styled.div`
 <Tab value="rslint">
 ```ts title="rslint.config.ts"
 import { defineConfig } from "@rslint/core";
-import yak from "eslint-plugin-yak";
+import yak from "@yak/eslint-plugin";
 
 export default defineConfig([
   {
-    plugins: { yak },
+    plugins: { "@yak": yak },
     rules: {
-      "yak/css-nesting-operator": "error",
-      "yak/css-global-deprecated": "warn",
-      "yak/enforce-semicolon": "error",
-      "yak/style-conditions": "warn",
+      "@yak/css-nesting-operator": "error",
+      "@yak/enforce-semicolon": "error",
+      "@yak/style-conditions": "warn",
     },
   },
 ]);
@@ -112,41 +110,6 @@ const myDiv = styled.div`
 Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
 
 We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
-
-### css-global-deprecated
-
-Warns about usage of `:global()` selectors, which are deprecated and will be removed in the next major version in favor of native CSS transpilation.
-
-Example:
-
-```tsx title="example.tsx"
-const Button = styled.button`
-//[!code --]
-  :global(html) {
-//[!code --]
-    background: white;
-//[!code --]
-  }
-//[!code ++]
-  html {
-//[!code ++]
-    background: white;
-//[!code ++]
-  }
-`;
-```
-
-#### Reason why
-
-The `:global()` selector was originally needed to opt out of CSS Modules scoping. With the new native CSS transpilation mode, styles are no longer scoped through CSS Modules, making `:global()` unnecessary.
-
-To migrate, enable native CSS transpilation in your `next.config.js`:
-
-```js
-experiments: { transpilationMode: 'Css' }
-```
-
-See the [migration guide](/docs/migration-to-native-css) for more details.
 
 ### enforce-semicolon
 
@@ -304,4 +267,4 @@ In this example:
   - Animation states
   - Values from external APIs
 
-The yak/style-conditions rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.
+The `@yak/style-conditions` rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.

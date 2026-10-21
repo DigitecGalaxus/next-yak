@@ -74,7 +74,7 @@ export default defineConfig({
     file: ".storybook/main.ts",
     code: `export default {
   framework: "@storybook/react-vite",
-  addons: ["storybook-addon-yak"],
+  addons: ["@yak/storybook"],
 };`,
   },
 ] as const;

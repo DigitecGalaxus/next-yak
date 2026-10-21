@@ -51,7 +51,7 @@ const libraries = {
     },
   },
   "Compile Time": {
-    "Next-Yak": {
+    yak: {
       "INP optimized": true,
       "Zero Runtime": true,
       "Zero SSR Overhead": true,
@@ -326,7 +326,7 @@ const libraries = {
 const categories = ["Static", "Compile Time", "Browser Runtime"] as const satisfies Array<
   keyof typeof libraries
 >;
-const features = libraries["Compile Time"]["Next-Yak"] satisfies Record<Features, boolean>;
+const features = libraries["Compile Time"]["yak"] satisfies Record<Features, boolean>;
 const sups = [
   "INP optimized",
   "Zero Runtime",
@@ -336,13 +336,13 @@ const sups = [
 ] satisfies Array<Features>;
 
 export const ComparisonTable = () => {
-  const [activeLibrary, setActiveLibrary] = useState<string>("Next-Yak");
+  const [activeLibrary, setActiveLibrary] = useState<string>("yak");
   const columnHoverEvents = (library: string) => ({
     onMouseOver: () => {
       setActiveLibrary(library);
     },
     onMouseOut: () => {
-      setActiveLibrary((prev) => (prev === library ? "Next-Yak" : prev));
+      setActiveLibrary((prev) => (prev === library ? "yak" : prev));
     },
   });
 

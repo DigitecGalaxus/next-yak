@@ -219,7 +219,7 @@ The last part of the migration guide is about more complex cases where you need 
 
 ### Dynamic component styles
 
-This will be the most complex part of the migration. Next-yak differentiates between dynamic css properties and property values which is different than styled-components.
+This will be the most complex part of the migration. yak differentiates between dynamic css properties and property values which is different than styled-components.
 If you use property values you shouldn't need to change more than the import.
 
 ```tsx title="component.tsx"
@@ -395,22 +395,7 @@ becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
 
 ### Reference external styles
 
-If you reference external styles (styles that aren't component styles) in your styled components, you have two options:
-
-**Option 1 (Recommended): Enable native CSS transpilation mode**
-
-Enable native CSS mode in your next.config.js, then external selectors work without any wrapper:
-
-```js title="next.config.js"
-export default withYak(
-  {
-    experiments: {
-      transpilationMode: "Css",
-    },
-  },
-  nextConfig,
-);
-```
+If you reference external styles (styles that aren't component styles) in your styled components, write the selector as it is. yak writes plain CSS, so it does not rename `.myGlobalClass`:
 
 ```tsx title="component.tsx"
 import styled from "styled-components"; // [!code --]
@@ -425,33 +410,6 @@ const Button = styled.button`
 `;
 ```
 
-**Option 2 (Deprecated): Use `:global()` selector**
-
-<Callout type="warn">
-  **Deprecation Notice**: The `:global()` selector syntax is deprecated and will be removed in the
-  next major version. Please migrate to native CSS transpilation mode. For more information read
-  [Migration to native CSS](/docs/migration-to-native-css).
-</Callout>
-
-If you're using the default CSS Modules mode, you need to wrap external selectors with `:global()`:
-
-```tsx title="component.tsx"
-import styled from "styled-components"; // [!code --]
-import { styled } from "@yak/react"; // [!code ++]
-
-const Button = styled.button`
-  color: blue;
-
-// [!code --]
-  .myGlobalClass {
-// [!code ++]
-  :global(.myGlobalClass) {
-    color: red;
-  }
-`;
-```
-
-This is needed because next-yak transforms your styles to CSS modules by default. More can be found in the [docs of css-modules](https://github.com/css-modules/css-modules/blob/master/docs/composition.md#exceptions)
 
 ### Functions that generate styles
 
@@ -516,7 +474,7 @@ But you also need to tell TypeScript that native JSX elements can have a css pro
 Or if you want to use the css prop in a single file, you can just add the following to the top of the file.
 
 ```tsx title="component.tsx"
-/** @jsxImportSource next-yak */ // [!code ++]
+/** @jsxImportSource @yak/react */ // [!code ++]
 ```
 
 And afterwards you can just change the import and you're done.
@@ -613,20 +571,20 @@ const nextConfig: NextConfig = {
 }
 
 const yakConfig: YakConfigOptions = {
-  experiments: {
-    // Enable for all files
-    debug: true,
+  // Enable for all files
+  debug: true,
 
-    // Or filter by regex pattern
-    debug: { pattern: "myPage" },
+  // Or filter by regex pattern:
+  // debug: { pattern: "myPage" },
 
-    // Or filter by output type only
-    debug: { types: ["css"] },
+  // Or filter by output type only:
+  // debug: { types: ["css"] },
 
-    // Or combine pattern + types
-    debug: { pattern: "Button", types: ["css", "css-resolved"] },
-  },
-}, nextConfig);
+  // Or combine pattern + types:
+  // debug: { pattern: "Button", types: ["css", "css-resolved"] },
+};
+
+export default withYak(yakConfig, nextConfig);
 ```
 
 And you should see the transformed files and styles. This can help you to understand what's going wrong.

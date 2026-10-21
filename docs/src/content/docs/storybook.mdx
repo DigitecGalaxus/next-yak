@@ -6,18 +6,34 @@ description: Use next-yak with Storybook.
 import { Callout } from "../../components/mdx/callout";
 import { Tab, Tabs } from "../../components/mdx/tabs";
 
-The `storybook-addon-yak` addon enables next-yak in Storybook 10+.
+The `@yak/storybook` addon enables yak in Storybook 10+.
 It supports both Vite and Webpack builders.
 
 ## Installation
 
-Install the addon alongside next-yak:
+Install the addon alongside `@yak/react`:
 
 <Tabs title="Install the addon" items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tab value="npm">```bash npm i -D storybook-addon-yak ```</Tab>
-  <Tab value="pnpm">```bash pnpm i -D storybook-addon-yak ```</Tab>
-  <Tab value="yarn">```bash yarn add -D storybook-addon-yak ```</Tab>
-  <Tab value="bun">```bash bun add -D storybook-addon-yak ```</Tab>
+<Tab value="npm">
+```bash
+npm i -D @yak/storybook
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add -D @yak/storybook
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add -D @yak/storybook
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add -D @yak/storybook
+```
+</Tab>
 </Tabs>
 
 ## Configuration (Vite)
@@ -29,7 +45,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: ["@storybook/addon-docs", "storybook-addon-yak"],
+  addons: ["@storybook/addon-docs", "@yak/storybook"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
@@ -42,8 +58,8 @@ export default config;
 ## Configuration (Webpack)
 
 <Callout>
-  Webpack requires the SWC compiler addon (`@storybook/addon-webpack5-compiler-swc`) for yak-swc
-  plugin support.
+  Webpack requires the SWC compiler addon (`@storybook/addon-webpack5-compiler-swc`) for the `@yak/swc`
+  plugin.
 </Callout>
 
 ```ts title=".storybook/main.ts"
@@ -54,7 +70,7 @@ const config: StorybookConfig = {
   addons: [
     "@storybook/addon-docs",
     "@storybook/addon-webpack5-compiler-swc",
-    "storybook-addon-yak",
+    "@yak/storybook",
   ],
   framework: {
     name: "@storybook/react-webpack5",
@@ -93,7 +109,7 @@ Make sure your `yak.context.ts` file is configured via the addon options if it's
 const config: StorybookConfig = {
   addons: [
     {
-      name: "storybook-addon-yak",
+      name: "@yak/storybook",
       options: {
         contextPath: "./src/yak.context.ts",
       },

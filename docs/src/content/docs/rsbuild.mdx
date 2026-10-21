@@ -3,20 +3,20 @@ title: Rsbuild
 description: Use next-yak with Rsbuild and React.
 ---
 
-Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin from `next-yak/rsbuild`. Rsbuild-based frameworks like TanStack Start work too.
+Since v9.5.0, next-yak supports Rsbuild 2+ via the `pluginYak` plugin from `@yak/react/rsbuild`. Rsbuild-based frameworks like TanStack Start work too.
 
 ## Install dependencies
 
-Install next-yak alongside Rsbuild and React (if you haven't already):
+Install `@yak/react` alongside Rsbuild and React (if you haven't already):
 
 ```bash
-npm i next-yak
+npm i @yak/react
 # or
-pnpm i next-yak
+pnpm add @yak/react
 # or
-yarn add next-yak
+yarn add @yak/react
 # or
-bun add next-yak
+bun add @yak/react
 ```
 
 ## Configure Rsbuild
@@ -57,7 +57,7 @@ declare module "@yak/react" {
 }
 ```
 
-Then wrap your app in `YakThemeProvider` and read the theme from `next-yak/context/baseContext`:
+Then wrap your app in `YakThemeProvider` and read the theme from `@yak/react/context/baseContext`:
 
 ```tsx title="src/main.tsx"
 import { StrictMode } from "react";

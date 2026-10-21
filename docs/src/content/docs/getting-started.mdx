@@ -10,16 +10,19 @@ import { Tab, Tabs } from "../../components/mdx/tabs";
 
 Works with **Next.js** (Webpack & Turbopack), **[Vite 7+](/docs/vite)** (react-router, tanstack start, and more), **[Rsbuild 2+](/docs/rsbuild)**, and **[Storybook](/docs/storybook)**.
 
-| next-yak | Next.js   | Vite            | Rsbuild         | react       | swc_core |
-| -------- | --------- | --------------- | --------------- | ----------- | -------- |
-| 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | >= 2.0.0 (9.5+) | 19.x        | 56.0.0   |
-| 8.x      | >= 16.0.0 | -               | -               | 19.x        | 45.0.1   |
-| 7.x      | >= 15.4.4 | -               | -               | 19.x        | 38.0.1   |
-| 6.x      | >= 15.4.1 | -               | -               | 19.x        | 27.0.6   |
-| 5.x      | >= 15.2.1 | -               | -               | 19.x        | 16.0.0   |
-| 4.x      | >= 15.0.4 | -               | -               | 19.x        | 5.0.1    |
-| 3.x      | 15.x      | -               | -               | 18.x / 19.x | 3.0.2    |
-| 2.x      | 14.x      | -               | -               | 18.x / 19.x | 0.279.0  |
+| Package             | Next.js   | Vite            | Rsbuild         | react       | swc_core |
+| ------------------- | --------- | --------------- | --------------- | ----------- | -------- |
+| `@yak/react` 10.x   | >= 16.4.0 | >= 7.0.0        | >= 2.0.0        | 19.x        | 79.0.0   |
+| `next-yak` 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | >= 2.0.0 (9.5+) | 19.x        | 56.0.0   |
+| `next-yak` 8.x      | >= 16.0.0 | -               | -               | 19.x        | 45.0.1   |
+| `next-yak` 7.x      | >= 15.4.4 | -               | -               | 19.x        | 38.0.1   |
+| `next-yak` 6.x      | >= 15.4.1 | -               | -               | 19.x        | 27.0.6   |
+| `next-yak` 5.x      | >= 15.2.1 | -               | -               | 19.x        | 16.0.0   |
+| `next-yak` 4.x      | >= 15.0.4 | -               | -               | 19.x        | 5.0.1    |
+| `next-yak` 3.x      | 15.x      | -               | -               | 18.x / 19.x | 3.0.2    |
+| `next-yak` 2.x      | 14.x      | -               | -               | 18.x / 19.x | 0.279.0  |
+
+Up to version 9, the package was called `next-yak`. From version 10, it is `@yak/react`. `@yak/react` 10 needs Node.js 22.18 or later.
 
 ## Installation
 
@@ -28,50 +31,44 @@ Works with **Next.js** (Webpack & Turbopack), **[Vite 7+](/docs/vite)** (react-r
 
 ### Install the package
 
-Install next-yak dependency using your favorite package manager.
+Install `@yak/react` with your package manager.
 
-<Tabs title="Install next-yak" items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tabs title="Install @yak/react" items={['npm', 'pnpm', 'yarn', 'bun']}>
 <Tab value="npm">
 ```bash
-# For next.js >= 16.1.0 or vite
-npm i next-yak@latest
+# For Next.js >= 16.4.0, Vite or Rsbuild
+npm i @yak/react
 
-# For other next.js versions use a specific version
-
-npm i next-yak@2
-
-````
+# For Next.js 16.1 to 16.3 (for older versions, see the table above)
+npm i next-yak@9
+```
 </Tab>
 <Tab value="pnpm">
 ```bash
-# For Next.js >= 16.1.0 or vite
-pnpm i next-yak@latest
+# For Next.js >= 16.4.0, Vite or Rsbuild
+pnpm add @yak/react
 
-# For other next.js versions use a specific version
-pnpm i next-yak@2
-````
-
+# For Next.js 16.1 to 16.3 (for older versions, see the table above)
+pnpm add next-yak@9
+```
 </Tab>
 <Tab value="yarn">
 ```bash
-# For next.js >= 16.1.0 or vite
-yarn i next-yak@latest
+# For Next.js >= 16.4.0, Vite or Rsbuild
+yarn add @yak/react
 
-# For other next.js versions use a specific version
-
-yarn i next-yak@2
-
-````
+# For Next.js 16.1 to 16.3 (for older versions, see the table above)
+yarn add next-yak@9
+```
 </Tab>
 <Tab value="bun">
 ```bash
-# For next.js >= 16.1.0 or vite
-bun i next-yak@latest
+# For Next.js >= 16.4.0, Vite or Rsbuild
+bun add @yak/react
 
-# For other next.js versions use a specific version
-bun i next-yak@2
-````
-
+# For Next.js 16.1 to 16.3 (for older versions, see the table above)
+bun add next-yak@9
+```
 </Tab>
 </Tabs>
 </Step>
@@ -144,4 +141,4 @@ Since v9.1.0, next-yak supports Vite 7+ (including Vite 8 with OXC/Rolldown). Ch
 
 ## Using with Storybook
 
-The addon `storybook-addon-yak` enables next-yak in Storybook 10+ with both Vite and Webpack builders. See the [Storybook guide](/docs/storybook) for details.
+The addon `@yak/storybook` enables yak in Storybook 10+ with both Vite and Webpack builders. See the [Storybook guide](/docs/storybook) for details.
