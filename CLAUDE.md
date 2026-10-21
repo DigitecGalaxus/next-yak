@@ -197,8 +197,8 @@ Each fixture generates 4 tests:
 
 ### Vite Plugin
 
-- Uses virtual modules (`virtual:yak-css:*`) for CSS
-- The `{{__MODULE_PATH__}}` placeholder in import specifiers is replaced by the Rust plugin with the actual file path
+- The CSS of `src/a.tsx` is the module `src/a.tsx.yak.css`: the source path plus a suffix, not a `\0virtual:` id, so relative `url()` paths and CSS HMR work
+- The Rust plugin fills the `{{__BASE_NAME__}}` placeholder and emits `import "./a.yak.css"`, which the Vite plugin resolves next to the importing file
 - CSS is resolved and bundled by Vite's CSS pipeline
 
 ## Debugging
