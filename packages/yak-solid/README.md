@@ -2,7 +2,7 @@
 
 Styled-components syntax for SolidJS, compiled away at build time. Your CSS is extracted by the [yak](https://yak.js.org/) SWC compiler and what's left at runtime is a thin layer that fits Solid's model: components run once, and dynamic styles are driven by signals, not re-renders.
 
-> **Status: experimental.** `@yak/solid` targets Solid 2 (currently at RC) and tracks it closely. Expect breaking changes while Solid 2 stabilizes. Solid 1 is not supported, and neither is SolidStart v2, which still runs on Solid 1.
+> **Status: experimental.** `@yak/solid` targets Solid 2 (currently at RC) and tracks it closely. Expect breaking changes while Solid 2 stabilizes. Solid 1 is not supported.
 
 ## Why this fits Solid
 
@@ -29,6 +29,14 @@ import { yak } from "@yak/solid/vite";
 
 export default defineConfig({
   plugins: [yak(), solid()],
+});
+```
+
+For SolidStart, turn on the `start` option of the Solid Vite plugin. yak works with it like with any other Solid app:
+
+```ts
+export default defineConfig({
+  plugins: [yak(), solid({ start: true })],
 });
 ```
 
@@ -132,7 +140,7 @@ Like `@yak/react`, the yak SWC compiler extracts your CSS at build time. At runt
 
 ## Requirements
 
-- `solid-js` >= 2.0.0-rc.10 and `@solidjs/web` >= 2.0.0-rc.10
+- `solid-js` >= 2.0.0-rc.15 and `@solidjs/web` >= 2.0.0-rc.15
 - `@solidjs/vite-plugin` >= 3.0.0-next (the Solid 2 line, npm tag `next`)
 - `@yak/swc` with yak-package auto-detection (bundled as a dependency, version released together with this package or newer)
 
