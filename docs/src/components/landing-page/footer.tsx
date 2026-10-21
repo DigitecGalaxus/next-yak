@@ -3,6 +3,7 @@ import Link from "next/link";
 import { fonts, fontSize, fontWeight, maxContentWidth, light, dark } from "@/tokens";
 import { inlineCode, sectionLabel, chromeLink, proseLink } from "@/lib/mixins";
 import { externalLinkProps } from "@/lib/external-link";
+import { asset } from "@/lib/site";
 import Yak from "./yak";
 
 const COLUMNS = [
@@ -34,6 +35,9 @@ const COLUMNS = [
         href: "https://github.com/DigitecGalaxus/next-yak/releases",
         external: true,
       },
+      // Static files for LLMs (app/llms.txt, app/llms-full.txt), not Next.js pages
+      { label: "llms.txt", href: "/llms.txt", file: true },
+      { label: "llms-full.txt", href: "/llms-full.txt", file: true },
     ],
   },
 ];
@@ -98,12 +102,16 @@ export default function Footer() {
             >
               {column.links.map((link) => (
                 <li key={link.href}>
-                  <FooterLink
-                    href={link.href}
-                    {...("external" in link && link.external ? externalLinkProps : {})}
-                  >
-                    {link.label}
-                  </FooterLink>
+                  {"file" in link && link.file ? (
+                    <FooterFileLink href={asset(link.href)}>{link.label}</FooterFileLink>
+                  ) : (
+                    <FooterLink
+                      href={link.href}
+                      {...("external" in link && link.external ? externalLinkProps : {})}
+                    >
+                      {link.label}
+                    </FooterLink>
+                  )}
                 </li>
               ))}
             </ul>
@@ -168,10 +176,18 @@ const ColumnTitle = styled.span`
   ${sectionLabel};
 `;
 
-const FooterLink = styled(Link)`
+const footerLinkStyles = css`
   ${chromeLink};
   font-size: ${fontSize.small};
   color: light-dark(${light.violet}, ${dark.white});
+`;
+
+const FooterLink = styled(Link)`
+  ${footerLinkStyles};
+`;
+
+const FooterFileLink = styled.a`
+  ${footerLinkStyles};
 `;
 
 const Legal = styled.p`

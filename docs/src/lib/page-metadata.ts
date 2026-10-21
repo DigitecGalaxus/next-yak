@@ -7,6 +7,7 @@ export function pageMetadata({
   path,
   card,
   publishedTime,
+  markdownPath,
 }: {
   title: string;
   description?: string;
@@ -14,6 +15,8 @@ export function pageMetadata({
   /** File name under public/og (written by scripts/generate-og.mjs), without extension. */
   card: string;
   publishedTime?: string;
+  /** Path of the Markdown version of the page, linked as `rel="alternate"` for LLMs and agents. */
+  markdownPath?: string;
 }): Metadata {
   const images = [
     { url: `/og/${card}.png`, width: 1200, height: 630, alt: `${title} — ${SITE_NAME}` },
@@ -21,7 +24,10 @@ export function pageMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      ...(markdownPath ? { types: { "text/markdown": absoluteUrl(markdownPath) } } : {}),
+    },
     openGraph: {
       type: publishedTime ? "article" : "website",
       url: absoluteUrl(path),

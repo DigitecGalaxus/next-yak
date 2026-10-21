@@ -10,6 +10,15 @@ import { transformerCodeLinks } from "./src/lib/code-links";
 
 export const docs = defineDocs({
   dir: "src/content/docs",
+  docs: {
+    postprocess: {
+      // `getText("processed")` for the LLM routes. These components become placeholders, which
+      // `docsLlms` in src/lib/source.ts renders as plain Markdown.
+      includeProcessedMarkdown: {
+        mdxAsPlaceholder: ["Tabs", "Tab", "Callout", "Steps", "Step"],
+      },
+    },
+  },
 });
 
 export const blog = defineDocs({

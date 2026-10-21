@@ -1,10 +1,61 @@
-import { loader } from "fumadocs-core/source";
+import { createGetUrl, llms, loader } from "fumadocs-core/source";
+import {
+  renderPlaceholder,
+  type PlaceholderData,
+} from "fumadocs-core/mdx-plugins/remark-llms.runtime";
 import { docs, blog as posts } from "../../.source/server";
+import { absoluteUrl } from "@/lib/site";
 
 export const source = loader({
   baseUrl: "/docs",
   source: docs.toFumadocsSource(),
 });
+
+// `⟦1:styled.div⟧` link markers in code fences (see code-links.ts)
+const CODE_LINK_MARKER = /⟦[1-6]:([^⟧]*)⟧/g;
+
+const CALLOUT_ALERTS: Record<string, string> = { info: "NOTE", warn: "WARNING", error: "CAUTION" };
+
+const quote = (text: string) =>
+  text
+    .trim()
+    .split("\n")
+    .map((line) => (line ? `> ${line}` : ">"))
+    .join("\n");
+
+// Markdown for the MDX components listed in `mdxAsPlaceholder` (source.config.ts). The source
+// text around a placeholder keeps its own line breaks, so the output is trimmed.
+const placeholders: Record<string, (data: PlaceholderData) => string> = {
+  Tabs: ({ attributes, children }) =>
+    typeof attributes.title === "string"
+      ? `**${attributes.title}**\n\n${children.trim()}`
+      : children.trim(),
+  // one line break plus the one between `</Tab>` and `<Tab>` in the source gives a blank line
+  Tab: ({ attributes, children }) => `${attributes.value}:\n\n${children.trim()}\n`,
+  Callout: ({ attributes, children }) => {
+    const alert = CALLOUT_ALERTS[String(attributes.type ?? "info")] ?? "NOTE";
+    return quote(`[!${alert}]\n${children}`);
+  },
+  Steps: ({ children }) => children.trim(),
+  Step: ({ children }) => children.trim(),
+};
+
+export const docsLlms = llms(source, {
+  renderPage: async (page) => {
+    const body = await renderPlaceholder(await page.data.getText("processed"), placeholders);
+    const description = page.data.description ? `> ${page.data.description}\n\n` : "";
+    return `# ${page.data.title} (${absoluteUrl(page.url)})\n\n${description}${body.replace(CODE_LINK_MARKER, "$1").trim()}\n`;
+  },
+});
+
+export const docsContentRoute = "/llms.mdx/docs";
+
+const getContentUrl = createGetUrl(docsContentRoute);
+
+export function getPageMarkdownUrl(page: { slugs: string[] }) {
+  const segments = [...page.slugs, "content.md"];
+  return { segments, url: getContentUrl(segments) };
+}
 
 export const blog = loader({
   baseUrl: "/blog",

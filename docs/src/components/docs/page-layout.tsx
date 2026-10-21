@@ -40,6 +40,15 @@ export function ArticleLayout({
   );
 }
 
+/** The title, with optional page actions on the right that wrap below it on narrow screens. */
+export const TitleRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+`;
+
 export const Title = styled.h1`
   margin-bottom: 4px;
   font-size: 34px;

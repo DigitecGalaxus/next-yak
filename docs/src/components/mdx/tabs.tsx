@@ -70,7 +70,13 @@ function FileBadge({ bg, fg, label }: { bg: string; fg: string; label: string })
 }
 
 export function Tab({ value, children }: { value: string; children: ReactNode }) {
-  return <Panel value={value}>{children}</Panel>;
+  // keepMounted puts every panel in the static HTML (hidden until selected), so search
+  // engines and LLMs see all tabs, not only the first
+  return (
+    <Panel value={value} keepMounted>
+      {children}
+    </Panel>
+  );
 }
 
 const Root = styled(BaseTabs.Root)`
