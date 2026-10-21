@@ -330,6 +330,8 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤�
 - https://github.com/QwikDev/qwik/pull/9068 (fix n² server render for sibling components with `<Slot/>`)
 - https://github.com/QwikDev/qwik/pull/9093 (fix n² server render for sibling inline components)
 - https://github.com/QwikDev/qwik/pull/9086 (fix virtual CSS 404 and file watcher crash in router dev)
+- https://github.com/vitejs/vite/issues/23860 (keep the files `addWatchFile` adds in `load` on a module's first request)
+- https://github.com/QwikDev/qwik/issues/9261 (no page reload for a css edit)
 
 [![next-yak-yak-shaving](https://github.com/user-attachments/assets/720ffc22-d61a-45de-a689-5536160ef079)](https://en.wiktionary.org/wiki/yak_shaving)
 
