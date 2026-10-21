@@ -19,7 +19,7 @@ const COLUMNS = [
     title: "migrate",
     links: [
       { label: "From styled-components", href: "/docs/migration-from-styled-components" },
-      { label: "To native CSS", href: "/docs/migration-to-native-css" },
+      { label: "From next-yak", href: "/docs/migration-from-next-yak" },
       { label: "Comparison", href: "/docs/comparison" },
     ],
   },

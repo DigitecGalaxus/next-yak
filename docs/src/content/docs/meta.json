@@ -7,7 +7,7 @@
     "vite",
     "rsbuild",
     "migration-from-styled-components",
-    "migration-to-native-css",
+    "migration-from-next-yak",
     "eslint-plugin",
     "storybook",
     "faq",

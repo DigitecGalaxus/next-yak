@@ -32,9 +32,7 @@ runs on many bundlers and frameworks, not only on Next.js.
 | `@yak/qwik`           | `@yak/qwik`          | Already in the scope. No change.    |
 
 `next-yak` 9.x gets bug fixes until the end of 2026. After that, all work happens in
-`@yak/react` 10. `next-yak` 10 has no styling code at all. It only contains the codemod that
-moves your project to `@yak/react`. The old packages are deprecated on npm and point to the new
-names.
+`@yak/react` 10. The old packages are deprecated on npm and point to the new names.
 [Jump to the migration steps](#how-to-migrate-from-next-yak-to-yakreact).
 
 ## Why the rename
@@ -66,16 +64,6 @@ The obvious new name was `yak`, but on npm it looked squatted. We asked npm supp
 ## How to migrate from next-yak to @yak/react
 
 The API does not change. `styled`, `css`, `keyframes`, `globalStyle` and the `css` prop work the same and only the steps below change.
-
-### Codemod
-
-We wrote a codemod that does all of it for you. Run it in the root of your project:
-
-```bash
-npx next-yak@10 migrate
-```
-
-Check the diff, run your tests, done. If you prefer to do it by hand, or want to know what the codemod changes, here are the steps:
 
 ### 1. Replace the packages
 
@@ -110,7 +98,43 @@ the Storybook config, the Jest config, and all the others you might have.
 
 `@yak/swc` only transforms imports from the new package names. If one file still imports from `next-yak`, that file is not compiled, and its styles do not show.
 
-### 3. Update the options
+### 3. Update the theme type
+
+If you add types to the theme, the module declaration needs the new name too:
+
+```ts title="yak.context.ts"
+declare module "next-yak" { // [!code --]
+declare module "@yak/react" { // [!code ++]
+  export interface YakTheme {
+    color: string;
+  }
+}
+```
+
+This one is easy to miss, because TypeScript won't complain about the old name. The declaration simply stops applying,
+which leaves the theme type empty and `theme.color` untyped.
+
+### 4. Update the JSX import source
+
+If you use the `css` prop, point the JSX import source in `tsconfig.json` to the new package:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsxImportSource": "next-yak" // [!code --]
+    "jsxImportSource": "@yak/react" // [!code ++]
+  }
+}
+```
+
+Files that set the JSX import source with a pragma need the same change:
+
+```tsx
+/** @jsxImportSource next-yak */ // [!code --]
+/** @jsxImportSource @yak/react */ // [!code ++]
+```
+
+### 5. Update the options
 
 We removed `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings`. Additionally, `experiments.debug` moves to `debug`:
 
@@ -130,7 +154,7 @@ export default withYak(
 
 The Vite and Rsbuild plugins take the same options.
 
-### 4. Remove the :global() wrappers
+### 6. Remove the :global() wrappers
 
 yak now always compiles to plain CSS. In v9, the Next.js webpack setup compiled to CSS
 Modules, and you needed `:global()` to escape the local scope. That wrapper was deprecated in v9 and `@yak/react` does not support it any more. Remove the wrapper and keep the selector:
@@ -144,7 +168,7 @@ const Wrapper = styled.div`
 `;
 ```
 
-### 5. Update the lint config
+### 7. Update the lint config
 
 The rule `css-global-deprecated` is gone, because `:global()` is gone. Remove it from your
 config. The prefix of all other rules changes to `@yak/`.
@@ -179,7 +203,7 @@ For Oxlint:
 
 If you use custom rule names in ESLint, change `yak/` to `@yak/` there too.
 
-### 6. Update Storybook
+### 8. Update Storybook
 
 ```ts title=".storybook/main.ts"
 const config = {
@@ -190,7 +214,7 @@ const config = {
 };
 ```
 
-### 7. Jest with next/jest
+### 9. Jest with next/jest
 
 `@yak/react` is ESM only. If you use `next/jest`, add `@yak/react` to `transpilePackages` in your Next.js config. Then Jest can load it:
 
@@ -225,8 +249,7 @@ or talk to us directly:
 
 ### Is next-yak deprecated?
 
-Yes. `next-yak` is deprecated in favor of `@yak/react`. The last version with styling code is
-9.x. `next-yak` 10 only contains the codemod.
+Yes. `next-yak` is deprecated in favor of `@yak/react`, and 9.x is its last version.
 
 ### Does next-yak still get updates?
 
@@ -235,8 +258,7 @@ Yes. `next-yak` is deprecated in favor of `@yak/react`. The last version with st
 ### Is @yak/react a drop-in replacement for next-yak?
 
 Almost. The API is the same. You change the imports, remove `:global()` wrappers and update a
-few options. `npx next-yak@10 migrate` does that for you. The
-[migration steps](#how-to-migrate-from-next-yak-to-yakreact) show all of it.
+few options. The [migration steps](#how-to-migrate-from-next-yak-to-yakreact) show all of it.
 
 ### Does @yak/react only work with Next.js?
 
