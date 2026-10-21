@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { isAbsolute } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
 import { createLoaderDataUrl } from "./loader-hooks.ts";
@@ -61,7 +61,8 @@ function resolveWorkerPath(): string {
   if (existsSync(jsPath)) {
     return jsPath;
   }
-  return fileURLToPath(new URL("./worker.ts", import.meta.url));
+  // No `new URL()` here: turbopack resolve it statically and warns, because `dist/` has no `.ts` file
+  return join(dirname(fileURLToPath(import.meta.url)), "worker.ts");
 }
 
 /**
