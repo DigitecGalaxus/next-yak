@@ -1,9 +1,10 @@
 import { transform as swcTransform } from "@swc/core";
 import { createRequire } from "node:module";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import type { LoaderContext } from "webpack";
 import { parseModule } from "yak-internals/cross-file-resolver/parse-module";
 import { resolveCrossFileConstant } from "yak-internals/cross-file-resolver/resolve";
+import { rewriteRelativeCssUrls } from "yak-internals/cross-file-resolver/rewrite-relative-css-urls";
 import type { YakConfigOptions } from "../withYak/index.js";
 import { createDebugLogger } from "yak-internals/debug-logger";
 import { extractCss } from "yak-internals/extract-css";
@@ -21,7 +22,18 @@ const dataUrlImportPrefix = 'import "data:text/css;base64,';
  * e.g.: `import "data:text/css;base64,"`
  */
 export default async function cssExtractLoader(
-  this: LoaderContext<{ yakOptions: YakConfigOptions; yakPluginOptions: any }>,
+  this: LoaderContext<{
+    yakOptions: YakConfigOptions;
+    yakPluginOptions: any;
+    /**
+     * Rspack resolves the url() paths of a data: url css import from the
+     * compiler root, not from the importing file. With this option the loader
+     * rewrites relative paths to point from the root:
+     * url("./img/a.png") in src/Box.tsx -> url("./src/img/a.png").
+     * Turbopack resolves them from the importing file and needs no rewrite.
+     */
+    cssUrlsFromRoot?: boolean;
+  }>,
   code: string,
   sourceMap: string | undefined,
 ): Promise<string | void> {
@@ -35,6 +47,7 @@ export default async function cssExtractLoader(
   const {
     yakPluginOptions,
     yakOptions: { debug },
+    cssUrlsFromRoot,
   } = this.getOptions();
   const debugLog = createDebugLogger(debug, this.rootContext);
   const resolveTurbopack = this.getResolve({});
@@ -112,9 +125,13 @@ export default async function cssExtractLoader(
       this.addDependency(dep);
     }
 
-    const codeWithCrossFileResolved = replaceDataUrlImport(result.code, resolved);
+    // A file name in the root directory: the rewrite only uses its directory
+    const dataUrlCss = cssUrlsFromRoot
+      ? rewriteRelativeCssUrls(resolved, this.resourcePath, join(this.rootContext, "root.css"))
+      : resolved;
+    const codeWithCrossFileResolved = replaceDataUrlImport(result.code, dataUrlCss);
 
-    debugLog("css-resolved", resolved, this.resourcePath);
+    debugLog("css-resolved", dataUrlCss, this.resourcePath);
     // swc returns a JSON string, which babel-loader rejects as inputSourceMap
     return callback(
       null,

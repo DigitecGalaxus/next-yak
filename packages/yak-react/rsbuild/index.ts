@@ -60,7 +60,7 @@ export function pluginYak(yakOptions: YakConfigOptions = {}): RsbuildPlugin {
             use: [
               {
                 loader: rspackLoaderPath,
-                options: { yakOptions, yakPluginOptions },
+                options: { yakOptions, yakPluginOptions, cssUrlsFromRoot: true },
               },
             ],
           },
