@@ -10,6 +10,7 @@ import { readdir, rm, mkdir, access, cp, readFile, writeFile } from "node:fs/pro
 import { createConnection } from "node:net";
 import { join, resolve, relative } from "node:path";
 import { styleText } from "node:util";
+import { parse as parseYaml } from "yaml";
 
 export const e2eRoot = import.meta.dirname;
 
@@ -151,6 +152,30 @@ async function filterCasesForFramework(cases: string[], framework: Framework): P
   return filtered;
 }
 
+/**
+ * Leave out the cases a bundler cannot run. A case lists them in its skip.yaml,
+ * one "bundler: reason" line each, e.g. `rsbuild: The virtual CSS endpoint belongs to the Vite plugin.`
+ * The case never reaches the bundler's app, so it cannot break the build of the
+ * other cases, which a test.skip inside the test would not prevent.
+ */
+async function filterSkippedCases(cases: string[], bundler: string): Promise<string[]> {
+  const kept: string[] = [];
+  for (const caseName of cases) {
+    let reason: string | undefined;
+    try {
+      const skips = parseYaml(
+        await readFile(join(e2eRoot, "cases", caseName, "skip.yaml"), "utf8"),
+      );
+      reason = skips[bundler];
+    } catch {
+      // No skip.yaml: the case runs on every bundler
+    }
+    if (reason) console.log(styleText("yellow", `[${bundler}] skips ${caseName}: ${reason}`));
+    else kept.push(caseName);
+  }
+  return kept;
+}
+
 // ---------------------------------------------------------------------------
 // Assembly — builds .tmp/ with all cases for a bundler
 // ---------------------------------------------------------------------------
@@ -200,6 +225,7 @@ async function copyCase(srcDir: string, destDir: string, framework: Framework): 
 
   for (const entry of entries) {
     if (entry.name === "index.test.ts") continue; // tests run from cases/, not .tmp/
+    if (entry.name === "skip.yaml") continue; // read by filterSkippedCases
     if (entry.isDirectory()) {
       await copyCase(join(srcDir, entry.name), join(destDir, entry.name), framework);
       continue;
@@ -666,10 +692,16 @@ export async function runBundlerCases(
   discoveredBundlers: string[],
 ): Promise<Result[]> {
   const framework = await readFramework(bundler);
-  const frameworkCases = await filterCasesForFramework(cases, framework);
+  const frameworkCases = await filterSkippedCases(
+    await filterCasesForFramework(cases, framework),
+    bundler,
+  );
   if (frameworkCases.length === 0) {
     console.log(
-      styleText("yellow", `[${bundler}] skipped — no case provides a ${framework} variant`),
+      styleText(
+        "yellow",
+        `[${bundler}] skipped — no case left: none provides a ${framework} variant or all are in skip.yaml`,
+      ),
     );
     return [];
   }

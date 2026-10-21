@@ -324,6 +324,9 @@ catalogs:
     vitest:
       specifier: 5.0.5
       version: 5.0.5
+    yaml:
+      specifier: 2.9.1
+      version: 2.9.1
 
 overrides:
   '@yak/swc': workspace:*
@@ -409,6 +412,9 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+      yaml:
+        specifier: catalog:dev
+        version: 2.9.1
 
   e2e/bundlers/next-app-turbopack:
     dependencies:

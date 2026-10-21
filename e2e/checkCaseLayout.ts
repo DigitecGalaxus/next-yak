@@ -6,6 +6,7 @@
  *   cases/<case>/index.tsx          the React case, required
  *   cases/<case>/index.test.ts      the shared test, required
  *   cases/<case>/<name>.solid.<ext> a Solid variant of <name>.<ext>, which must exist
+ *   cases/<case>/skip.yaml          "bundler: reason" for each bundler that cannot run the case
  *
  * A Solid variant replaces its React twin during assembly, so a variant
  * without a twin would run on Solid only and never on React. Any other
@@ -13,8 +14,9 @@
  * to every bundler.
  */
 
-import { existsSync, globSync } from "node:fs";
+import { existsSync, globSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { parse as parseYaml } from "yaml";
 
 const casesDir = join(import.meta.dirname, "cases");
 
@@ -44,6 +46,19 @@ export function checkCaseLayout(): void {
         problems.push(
           `${file}: unknown marker ".${marker}." (only ".solid." is a framework variant)`,
         );
+      }
+    }
+  }
+
+  // skip.yaml maps bundler names to reasons, see filterSkippedCases in e2eEnvironment.ts
+  for (const file of globSync("*/skip.yaml", { cwd: casesDir })) {
+    const skips: Record<string, unknown> =
+      parseYaml(readFileSync(join(casesDir, file), "utf8")) ?? {};
+    for (const [bundler, reason] of Object.entries(skips)) {
+      if (!existsSync(join(casesDir, "..", "bundlers", bundler, "playwright.config.ts"))) {
+        problems.push(`${file}: unknown bundler "${bundler}"`);
+      } else if (typeof reason !== "string" || !reason) {
+        problems.push(`${file}: "${bundler}" needs a reason`);
       }
     }
   }
