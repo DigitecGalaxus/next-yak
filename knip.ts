@@ -43,8 +43,8 @@ const config: KnipConfig = {
       ignoreDependencies: yakSwc,
     },
     docs: {
-      // wasm-pack output of the playground
-      ignore: ["src/lib/playground/wasm/**"],
+      // wasm-pack output of the playground, only present after `build:wasm`
+      ignoreUnresolved: ["./wasm"],
       ignoreDependencies: yakSwc,
     },
     // yak.context.ts is picked up by convention by the yak loaders (see yak-internals/config.ts)
