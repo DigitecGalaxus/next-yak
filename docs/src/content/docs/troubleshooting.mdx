@@ -1,0 +1,183 @@
+---
+title: Troubleshooting
+seoTitle: Troubleshooting yak build errors and missing styles
+description: Fixes for the most common yak problems, from build errors with their exact messages to missing styles, cross-file constants and React DevTools.
+---
+
+Most yak problems show up as a build error. This page lists the common ones with their exact text, their cause and
+the fix. If yours isn't here, the [debug option](#see-what-yak-generates) shows
+what yak makes of your code, and the [GitHub issues](https://github.com/DigitecGalaxus/next-yak/issues/new/choose) are
+open for everything else.
+
+## See what yak generates
+
+Before you dig into a problem, look at the code and CSS that yak generates for the file. Turn on the `debug` option
+and filter it to the file you care about:
+
+```ts title="next.config.ts"
+export default withYak(
+  {
+    // all files: debug: true
+    debug: { pattern: "Button", types: ["css", "css-resolved"] },
+  },
+  nextConfig,
+);
+```
+
+`pattern` is a regular expression for the file path, and `types` picks the output: `ts` for the transformed code,
+`css` for the extracted CSS and `css-resolved` for the CSS after cross-file values are filled in. The Vite and Rsbuild
+plugins take the same option.
+
+## Styles are missing
+
+### A file still imports from next-yak
+
+`@yak/swc` only transforms imports from `@yak/react` and `@yak/solid`. A file that still imports from `next-yak`
+builds without an error, but yak never compiles it, so its styles silently go missing. Search the project for
+`next-yak` and follow the [migration guide](/docs/migration-from-next-yak).
+
+### styled-components wins the specificity
+
+If you wrap a styled-components component with a yak component while both libraries run side by side, add `&&` to
+raise the specificity. The [migration guide](/docs/migration-from-styled-components) explains why.
+
+## Build errors
+
+### :global() is not supported
+
+> `:global()` is not supported. yak writes plain CSS, so every selector is global already.
+
+yak always writes plain CSS, so the wrapper from CSS Modules has no job anymore. Remove it and keep the selector:
+write `.foo` instead of `:global(.foo)`.
+
+### Unsupported value for the 'css' prop
+
+> Unsupported value for the 'css' prop. Only styles written in place apply: …
+
+The `css` prop accepts a `css` template, an `atoms()` call, those combined with `?:`, `&&` or `||`, and the values
+`false`, `null` and `undefined`. Objects, arrays and plain strings fail the build. If another library on the same
+element owns the `css` prop, set [`strictCssProp`](/docs/api#plugin-options) to `false`, and yak leaves such values
+alone.
+
+### Dynamic values must be wrapped in arrow functions
+
+> Dynamic values in CSS properties must be wrapped in arrow functions to make runtime behavior explicit.
+
+A value that is only known at runtime has to be a function, so that yak turns it into a CSS variable. Write
+`${() => getValue()}` instead of `${getValue()}`. Values that are known at build time, like constants and imports, don't
+need a function.
+
+### Dynamic values in @media or @container
+
+> Dynamic values are not supported inside at-rule queries (e.g. @media, @container).
+
+The query of an at-rule is part of the static CSS, so it can't depend on props. Use a static string or an imported
+constant, for example a breakpoint from a shared tokens file.
+
+### globalStyle errors
+
+> globalStyle must be declared at module scope, not inside a component, function or another css template literal.
+
+> Dynamic values are not supported in global styles because there is no element to attach them to.
+
+`globalStyle` is a statement, so call it at the top level of a module. A global rule has no element that could hold a
+CSS variable, so it can't read props either. Use a CSS custom property on `:root` instead and set it from your
+component. See [Global styles](/docs/features#globalstyle).
+
+### Mixing yak packages in one file
+
+> Mixing yak packages in one file is not supported. Found imports from "@yak/react" and "@yak/solid"
+
+One file can only use one yak package. Split the code into a React file and a Solid file.
+
+### Could not find yak context file
+
+> Could not find yak context file at …
+
+You set [`contextPath`](/docs/api#plugin-options), but there is no file at that path. Fix the path, or remove the
+option to use the default `yak.context` file in the project root.
+
+### A backtick inside a CSS comment
+
+A backtick ends the template literal, also inside a CSS comment, so the rest of your styles become JavaScript and the
+parser fails with an unrelated message, such as a missing semicolon. Remove the backtick from the comment.
+
+## Cross-file values
+
+When you interpolate a constant or a mixin from another file, yak resolves it at build time. If that fails, the error
+starts with:
+
+> Error while resolving cross-file selectors in file "…"
+
+The lines below it, each starting with `Caused by:`, tell you what went wrong.
+
+### Unable to resolve a value from a plain module
+
+> Unable to resolve "tokens.x-large" in module "…/tokens.ts"
+
+yak reads the exports of a plain `.ts` or `.js` module without running it, so it only understands simple values:
+strings, numbers and objects of those, accessed with dot notation or a key like `tokens["sm"]`. Keys that are not
+valid identifiers, like `tokens["x-large"]`, array access like `list[1]`, and values that need code to compute fail.
+
+Rename the file to `tokens.yak.ts` to fix it. yak runs [`.yak` files](/docs/features#build-time-constants-with-yak-files)
+at build time, so any key, array access and computed value works there.
+
+### Imports inside .yak files fail
+
+`.yak.ts` files run as native Node.js ES modules, so a relative import needs the exact file extension. Node.js fails
+with `ERR_MODULE_NOT_FOUND` if it is missing:
+
+```ts title="theme/colors.yak.ts"
+import { base } from "./base-tokens"; // [!code --]
+import { base } from "./base-tokens.ts"; // [!code ++]
+```
+
+TypeScript only accepts the `.ts` extension with `allowImportingTsExtensions` in your `tsconfig.json`.
+
+### A mixin in selector position
+
+> Found "mixin" but expected a selector - did you forget a semicolon after "…"?
+
+Without a semicolon, yak can't tell whether `${mixin}` starts a nested selector or inserts styles. End every mixin with
+a semicolon, which the [`@yak/enforce-semicolon`](/docs/eslint-plugin#enforce-semicolon) lint rule checks for you.
+
+### Circular dependency detected
+
+Two files that import values from each other can't be resolved at build time. Move the shared values into a third file
+that both import.
+
+## Bundler problems
+
+### Source file is outside the project root (Vite)
+
+> Source file "…" is outside the project root "…".
+
+In a monorepo, some of your source files live outside the Vite root. Set the [`basePath`](/docs/api#plugin-options)
+option of `viteYak` to the repository root, so that yak resolves the CSS of those files.
+
+## My styled components don't show up in React DevTools
+
+yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used:
+
+```tsx
+const Button = styled.button`
+  color: red;
+`;
+
+const App = () => <Button type="submit">Save</Button>;
+
+// compiles to
+const App = () => (
+  <button type="submit" className="Button_c1d2e3">
+    Save
+  </button>
+);
+```
+
+This skips a component and its rendering work for every element. Your styles are unaffected, but `<Button>` is gone
+from the React tree, so it no longer appears in React DevTools or in component stacks. It also disappears in
+development, so that development and production behave the same, and for the same reason `displayNames` has no effect
+on an inlined usage.
+
+This is folding, controlled by the `foldStatic` option, which also folds a static `css` prop into a plain `className`.
+See [Folding](/docs/folding) for what folds, how to turn it off, and the rest of the caveats.

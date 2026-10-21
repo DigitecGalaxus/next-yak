@@ -14,6 +14,8 @@ export const docs = defineDocs({
     schema: frontmatterSchema.extend({
       // The <title> and social cards use it instead of `title`, which stays short for the sidebar
       seoTitle: z.string().optional(),
+      // A shorter label for the sidebar, when `title` is too long for it
+      navTitle: z.string().optional(),
     }),
     postprocess: {
       // `getText("processed")` for the LLM routes. These components become placeholders, which

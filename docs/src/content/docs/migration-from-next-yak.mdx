@@ -1,5 +1,6 @@
 ---
 title: Migration from next-yak
+navTitle: From next-yak
 description: How to move a project from next-yak 9 to @yak/react 10. The API stays the same, so only package names, imports and a few options change.
 ---
 
@@ -31,7 +32,7 @@ land in `@yak/react`.
 
 ## 1. Replace the packages
 
-Swap the old packages for the new ones, installing only those you actually used before:
+Swap the old packages for the new ones, and install only the ones you used before:
 
 ```bash
 npm uninstall next-yak eslint-plugin-yak storybook-addon-yak
@@ -62,8 +63,8 @@ import { getYakThemeContext } from "next-yak/context/baseContext"; // [!code --]
 import { getYakThemeContext } from "@yak/react/context/baseContext"; // [!code ++]
 ```
 
-Make sure to search the whole project and not just your source files, since `package.json`, TypeScript paths and the
-Storybook or Jest config often reference the package name too.
+Search the whole project, not only your source files, because `package.json`, TypeScript paths and the Storybook or
+Jest config often reference the package name too.
 
 <Callout type="warn">
   `@yak/swc` only transforms imports from the new package names. A file that still imports from `next-yak` is left
@@ -83,7 +84,7 @@ declare module "@yak/react" { // [!code ++]
 }
 ```
 
-This one is easy to miss, because TypeScript won't complain about the old name. The declaration simply stops applying,
+This one is easy to miss, because TypeScript won't complain about the old name. The declaration stops applying,
 which leaves the theme type empty and `theme.color` untyped.
 
 ## 4. Update the JSX import source

@@ -5,7 +5,15 @@ import { SearchProvider } from "../components/search/search-provider";
 import { NextProvider } from "fumadocs-core/framework/next";
 import { styled } from "@yak/react";
 import "./global.css";
-import { bricolageSans, hankenSans, initVars, jetbrainsMono, light, dark } from "@/tokens";
+import {
+  bricolageSans,
+  hankenSans,
+  headerHeight,
+  initVars,
+  jetbrainsMono,
+  light,
+  dark,
+} from "@/tokens";
 import { IS_PREVIEW_DEPLOY, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -85,4 +93,7 @@ const Html = styled.html`
 
   /* Stops centred content shifting between short and long pages, and on dialog scroll lock */
   scrollbar-gutter: stable;
+
+  /* An anchor jump stops below the sticky header, not behind it */
+  scroll-padding-top: calc(${headerHeight} + 16px);
 `;

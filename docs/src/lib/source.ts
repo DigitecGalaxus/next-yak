@@ -9,6 +9,18 @@ import { absoluteUrl } from "@/lib/site";
 export const source = loader({
   baseUrl: "/docs",
   source: docs.toFumadocsSource(),
+  pageTree: {
+    transformers: [
+      {
+        // The sidebar shows `navTitle` when a page sets one
+        file(node, filePath) {
+          const file = filePath ? this.storage.read(filePath) : undefined;
+          const navTitle = file?.format === "page" ? file.data.navTitle : undefined;
+          return navTitle ? { ...node, name: navTitle } : node;
+        },
+      },
+    ],
+  },
 });
 
 // `⟦1:styled.div⟧` link markers in code fences (see code-links.ts)

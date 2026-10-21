@@ -9,17 +9,19 @@ This list is not exhaustive and not ordered by priority. It is a rough outline o
 
 ### Completed
 
-- Rsbuild 2 support with the `@yak/react/rsbuild` plugin (added in next-yak 9.5.0)
-- Storybook addon with Vite & Webpack support (added in v9.4.0)
-- Cross-file imports working across all bundlers (v9.1.0+)
-- Vite support including Vite 8 with OXC/Rolldown (added in v9.1.0)
-- Turbopack support (added in v8.0.0)
-- Async RSC Yak Theme Contexts (added in v8.0.0)
-- Native CSS transpilation mode (added in v5.6.0)
+- One package per framework in the `@yak` scope: `next-yak` becomes `@yak/react` (10.0)
+- Plain CSS output for every bundler, which replaces CSS Modules and `:global()` (10.0)
+- Solid 2 support with `@yak/solid` (experimental, see [Solid](/docs/solid))
+- Rsbuild 2 support with the `@yak/react/rsbuild` plugin (next-yak 9.5.0)
+- Storybook addon with Vite and webpack support (next-yak 9.4.0)
+- Cross-file imports across all bundlers (next-yak 9.1.0)
+- Vite support, including Vite 8 with OXC/Rolldown (next-yak 9.1.0)
+- Turbopack support (next-yak 8.0.0)
+- Async RSC theme contexts (next-yak 8.0.0)
 
 ### Planned
 
-- Support for other runtimes (e.g. Qwik or Solid)
-- More efficient runtime & code transformation
+- Support for more frameworks, such as Qwik
+- More efficient runtime and code transformation
 - Deduplicate styles
-- Add more and better examples
+- More and better examples

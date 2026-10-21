@@ -806,7 +806,7 @@ example when another library on the same element owns the `css` prop.
 If you prefer working with the utility first approach, you can use our `atoms` function in conjunction with the `css` prop.
 
 ```jsx title="my-component.tsx"
-import { css } from "@yak/react";
+import { atoms } from "@yak/react";
 
 const Component = (props) => {
   return <div css={atoms("bg-red-500", props.primary && "bg-blue-500")}>Hello there!</div>;
@@ -823,7 +823,15 @@ To use it with the correct types just add the following line to the top of the f
 import { css } from "@yak/react";
 
 const Component = () => {
-  return <div css={{ color: "red" }}>Hello there!</div>;
+  return (
+    <div
+      css={css`
+        color: red;
+      `}
+    >
+      Hello there!
+    </div>
+  );
 };
 ```
 
