@@ -1,0 +1,20 @@
+# Bundlers that cannot run this case, with the reason. The runner leaves the case out of their app.
+
+rsbuild: >-
+  rsbuild imports yak css as a data: url, which has no directory for a relative
+  url() to resolve from, so the build fails
+
+tanstack-start-rsbuild: >-
+  rsbuild imports yak css as a data: url, which has no directory for a relative
+  url() to resolve from, so the build fails
+
+next-app-webpack: >-
+  Next bundles a mini-css-extract-plugin without
+  https://github.com/webpack/mini-css-extract-plugin/pull/1162, so the png goes
+  through Next's image loader and becomes url([object Object])
+  https://github.com/vercel/next.js/issues/91984
+
+next-pages-webpack: >-
+  Next's style-loader for the pages router drops the .yak.css match resource,
+  the same bug https://github.com/webpack/mini-css-extract-plugin/pull/1162
+  fixes in mini-css-extract-plugin, so the png becomes url([object Object])
