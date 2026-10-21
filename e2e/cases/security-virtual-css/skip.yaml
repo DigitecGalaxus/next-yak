@@ -1,0 +1,8 @@
+# Bundlers that cannot run this case, with the reason. The runner leaves the case out of their app.
+
+next-app-turbopack: The virtual CSS endpoint belongs to the Vite plugin.
+next-app-webpack: The virtual CSS endpoint belongs to the Vite plugin.
+next-pages-turbopack: The virtual CSS endpoint belongs to the Vite plugin.
+next-pages-webpack: The virtual CSS endpoint belongs to the Vite plugin.
+rsbuild: The virtual CSS endpoint belongs to the Vite plugin.
+tanstack-start-rsbuild: The virtual CSS endpoint belongs to the Vite plugin.

@@ -22,11 +22,6 @@ function requestPath(origin: string, path: string): Promise<{ status: number; bo
 test(
   "does not expose denied files through virtual CSS requests",
   withTestEnv("security-virtual-css", async (testEnv, page) => {
-    test.skip(
-      !["vite", "vite-solid", "vinext-pages"].includes(testEnv.bundlerDirName),
-      "The virtual CSS endpoint belongs to the Vite plugin.",
-    );
-
     await page.goto(testEnv.url);
     await expect(page.getByTestId("box")).toHaveCSS("color", "rgb(255, 0, 0)");
     testEnv.expectConsoleErrors("Denied virtual CSS requests trigger Vite's error overlay.");
