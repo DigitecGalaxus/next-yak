@@ -1,6 +1,7 @@
 ---
 title: Eslint plugin
-description: The @yak/eslint-plugin provides a set of rules to help you migrate from styled-components to next-yak and nudges you towards using it the most performant way.
+seoTitle: ESLint and Oxlint plugin for yak
+description: Lint rules for ESLint and Oxlint that help you migrate from styled-components to yak and point you to the patterns that compile to the fastest CSS.
 ---
 import { Step, Steps } from '../../components/mdx/steps';
 import { Tab, Tabs } from '../../components/mdx/tabs';
@@ -92,7 +93,7 @@ export default defineConfig([
 
 ### css-nesting-operator
 
-Enforces css selectors in next-yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
+Enforces css selectors in yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
 
 Example:
 
@@ -109,7 +110,7 @@ const myDiv = styled.div`
 
 Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
 
-We didn't want this magic to be in `next-yak` as writing styles should feel as natural and as close to vanilla CSS as possible.
+We didn't want this magic to be in yak as writing styles should feel as natural and as close to vanilla CSS as possible.
 
 ### enforce-semicolon
 
@@ -128,7 +129,7 @@ styled.div`
 
 #### Reason why
 
-Unlike runtime CSS-in-JS libraries that combine strings at execution time, `next-yak` has to understand the code statically. A variable might have different meanings:
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, yak has to understand the code statically. A variable might have different meanings:
 
 - **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
 - **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules
@@ -160,7 +161,7 @@ styled.div`
 
 Warns if runtime performance could be improved by using css literals.
 
-The rule checks arrow functions used as CSS declaration values, where next-yak creates runtime CSS variables. Arrow functions outside declarations are runtime class expressions and may return local or imported css mixins.
+The rule checks arrow functions used as CSS declaration values, where yak creates runtime CSS variables. Arrow functions outside declarations are runtime class expressions and may return local or imported css mixins.
 
 Example:
 
@@ -216,7 +217,7 @@ styled.button`
 
 #### Reason why
 
-next-yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
+yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
 
 <Steps>
 <Step>

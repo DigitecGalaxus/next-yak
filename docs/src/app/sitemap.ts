@@ -16,7 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: absoluteUrl("/") },
     { url: absoluteUrl("/playground") },
-    { url: absoluteUrl("/blog") },
+    // the blog index changes with its newest post
+    { url: absoluteUrl("/blog"), lastModified: posts[0]?.lastModified },
     ...docs,
     ...posts,
   ];

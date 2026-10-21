@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { externalLinkProps } from "@/lib/external-link";
 import ExternalMark from "@/components/external-mark";
+import { JsonLd, softwareSourceCode } from "@/components/json-ld";
 
 const WORKS_WITH = [
   { name: "React", Icon: ReactIcon },
@@ -49,6 +50,7 @@ export default async function Home() {
 
   return (
     <>
+      <JsonLd data={softwareSourceCode(version)} />
       {/* Bounds the sticky hero, so it scrolls away once the next section covers it. */}
       <div>
         <section

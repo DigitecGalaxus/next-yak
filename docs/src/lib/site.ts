@@ -2,6 +2,10 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yak.js.org"
 
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
+// The GitHub Pages build before the domain cutover. Search engines skip it, so it does not
+// compete with yak.js.org.
+export const IS_PREVIEW_DEPLOY = new URL(SITE_URL).hostname.endsWith(".github.io");
+
 export const asset = (path: string) => `${BASE_PATH}${path}`;
 
 // Not `new URL(path, SITE_URL)`: a leading slash would drop the base path from SITE_URL.

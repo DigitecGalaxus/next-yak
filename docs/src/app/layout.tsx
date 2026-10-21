@@ -6,7 +6,7 @@ import { NextProvider } from "fumadocs-core/framework/next";
 import { styled } from "@yak/react";
 import "./global.css";
 import { bricolageSans, hankenSans, initVars, jetbrainsMono, light, dark } from "@/tokens";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { IS_PREVIEW_DEPLOY, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  ...(IS_PREVIEW_DEPLOY ? { robots: { index: false, follow: false } } : {}),
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",

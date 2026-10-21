@@ -11,8 +11,9 @@ import {
 } from "@/lib/source";
 import { pageMetadata } from "@/lib/page-metadata";
 import { asset } from "@/lib/site";
-import { sectionLabel } from "@/lib/mixins";
-import { ArticleLayout, Title } from "@/components/docs/page-layout";
+import { pageActionLink, sectionLabel } from "@/lib/mixins";
+import { ArticleLayout, Title, TitleRow } from "@/components/docs/page-layout";
+import { Icon } from "@/components/icon";
 import { PostTag } from "@/components/blog/post-tag";
 import { fonts, fontSize, fontWeight, radii, screen, light, dark } from "@/tokens";
 
@@ -23,6 +24,7 @@ export const metadata: Metadata = pageMetadata({
   description,
   path: "/blog",
   card: "blog",
+  feed: true,
 });
 
 export default async function BlogIndex() {
@@ -30,7 +32,21 @@ export default async function BlogIndex() {
 
   return (
     <ArticleLayout>
-      <Title>Blog</Title>
+      <TitleRow>
+        <Title>Blog</Title>
+        <FeedLink href={asset("/blog/feed.xml")} type="application/rss+xml">
+          <Icon viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M5 5a14 14 0 0 1 14 14M5 11a8 8 0 0 1 8 8"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            <circle cx="6" cy="18" r="1.8" fill="currentColor" />
+          </Icon>
+          RSS feed
+        </FeedLink>
+      </TitleRow>
       {/* Every post can be a draft, and the production build drops drafts. */}
       {featured ? null : <Empty>No posts yet.</Empty>}
       {featured ? (
@@ -240,4 +256,9 @@ const Meta = styled.span`
     flex-direction: column;
     align-items: flex-start;
   }
+`;
+
+// a plain link: the feed is a static file, not a Next.js page
+const FeedLink = styled.a`
+  ${pageActionLink};
 `;

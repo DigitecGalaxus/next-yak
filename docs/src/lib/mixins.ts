@@ -278,3 +278,23 @@ export const proseStyles = css`
     border-left: 3px solid light-dark(${light.violet}, ${dark.white});
   }
 `;
+
+/** Quiet text links next to a page title, like "Copy page" or "RSS feed". Works on links and buttons. */
+export const pageActionLink = css`
+  ${chromeLink};
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: ${fontWeight.semibold};
+  color: light-dark(${light.violetSoft}, ${dark.fog});
+  cursor: pointer;
+
+  &:focus-visible {
+    ${focusRing};
+  }
+`;

@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { css, styled } from "@yak/react";
-import { fontWeight, light, dark } from "@/tokens";
-import { chromeLink, focusRing } from "@/lib/mixins";
+import { styled } from "@yak/react";
+import { pageActionLink } from "@/lib/mixins";
 import { Icon } from "@/components/icon";
 import { asset } from "@/lib/site";
 
@@ -91,29 +90,10 @@ const Actions = styled.div`
   gap: 18px;
 `;
 
-const action = css`
-  ${chromeLink};
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 14px;
-  font-weight: ${fontWeight.semibold};
-  color: light-dark(${light.violetSoft}, ${dark.fog});
-  cursor: pointer;
-
-  &:focus-visible {
-    ${focusRing};
-  }
-`;
-
 const ActionButton = styled.button`
-  ${action};
+  ${pageActionLink};
 `;
 
 const ActionLink = styled.a`
-  ${action};
+  ${pageActionLink};
 `;

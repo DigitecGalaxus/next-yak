@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import PageFooter from "@/components/docs/page-footer";
 import { PageActions } from "@/components/docs/page-actions";
+import { JsonLd, breadcrumbs } from "@/components/json-ld";
 import { ArticleLayout, Title, TitleRow, Description, Prose } from "@/components/docs/page-layout";
 import { getMDXComponents } from "@/mdx-components";
 
@@ -22,6 +23,12 @@ export default async function DocumentationPage(props: PageProps) {
 
   return (
     <ArticleLayout toc={page.data.toc}>
+      <JsonLd
+        data={breadcrumbs([
+          { name: "Docs", path: "/docs" },
+          { name: page.data.title, path: page.url },
+        ])}
+      />
       <TitleRow>
         <Title>{page.data.title}</Title>
         <PageActions markdownUrl={getPageMarkdownUrl(page).url} />
@@ -48,7 +55,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   if (!page) return {};
 
   return pageMetadata({
-    title: page.data.title,
+    title: page.data.seoTitle ?? page.data.title,
     description: page.data.description,
     path: `/docs/${slug.join("/")}`,
     card: `docs-${slug.join("-")}`,

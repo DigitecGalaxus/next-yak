@@ -35,11 +35,15 @@ const COLUMNS = [
         href: "https://github.com/DigitecGalaxus/next-yak/releases",
         external: true,
       },
-      // Static files for LLMs (app/llms.txt, app/llms-full.txt), not Next.js pages
-      { label: "llms.txt", href: "/llms.txt", file: true },
-      { label: "llms-full.txt", href: "/llms-full.txt", file: true },
     ],
   },
+];
+
+// Static files, not Next.js pages, so they are plain links with the base path
+const FILE_LINKS = [
+  // llms.txt links to llms-full.txt, so the footer skips it
+  { label: "llms.txt", href: "/llms.txt" },
+  { label: "RSS", href: "/blog/feed.xml" },
 ];
 
 export default function Footer() {
@@ -102,23 +106,28 @@ export default function Footer() {
             >
               {column.links.map((link) => (
                 <li key={link.href}>
-                  {"file" in link && link.file ? (
-                    <FooterFileLink href={asset(link.href)}>{link.label}</FooterFileLink>
-                  ) : (
-                    <FooterLink
-                      href={link.href}
-                      {...("external" in link && link.external ? externalLinkProps : {})}
-                    >
-                      {link.label}
-                    </FooterLink>
-                  )}
+                  <FooterLink
+                    href={link.href}
+                    {...("external" in link && link.external ? externalLinkProps : {})}
+                  >
+                    {link.label}
+                  </FooterLink>
                 </li>
               ))}
             </ul>
           </Column>
         ))}
 
-        <Legal>MIT licensed. Made by Digitec Galaxus.</Legal>
+        <BottomBar>
+          <p>MIT licensed. Made by Digitec Galaxus.</p>
+          <FileLinks>
+            {FILE_LINKS.map((link) => (
+              <li key={link.href}>
+                <FileLink href={asset(link.href)}>{link.label}</FileLink>
+              </li>
+            ))}
+          </FileLinks>
+        </BottomBar>
       </Inner>
     </footer>
   );
@@ -176,25 +185,31 @@ const ColumnTitle = styled.span`
   ${sectionLabel};
 `;
 
-const footerLinkStyles = css`
+const FooterLink = styled(Link)`
   ${chromeLink};
   font-size: ${fontSize.small};
   color: light-dark(${light.violet}, ${dark.white});
 `;
 
-const FooterLink = styled(Link)`
-  ${footerLinkStyles};
-`;
-
-const FooterFileLink = styled.a`
-  ${footerLinkStyles};
-`;
-
-const Legal = styled.p`
+const BottomBar = styled.div`
   grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
   padding-top: 24px;
   border-top: 1px solid light-dark(${light.beige5}, ${dark.navy5});
   font-family: ${fonts.mono};
   font-size: 13px;
   color: light-dark(${light.violetSoft}, ${dark.fog});
+`;
+
+const FileLinks = styled.ul`
+  display: flex;
+  gap: 20px;
+  list-style: none;
+`;
+
+const FileLink = styled.a`
+  ${chromeLink};
 `;

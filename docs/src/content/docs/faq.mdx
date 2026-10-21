@@ -1,30 +1,33 @@
 ---
 title: FAQ
+description: "Answers to common questions about yak: production use, supported frameworks and bundlers, TypeScript, other CSS-in-JS libraries and troubleshooting."
 ---
 
 import { Callout } from "../../components/mdx/callout";
 
 ## General questions
 
-### Is next-yak production ready?
+### Is yak production ready?
 
-Yes, `next-yak` is production ready and used in production at scale.
+Yes, yak is production ready and used in production at scale.
 
-[Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors next-yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
+[Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
 
-### What frameworks and bundlers does next-yak support?
+### What frameworks and bundlers does yak support?
 
-next-yak has first-class support for multiple frameworks and bundlers:
+yak supports React and Solid, and the same SWC plugin runs in every bundler below:
 
-- **Next.js** with both **Webpack** and **Turbopack**
-- **[Vite](/docs/vite)** 7+ (including Vite 8 with OXC/Rolldown), since v9.1.0. Any vite-based framework works: react-router, tanstack start, and more
-- **[Storybook](/docs/storybook)** 10+ with both Vite and Webpack builders via the `@yak/storybook` addon
+- **[Next.js](/docs/getting-started)** 16.4+ with both **webpack** and **Turbopack**, for the App Router and the Pages Router
+- **[Vite](/docs/vite)** 7+, including Vite 8 with OXC/Rolldown. Vite-based frameworks like React Router and TanStack Start (also with React Server Components) work too
+- **[Rsbuild](/docs/rsbuild)** 2+ through `@yak/react/rsbuild`, which also covers Rsbuild-based TanStack Start
+- **Solid** 2 with Vite through the `@yak/solid` package
+- **[Storybook](/docs/storybook)** 10+ with both the Vite and the webpack builder through the `@yak/storybook` addon
 
-Feel free to ask for adding support for other frameworks in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we will give it a thought.
+The [Examples](/docs/examples) page has a runnable project for most of these setups. If you need yak in a framework that isn't on this list, ask for it in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we'll give it a thought.
 
-### Can I mix/combine next-yak with other CSS-in-JS libraries?
+### Can I mix/combine yak with other CSS-in-JS libraries?
 
-Yes, you can use next-yak with other CSS-in-JS libraries.
+Yes, you can use yak with other CSS-in-JS libraries.
 
 You can use it with styled-components, emotion, tailwind or any other library that adds css classes to your components.
 
@@ -66,16 +69,16 @@ const Nav = styled.nav`
 `;
 ```
 
-### Why does next-yak always generate CSS variables when the values are static references that are known at build time?
+### Why does yak always generate CSS variables when the values are static references that are known at build time?
 
 It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
 and add errors if we detect that a value is static but a CSS variable is used.
 
-### Can I use next-yak with TypeScript?
+### Can I use yak with TypeScript?
 
-Yes, `next-yak` is fully type safe.
+Yes, yak is fully type safe.
 
-### Can I contribute to next-yak?
+### Can I contribute to yak?
 
 Yes.
 
@@ -93,7 +96,7 @@ If it's not this issue, please read the error carefully as it should indicate ho
 
 ### My styled components don't show up in React DevTools
 
-next-yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used:
+yak optimizes your JSX at build time by inlining a styled component directly into the place where it is used:
 
 ```tsx
 const Button = styled.button`
@@ -185,4 +188,3 @@ export default withYak(
 This will log the transformed output of your component to the console.
 
 It could be a specificity issue, a wrong selector, or a wrong usage of the library and if you don't know why your styles are not applied, feel free to [open an issue](https://github.com/DigitecGalaxus/next-yak/issues/new/choose).
-```

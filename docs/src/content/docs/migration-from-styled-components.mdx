@@ -1,13 +1,14 @@
 ---
 title: Migration from styled-components
-description: next-yak provides a RSC compatible API which is very similar to the styled-components API. In most cases the only change necessary is the import. However there are some edge cases which have to be migrated manually.
+seoTitle: Migrate from styled-components to yak
+description: Move from styled-components to yak, a fast alternative that works with React Server Components. Most code only needs a new import. This guide covers the rest.
 ---
 
 import { Callout } from "../../components/mdx/callout";
 
 ## Guide
 
-One of the core goals of `next-yak` is to provide a smooth migration path from `styled-components` to `next-yak`.
+One of the core goals of yak is to provide a smooth migration path from `styled-components` to yak.
 This guide walks you through the migration, including common scenarios and edge cases.
 
 ## Eslint plugin
@@ -40,7 +41,7 @@ Missing
 ## Just change the import
 
 You need to do the least amount of work for the following changes. All other changes build upon this one.
-Just change the import from `styled-components` to `next-yak` and change the import of `styled` from a default import to a named import.
+Just change the import from `styled-components` to `@yak/react` and change the import of `styled` from a default import to a named import.
 
 ```tsx title="component.tsx"
 import styled, { css, keyframes } from "styled-components"; // [!code --]
@@ -187,7 +188,7 @@ const LocalButton = styled(Button).attrs<Partial<ButtonProps>>(() => ({
 
 ## Property 'as' does not exist
 
-`next-yak` does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
+yak does not support the `as` prop. Instead, it provides a type-safe way to render dynamic HTML tags. By creating a reusable component with a defined set of allowed tags, you ensure valid HTML with stronger type safety:
 
 ```tsx
 type ElementType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -266,7 +267,7 @@ const Button = styled.button<{ $primary: boolean }>`
 `;
 ```
 
-When next-yak encounters a css tag, it will transform the css into a class name that gets injected during build time.
+When yak encounters a css tag, it will transform the css into a class name that gets injected during build time.
 
 ```tsx title="transformed.tsx"
 // pseudo code
@@ -276,7 +277,7 @@ const Button = (props) => (
 );
 ```
 
-You can nest the css tags arbitrarily deep and next-yak will transform them into class names and css variables.
+You can nest the css tags arbitrarily deep and yak will transform them into class names and css variables.
 You can't nest arbitrary styles inside property values, but you can nest property values inside css tags.
 Generally, you should try to simplify your styles and avoid nesting as much as possible to keep your styles as fast as possible.
 
@@ -307,7 +308,7 @@ const MyComp = styled.div<{ $primary: boolean }>`
 `;
 ```
 
-Dynamic mixins work differently in next-yak than in styled-components. With next-yak you're currently not able to export a dynamic mixin and use it in other components.
+Dynamic mixins work differently in yak than in styled-components. With yak you're currently not able to export a dynamic mixin and use it in other components.
 As we transform the styles on a per-file basis, we can't share dynamic values between files. If you need to use a dynamic mixin in multiple components, you unfortunately need to duplicate the mixin in each file or move the components to the same file.
 
 ```tsx title="component.tsx"
@@ -356,7 +357,7 @@ export const mixin = css<{ $primary: boolean }>`
 
 ### Global styles
 
-styled-components `createGlobalStyle` returns a component that you render. In next-yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles are imported.
+styled-components `createGlobalStyle` returns a component that you render. In yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles are imported.
 So to migrate your global styles, you need to remove the Global Style JSX (e.g. `<GlobalStyle />`) usage and import the file at the position where you used to render `<GlobalStyle />`. For
 app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from that page instead:
 
@@ -514,7 +515,7 @@ const MyComponent = ({ color }: { color: string }) => {
 
 ## Move some code to yak files
 
-Migrating `styled-components` with complex logic might need a bit more work. Yak files are special files that are evaluated during build time and can be used to store static values that are extracted during build time. You can create a `.yak.ts` or `.yak.tsx` file everywhere in your project and it will be picked up by next-yak.
+Migrating `styled-components` with complex logic might need a bit more work. Yak files are special files that are evaluated during build time and can be used to store static values that are extracted during build time. You can create a `.yak.ts` or `.yak.tsx` file everywhere in your project and it will be picked up by yak.
 
 <Callout>
   **Important note on `.yak.tsx` files**: As yak files are evaluated on every code change, they will
@@ -547,7 +548,7 @@ const RADIUS = 5; // [!code ++]
 export const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // [!code ++]
 ```
 
-A general rule of thumb is that next-yak doesn't run any JavaScript code to figure out any interpolated values except the code resides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
+A general rule of thumb is that yak doesn't run any JavaScript code to figure out any interpolated values except the code resides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
 
 Everything except calculations and string concatenations, or more generally, values that don't need a runtime in order to have a value, should
 work out of the box without any yak files and should be the preferred way to write your styles to keep your build times as fast as possible.
@@ -593,7 +594,7 @@ And you should see the transformed files and styles. This can help you to unders
 
 If you see that your styles are not applied, you should check if the styles are transformed correctly. Debugging can help you with that.
 
-If you wrap a styled-component component with a next-yak component, you need to add `&&` before the styles to increase the specificity as otherwise styled-components would always win.
+If you wrap a styled-component component with a yak component, you need to add `&&` before the styles to increase the specificity as otherwise styled-components would always win.
 
 ```tsx title="component.tsx"
 const Button = styled(StyledComponentsButton)`
@@ -605,7 +606,7 @@ const Button = styled(StyledComponentsButton)`
 `;
 ```
 
-This is only needed if you simultaneously use styled-components and next-yak. If you fully migrated to next-yak, you don't need to do that.
+This is only needed if you simultaneously use styled-components and yak. If you fully migrated to yak, you don't need to do that.
 
 ### I get a compile error
 

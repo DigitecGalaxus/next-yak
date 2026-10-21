@@ -1,12 +1,13 @@
 ---
 title: Getting started
-description: How to get started with next-yak
+seoTitle: Getting started with yak, zero-runtime CSS-in-JS for React
+description: Install @yak/react and write styled-components syntax with zero-runtime CSS extraction in Next.js, Vite or Rsbuild, with React Server Components support.
 ---
 
 import { Step, Steps } from "../../components/mdx/steps";
 import { Tab, Tabs } from "../../components/mdx/tabs";
 
-**next-yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
+**yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
 
 Works with **Next.js** (Webpack & Turbopack), **[Vite 7+](/docs/vite)** (react-router, tanstack start, and more), **[Rsbuild 2+](/docs/rsbuild)**, and **[Storybook](/docs/storybook)**.
 
@@ -74,11 +75,11 @@ bun add next-yak@9
 </Step>
 <Step>
 
-### Enable next-yak
+### Enable yak
 
-Add next-yak to your configuration file:
+Add yak to your configuration file:
 
-<Tabs title="Enable next-yak" items={['next.config.ts', 'vite.config.ts']}>
+<Tabs title="Enable yak" items={['next.config.ts', 'vite.config.ts']}>
 <Tab value="next.config.ts">
 ```ts
 import type { NextConfig } from 'next'
@@ -108,9 +109,9 @@ export default defineConfig({
 </Step>
 <Step>
 
-### Start using next-yak
+### Start using yak
 
-With the installation and configuration done, you can now use next-yak directly in your components.
+With the installation and configuration done, you can now use yak directly in your components.
 If you used `styled-components` before, you'll feel right at home.
 
 Here's a simple example:
@@ -125,11 +126,11 @@ const StyledDiv = styled.div`
 `;
 
 export default function HomePage() {
-  return <StyledDiv>Hello, next-yak!</StyledDiv>;
+  return <StyledDiv>Hello, yak!</StyledDiv>;
 }
 ```
 
-You're now ready to use next-yak in your project and if you need to migrate from styled-components, you can follow the [migration guide](/docs/migration-from-styled-components).
+You're now ready to use yak in your project and if you need to migrate from styled-components, you can follow the [migration guide](/docs/migration-from-styled-components).
 
 </Step>
 
@@ -137,7 +138,7 @@ You're now ready to use next-yak in your project and if you need to migrate from
 
 ## Using with Vite
 
-Since v9.1.0, next-yak supports Vite 7+ (including Vite 8 with OXC/Rolldown). Check out the [Vite guide](/docs/vite) for more setup instructions.
+yak supports Vite 7+ (including Vite 8 with OXC/Rolldown) since next-yak 9.1.0. Check out the [Vite guide](/docs/vite) for more setup instructions.
 
 ## Using with Storybook
 

@@ -1,6 +1,7 @@
 ---
 title: Features
-description: yak is a featured packed static CSS-in-JS framework with a minimal runtime aspect.
+seoTitle: "yak features: styled, css prop, theming and more"
+description: "Everything yak can do: styled components, the css prop, keyframes, global styles, theming with context, mixins, atoms and build-time constants in .yak files."
 ---
 
 import { Callout } from "../../components/mdx/callout";
@@ -8,7 +9,7 @@ import { Tab, Tabs } from "../../components/mdx/tabs";
 
 ## Static CSS
 
-At the heart of next-yak lies the extraction of static CSS.
+At the heart of yak lies the extraction of static CSS.
 You can write your styles as you normally would with styled-components.
 During build time, these styles are extracted, and your component is assigned a class that encapsulates these styles.
 
@@ -60,7 +61,7 @@ const Headline = styled.h1('.Headline');
 
 The static functionality itself is already very useful, but the bread and butter is an easy way to
 create dynamic styles. Styled-components popularized the approach of using props to drive dynamic CSS parts.
-With next-yak, you can use the exact same familiar API.
+With yak, you can use the exact same familiar API.
 
 <Tabs title="Dynamic styles" groupId="language" items={["typescript", "javascript"]}>
 <Tab value="typescript">
@@ -446,7 +447,7 @@ body {
 
 <Callout type="info">
   When your CSS targets markup you don't control — say a third-party widget that renders
-  `<div class="maps">` — the selector has to keep its literal name to match. If next-yak rewrote
+  `<div class="maps">` — the selector has to keep its literal name to match. If yak rewrote
   `.maps` to `.maps_a4f5e`, it would no longer match the real element and your styles would silently
   do nothing.
 
@@ -745,7 +746,7 @@ declare module "@yak/react" {
 }
 ```
 
-Under the hood, next-yak uses React's `use()` hook to resolve the promise from your async context function at the component level, then passes the fully resolved theme object to your styled components. This means your styled component template literals continue to work exactly as before, receiving a synchronous theme object, while you get the flexibility to await any server-side APIs you need in your context function.
+Under the hood, yak uses React's `use()` hook to resolve the promise from your async context function at the component level, then passes the fully resolved theme object to your styled components. This means your styled component template literals continue to work exactly as before, receiving a synchronous theme object, while you get the flexibility to await any server-side APIs you need in your context function.
 
 ## CSS Prop
 
@@ -774,7 +775,7 @@ It's meant for simple styling requirements, where you don't have to think about 
 The `css` prop is allowed on any element that can accept `className` and `style`.
 
 Its value has to be styles written in place: a `css` template or an `atoms()` call and logical combinations of them.
-Everything else fails the build, because next-yak only compiles the styles it sees on the element.
+Everything else fails the build, because yak only compiles the styles it sees on the element.
 To combine several styles, nest them in one template instead of passing an array:
 
 ```jsx title="my-component.tsx"
@@ -838,7 +839,7 @@ Or just add this to your `tsconfig.json` and all your css props will have the co
 
 ## Cross-File Imports
 
-next-yak supports importing constants, mixins, and selectors from normal modules or `.yak` files. This works consistently across all bundlers (webpack, Turbopack, and Vite).
+yak supports importing constants, mixins, and selectors from normal modules or `.yak` files. This works consistently across all bundlers (webpack, Turbopack, and Vite).
 
 ### Build-Time Constants with `.yak` Files
 
@@ -905,7 +906,7 @@ const Label = styled.span`
 
 ## Generic Yak Component
 
-If you use `next-yak` to wrap a generic component, you can use the `GenericYakComponentOf` component to preserve the type of your component while still being able to use it as a regular yak component.
+If you use yak to wrap a generic component, you can use the `GenericYakComponentOf` component to preserve the type of your component while still being able to use it as a regular yak component.
 
 ```tsx title="my-generic-component.tsx" twoslash
 import { type ReactElement } from "react";

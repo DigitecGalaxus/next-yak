@@ -1,6 +1,6 @@
 ---
 title: Folding
-description: How next-yak compiles a styled component usage straight into a plain DOM element, and when it keeps the runtime wrapper.
+description: How yak compiles a styled component usage straight into a plain DOM element, and when it keeps the runtime wrapper.
 ---
 
 import { Tab, Tabs } from "../../components/mdx/tabs";
@@ -9,7 +9,7 @@ import { SideBySide } from "../../components/mdx/sideBySide";
 
 A styled component is a React component. Every time it renders it works out its class name, merges it with the props it received, and renders the real DOM element. That is one extra component in the tree for each usage, on each render, even when everything it does is fixed at build time.
 
-When a styled component is declared and used in the same file, next-yak already knows what it renders. It folds the usage straight into the DOM element and drops the wrapper:
+When a styled component is declared and used in the same file, yak already knows what it renders. It folds the usage straight into the DOM element and drops the wrapper:
 
 <SideBySide>
 <div>

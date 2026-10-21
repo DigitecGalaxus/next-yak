@@ -5,6 +5,7 @@ import { styled } from "@yak/react";
 import { getPost, getPostsNewestFirst, readingMinutes, formatPostDate } from "@/lib/source";
 import { PostTag } from "@/components/blog/post-tag";
 import { pageMetadata } from "@/lib/page-metadata";
+import { JsonLd, blogPosting } from "@/components/json-ld";
 import { chromeLink } from "@/lib/mixins";
 import { getMDXComponents } from "@/mdx-components";
 import { ArticleLayout, Title, Prose } from "@/components/docs/page-layout";
@@ -22,6 +23,16 @@ export default async function BlogPost(props: PageProps) {
 
   return (
     <ArticleLayout toc={post.data.toc}>
+      <JsonLd
+        data={blogPosting({
+          title: post.data.title,
+          description: post.data.description,
+          path: post.url,
+          date: post.data.date,
+          author: post.data.author,
+          card: `blog-${slug}`,
+        })}
+      />
       <BackLink href="/blog">← Blog</BackLink>
       <PostTag type={post.data.type} />
       <Title>{post.data.title}</Title>
@@ -55,6 +66,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     path: `/blog/${slug}`,
     card: `blog-${slug}`,
     publishedTime: post.data.date,
+    feed: true,
   });
 }
 

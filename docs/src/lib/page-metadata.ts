@@ -8,6 +8,7 @@ export function pageMetadata({
   card,
   publishedTime,
   markdownPath,
+  feed = false,
 }: {
   title: string;
   description?: string;
@@ -17,6 +18,8 @@ export function pageMetadata({
   publishedTime?: string;
   /** Path of the Markdown version of the page, linked as `rel="alternate"` for LLMs and agents. */
   markdownPath?: string;
+  /** Link the blog RSS feed as `rel="alternate"`. */
+  feed?: boolean;
 }): Metadata {
   const images = [
     { url: `/og/${card}.png`, width: 1200, height: 630, alt: `${title} — ${SITE_NAME}` },
@@ -26,7 +29,10 @@ export function pageMetadata({
     description,
     alternates: {
       canonical: path,
-      ...(markdownPath ? { types: { "text/markdown": absoluteUrl(markdownPath) } } : {}),
+      types: {
+        ...(markdownPath ? { "text/markdown": absoluteUrl(markdownPath) } : {}),
+        ...(feed ? { "application/rss+xml": absoluteUrl("/blog/feed.xml") } : {}),
+      },
     },
     openGraph: {
       type: publishedTime ? "article" : "website",

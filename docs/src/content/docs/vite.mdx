@@ -1,15 +1,16 @@
 ---
 title: Vite
-description: Use next-yak with Vite and React.
+seoTitle: Zero-runtime CSS-in-JS for Vite
+description: Set up yak in a Vite app with the viteYak plugin and get styled-components syntax with build-time CSS extraction in React Router, TanStack Start and more.
 ---
 
 import { Callout } from "../../components/mdx/callout";
 
-next-yak has first-class Vite support via the `viteYak` plugin and any Vite-based framework works out of the box.
+yak has first-class Vite support via the `viteYak` plugin and any Vite-based framework works out of the box.
 
 This page shows how to:
 
-- Configure Vite to use next-yak
+- Configure Vite to use yak
 - Define a theme context for `YakThemeProvider`
 - Migrate from styled-components
 - Start from scratch if you don't use any CSS-in-JS yet
@@ -181,12 +182,12 @@ const Button = styled.button`
 export default Button;
 ```
 
-You can mix next-yak with regular CSS / CSS Modules. next-yak styles are extracted at build time and
+You can mix yak with regular CSS / CSS Modules. yak styles are extracted at build time and
 end up in regular CSS files handled by Vite's CSS pipeline.
 
 ## Yak constant files in Vite
 
-next-yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files.
+yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files.
 In Vite, these files are evaluated in a sandboxed context.
 
 You usually **do not need** a `.yak` file for simple string constants, those can live in normal `.ts` modules and be imported as usual.

@@ -11,6 +11,10 @@ import { transformerCodeLinks } from "./src/lib/code-links";
 export const docs = defineDocs({
   dir: "src/content/docs",
   docs: {
+    schema: frontmatterSchema.extend({
+      // The <title> and social cards use it instead of `title`, which stays short for the sidebar
+      seoTitle: z.string().optional(),
+    }),
     postprocess: {
       // `getText("processed")` for the LLM routes. These components become placeholders, which
       // `docsLlms` in src/lib/source.ts renders as plain Markdown.
