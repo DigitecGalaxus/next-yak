@@ -1,5 +1,9 @@
 # storybook-addon-yak
 
+## 10.0.0-rc.2
+
+No changes in this release.
+
 ## 10.0.0-rc.1
 
 ### Major Changes

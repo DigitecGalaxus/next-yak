@@ -1,6 +1,6 @@
 {
   "name": "@yak/storybook",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0-rc.2",
   "description": "Storybook addon for @yak/react CSS-in-JS",
   "keywords": [
     "@yak/react",
