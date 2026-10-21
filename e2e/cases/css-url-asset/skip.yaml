@@ -1,13 +1,5 @@
 # Bundlers that cannot run this case, with the reason. The runner leaves the case out of their app.
 
-rsbuild: >-
-  rsbuild imports yak css as a data: url, which has no directory for a relative
-  url() to resolve from, so the build fails
-
-tanstack-start-rsbuild: >-
-  rsbuild imports yak css as a data: url, which has no directory for a relative
-  url() to resolve from, so the build fails
-
 next-app-webpack: >-
   Next bundles a mini-css-extract-plugin without
   https://github.com/webpack/mini-css-extract-plugin/pull/1162, so the png goes
