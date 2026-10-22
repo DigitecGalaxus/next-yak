@@ -9,6 +9,7 @@ import { use, useEffect, useRef } from "react";
 import { syntax, yakTheme } from "@/lib/yak-theme";
 import { highlighterPromise as sharedHighlighter } from "@/lib/shiki";
 import { asset } from "@/lib/site";
+import { fonts } from "@/tokens";
 import type { FrameworkId } from "@/lib/playground/frameworks";
 import type { PlaygroundFile } from "@/lib/playground/types";
 
@@ -99,7 +100,7 @@ export function SourceEditor({
       defaultLanguage="typescript"
       path={`${activeFile}.tsx`}
       options={{
-        fontFamily: "var(--font-mono), ui-monospace, monospace",
+        fontFamily: fonts.mono,
         fontSize: 13,
         lineHeight: 22,
         padding: { top: 14, bottom: 14 },
