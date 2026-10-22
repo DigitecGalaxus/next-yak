@@ -1,30 +1,24 @@
-# next-yak
+# @yak/react
 
 ## 10.0.0
 
+`next-yak` is now `@yak/react`. The [migration guide](https://yak.js.org/docs/migration-from-next-yak) covers the switch.
+
 ### Major Changes
 
-- e030a2d: Remove CSS Modules. `@yak/react` now always writes plain CSS. Remove the options `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings` from the config.
-- c04e52c: Move the option `experiments.debug` to `debug`.
-- 9496360: `@yak/react` is now ESM only and needs Node.js 22.18 or later.
-- 50ef4de: Rename `next-yak` to `@yak/react`.
+- Rename `next-yak` to `@yak/react`.
+- `@yak/react` is ESM only and needs Node.js 22.18 or later.
+- Remove CSS Modules. `@yak/react` always writes plain CSS, and the options `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings` no longer exist.
+- Move the option `experiments.debug` to `debug`.
 
 ### Patch Changes
 
-- 681904e: Relative `url()` paths in yak styles load their files, also when a mixin from another directory uses them.
-- 5d9ada3: Update dependencies and add support for next.js 16.4
-- b48da1f: Resolve cross-file constants, mixins and styled components that are exported with a local export list (`export { x }`, `export { x as y }`, `export { x as default }`) or re-exported from an import.
-- 4e83e0b: With Rsbuild, relative `url()` paths in yak styles load their files.
-- daacb46: Fix Rsbuild builds with `@rsbuild/plugin-babel` failing with ".inputSourceMap must be a boolean, object, or undefined"
-- 243320b: Remove the two "Module not found" warnings that Turbopack showed for the `.yak` file evaluator
-- Updated dependencies [5d9ada3]
-- Updated dependencies [76b9ac8]
-- Updated dependencies [50ef4de]
-- Updated dependencies [e030a2d]
-- Updated dependencies [50ef4de]
-- Updated dependencies [50ef4de]
-- Updated dependencies [e030a2d]
-  - @yak/swc@10.0.0
+- Support Next.js 16.4.
+- Resolve cross-file constants, mixins and styled components that a file exports with a local export list (`export { x }`, `export { x as y }`, `export { x as default }`) or re-exports from an import.
+- Relative `url()` paths in yak styles load their files, also with Rsbuild and when a mixin from another directory uses them.
+- Fix Rsbuild builds with `@rsbuild/plugin-babel` that failed with ".inputSourceMap must be a boolean, object, or undefined".
+- Remove the two "Module not found" warnings that Turbopack showed for the `.yak` file evaluator.
+- Use `@yak/swc` 10.0.0.
 
 ## 10.0.0-rc.2
 
