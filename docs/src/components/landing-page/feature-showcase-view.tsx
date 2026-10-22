@@ -1,12 +1,12 @@
 "use client";
 
-import { css, keyframes, styled } from "@yak/react";
+import { css, styled } from "@yak/react";
 import { useState, type CSSProperties, type PointerEvent } from "react";
 import { container, fonts, fontSize, ink, light, dark } from "@/tokens";
 import { subsectionHeading, editorSurface, codeReset } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { EditorDots } from "./editor-dots";
-import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
+import { useScrollTurn } from "@/lib/use-scroll-turn";
 import { frameworks, FRAMEWORK_TABS } from "./frameworks";
 
 export type Callout = {
@@ -61,9 +61,12 @@ export default function FeatureShowcaseView({
 }) {
   const [active, setActive] = useState<string>(frameworks[0].id);
   const [hovered, setHovered] = useState<number | null>(null);
+  const [turn, tourRef] = useScrollTurn(callouts.length);
+  // the pointer wins over the scroll position
+  const current = hovered ?? turn;
 
-  const placement = (c: Callout, i: number) =>
-    ({ "--row": c.line + ROWS_BEFORE_CODE, "--span": c.span, "--i": i }) as CSSProperties;
+  const placement = (c: Callout) =>
+    ({ "--row": c.line + ROWS_BEFORE_CODE, "--span": c.span }) as CSSProperties;
 
   // a touch tap would latch a callout with no way to leave it
   const enter = (i: number) => (event: PointerEvent) => {
@@ -72,14 +75,13 @@ export default function FeatureShowcaseView({
 
   return (
     <Grid
+      ref={tourRef}
       className={className}
-      data-tour-hover={hovered !== null || undefined}
       style={
         {
           ...style,
           "--lines": lineCount,
           "--code-cols": codeCols,
-          "--n": callouts.length,
         } as CSSProperties
       }
     >
@@ -117,10 +119,10 @@ export default function FeatureShowcaseView({
         <Card
           key={callout.title}
           data-side={callout.side}
-          data-active={hovered === i || undefined}
+          data-active={current === i || undefined}
           onPointerEnter={enter(i)}
           onPointerLeave={() => setHovered(null)}
-          style={placement(callout, i)}
+          style={placement(callout)}
         >
           <Arrow aria-hidden viewBox="6 0 60 40" fill="none">
             <path
@@ -161,49 +163,13 @@ export default function FeatureShowcaseView({
         <LineHighlight
           key={callout.title}
           aria-hidden
-          data-active={hovered === i || undefined}
-          style={placement(callout, i)}
+          data-active={current === i || undefined}
+          style={placement(callout)}
         />
       ))}
     </Grid>
   );
 }
-
-const bandReveal = keyframes`
-  0%,
-  100% {
-    opacity: 0;
-  }
-  20%,
-  80% {
-    opacity: 1;
-  }
-`;
-
-const markerSweep = keyframes`
-  0% {
-    background-size: 0% 60%;
-  }
-  22%,
-  86% {
-    background-size: 100% 60%;
-  }
-  100% {
-    background-size: 0% 60%;
-  }
-`;
-
-/* an unregistered custom property animates discretely */
-const leaderAccent = keyframes`
-  0%,
-  100% {
-    --leader: var(--leader-off);
-  }
-  10%,
-  90% {
-    --leader: var(--leader-on);
-  }
-`;
 
 const Grid = styled.div`
   --editor-head: 48px;
@@ -231,8 +197,6 @@ const Grid = styled.div`
     justify-content: center;
     column-gap: var(--col-gap);
     row-gap: 0;
-
-    ${tourTimeline};
   }
 
   @container section (min-width: 1000px) {
@@ -301,17 +265,8 @@ const LineHighlight = styled.div`
     opacity: 0;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: opacity 0.15s ease;
+      transition: opacity 0.2s ease;
     }
-
-    @supports (animation-timeline: view()) {
-      @media (prefers-reduced-motion: no-preference) {
-        animation: ${bandReveal} linear both;
-        ${tourWindow};
-      }
-    }
-
-    ${tourPointerOverride};
 
     &[data-active] {
       opacity: 1;
@@ -346,15 +301,6 @@ const Card = styled.div`
     --desc-gap: 2px;
     --desc-size: 13px;
     --desc-lh: 18px;
-
-    @supports (animation-timeline: view()) {
-      @media (prefers-reduced-motion: no-preference) {
-        animation: ${leaderAccent} linear both;
-        ${tourWindow};
-      }
-    }
-
-    ${tourPointerOverride};
 
     &[data-active] {
       --leader: var(--leader-on);
@@ -393,7 +339,7 @@ const Arrow = styled.svg`
     pointer-events: none;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: color 0.18s ease;
+      transition: color 0.2s ease;
     }
   }
 
@@ -428,17 +374,8 @@ const CardTitle = styled.h3`
     box-decoration-break: clone;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: background-size 0.22s ease;
+      transition: background-size 0.2s ease;
     }
-
-    @supports (animation-timeline: view()) {
-      @media (prefers-reduced-motion: no-preference) {
-        animation: ${markerSweep} linear both;
-        ${tourWindow};
-      }
-    }
-
-    ${tourPointerOverride};
 
     ${Card}[data-active] & {
       background-size: 100% 60%;
