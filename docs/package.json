@@ -45,5 +45,8 @@
     "sharp": "catalog:dev",
     "typescript": "catalog:dev",
     "wasm-pack": "catalog:dev"
-  }
+  },
+  "browserslist": [
+    "since 2025"
+  ]
 }
