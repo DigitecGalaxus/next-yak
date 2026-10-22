@@ -100,7 +100,7 @@ cd packages/yak-swc && pnpm prettier
 - `loaders/webpack-loader.ts` - Webpack loader
 - `loaders/turbo-loader.ts` - Turbopack loader
 - `withYak/index.ts` - Next.js config wrapper
-- `packages/yak-internals/cross-file-resolver/` - Cross-file constant resolution (private shared package, bundled into @yak/react and @yak/solid at build time)
+- `packages/yak-internals/cross-file-resolver/` - Cross-file constant resolution (private shared package, bundled into @yak/react, @yak/solid and @yak/qwik at build time)
 
 ### Rust (packages/yak-swc/yak_swc/src/)
 
