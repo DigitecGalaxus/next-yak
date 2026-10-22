@@ -1,5 +1,18 @@
 # @yak/solid
 
+## 0.4.0
+
+### Minor Changes
+
+- Move the option `experiments.debug` of the Vite plugin to `debug`.
+- `@yak/solid` needs Node.js 22.18 or later. CommonJS code can now load it with `require()`.
+
+### Patch Changes
+
+- Relative `url()` paths in yak styles load their files, also when a mixin from another directory uses them.
+- Remove the two "Module not found" warnings that Turbopack showed for the `.yak` file evaluator.
+- Use `@yak/swc` 10.0.0.
+
 ## 0.4.0-rc.2
 
 ### Patch Changes

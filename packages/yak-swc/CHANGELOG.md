@@ -1,4 +1,20 @@
-# yak-swc
+# @yak/swc
+
+## 10.0.0
+
+`yak-swc` is now `@yak/swc`. The [migration guide](https://yak.js.org/docs/migration-from-next-yak) covers the switch.
+
+### Major Changes
+
+- Rename `yak-swc` to `@yak/swc`.
+- The default yak package is now `@yak/react` instead of `next-yak`. Imports from `next-yak` are no longer compiled.
+- Remove the CSS Modules output. The options `importMode.transpilation` and `suppressDeprecationWarnings` no longer exist.
+- A `:global()` selector is now a build error.
+
+### Patch Changes
+
+- Support Next.js 16.4.
+- Fix the Rolldown warning `INVALID_ANNOTATION`.
 
 ## 10.0.0-rc.2
 
