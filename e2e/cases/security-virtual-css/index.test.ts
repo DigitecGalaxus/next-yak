@@ -34,7 +34,9 @@ test(
       await writeFile(file, `SECRET=https://${secret}\n`);
       const outsideFile = join(outside, "private.txt");
       await writeFile(outsideFile, `SECRET=https://${secret}\n`);
-      const yakPackage = testEnv.framework === "solid" ? "@yak/solid" : "@yak/react";
+      const yakPackage = { react: "@yak/react", solid: "@yak/solid", qwik: "@yak/qwik" }[
+        testEnv.framework
+      ];
       const sources = [file, outsideFile];
       for (const extension of ["ts", "yak.ts"]) {
         await writeFile(

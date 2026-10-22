@@ -20,7 +20,7 @@ interface BundlerPlaywrightConfig {
    * only runs cases that provide a matching index file: index.tsx for react,
    * index.<framework>.tsx otherwise.
    */
-  framework?: "react" | "solid";
+  framework?: "react" | "solid" | "qwik";
 }
 
 export function basePlaywrightConfig(config: BundlerPlaywrightConfig) {

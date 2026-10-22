@@ -51,8 +51,9 @@ test(
     await page.getByTestId("mount-input").click();
     await expect(page.getByTestId("preset-input")).toHaveValue("preset");
     // the server rendered the child once, and so did the client. React's
-    // strict mode double-invokes renders in dev, so the count holds for solid only
-    if (testEnv.framework === "solid") {
+    // strict mode double-invokes renders in dev, so the count holds for the
+    // other frameworks only
+    if (testEnv.framework !== "react") {
       expect(html).toMatch(/data-testid="child-renders"[^>]*>1</);
       await expect(page.getByTestId("child-renders")).toHaveText("1");
     }
