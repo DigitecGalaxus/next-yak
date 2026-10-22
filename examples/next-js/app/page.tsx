@@ -157,7 +157,7 @@ export default function Home() {
         </FancyButton>
         <Clock />
         <HighContrastToggle />
-        <StyledLink href="https://github.com/DigitecGalaxus/next-yak/tree/main/packages/example/app">
+        <StyledLink href="https://github.com/galaxuslabs/yak/tree/main/examples/next-js/app">
           view code
         </StyledLink>
         <p

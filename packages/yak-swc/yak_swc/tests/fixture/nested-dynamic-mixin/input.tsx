@@ -1,6 +1,6 @@
 import { styled, css } from "@yak/react";
 
-// example taken from https://github.com/DigitecGalaxus/next-yak/issues/208 
+// example taken from https://github.com/galaxuslabs/yak/issues/208 
 
 const spacing = "20px";
 
