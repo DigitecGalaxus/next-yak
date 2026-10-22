@@ -1,3 +1,4 @@
+import { cardUrl } from "@/lib/card-url";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 const REPOSITORY_URL = "https://github.com/galaxuslabs/yak";
@@ -56,7 +57,7 @@ export function blogPosting(post: {
     url: absoluteUrl(post.path),
     mainEntityOfPage: absoluteUrl(post.path),
     datePublished: post.date,
-    image: absoluteUrl(`/og/${post.card}.png`),
+    image: cardUrl(post.card),
     author: { "@type": "Organization", name: post.author ?? `The ${SITE_NAME} team` },
     publisher: { "@type": "Organization", name: "Digitec Galaxus", url: "https://www.galaxus.ch" },
   };

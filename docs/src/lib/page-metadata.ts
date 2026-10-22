@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SIZE } from "../og/card.ts";
 import { cardFor, type CardPage } from "../og/cards.ts";
+import { cardUrl } from "./card-url";
 import { SITE_NAME, absoluteUrl } from "./site";
 
 /**
@@ -10,7 +11,7 @@ import { SITE_NAME, absoluteUrl } from "./site";
  */
 export function cardImages(card: string, page?: CardPage) {
   const alt = cardFor(card, page).alt;
-  const url = absoluteUrl(`/og/${card}.png`);
+  const url = cardUrl(card);
   return {
     openGraph: [{ url, type: "image/png", ...SIZE, alt }],
     twitter: [{ url, alt }],
