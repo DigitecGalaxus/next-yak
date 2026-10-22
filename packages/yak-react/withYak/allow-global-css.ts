@@ -81,7 +81,7 @@ export function allowYakGlobalCss(webpackConfig: WebpackConfig) {
     console.warn(
       "@yak/react: could not find the next.js global-CSS rules. " +
         "Please report this issue with your Next.js version at " +
-        "https://github.com/DigitecGalaxus/next-yak/issues/new",
+        "https://github.com/galaxuslabs/yak/issues/new",
     );
     return;
   }

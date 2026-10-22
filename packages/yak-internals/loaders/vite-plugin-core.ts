@@ -1,7 +1,7 @@
 import { type JscConfig, Options, transform as swcTransform } from "@swc/core";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, relative, resolve } from "node:path";
+import { basename, dirname, extname, resolve } from "node:path";
 import { isFileLoadingAllowed, normalizePath, type Plugin, type ResolvedConfig } from "vite";
 import { parseModule } from "../cross-file-resolver/parseModule.js";
 import { resolveCrossFileConstant } from "../cross-file-resolver/resolveCrossFileConstant.js";
@@ -15,10 +15,8 @@ const require = createRequire(import.meta.url);
 
 export type ViteYakPluginOptions = YakConfigOptions & {
   /**
-   * Base path for resolving CSS virtual module paths.
-   * Relative paths are resolved from Vite's project root.
-   * In monorepo setups where source files live outside the Vite project root,
-   * set this to the monorepo root to avoid broken CSS imports.
+   * Base path for the file paths yak-swc turns into stable class names and
+   * shows in debug output. Relative paths are resolved from Vite's project root.
    * @defaultValue Vite's resolved `root`
    */
   basePath?: string;
@@ -112,12 +110,11 @@ async function viteYakImpl(
   yakOptions.displayNames =
     userOptions.displayNames ?? yakOptions.displayNames ?? !yakOptions.minify;
   let basePath = userOptions.basePath ?? "";
-  let hasWarnedAboutBasePath = false;
   let debugLog: ReturnType<typeof createDebugLogger> = () => {};
   let isServe = false;
   const sourceFileRegex = /\.(tsx?|m?jsx?)\??/;
-  const virtualModuleRegex = /^virtual:yak-css:/;
-  const virtualCssModuleRegex = /^\0virtual:yak-css:/;
+  // "/src/a.tsx.yak.css" or "/src/a.tsx.yak.css?direct", see resolveId
+  const yakCssRegex = /\.yak\.css(?:\?|$)/;
   const yakSwcPath = await findYakSwcPlugin();
   const evaluator: Evaluator = await createEvaluator();
 
@@ -161,33 +158,55 @@ async function viteYakImpl(
       debugLog = createDebugLogger(yakOptions.debug, basePath);
       isServe = config.command === "serve";
     },
+    // The css of "/src/a.tsx" is the module "/src/a.tsx.yak.css": the source path
+    // plus a suffix, not a "\0virtual:" id.
+    //
+    // Vite and Rolldown recommend a "\0" prefix for virtual modules, but not for
+    // modules derived from a real file, like the parts of a Vue or Svelte single file
+    // component. yak css is such a module, and a "\0" id breaks it in two ways:
+    // - Vite resolves a relative url("./icon.svg") from the directory of the css
+    //   module, and a "\0" id has no directory.
+    // - SSR frameworks load each stylesheet with a <link> in dev. The css hot update
+    //   for such a stylesheet only finds the new url when the id starts with "/".
+    // https://vite.dev/guide/api-plugin#virtual-modules-convention
+    // https://rolldown.rs/apis/plugin-api#virtual-modules
+    //
+    // The suffix follows the whole file name. A query would not work: Vite's TS
+    // transform ignores the query of "/src/a.tsx?yak&lang.css" and parses the css as TSX.
     resolveId: {
       filter: {
-        id: virtualModuleRegex,
+        id: yakCssRegex,
       },
-      handler(id) {
-        return "\0" + id;
+      async handler(id, importer) {
+        const { path, query } = splitYakCssId(id);
+        // yak-swc imports the css from the source file as "./a.yak.css", because
+        // {{__BASE_NAME__}} has no extension. The importer names the source file.
+        if (importer && path.startsWith("./")) {
+          const source = importer.split("?")[0];
+          if (path === `./${basename(source, extname(source))}`) {
+            return source + ".yak.css" + query;
+          }
+        }
+        // A request from the browser. Vite serves a file inside the root from the
+        // root: "/src/a.tsx.yak.css". For a file outside the root, like a component
+        // of a linked package in a monorepo, Vite's import analysis writes the url
+        // as "/@fs/" plus the absolute path: "/@fs/home/me/ui/a.tsx.yak.css".
+        // this.resolve turns both back into the file path.
+        const resolved = await this.resolve(path, importer, { skipSelf: true });
+        return resolved && !resolved.external ? resolved.id + ".yak.css" + query : null;
       },
     },
     load: {
       filter: {
-        id: virtualCssModuleRegex,
+        id: yakCssRegex,
       },
       async handler(id) {
         const config = this.environment.getTopLevelConfig();
-        // The source path sits between the virtual prefix and the .css suffix.
-        const queryStringStart = id.indexOf("?");
-        const queryString = queryStringStart === -1 ? "" : id.slice(queryStringStart);
-        const idWithoutQuery = id.slice(0, id.length - queryString.length);
-        if (!idWithoutQuery.startsWith("\0virtual:yak-css:") || !idWithoutQuery.endsWith(".css")) {
+        const { path: originalId, query: queryString } = splitYakCssId(id);
+        if (!originalId) {
           this.error(`[${library.name}] Invalid yak CSS module`);
         }
-        const relativeId = idWithoutQuery.slice(17, -4);
-        if (!relativeId) {
-          this.error(`[${library.name}] Invalid yak CSS module`);
-        }
-        const originalId = resolve(basePath, relativeId);
-        // Dev requests can choose virtual module paths, so checkFileAccess prevents
+        // Dev requests can choose any path, so checkFileAccess prevents
         // unrestricted reads by enforcing Vite's file access rules before reading.
         const readSource = async (filePath: string) =>
           this.fs.readFile(checkFileAccess(filePath, config), { encoding: "utf8" });
@@ -259,25 +278,13 @@ async function viteYakImpl(
       filter: {
         id: {
           include: sourceFileRegex,
-          exclude: [library.excludePattern],
+          exclude: [library.excludePattern, yakCssRegex],
         },
         code: library.name,
       },
       async handler(code, id) {
         try {
           const filePath = id.split("?")[0];
-          if (!hasWarnedAboutBasePath) {
-            const relPath = relative(basePath, filePath);
-            if (relPath.startsWith("..")) {
-              hasWarnedAboutBasePath = true;
-              console.warn(
-                `[${library.name}] Source file "${filePath}" is outside the project root "${basePath}".\n` +
-                  `This may cause CSS resolution issues in monorepo setups.\n` +
-                  `Set the "basePath" plugin option to your monorepo root:\n\n` +
-                  `  { basePath: "/absolute/path/to/monorepo/root" }\n`,
-              );
-            }
-          }
           const result = await transform(
             code,
             filePath,
@@ -300,24 +307,49 @@ async function viteYakImpl(
     },
 
     // Vite's default HMR only updates the JS module when a source file changes.
-    // The extracted CSS lives in a separate virtual module (virtual:yak-css:...)
+    // The extracted CSS lives in a separate module (/src/a.tsx.yak.css)
     // which Vite doesn't know is derived from the source file. Without explicit
     // invalidation here, the browser keeps stale CSS after edits.
+    //
+    // One css file can be two modules: "/src/a.tsx.yak.css" for the import from
+    // a.tsx, and "/src/a.tsx.yak.css?direct" for a <link> an SSR framework renders.
+    // Vite sends a js-update for the first and a css-update, which swaps the
+    // <link>, for the second, so both go into the update.
+    //
+    // The edited file is either the source of a css file (a.tsx -> a.tsx.yak.css)
+    // or a file a css file imports a value from. The css load watches those
+    // files, so the css modules are among the importers of the edited modules.
     hotUpdate({ modules, file, type }) {
       if (type !== "update" && type !== "create") return;
-      if (!sourceFileRegex.test(file)) return;
+      if (!sourceFileRegex.test(file) || yakCssRegex.test(file)) return;
 
-      // The SWC plugin generates virtual module paths relative to basePath
-      // (via {{__MODULE_PATH__}}), so we must match that format.
-      const relativePath = normalizePath(relative(basePath, file));
-      const virtualId = "\0virtual:yak-css:" + relativePath + ".css";
-      const mod = this.environment.moduleGraph.getModuleById(virtualId);
-      if (mod) {
-        this.environment.moduleGraph.invalidateModule(mod);
-        return [...modules, mod];
+      const { moduleGraph } = this.environment;
+      const cssFiles = new Set([normalizePath(file) + ".yak.css"]);
+      for (const mod of modules) {
+        for (const importer of mod.importers) {
+          if (importer.file && yakCssRegex.test(importer.file)) cssFiles.add(importer.file);
+        }
+      }
+      const cssModules = new Set(
+        [...cssFiles].flatMap((cssFile) => [...(moduleGraph.getModulesByFile(cssFile) ?? [])]),
+      );
+      if (cssModules.size) {
+        for (const mod of cssModules) moduleGraph.invalidateModule(mod);
+        return [...new Set([...modules, ...cssModules])];
       }
     },
   };
+}
+
+/**
+ * Splits a yak css id into the source path and the query:
+ * "/src/a.tsx.yak.css?direct" -> { path: "/src/a.tsx", query: "?direct" }
+ */
+function splitYakCssId(id: string) {
+  const queryStart = id.indexOf("?");
+  const query = queryStart === -1 ? "" : id.slice(queryStart);
+  const path = id.slice(0, id.length - query.length).slice(0, -".yak.css".length);
+  return { path, query };
 }
 
 /**
@@ -379,7 +411,7 @@ function transform(
               ...(reactRefreshReg ? { reactRefreshReg: true } : {}),
               ...(emitCssComments === false ? { emitCssComments: false } : {}),
               importMode: {
-                value: "virtual:yak-css:{{__MODULE_PATH__}}.css",
+                value: "./{{__BASE_NAME__}}.yak.css",
                 encoding: "None",
               },
             },

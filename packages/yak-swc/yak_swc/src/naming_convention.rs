@@ -204,7 +204,7 @@ pub fn css_class_name(input: &str) -> String {
 /// - `{{__BASE_NAME__}}` - replaced with the file basename (without extension)
 ///
 /// Examples:
-/// - `"virtual:yak-css:{{__MODULE_PATH__}}.css"` (Vite)
+/// - `"./{{__BASE_NAME__}}.yak.css"` (Vite)
 /// - `"./{{__BASE_NAME__}}.yak.css!=!./{{__BASE_NAME__}}?./{{__BASE_NAME__}}.yak.css"` (Webpack)
 /// - `"data:text/css;base64,"` with `encoding: Base64` (Turbopack)
 #[derive(Deserialize, Clone, PartialEq, Eq)]

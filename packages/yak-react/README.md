@@ -3,7 +3,7 @@
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
 [![npm version](https://badge.fury.io/js/@yak%2Freact.svg)](https://www.npmjs.com/package/@yak/react)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/DigitecGalaxus/next-yak/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/galaxuslabs/yak/blob/main/LICENSE)
 
 **@yak/react** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
 
@@ -108,8 +108,8 @@ const nextConfig = {
 
 ## License
 
-**@yak/react** is licensed under the [MIT License](https://github.com/DigitecGalaxus/next-yak/blob/main/LICENSE).
+**@yak/react** is licensed under the [MIT License](https://github.com/galaxuslabs/yak/blob/main/LICENSE).
 
 ## Contributing
 
-Contributions are welcome! The [contributing guide](https://github.com/DigitecGalaxus/next-yak/blob/main/CONTRIBUTION.md) helps you get started.
+Contributions are welcome! The [contributing guide](https://github.com/galaxuslabs/yak/blob/main/CONTRIBUTION.md) helps you get started.

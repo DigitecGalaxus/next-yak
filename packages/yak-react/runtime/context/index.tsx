@@ -8,14 +8,14 @@ export interface YakTheme {}
 
 /**
  * The yak theme context
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 const YakContext = createContext<YakTheme>({});
 
 /**
  * Returns the current yak theme context
  *
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 export const useTheme = (): YakTheme => {
   const context = use(YakContext);
@@ -25,7 +25,7 @@ export const useTheme = (): YakTheme => {
 /**
  * Yak theme context provider
  *
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 export const YakThemeProvider = ({
   children,

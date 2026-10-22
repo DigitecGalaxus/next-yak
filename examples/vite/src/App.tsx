@@ -164,7 +164,7 @@ function App() {
       </FancyButton>
       <Clock />
       <HighContrastToggle />
-      <StyledLink href="https://github.com/DigitecGalaxus/next-yak/tree/main/packages/example/app">
+      <StyledLink href="https://github.com/galaxuslabs/yak/tree/main/examples/vite/src">
         view code
       </StyledLink>
       <p

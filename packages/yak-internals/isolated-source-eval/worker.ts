@@ -68,7 +68,8 @@ parentPort.on("message", async (msg: { type: string; id: number; absolutePath: s
 
   try {
     const fileUrl = pathToFileURL(msg.absolutePath).href;
-    const ns = await import(fileUrl);
+    // The path is only known at runtime, so bundlers must not try to resolve it
+    const ns = await import(/* turbopackIgnore: true */ fileUrl);
 
     const deps = await requestDeps();
 

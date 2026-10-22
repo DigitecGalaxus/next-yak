@@ -1,7 +1,7 @@
 import { styled, css, __yak_unitPostFix } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
 import "./input.yak.css!=!./input?./input.yak.css";
-// example taken from https://github.com/DigitecGalaxus/next-yak/issues/208 
+// example taken from https://github.com/galaxuslabs/yak/issues/208 
 const spacing = "20px";
 const ContainerFluid = /*YAK Extracted CSS:
 .ym7uBBu {

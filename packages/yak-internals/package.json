@@ -17,6 +17,7 @@
     "./swc-parser-options": "./loaders/lib/swcParserOptions.ts",
     "./cross-file-resolver/parse-module": "./cross-file-resolver/parseModule.ts",
     "./cross-file-resolver/resolve": "./cross-file-resolver/resolveCrossFileConstant.ts",
+    "./cross-file-resolver/rewrite-relative-css-urls": "./cross-file-resolver/rewriteRelativeCssUrls.ts",
     "./cross-file-resolver/errors": "./cross-file-resolver/Errors.ts",
     "./cross-file-resolver/types": "./cross-file-resolver/types.ts",
     "./isolated-source-eval": "./isolated-source-eval/index.ts",

@@ -1,5 +1,15 @@
 # next-yak
 
+## 10.0.0-rc.2
+
+### Patch Changes
+
+- 681904e: Relative `url()` paths in yak styles load their files, also when a mixin from another directory uses them.
+- 4e83e0b: With Rsbuild, relative `url()` paths in yak styles load their files.
+- 243320b: Remove the two "Module not found" warnings that Turbopack showed for the `.yak` file evaluator
+- Updated dependencies [76b9ac8]
+  - @yak/swc@10.0.0-rc.2
+
 ## 10.0.0-rc.1
 
 ### Major Changes

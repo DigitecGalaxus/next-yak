@@ -22,11 +22,6 @@ function requestPath(origin: string, path: string): Promise<{ status: number; bo
 test(
   "does not expose denied files through virtual CSS requests",
   withTestEnv("security-virtual-css", async (testEnv, page) => {
-    test.skip(
-      !["vite", "vite-solid", "vinext-pages"].includes(testEnv.bundlerDirName),
-      "The virtual CSS endpoint belongs to the Vite plugin.",
-    );
-
     await page.goto(testEnv.url);
     await expect(page.getByTestId("box")).toHaveCSS("color", "rgb(255, 0, 0)");
     testEnv.expectConsoleErrors("Denied virtual CSS requests trigger Vite's error overlay.");
@@ -58,17 +53,20 @@ export const Box = styled.div\`color: \${color};\`;`,
         sources.push(importer);
       }
       for (const source of sources) {
-        for (const path of [source, relative(resolve(testEnv.cwd, "../.."), source)]) {
-          const response = await requestPath(
-            page.url(),
-            `/@id/__x00__virtual:yak-css:${encodeURI(path.replaceAll("\\", "/"))}.css?direct`,
-          );
+        const absolute = source.replaceAll("\\", "/");
+        const fromRoot = relative(resolve(testEnv.cwd, "../.."), source).replaceAll("\\", "/");
+        // Vite serves the css of a source file as "<source path>.yak.css": from the
+        // root for a file inside it, and as "/@fs/" plus the absolute path for a file
+        // outside it, which Vite's import analysis writes for linked packages.
+        // A request can name any file in both forms, so both have to be denied.
+        for (const path of [`/@fs/${absolute.replace(/^\//, "")}`, `/${fromRoot}`]) {
+          const response = await requestPath(page.url(), `${encodeURI(path)}.yak.css?direct`);
           expect(response.status).toBeGreaterThanOrEqual(400);
           expect(response.body).not.toContain(secret);
         }
       }
-      for (const id of [".css", "cases/security-virtual-css/index.tsxXXXX?direct"]) {
-        const response = await page.request.get(`/@id/__x00__virtual:yak-css:${id}`);
+      for (const id of [".yak.css", "cases/security-virtual-css/index.tsxXXXX.yak.css?direct"]) {
+        const response = await page.request.get(`/${id}`);
         expect(response.status()).toBeGreaterThanOrEqual(400);
       }
     } finally {
