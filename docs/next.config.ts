@@ -9,9 +9,14 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   output: "export",
   images: { unoptimized: true },
-  // yak writes one small CSS file per module, so a page needs about 15 render-blocking
-  // requests. Inlining them into the HTML removes that waterfall.
-  experimental: { inlineCss: true },
+  reactCompiler: true,
+  experimental: {
+    // yak writes one small CSS file per module, so a page needs about 15 render-blocking
+    // requests. Inlining them into the HTML removes that waterfall.
+    inlineCss: true,
+    // the native Rust port of the React Compiler inside Turbopack, no Babel pass
+    turbopackRustReactCompiler: true,
+  },
   ...(basePath ? { basePath } : {}),
 };
 
