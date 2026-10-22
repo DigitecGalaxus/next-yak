@@ -226,6 +226,20 @@ export function RsbuildIcon({ mono: _mono, className }: FrameworkIconProps) {
   );
 }
 
+// No mono variant: the mark carries its own gradient tile, so it ships as a static asset.
+export function TanStackIcon({ mono: _mono, className }: FrameworkIconProps) {
+  return (
+    <Image
+      src={asset("/tanstack-logo.svg")}
+      alt=""
+      width={20}
+      height={20}
+      className={className}
+      unoptimized
+    />
+  );
+}
+
 export function StorybookIcon({ mono, ...props }: FrameworkIconProps) {
   return (
     <Icon viewBox="0 0 24 24" {...props}>

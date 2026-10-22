@@ -4,16 +4,13 @@ import HeroEditor from "../components/landing-page/hero-editor";
 import FeatureShowcase from "../components/landing-page/feature-showcase";
 import Pipeline from "../components/landing-page/pipeline";
 import BenchmarkChart from "../components/landing-page/benchmark-chart";
-import SectionIntro, {
-  Eyebrow,
-  SectionHeading,
-  SubHeading,
-} from "../components/landing-page/section-intro";
+import SectionIntro, { SectionHeading, SubHeading } from "../components/landing-page/section-intro";
 import { Container, Section } from "../components/landing-page/section";
 import {
   NextIcon,
   ReactIcon,
   RsbuildIcon,
+  TanStackIcon,
   SolidIcon,
   ViteIcon,
 } from "../components/landing-page/framework-icons";
@@ -39,6 +36,7 @@ const WORKS_WITH = [
   { name: "React", Icon: ReactIcon },
   { name: "Solid", Icon: SolidIcon },
   { name: "Next.js", Icon: NextIcon },
+  { name: "TanStack Start", Icon: TanStackIcon },
   { name: "Vite", Icon: ViteIcon },
   { name: "Rsbuild", Icon: RsbuildIcon },
 ];
@@ -110,7 +108,6 @@ export default async function Home() {
                 }
               `}
             >
-              <Eyebrow>🦀 zero-runtime · rust-powered</Eyebrow>
               <div
                 css={css`
                   display: flex;
@@ -150,6 +147,7 @@ export default async function Home() {
                       padding: 5px 11px;
                       background: light-dark(${light.beige4}, ${dark.navy4});
                       font-variant-numeric: tabular-nums;
+                      white-space: nowrap;
 
                       @media (prefers-reduced-motion: no-preference) {
                         transition:
@@ -175,8 +173,8 @@ export default async function Home() {
                   line-height: 30px;
                 `}
               >
-                Write <b>styled-components</b> syntax, get build-time CSS extraction and full{" "}
-                <b>RSC</b> compatibility. Use build-time CSS-in-JS without the hassle.
+                Write styled-components syntax, get build-time CSS extraction and full RSC
+                compatibility. <b>Use build-time CSS-in-JS without the hassle.</b>
               </p>
               <ul
                 css={css`
@@ -184,7 +182,7 @@ export default async function Home() {
                   display: flex;
                   align-items: flex-start;
                   align-content: flex-start;
-                  gap: 9px 10px;
+                  gap: 12px 24px;
                   flex-wrap: wrap;
 
                   @container hero (min-width: ${container.hero.split}) {
@@ -211,7 +209,7 @@ export default async function Home() {
                 </CtaButton>
                 <CtaButton href="https://github.com/digitecgalaxus/next-yak" {...externalLinkProps}>
                   <GitHubIcon />
-                  Github
+                  GitHub
                 </CtaButton>
               </div>
             </div>
@@ -247,7 +245,6 @@ export default async function Home() {
                   gap: 16px;
                 `}
               >
-                <Eyebrow>performance · benchmarks</Eyebrow>
                 <SectionHeading>
                   Fastest{" "}
                   <span
@@ -294,7 +291,6 @@ export default async function Home() {
           `}
         >
           <SectionIntro
-            eyebrow="why teams pick it"
             title={
               <>
                 Familiar on the surface.
@@ -320,7 +316,6 @@ export default async function Home() {
           `}
         >
           <SectionIntro
-            eyebrow="how it works"
             title="Tagged templates in. Real CSS out."
             css={css`
               max-width: 530px;
@@ -354,13 +349,16 @@ async function getReleasedVersion(): Promise<string | null> {
 
 const Badge = styled.li`
   display: flex;
-  padding: 6px 11px 6px 10px;
   align-items: center;
-  gap: 7px;
-  border: 1.5px solid light-dark(${light.beige5}, ${dark.navy5});
-  border-radius: 8px;
+  gap: 8px;
   font-family: ${fonts.mono};
-  font-size: ${fontSize.eyebrow};
+  font-size: ${fontSize.small};
+
+  & > svg,
+  & > img {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const recede = keyframes`

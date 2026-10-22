@@ -97,7 +97,7 @@ export default function PipelineView({
         <Node aria-hidden>
           <LineIn />
           <Plugin>
-            <PluginTitle>🦀 @yak/swc</PluginTitle>
+            <PluginTitle>@yak/swc</PluginTitle>
             <PluginCaption>inside {host.label}</PluginCaption>
           </Plugin>
           <LineOut />
