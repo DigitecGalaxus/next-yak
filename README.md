@@ -1,6 +1,6 @@
 # yak
 
-Zero-runtime CSS-in-JS for React and Solid. Write styled-components syntax, and yak compiles it to plain CSS files at build time with a Rust SWC plugin, so it works with React Server Components and ships no styling runtime to the browser.
+Vanilla CSS syntax in TypeScript, with zero runtime. yak is CSS-in-JS for React and Solid with the styled-components API: a Rust SWC plugin compiles your styles to plain CSS files at build time, so it works with React Server Components and ships no styling runtime to the browser.
 
 [Documentation](https://yak.js.org/docs/getting-started) · [Playground](https://yak.js.org/playground) · [Blog](https://yak.js.org/blog)
 

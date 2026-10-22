@@ -28,4 +28,4 @@ export const SITE_NAME = "yak";
 export const SITE_TITLE = "yak: zero-runtime CSS-in-JS for React and Solid";
 
 export const SITE_DESCRIPTION =
-  "Write styled-components syntax and get build-time CSS extraction with zero runtime, full React Server Component support, across React, Solid and every modern bundler.";
+  "Vanilla CSS syntax in TypeScript, zero runtime: yak compiles the styled-components API to plain CSS at build time. Works with React Server Components.";
