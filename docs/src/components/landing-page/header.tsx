@@ -78,7 +78,7 @@ export default function Header() {
           <Search />
           <ThemeToggle />
           <GitHubLink
-            href="https://github.com/digitecgalaxus/next-yak"
+            href="https://github.com/galaxuslabs/yak"
             aria-label={`GitHub${EXTERNAL_LINK_HINT}`}
             {...externalLinkProps}
           >

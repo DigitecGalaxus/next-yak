@@ -1,9 +1,5 @@
 name: Deploy docs to GitHub Pages
 
-env:
-  NEXT_PUBLIC_BASE_PATH: /next-yak
-  NEXT_PUBLIC_SITE_URL: https://digitecgalaxus.github.io/next-yak
-
 on:
   push:
     branches:
@@ -63,11 +59,17 @@ jobs:
       - name: Build @yak/react
         run: pnpm run build
 
+      # The Pages settings know where the site is served: "/<repo>" on github.io, or "" on a
+      # custom domain. Reading them keeps the build right after a repository rename or move.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
       - name: Build docs
         run: pnpm --filter docs build
-
-      - name: Configure Pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

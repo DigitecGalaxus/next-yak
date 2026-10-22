@@ -1,6 +1,6 @@
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
-const REPOSITORY_URL = "https://github.com/DigitecGalaxus/next-yak";
+const REPOSITORY_URL = "https://github.com/galaxuslabs/yak";
 
 /** Structured data for search engines (https://schema.org). */
 export function JsonLd({ data }: { data: Record<string, unknown> }) {

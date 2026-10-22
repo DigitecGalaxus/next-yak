@@ -28,11 +28,11 @@ const COLUMNS = [
     title: "project",
     links: [
       { label: "Playground", href: "/playground" },
-      { label: "GitHub", href: "https://github.com/DigitecGalaxus/next-yak", external: true },
+      { label: "GitHub", href: "https://github.com/galaxuslabs/yak", external: true },
       { label: "npm", href: "https://npmx.dev/package/@yak/react", external: true },
       {
         label: "Releases",
-        href: "https://github.com/DigitecGalaxus/next-yak/releases",
+        href: "https://github.com/galaxuslabs/yak/releases",
         external: true,
       },
     ],

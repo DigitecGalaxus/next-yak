@@ -66,7 +66,7 @@ export default function MobileMenu({ tree }: { tree: Root }) {
               <NavExternalLink href="https://jantimon.github.io/css-in-js-bench" onClick={close}>
                 Benchmarks
               </NavExternalLink>
-              <NavExternalLink href="https://github.com/digitecgalaxus/next-yak" onClick={close}>
+              <NavExternalLink href="https://github.com/galaxuslabs/yak" onClick={close}>
                 GitHub
               </NavExternalLink>
             </PrimaryNav>

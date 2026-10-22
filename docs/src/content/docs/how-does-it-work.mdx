@@ -28,7 +28,7 @@ yak uses a Rust-based SWC plugin and a bundler-specific loader to transform your
 
 ### The SWC plugin
 
-See: [yak-swc](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak-swc)
+See: [yak-swc](https://github.com/galaxuslabs/yak/tree/main/packages/yak-swc)
 
 The SWC plugin takes in the source code and transforms the tagged template literals into `@yak/react` runtime function
 calls with the generated class names of the extracted plain CSS as arguments. It also transforms the dynamic parts of the
@@ -354,14 +354,14 @@ React now renders one fewer component for this usage. Folding reaches further th
 
 Each bundler has a dedicated loader or plugin that takes the SWC plugin output, resolves cross-module dependencies, and delivers the final CSS through the bundler's native CSS pipeline.
 
-- **Webpack** ([webpack-loader.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/loaders/webpack-loader.ts)): The loader reads the extracted CSS from the SWC plugin comments, resolves cross-module dependencies, and hands the final CSS over as a plain CSS file so Next.js can process it like any other CSS file.
-- **Turbopack** ([turbo-loader.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/loaders/turbo-loader.ts)): The loader runs the SWC plugin itself, resolves cross-module dependencies in the extracted CSS and writes the result back into the data URL import. No virtual file is involved.
-- **Vite** ([vite-plugin.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/loaders/vite-plugin.ts)): The plugin resolves the virtual module imports and serves the extracted CSS through Vite's standard CSS pipeline.
-- **Rsbuild** ([rsbuild/index.ts](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/rsbuild/index.ts)): The `@yak/react/rsbuild` plugin registers the Turbopack loader as an Rspack `pre` loader. Rspack's loader API is close enough to webpack's that the same data URL approach works unchanged, and it runs before Rsbuild's own SWC pass.
+- **Webpack** ([webpack-loader.ts](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/loaders/webpack-loader.ts)): The loader reads the extracted CSS from the SWC plugin comments, resolves cross-module dependencies, and hands the final CSS over as a plain CSS file so Next.js can process it like any other CSS file.
+- **Turbopack** ([turbo-loader.ts](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/loaders/turbo-loader.ts)): The loader runs the SWC plugin itself, resolves cross-module dependencies in the extracted CSS and writes the result back into the data URL import. No virtual file is involved.
+- **Vite** ([vite-plugin.ts](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/loaders/vite-plugin.ts)): The plugin resolves the virtual module imports and serves the extracted CSS through Vite's standard CSS pipeline.
+- **Rsbuild** ([rsbuild/index.ts](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/rsbuild/index.ts)): The `@yak/react/rsbuild` plugin registers the Turbopack loader as an Rspack `pre` loader. Rspack's loader API is close enough to webpack's that the same data URL approach works unchanged, and it runs before Rsbuild's own SWC pass.
 
 ## The runtime part
 
-See: [styled.tsx](https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/styled.tsx)
+See: [styled.tsx](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/styled.tsx)
 
 Despite being called "zero-runtime", yak does ship a small runtime. Here, "zero-runtime" means no code manipulates the DOM or CSSOM. No `<style>` or `<link>` elements are injected at runtime.
 
@@ -443,14 +443,14 @@ export interface YakTheme {}
 
 /**
  * The yak theme context
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 const YakContext = createContext<YakTheme>({});
 
 /**
  * Returns the current yak theme context
  *
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 export const useTheme = (): YakTheme => {
   const context = use(YakContext);
@@ -460,7 +460,7 @@ export const useTheme = (): YakTheme => {
 /**
  * Yak theme context provider
  *
- * @see https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-react/runtime/context/README.md
+ * @see https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/runtime/context/README.md
  */
 export const YakThemeProvider = ({
   children,

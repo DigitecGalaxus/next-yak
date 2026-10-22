@@ -207,7 +207,7 @@ export default async function Home() {
                 <CtaButton href="/docs/getting-started" $primary>
                   Get started <ArrowRightIcon />
                 </CtaButton>
-                <CtaButton href="https://github.com/digitecgalaxus/next-yak" {...externalLinkProps}>
+                <CtaButton href="https://github.com/galaxuslabs/yak" {...externalLinkProps}>
                   <GitHubIcon />
                   GitHub
                 </CtaButton>
