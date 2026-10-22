@@ -130,8 +130,25 @@ const theme = useTheme();
 
 ### YakThemeProvider
 
-Provides the theme to client components. In a Server Component it takes no `theme` prop and reads the theme from
-`getYakThemeContext`.
+Provides the theme to the components below it. In a Server Component, such as your root layout, it takes no `theme`
+prop and reads the theme from `getYakThemeContext`:
+
+```tsx title="app/layout.tsx"
+import { YakThemeProvider } from "@yak/react";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <YakThemeProvider>{children}</YakThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+In a client-only app, for example with Vite, pass the theme yourself. `@yak/react/context/baseContext` points to your
+`yak.context.ts`, because each plugin sets an alias for it:
 
 ```tsx
 import { YakThemeProvider } from "@yak/react";
@@ -139,8 +156,6 @@ import { getYakThemeContext } from "@yak/react/context/baseContext";
 
 <YakThemeProvider theme={getYakThemeContext()}>{children}</YakThemeProvider>;
 ```
-
-`@yak/react/context/baseContext` points to your `yak.context.ts`, because each plugin sets an alias for it.
 
 ## Types
 

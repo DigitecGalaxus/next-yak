@@ -53,12 +53,10 @@ const myDiv = styled.div`
 // ^ eslint: Nesting selector missing. Did you forget the &?
 ```
 
-## Other linters (oxlint & rslint)
+## Oxlint
 
-`@yak/eslint-plugin` fully supports oxlint and rslint. All linters use the rule prefix `@yak/`. A good starting configuration for each:
+`@yak/eslint-plugin` also works with Oxlint, with the same rule prefix `@yak/`. A good starting configuration:
 
-<Tabs items={['oxlint', 'rslint']}>
-<Tab value="oxlint">
 ```json title=".oxlintrc.json"
 {
   "jsPlugins": ["@yak/eslint-plugin"],
@@ -69,25 +67,6 @@ const myDiv = styled.div`
   }
 }
 ```
-</Tab>
-<Tab value="rslint">
-```ts title="rslint.config.ts"
-import { defineConfig } from "@rslint/core";
-import yak from "@yak/eslint-plugin";
-
-export default defineConfig([
-  {
-    plugins: { "@yak": yak },
-    rules: {
-      "@yak/css-nesting-operator": "error",
-      "@yak/enforce-semicolon": "error",
-      "@yak/style-conditions": "warn",
-    },
-  },
-]);
-```
-</Tab>
-</Tabs>
 
 ## Rules
 
@@ -108,9 +87,9 @@ const myDiv = styled.div`
 
 #### Reason why
 
-Unlike in `styled-components`, the nesting selector is required to be used in order to correctly scope styles.
+Unlike in `styled-components`, you need the nesting selector to scope styles correctly.
 
-We didn't want this magic to be in yak as writing styles should feel as natural and as close to vanilla CSS as possible.
+We kept this magic out of yak because writing styles should feel as natural and as close to vanilla CSS as possible.
 
 ### enforce-semicolon
 
@@ -137,7 +116,7 @@ Unlike runtime CSS-in-JS libraries that combine strings at execution time, yak h
 - **Runtime Variables** (like `x: ${({$x}) => $x}`)
 
 Constants and runtime values are easy to detect as they are always after a colon (:).
-However to distinguish between selectors and mixins we need the semicolon (;):
+To tell selectors and mixins apart, however, yak needs the semicolon (;):
 
 ```tsx
 // This works correctly - mixin properly terminated with semicolon
@@ -179,7 +158,8 @@ styled.button`
 
 ```tsx title="example.tsx"
 styled.button`
-  color: ${() => {
+  color: ${() => { // [!code --]
+  ${() => { // [!code ++]
     if (variant === 'primary') {
       return primary; // [!code --]
       return css` // [!code ++]
@@ -237,7 +217,7 @@ styled.button<{$primary?: boolean}>`
 In this example:
 - The base style color: blue is extracted into a CSS class that's always applied
 - The conditional style color: red is extracted into a separate CSS class that's only toggled based on the $primary prop
-- This approach is highly efficient since all styles are pre-compiled and only class names are manipulated at runtime
+- This approach is fast because all styles are pre-compiled and only class names are manipulated at runtime
 </Step>
 
 <Step>
@@ -268,4 +248,9 @@ In this example:
   - Animation states
   - Values from external APIs
 
-The `@yak/style-conditions` rule in our linting tools can help identify unnecessary uses of CSS variables, keeping your HTML smaller and more performant.
+The `@yak/style-conditions` rule flags unnecessary uses of CSS variables, which keeps your HTML smaller and faster.
+
+## Next steps
+
+- [Migration from styled-components](/docs/migration-from-styled-components): the plugin's main use case
+- [Features](/docs/features): the patterns the rules point you to

@@ -88,7 +88,7 @@ export function App() {
 ```
 
 A styled component without interpolations compiles to a plain CSS class. Dynamic interpolations become CSS variables
-on the element's inline `style`, all computed in one memo per component, so a prop change updates the `class` and
+on the element's inline `style`, all computed in one memo per element, so a prop change updates the `class` and
 `style` bindings without re-creating the element.
 
 The `css` prop works on every intrinsic element and maps to Solid's `class` attribute. Its types become available as
@@ -180,3 +180,9 @@ If you come from `@yak/react`, the API stays the same apart from a few Solid-sha
 
 [examples/vite-solid](https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite-solid) shows a full setup
 with theming, keyframes, `.attrs()` and the `css` prop.
+
+## Next steps
+
+- [Features](/docs/features): the shared API, shown with React
+- [API reference](/docs/api#plugin-options): all plugin options
+- [Troubleshooting](/docs/troubleshooting): build errors and missing styles

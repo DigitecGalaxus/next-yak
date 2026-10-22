@@ -7,7 +7,7 @@ description: Install @yak/react and write styled-components syntax with zero-run
 import { Step, Steps } from "../../components/mdx/steps";
 import { Tab, Tabs } from "../../components/mdx/tabs";
 
-**yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
+**yak** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility. [Why yak](/docs/why-next-yak) explains where it fits.
 
 Works with **Next.js** (Webpack & Turbopack), **[Vite 7+](/docs/vite)** (react-router, tanstack start, and more), **[Rsbuild 2+](/docs/rsbuild)** and **[Storybook](/docs/storybook)**. For SolidJS, see **[Solid](/docs/solid)**.
 
@@ -79,7 +79,7 @@ bun add next-yak@9
 
 Add yak to your configuration file:
 
-<Tabs title="Enable yak" items={['next.config.ts', 'vite.config.ts']}>
+<Tabs title="Enable yak" items={['next.config.ts', 'vite.config.ts', 'rsbuild.config.ts']}>
 <Tab value="next.config.ts">
 ```ts
 import type { NextConfig } from 'next'
@@ -104,6 +104,17 @@ export default defineConfig({
 });
 ```
 </Tab>
+<Tab value="rsbuild.config.ts">
+```ts
+import { defineConfig } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginYak } from "@yak/react/rsbuild";
+
+export default defineConfig({
+  plugins: [pluginReact(), pluginYak()],
+});
+```
+</Tab>
 
 </Tabs>
 </Step>
@@ -111,7 +122,7 @@ export default defineConfig({
 
 ### Start using yak
 
-With the installation and configuration done, you can now use yak directly in your components.
+With the installation and configuration done, you can use yak in your components.
 If you used `styled-components` before, you'll feel right at home.
 
 Here's a simple example:
@@ -130,7 +141,7 @@ export default function HomePage() {
 }
 ```
 
-You're now ready to use yak in your project and if you need to migrate from styled-components, you can follow the [migration guide](/docs/migration-from-styled-components).
+You're now ready to use yak in your project. If you're migrating from styled-components, follow the [migration guide](/docs/migration-from-styled-components).
 
 </Step>
 
@@ -143,3 +154,10 @@ yak supports Vite 7+ (including Vite 8 with OXC/Rolldown) since next-yak 9.1.0. 
 ## Using with Storybook
 
 The addon `@yak/storybook` enables yak in Storybook 10+ with both Vite and Webpack builders. See the [Storybook guide](/docs/storybook) for details.
+
+## Next steps
+
+- [Features](/docs/features): what you can write with yak, from dynamic styles to theming
+- [Migration from styled-components](/docs/migration-from-styled-components): if you're moving an existing app
+- [Examples](/docs/examples): runnable projects for every setup
+- [Troubleshooting](/docs/troubleshooting): if a build error or a missing style stops you

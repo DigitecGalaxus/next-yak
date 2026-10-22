@@ -62,7 +62,7 @@ export default function Header() {
             <BrandName>yak</BrandName>
             <RenameNote>
               yak, formerly next-yak. Same library, same team, broader home: the package is now
-              @yak/react, with @yak/solid and @yak/qwik beside it.
+              @yak/react, with @yak/solid beside it.
             </RenameNote>
           </Brand>
           <DesktopLinks>

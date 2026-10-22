@@ -40,9 +40,14 @@ const CALLOUTS: readonly CalloutSpec[] = [
     line: 1,
     span: 2,
     // without `css` so it fits a phone-width card
-    card: { code: frameworks.map((f) => `import { styled } from "${f.pkg}";`).join("\n") },
+    card: {
+      code: frameworks
+        .filter((f) => !f.soon)
+        .map((f) => `import { styled } from "${f.pkg}";`)
+        .join("\n"),
+    },
     title: "Framework-agnostic",
-    description: "Swap the import for Solid or Qwik. Props stay idiomatic.",
+    description: "Swap the import for Solid. Props stay idiomatic.",
   },
   {
     side: "right",

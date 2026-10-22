@@ -6,8 +6,8 @@ description: Fixes for the most common yak problems, from build errors with thei
 
 Most yak problems show up as a build error. This page lists the common ones with their exact text, their cause and
 the fix. If yours isn't here, the [debug option](#see-what-yak-generates) shows
-what yak makes of your code, and the [GitHub issues](https://github.com/DigitecGalaxus/next-yak/issues/new/choose) are
-open for everything else.
+what yak makes of your code. The [FAQ](/docs/faq) answers general questions, and the
+[GitHub issues](https://github.com/DigitecGalaxus/next-yak/issues/new/choose) are open for everything else.
 
 ## See what yak generates
 
@@ -39,7 +39,7 @@ builds without an error, but yak never compiles it, so its styles silently go mi
 ### styled-components wins the specificity
 
 If you wrap a styled-components component with a yak component while both libraries run side by side, add `&&` to
-raise the specificity. The [migration guide](/docs/migration-from-styled-components) explains why.
+raise the specificity. The [migration guide](/docs/migration-from-styled-components#styles-from-styled-components-win) explains why.
 
 ## Build errors
 

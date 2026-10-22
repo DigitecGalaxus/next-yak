@@ -9,14 +9,14 @@ import { Callout } from "../../components/mdx/callout";
 
 ## Guide
 
-One of the core goals of yak is to provide a smooth migration path from `styled-components` to yak.
+One of yak's core goals is an easy migration from `styled-components`.
 This guide walks you through the migration, including common scenarios and edge cases.
 
 ## ESLint plugin
 
-To make the migration easier, we provide an eslint plugin which will help you to identify potential issues during the migration and afterwards.
+To make the migration easier, our ESLint plugin flags potential issues during the migration and afterwards.
 
-Just have a look at the [eslint plugin documentation](./eslint-plugin) and install it in your project.
+See the [ESLint plugin documentation](/docs/eslint-plugin) to install it in your project.
 
 ## Feature comparison
 
@@ -35,14 +35,14 @@ Supported
 Missing
 
 - Object syntax
-- Dynamic usage of the css prop
-- `as` prop – You can replace it with a [type-safe alternative](#property-as-does-not-exist)
+- `css` prop values that are not written in place, like variables, arrays or objects
+- `as` prop: you can replace it with a [type-safe alternative](#property-as-does-not-exist)
 - `.withConfig`
 
 ## Just change the import
 
-You need to do the least amount of work for the following changes. All other changes build upon this one.
-Just change the import from `styled-components` to `@yak/react` and change the import of `styled` from a default import to a named import.
+The following cases need the least work, and all other changes build on this one.
+Change the import from `styled-components` to `@yak/react` and change the import of `styled` from a default import to a named import.
 
 ```tsx title="component.tsx"
 import styled, { css, keyframes } from "styled-components"; // [!code --]
@@ -51,7 +51,7 @@ import { styled, css, keyframes } from "@yak/react"; // [!code ++]
 
 ### Static component styles
 
-For components with static styles, simply updating the import is sufficient:
+For components with static styles, updating the import is enough:
 
 ```tsx title="component.tsx"
 import styled from "styled-components"; // [!code --]
@@ -70,16 +70,6 @@ const Button = styled.button`
   }
 `;
 ```
-
-<Callout>
-**Important Note on Selectors**:
-While most selectors work out of the box, you might encounter the error: `Selector "h1" is not pure (pure selectors must contain at least one local class or id)`. To resolve this, either:
-1. Update your Next.js PostCSS version
-2. Add an ampersand (&) before the selector
-
-For more detailed information, refer to the [FAQ](/docs/faq#i-get-an-error-about-selector-that-are-not-pure).
-
-</Callout>
 
 ### Static mixins
 
@@ -100,11 +90,11 @@ const MyComp = styled.div`
 `;
 ```
 
-This counts for all static mixins that you use in your styled components including exported mixins.
+This applies to all static mixins that you use in your styled components, including exported mixins.
 
 <Callout>
   **Important note on semicolons**: You need to add a semicolon after the mixin to separate it from
-  the rest of the styles. Otherwise the parser can not differentiate between a selector, a constant
+  the rest of the styles. Otherwise the parser can't tell apart between a selector, a constant
   or a mixin.
 </Callout>
 
@@ -135,7 +125,7 @@ const Rotate = styled.div`
 
 ### Component references
 
-Styling based on other components remains straightforward. You just need to change the import
+Styling based on other components remains straightforward. You only need to change the import.
 
 ```tsx title="component.tsx"
 import styled from "styled-components"; // [!code --]
@@ -203,7 +193,7 @@ const HtmlTag = <T extends ElementType>({
 } & React.JSX.IntrinsicElements[T]) => <Tag {...(props as any)} />;
 ```
 
-You can then pass one of predefined tags of `ElementType` as a prop and style it like any other component:
+You can then pass one of the predefined tags of `ElementType` as a prop and style it like any other component:
 
 ```tsx
 <Title tag="h1">Heading 1</Title>;
@@ -213,7 +203,7 @@ const Title = styled(HtmlTag)`
 `;
 ```
 
-This approach is preferred over the `as` prop because it allows stronger type-safety by explicitly defining which HTML tags are allowed, preventing invalid usage like `<Image as="button">`, which would be valid in styled-components.
+This approach is preferred over the `as` prop because it lists the allowed HTML tags explicitly. That gives you stronger type safety and prevents invalid usage like `<Image as="button">`, which would be valid in styled-components.
 
 ## Change some more things
 
@@ -221,8 +211,8 @@ The last part of the migration guide is about more complex cases where you need 
 
 ### Dynamic component styles
 
-This will be the most complex part of the migration. yak differentiates between dynamic css properties and property values which is different than styled-components.
-If you use property values you shouldn't need to change more than the import.
+This is the most complex part of the migration. Unlike styled-components, yak distinguishes between dynamic css properties and dynamic property values.
+If you use property values, you shouldn't need to change more than the import.
 
 ```tsx title="component.tsx"
 import styled from "styled-components"; // [!code --]
@@ -234,13 +224,13 @@ const Button = styled.button<{ $primary: boolean }>`
 `;
 ```
 
-This will be transformed to a css variable that gets injected during build time.
+This is transformed into a CSS variable, and its value is set at runtime.
 
 ```tsx title="transformed.tsx"
 // pseudo code
 const Button = styled.button`
   background: #bf4f74;
-  color: var(--next-yak-1);
+  color: var(--yak-1);
 `;
 ```
 
@@ -268,23 +258,23 @@ const Button = styled.button<{ $primary: boolean }>`
 `;
 ```
 
-When yak encounters a css tag, it will transform the css into a class name that gets injected during build time.
+When yak finds a css tag, it transforms the css into a class name at build time.
 
 ```tsx title="transformed.tsx"
 // pseudo code
 
 const Button = (props) => (
-  <button className={props.$primary ? "next-yak-1" : "next-yak-2"}>Click me</button>
+  <button className={props.$primary ? "yak-1" : "yak-2"}>Click me</button>
 );
 ```
 
 You can nest the css tags arbitrarily deep and yak will transform them into class names and css variables.
 You can't nest arbitrary styles inside property values, but you can nest property values inside css tags.
-Generally, you should try to simplify your styles and avoid nesting as much as possible to keep your styles as fast as possible.
+To keep your styles fast, simplify them and avoid nesting where you can.
 
 ### Dynamic mixins
 
-If you use dynamic mixins in your styled components, you need to change it the same way as you would with dynamic component styles.
+If you use dynamic mixins in your styled components, you need to change them the same way as you would with dynamic component styles.
 
 ```tsx title="component.tsx"
 import styled, { css } from "styled-components"; // [!code --]
@@ -317,20 +307,16 @@ import styled from "styled-components"; // [!code --]
 import { css, styled } from "@yak/react"; // [!code ++]
 
 import { mixin } from "./mixin"; // [!code --]
-const mixin = css<{ $primary: boolean }>`
-  // [!code ++]
+const mixin = css<{ $primary: boolean }>` // [!code ++]
   color: green; // [!code ++]
-  // [!code ++]
-  ${
-    (props) =>
-      props.$primary // [!code ++]
-        ? css`
-            background: white;
-          ` // [!code ++]
-        : css`
-            background: black;
-          ` // [!code ++]
-  }// [!code ++]
+  ${(props) => // [!code ++]
+    props.$primary // [!code ++]
+      ? css` // [!code ++]
+          background: white; // [!code ++]
+        ` // [!code ++]
+      : css` // [!code ++]
+          background: black; // [!code ++]
+        `} // [!code ++]
 `; // [!code ++]
 
 const MyComp = styled.div<{ $primary: boolean }>`
@@ -342,24 +328,19 @@ const MyComp = styled.div<{ $primary: boolean }>`
 ```tsx title="mixin.ts"
 import { css } from "styled-components"; // [!code --]
 
-export const mixin = css<{ $primary: boolean }>`
-  // [!code --]
-  // [!code --]
-  color: green;
-  // [!code --]
-  ${
-    (props) =>
-      props.$primary // [!code --]
-        ? `background: white;` // [!code --]
-        : `background: black;` // [!code --]
-  }// [!code --]
+export const mixin = css<{ $primary: boolean }>` // [!code --]
+  color: green; // [!code --]
+  ${(props) => // [!code --]
+    props.$primary // [!code --]
+      ? `background: white;` // [!code --]
+      : `background: black;`} // [!code --]
 `; // [!code --]
 ```
 
 ### Global styles
 
-styled-components `createGlobalStyle` returns a component that you render. In yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles are imported.
-So to migrate your global styles, you need to remove the Global Style JSX (e.g. `<GlobalStyle />`) usage and import the file at the position where you used to render `<GlobalStyle />`. For
+styled-components `createGlobalStyle` returns a component that you render. In yak global styles are a statement and [`globalStyle`](/docs/features#globalstyle) applies as soon as the file with the global styles is imported.
+To migrate your global styles, remove the `<GlobalStyle />` JSX and import the file where you used to render it. For
 app-wide resets that is your root layout, but if it only rendered on a certain page, import the file from that page instead:
 
 ```tsx title="globals.tsx"
@@ -391,8 +372,8 @@ export default function Layout({ children }) {
 ```
 
 Theme props like `${(props) => props.theme.color}` inside global styles become CSS custom properties
-toggled via an attribute or class on the root element. And a conditionally rendered `<GlobalStyle />`
-becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`) — see
+toggled via an attribute or class on the root element. A conditionally rendered `<GlobalStyle />`
+becomes a CSS condition (`@media`, `@supports`, `:root[data-theme]`). See
 [Global styles](/docs/features#globalstyle) for the patterns.
 
 ### Reference external styles
@@ -415,32 +396,26 @@ const Button = styled.button`
 
 ### Functions that generate styles
 
-If you have somewhere utility functions that generate styles, you need to change them. Either transform them so that they cover every different static style or
+If you have utility functions that generate styles, you need to change them. Either turn them into static values that cover every variant, or
 create a dynamic mixin.
 
 ```tsx title="util.ts"
-export const generateAllColors = (primaryColor: string) => {
-  // [!code --]
-  return {
-    // [!code --]
+export const generateAllColors = (primaryColor: string) => { // [!code --]
+  return { // [!code --]
     primary: primaryColor, // [!code --]
     secondary: "#F7B801", // [!code --]
   }; // [!code --]
 }; // [!code --]
-export const allColors = {
-  // [!code ++]
-  red: {
-    // [!code ++]
+export const allColors = { // [!code ++]
+  red: { // [!code ++]
     primary: "red", // [!code ++]
     secondary: "#F7B801", // [!code ++]
   }, // [!code ++]
-  blue: {
-    // [!code ++]
+  blue: { // [!code ++]
     primary: "blue", // [!code ++]
     secondary: "#F7B801", // [!code ++]
   }, // [!code ++]
-  green: {
-    // [!code ++]
+  green: { // [!code ++]
     primary: "green", // [!code ++]
     secondary: "#F7B801", // [!code ++]
   }, // [!code ++]
@@ -462,8 +437,8 @@ const Button = styled.button<{ $color: string }>`
 
 ### CSS prop (optional)
 
-If you use the css prop in your styled components, you can almost just change the import and you're done.
-But you also need to tell TypeScript that native JSX elements can have a css prop. To do that, add the following to your `tsconfig.json`.
+If you use the css prop in your styled components, changing the import is almost all you need.
+You also need to tell TypeScript that native JSX elements can have a css prop. To do that, add the following to your `tsconfig.json`.
 
 ```json title="tsconfig.json"
 {
@@ -473,13 +448,13 @@ But you also need to tell TypeScript that native JSX elements can have a css pro
 }
 ```
 
-Or if you want to use the css prop in a single file, you can just add the following to the top of the file.
+To use the css prop in a single file only, add the following to the top of that file instead.
 
 ```tsx title="component.tsx"
 /** @jsxImportSource @yak/react */ // [!code ++]
 ```
 
-And afterwards you can just change the import and you're done.
+Then change the import:
 
 ```tsx title="component.tsx"
 import styled, { css } from "styled-components"; // [!code --]
@@ -497,7 +472,7 @@ const MyComponent = () => {
 };
 ```
 
-If you need dynamic values you can use the same interpolation as you would with your other styled components.
+If you need dynamic values, use the same interpolation as in your other styled components.
 
 ```tsx title="component.tsx"
 import { css } from "@yak/react";
@@ -516,7 +491,7 @@ const MyComponent = ({ color }: { color: string }) => {
 
 ## Move some code to yak files
 
-Migrating `styled-components` with complex logic might need a bit more work. Yak files are special files that are evaluated during build time and can be used to store static values that are extracted during build time. You can create a `.yak.ts` or `.yak.tsx` file everywhere in your project and it will be picked up by yak.
+Migrating `styled-components` code with complex logic can take more work. Yak files are evaluated at build time and can hold static values that yak extracts during the build. You can create a `.yak.ts` or `.yak.tsx` file anywhere in your project and yak picks it up.
 
 <Callout>
   **Important note on `.yak.tsx` files**: As yak files are evaluated on every code change, they will
@@ -549,72 +524,26 @@ const RADIUS = 5; // [!code ++]
 export const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // [!code ++]
 ```
 
-A general rule of thumb is that yak doesn't run any JavaScript code to figure out any interpolated values except the code resides in a `.yak.ts`(or `.yak.js`) file or is imported from a yak file.
+As a rule of thumb, yak doesn't run JavaScript to resolve interpolated values unless the code lives in a `.yak.ts` (or `.yak.js`) file or is imported from a yak file.
 
-Everything except calculations and string concatenations, or more generally, values that don't need a runtime in order to have a value, should
-work out of the box without any yak files and should be the preferred way to write your styles to keep your build times as fast as possible.
+Values that don't need code to run before they have a value (so everything except calculations and string concatenations) work without yak files.
+Prefer writing your styles that way to keep your build times fast.
 
 ## Troubleshooting
 
-This section covers common issues you might encounter during the migration process and how to resolve them.
+For build errors, missing styles and how to see what yak generates, see [Troubleshooting](/docs/troubleshooting).
 
-### Debugging
+### Styles from styled-components win
 
-If you encounter issues during the migration process, you can enable debug mode to get more information about what's going wrong.
-
-Just enable it in the next config file.
-
-```ts title="next.config.ts"
-import type { NextConfig } from 'next'
-import { withYak, type YakConfigOptions } from '@yak/react/withYak'
-
-const nextConfig: NextConfig = {
-  // your next.js config
-}
-
-const yakConfig: YakConfigOptions = {
-  // Enable for all files
-  debug: true,
-
-  // Or filter by regex pattern:
-  // debug: { pattern: "myPage" },
-
-  // Or filter by output type only:
-  // debug: { types: ["css"] },
-
-  // Or combine pattern + types:
-  // debug: { pattern: "Button", types: ["css", "css-resolved"] },
-};
-
-export default withYak(yakConfig, nextConfig);
-```
-
-And you should see the transformed files and styles. This can help you to understand what's going wrong.
-
-### My styles are not applied
-
-If you see that your styles are not applied, you should check if the styles are transformed correctly. Debugging can help you with that.
-
-If you wrap a styled-component component with a yak component, you need to add `&&` before the styles to increase the specificity as otherwise styled-components would always win.
+If you wrap a styled-components component with a yak component while both libraries run side by side, add `&&` before
+the styles to raise the specificity. Otherwise styled-components always wins:
 
 ```tsx title="component.tsx"
 const Button = styled(StyledComponentsButton)`
-  // [!code ++]
-  && {
+  && { // [!code ++]
     color: red;
-    // [!code ++]
-  }
+  } // [!code ++]
 `;
 ```
 
-This is only needed if you simultaneously use styled-components and yak. If you fully migrated to yak, you don't need to do that.
-
-### I get a compile error
-
-Please read the error message carefully. It should give you a hint on what's going wrong.
-
-If you can't figure it out, please open an issue on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
-
-### I think I found a bug
-
-Please open an issue on [GitHub](https://github.com/DigitecGalaxus/next-yak/issues/new/choose)
+Once you've fully migrated to yak, you can remove the `&&` again.

@@ -109,7 +109,7 @@ const Page = () => <⟦1:Card⟧ className="⟦2:yFancy⟧">hi</⟦1:Card⟧>;
 </div>
 </SideBySide>
 
-`Card` stays in the tree here, because the compiler cannot see across files. The wrapped target has to be an uppercase binding that cannot be reassigned; a lowercase name or a `let`-bound target keeps the runtime wrapper.
+`Card` stays in the tree here, because the compiler cannot see across files. The wrapped target has to be an uppercase binding that cannot be reassigned. A lowercase name or a `let`-bound target keeps the runtime wrapper.
 
 ## Collapsing a chain
 
@@ -231,7 +231,7 @@ const Box = styled.div<{ $on: boolean }>`
 </div>
 </SideBySide>
 
-The compiler leaves `true ? " yBox-on" : ""` as it is; the minifier collapses it.
+The compiler leaves `true ? " yBox-on" : ""` as it is, and the minifier collapses it.
 
 A prop value the compiler cannot prove safe to run twice is bound once, so it evaluates exactly as often as the original JSX did. When only the class name needs the value, it is bound in a small function around the class expression:
 
@@ -292,7 +292,7 @@ const Button = styled.button<{ disabled?: boolean }>`
 </div>
 </SideBySide>
 
-A value that only allocates &mdash; an arrow, an object literal, JSX &mdash; still runs once, but the compiler may move it, since building a closure a little earlier changes nothing observable. So `onClick={() => setOpen(true)}` never forces the element wrap.
+A value that only allocates (an arrow, an object literal, JSX) still runs once, but the compiler may move it, since building a closure a little earlier changes nothing observable. So `onClick={() => setOpen(true)}` never forces the element wrap.
 
 ## The css prop
 
@@ -319,7 +319,7 @@ The [css prop](/docs/features#css-prop) folds on the same rule. A static css pro
 </div>
 </SideBySide>
 
-A conditional css prop keeps its condition; the branch toggles class names:
+A conditional css prop keeps its condition, and the branch toggles class names:
 
 <SideBySide>
 <div>
@@ -358,9 +358,9 @@ The css prop keeps the render-time merge (`__yak_mergeCssProp`) when the element
 
 Folding happens only when the result is provable. The compiler walks the questions below, and every "no" keeps the runtime wrapper. A skipped usage costs a little render time, never correctness.
 
-![Decision flow for folding a styled component usage: it folds only when the component is a same-file top-level const, styles a plain element or a static component, toggles css blocks at most, and passes every prop as a plain JSX attribute; otherwise the runtime wrapper stays.](/img/folding-decision.svg)
+![Decision flow for folding a styled component usage: it folds only when the component is a same-file top-level const, styles a plain element or a static component, toggles css blocks at most, and passes every prop as a plain JSX attribute. Otherwise the runtime wrapper stays.](/img/folding-decision.svg)
 
-Reading it top to bottom: the usage folds when the component is a same-file top-level `const`, styles a plain element or a fully static `styled(Component)`, does nothing dynamic beyond toggling `css` blocks, and takes every prop it reads straight from a JSX attribute. When a toggled value cannot safely run twice, the fold binds it once instead of dropping to the wrapper: in a small function when only the class name needs it, or around the whole element when the DOM needs it too or when an impure attribute sits between bound props and their order must hold. Anything else &mdash; an import, a `let`, a spread, a `theme`, `.attrs()`, dynamic css values, a prop that is renamed or defaulted &mdash; keeps the wrapper.
+Reading it top to bottom: the usage folds when the component is a same-file top-level `const`, styles a plain element or a fully static `styled(Component)`, does nothing dynamic beyond toggling `css` blocks, and takes every prop it reads straight from a JSX attribute. When a toggled value cannot safely run twice, the fold binds it once instead of dropping to the wrapper: in a small function when only the class name needs it, or around the whole element when the DOM needs it too or when an impure attribute sits between bound props and their order must hold. Anything else keeps the wrapper: an import, a `let`, a spread, a `theme`, `.attrs()`, dynamic css values, or a prop that is renamed or defaulted.
 
 ## Turning it off
 

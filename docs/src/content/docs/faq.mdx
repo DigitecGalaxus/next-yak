@@ -23,7 +23,7 @@ yak supports React and Solid, and the same SWC plugin runs in every bundler belo
 - **Solid** 2 with Vite through the `@yak/solid` package
 - **[Storybook](/docs/storybook)** 10+ with both the Vite and the webpack builder through the `@yak/storybook` addon
 
-The [Examples](/docs/examples) page has a runnable project for most of these setups. If you need yak in a framework that isn't on this list, ask for it in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we'll give it a thought.
+The [Examples](/docs/examples) page has a runnable project for most of these setups. Planned frameworks are on the [roadmap](/docs/roadmap). If you need yak in a framework that isn't on this list, ask for it in our [GitHub issue tracker](https://github.com/DigitecGalaxus/next-yak/issues) and we'll give it a thought.
 
 ### Can I mix/combine yak with other CSS-in-JS libraries?
 
@@ -52,7 +52,7 @@ const Button = styled.button`
 
 ### Can I reference a component in another component?
 
-Yes, you can reference it in the tagged template literal the same way you would to it with styled-components.
+Yes, you can reference it in the tagged template literal the same way you would with styled-components.
 
 ```jsx title="my-component.tsx"
 import { styled } from "@yak/react";
@@ -69,10 +69,11 @@ const Nav = styled.nav`
 `;
 ```
 
-### Why does yak always generate CSS variables when the values are static references that are known at build time?
+### Does yak turn static values into CSS variables?
 
-It's very hard to determine statically if a value is static or dynamic. We decided to always generate CSS variables to be on the safe side
-and add errors if we detect that a value is static but a CSS variable is used.
+No. Constants from the same file, imported constants and values from `.yak` files are inlined into the CSS at build
+time. Only values that are known at runtime become CSS variables, and you write them as functions, like
+`${() => getValue()}` or `${(props) => props.$size}`.
 
 ### Can I use yak with TypeScript?
 
@@ -82,7 +83,7 @@ Yes, yak is fully type safe.
 
 Yes.
 
-We are happy about every contribution. Just write an issue or a pull request [here](https://github.com/DigitecGalaxus/next-yak)
+We're happy about every contribution. Open an issue or a pull request [on GitHub](https://github.com/DigitecGalaxus/next-yak).
 
 ## Troubleshooting
 

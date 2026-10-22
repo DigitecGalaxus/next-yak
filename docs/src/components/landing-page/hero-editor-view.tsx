@@ -8,7 +8,7 @@ import { editorSurface, codeReset } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
 import { asset } from "@/lib/site";
-import { frameworks, FRAMEWORK_TABS } from "./frameworks";
+import { frameworks, FRAMEWORK_TABS_WITH_SOON } from "./frameworks";
 import { Dot, EditorDots } from "./editor-dots";
 
 const blink = keyframes`
@@ -110,7 +110,7 @@ export default function HeroEditorView({
           <EditorSwitcher
             value={active}
             onValueChange={setActive}
-            items={FRAMEWORK_TABS}
+            items={FRAMEWORK_TABS_WITH_SOON}
             ariaLabel="Framework"
           />
         </div>

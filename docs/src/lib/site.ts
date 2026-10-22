@@ -18,7 +18,7 @@ export function absoluteUrl(path: string): string {
 
 export const SITE_NAME = "yak";
 
-export const SITE_TITLE = "yak — zero-runtime CSS-in-JS for React, Solid & Qwik";
+export const SITE_TITLE = "yak: zero-runtime CSS-in-JS for React and Solid";
 
 export const SITE_DESCRIPTION =
-  "Write styled-components syntax and get build-time CSS extraction with zero runtime, full React Server Component support, across React, Solid, Qwik and every modern bundler.";
+  "Write styled-components syntax and get build-time CSS extraction with zero runtime, full React Server Component support, across React, Solid and every modern bundler.";

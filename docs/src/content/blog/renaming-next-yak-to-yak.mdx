@@ -29,7 +29,7 @@ runs on many bundlers and frameworks, not only on Next.js.
 | `storybook-addon-yak` | `@yak/storybook`     | Storybook with webpack or Vite      |
 | `yak-swc`             | `@yak/swc`           | The SWC plugin behind all of them   |
 | `@yak/solid`          | `@yak/solid`         | Already in the scope. No change.    |
-| `@yak/qwik`           | `@yak/qwik`          | Already in the scope. No change.    |
+| `@yak/qwik`           | `@yak/qwik`          | Coming soon                         |
 
 `next-yak` 9.x gets bug fixes until the end of 2026. After that, all work happens in
 `@yak/react` 10. The old packages are deprecated on npm and point to the new names.
@@ -55,15 +55,15 @@ Then the yak started to grow:
   best way to build our plugin, and the same SWC plugin ran in a second bundler.
 - **Rsbuild and Storybook** Both came naturally and needed only a little work.
 - **Solid** Ryan Carniato, the creator of Solid, helped us a lot to get `@yak/solid` right.
-- **Qwik** The Qwik team is fixing the issues we reported, so `@yak/qwik` keeps getting better.
+- **Qwik** The Qwik team is fixing the issues we reported, and `@yak/qwik` is coming soon.
 
-The plan was simple to be the best replacement for `styled-components` in Next.js. Yak did that, and then kept going but the name did not keep up. New users saw "next" and assumed that yak was not for their Vite app.
+The plan was simple. We wanted to be the best replacement for `styled-components` in Next.js. yak did that and kept going, but the name did not keep up. New users saw "next" and assumed that yak was not for their Vite app.
 
 The obvious new name was `yak`, but on npm it looked squatted. We asked npm support about it, and luckily, they gave it to us once we explained why we needed it. Thank you, npm!
 
 ## How to migrate from next-yak to @yak/react
 
-The API does not change. `styled`, `css`, `keyframes`, `globalStyle` and the `css` prop work the same and only the steps below change.
+The API does not change. `styled`, `css`, `keyframes`, `globalStyle` and the `css` prop work the same, and only the steps below change. `@yak/react` 10 needs Node.js 22.18 or later, and with Next.js it needs version 16.4 or later. The [migration guide](/docs/migration-from-next-yak) in the docs has the same steps and stays up to date.
 
 ### 1. Replace the packages
 
@@ -91,6 +91,12 @@ import { withYak } from "@yak/react/withYak"; // [!code ++]
 
 import { viteYak } from "next-yak/vite"; // [!code --]
 import { viteYak } from "@yak/react/vite"; // [!code ++]
+
+import { pluginYak } from "next-yak/rsbuild"; // [!code --]
+import { pluginYak } from "@yak/react/rsbuild"; // [!code ++]
+
+import { getYakThemeContext } from "next-yak/context/baseContext"; // [!code --]
+import { getYakThemeContext } from "@yak/react/context/baseContext"; // [!code ++]
 ```
 
 Search the whole project, not only the source files: `package.json`, the TypeScript paths,
@@ -111,7 +117,7 @@ declare module "@yak/react" { // [!code ++]
 }
 ```
 
-This one is easy to miss, because TypeScript won't complain about the old name. The declaration simply stops applying,
+This one is easy to miss, because TypeScript won't complain about the old name. The declaration stops applying,
 which leaves the theme type empty and `theme.color` untyped.
 
 ### 4. Update the JSX import source
@@ -136,7 +142,7 @@ Files that set the JSX import source with a pragma need the same change:
 
 ### 5. Update the options
 
-We removed `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings`. Additionally, `experiments.debug` moves to `debug`:
+We removed `experiments.transpilationMode` and `experiments.suppressDeprecationWarnings`, and `experiments.debug` moves to `debug`:
 
 ```js title="next.config.mjs"
 export default withYak(
@@ -258,7 +264,7 @@ Yes. `next-yak` is deprecated in favor of `@yak/react`, and 9.x is its last vers
 ### Is @yak/react a drop-in replacement for next-yak?
 
 Almost. The API is the same. You change the imports, remove `:global()` wrappers and update a
-few options. The [migration steps](#how-to-migrate-from-next-yak-to-yakreact) show all of it.
+few options. The [migration steps](#how-to-migrate-from-next-yak-to-yakreact) and the [migration guide](/docs/migration-from-next-yak) show all of it.
 
 ### Does @yak/react only work with Next.js?
 
@@ -270,6 +276,6 @@ Yes. `DigitecGalaxus/next-yak` moves to the `galaxus-labs` organization and is n
 [galaxus-labs/yak](https://github.com/galaxus-labs/yak). GitHub redirects the old links, so
 your bookmarks and stars keep working.
 
-### What about Solid and Qwik?
+### What about Solid?
 
-`@yak/solid` and `@yak/qwik` keep their names as they're already in the new naming scheme.
+`@yak/solid` keeps its name, as it's already in the new naming scheme.

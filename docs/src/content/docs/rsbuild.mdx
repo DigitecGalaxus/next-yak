@@ -36,7 +36,7 @@ export default defineConfig({
 
 ## Theme context (`yak.context.ts`)
 
-If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root — it is picked up automatically. To use a custom location, pass the `contextPath` option (`pluginYak({ contextPath: "..." })`).
+If you want to use `YakThemeProvider` / `useTheme`, create a `yak.context.ts` file in your project root, and the plugin picks it up automatically. To use a custom location, pass the `contextPath` option (`pluginYak({ contextPath: "..." })`).
 
 ```ts title="yak.context.ts"
 export function getYakThemeContext() {
@@ -78,4 +78,10 @@ createRoot(document.getElementById("root")!).render(
 
 ## Migrating from styled-components
 
-Migration is mostly about imports, the styled API stays familiar. For details and edge cases, see the [Migration from styled-components](/docs/migration-from-styled-components) guide.
+Migration is mostly about imports, because the styled API stays familiar. For details and edge cases, see the [Migration from styled-components](/docs/migration-from-styled-components) guide.
+
+## Next steps
+
+- [Features](/docs/features): everything you can write with yak
+- [API reference](/docs/api#pluginyak-rsbuild): all options of `pluginYak`
+- [Troubleshooting](/docs/troubleshooting): build errors and missing styles

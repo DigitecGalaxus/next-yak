@@ -6,7 +6,7 @@ description: Set up yak in a Vite app with the viteYak plugin and get styled-com
 
 import { Callout } from "../../components/mdx/callout";
 
-yak has first-class Vite support via the `viteYak` plugin and any Vite-based framework works out of the box.
+yak supports Vite through the `viteYak` plugin, and any Vite-based framework works out of the box.
 
 This page shows how to:
 
@@ -110,8 +110,7 @@ createRoot(document.getElementById("root")!).render(
 
 ## JSX runtime / `css` prop
 
-If you want to use the `css` prop or compile-time JSX transforms (like in the example app),
-configure the JSX import source so that `@yak/react` provides the JSX factory:
+If you use the `css` prop, set the JSX import source to `@yak/react` to get its types:
 
 **Per-file (quick start):**
 
@@ -187,11 +186,11 @@ end up in regular CSS files handled by Vite's CSS pipeline.
 
 ## Yak constant files in Vite
 
-yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files.
-In Vite, these files are evaluated in a sandboxed context.
+yak supports build-time constants and mixins in special `.yak.ts` / `.yak.tsx` files. They run in an isolated
+context at build time.
 
-You usually **do not need** a `.yak` file for simple string constants, those can live in normal `.ts` modules and be imported as usual.
-Yak files become useful when you want to run a bit of TypeScript/JavaScript at build time
+Simple string constants don't need a `.yak` file. They can live in normal `.ts` modules and be imported as usual.
+`.yak` files are useful when you want to run a bit of TypeScript/JavaScript at build time
 (e.g. generate a design token scale, expand objects, or normalize data) and then inject the
 result into your styles.
 
@@ -237,3 +236,9 @@ express token generation in regular TypeScript.
 You can find a full Vite example in the repository:
 
 - Vite example: https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite
+
+## Next steps
+
+- [Features](/docs/features): everything you can write with yak
+- [API reference](/docs/api#viteyak-vite): all options of `viteYak`
+- [Troubleshooting](/docs/troubleshooting): build errors and missing styles

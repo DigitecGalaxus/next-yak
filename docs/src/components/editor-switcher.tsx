@@ -20,7 +20,7 @@ export function EditorSwitcher({
 }: {
   value: string;
   onValueChange: (value: string) => void;
-  items: readonly { value: string; node: ReactNode }[];
+  items: readonly { value: string; node: ReactNode; disabled?: boolean }[];
   ariaLabel?: string;
   pair?: boolean;
 }) {
@@ -32,7 +32,7 @@ export function EditorSwitcher({
         <SwitcherList activateOnFocus>
           <SwitcherIndicator />
           {items.map((item) => (
-            <SwitcherTab key={item.value} value={item.value}>
+            <SwitcherTab key={item.value} value={item.value} disabled={item.disabled}>
               {item.node}
             </SwitcherTab>
           ))}
@@ -58,7 +58,7 @@ export function EditorSwitcher({
           <SelectPositioner sideOffset={6} alignItemWithTrigger={false}>
             <SelectPopup>
               {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
+                <SelectItem key={item.value} value={item.value} disabled={item.disabled}>
                   {item.node}
                   <SelectItemIndicator>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -122,6 +122,7 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   font-family: ${fonts.mono};
   font-size: 13px;
   text-align: center;
+  white-space: nowrap;
   color: ${ink.fgSubtle};
   cursor: pointer;
 
@@ -131,9 +132,14 @@ const SwitcherTab = styled(BaseTabs.Tab)`
       background 0.16s ease;
   }
 
-  &:hover:not([data-active]) {
+  &:hover:not([data-active], [data-disabled]) {
     background: ${ink.hover};
     color: ${ink.fg};
+  }
+
+  &[data-disabled] {
+    color: color-mix(in srgb, ${ink.fgSubtle} 55%, transparent);
+    cursor: not-allowed;
   }
 
   &[data-active] {
@@ -234,6 +240,11 @@ const SelectItem = styled(Select.Item)`
 
   &[data-selected] {
     color: ${ink.fg};
+  }
+
+  &[data-disabled] {
+    color: color-mix(in srgb, ${ink.fgSubtle} 55%, transparent);
+    cursor: not-allowed;
   }
 `;
 

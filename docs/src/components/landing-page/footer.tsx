@@ -87,8 +87,7 @@ export default function Footer() {
             `}
           >
             <b>yak</b>, formerly <Code>next-yak</Code>. Same library, same team, broader home: the
-            package is now <Code>@yak/react</Code>, with <Code>@yak/solid</Code> and{" "}
-            <Code>@yak/qwik</Code> beside it.{" "}
+            package is now <Code>@yak/react</Code>, with <Code>@yak/solid</Code> beside it.{" "}
             <StoryLink href="/blog/renaming-next-yak-to-yak">Read the story</StoryLink>
           </p>
         </Brand>

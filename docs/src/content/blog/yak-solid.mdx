@@ -1,6 +1,6 @@
 ---
 title: yak for Solid
-description: "Styled components for Solid 2, with the CSS compiled away at build time. And how Ryan Carniato helped make it fast."
+description: "Styled components for Solid 2, with the CSS compiled away at build time, and how Ryan Carniato helped make it fast."
 date: 2026-09-02
 author: The yak team
 draft: true
@@ -53,7 +53,7 @@ SWC plugin, reads your styled components while Vite builds the app:
 - The component keeps only what it needs at runtime: the class names, and one CSS variable for
   each dynamic value, like `$angle` above. Nothing injects or parses CSS in the browser.
 
-yak started for React and Next.js. As `@yak/react`, it runs in production at
+yak started for React and Next.js, and it runs in production at
 [Digitec Galaxus](https://www.galaxus.ch), the largest online shop in Switzerland.
 `@yak/solid` uses the same compiler. Only the small runtime on top is new, and it is written for
 Solid.
@@ -105,7 +105,7 @@ things are shaped by Solid:
 
 `@yak/solid` is experimental, because Solid 2 is still a release candidate. We track it closely,
 and breaking changes are possible until Solid 2 is stable. It needs `solid-js` and `@solidjs/web`
-2.0.0-rc.10 or newer, so Solid 1 is not supported.
+2.0.0-rc.15 or newer, so Solid 1 is not supported.
 
 ## Try it
 
@@ -128,7 +128,7 @@ export default defineConfig({
 });
 ```
 
-The [`@yak/solid` README](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak-solid)
-covers theming and the `css` prop, and
+The [Solid guide](/docs/solid) covers setup, theming, the `css` prop and SolidStart. The
+[`@yak/solid` README](https://github.com/DigitecGalaxus/next-yak/tree/main/packages/yak-solid) has the same, and
 [`examples/vite-solid`](https://github.com/DigitecGalaxus/next-yak/tree/main/examples/vite-solid)
 is a full app.

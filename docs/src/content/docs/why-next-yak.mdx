@@ -7,8 +7,6 @@ import { Tab, Tabs } from "../../components/mdx/tabs";
 
 ## Motivation
 
-Why should you choose yak instead of all the other options you have?
-
 Most existing CSS-in-JS libraries are either slow or have a complex API. yak finds a middle ground between speed and API simplicity and is battle-tested at scale by [Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform.
 
 The goal of yak is to be a CSS-in-JS library with the following properties:
@@ -28,20 +26,20 @@ The goal of yak is to be a CSS-in-JS library with the following properties:
   - use context based themes in styles
   - typescript support
 
-Optimizations are performed by the bundler's native CSS tool (PostCSS for Next.js with Webpack, Lightning CSS for Turbopack and Vite), allowing you to use its full potential.
-This also ensures consistency in optimizations across CSS files and CSS-in-JS.
+The bundler's native CSS tool (PostCSS for webpack and Vite, Lightning CSS for Turbopack and Rsbuild) performs the optimizations, so you get everything that tool offers.
+It also keeps optimizations consistent across CSS files and CSS-in-JS.
 
 ## Our Journey
 
 Our journey with yak began at [Digitec Galaxus](https://www.galaxus.ch), in a large Next.js project with more than 150 engineers working on it daily. We extensively used styled-components for flexibility and colocation of styles and code. Despite a few performance issues during server-side rendering, this setup served us well.
 
-However, with the React ecosystem's constant evolution and increasing focus on performance, the introduction of React Server Components (RSC) by the React team, quickly adopted by Next.js with the app router, posed a new challenge. Third-party packages had to rethink their approach to accommodate RSC's new possibilities.
+Then the React team introduced React Server Components (RSC), and Next.js quickly adopted them with the app router. Third-party packages had to rethink their approach to work with RSC.
 
-While runtime CSS-in-JS libraries offer great flexibility, they often struggle to work well with Server Components. Several static extraction-based CSS-in-JS libraries were developed to address this issue, but none made the transition from styled-components easy for us, as it would require rewriting over 5000 styled components.
+While runtime CSS-in-JS libraries offer great flexibility, they often struggle to work well with Server Components. Several static extraction-based CSS-in-JS libraries were developed to address this issue, but none made the transition from styled-components easy for us, since switching would have meant rewriting over 5000 styled components.
 
-We envisioned a solution that would require minimal changes from developers familiar with styled-components, while offering the benefits of a static CSS-in-JS framework compatible with Next.js and Server Components. This vision led to the creation of yak:
+We wanted a solution that would require minimal changes from developers familiar with styled-components, while offering the benefits of a static CSS-in-JS framework compatible with Next.js and Server Components. So we built yak:
 
-- **Static Analysis**: yak employs static analysis to parse and analyze your styles at build time, generating plain CSS files that the bundler processes like any other stylesheet. It also replaces the defined styles in your files with an invocation of its runtime.
+- **Static Analysis**: yak uses static analysis to parse and analyze your styles at build time, generating plain CSS files that the bundler processes like any other stylesheet. It also replaces the defined styles in your files with an invocation of its runtime.
 
 - **Runtime**: To retain some dynamic behavior, the runtime uses the generated class names and modifies classes based on the provided props.
 
@@ -51,8 +49,8 @@ We envisioned a solution that would require minimal changes from developers fami
 
 See related documentation: [Migration from styled-components](/docs/migration-from-styled-components)
 
-If you're familiar with styled-components, yak enables you to use the same syntax in the new era of streaming and Server Components.
-Additionally it's really fast and has a small footprint.
+If you're familiar with styled-components, yak lets you use the same syntax with streaming and Server Components.
+It's also fast and has a small footprint.
 
 <Tabs title="Familiar syntax" groupId="language" items={["typescript", "javascript"]}>
 <Tab value="typescript">
@@ -88,7 +86,7 @@ export const MyComponent = () => {
 </Tab>
 </Tabs>
 
-And if you use TypeScript, yak is fully typed to help you
+If you use TypeScript, yak is fully typed:
 
 ```tsx twoslash
 // @noErrors
@@ -101,7 +99,7 @@ const MyParagraph = styled.p<{ $primary: boolean; $secondary: boolean; }>`
   })}
 `;
 
-export MyComponent = () => {
+export const MyComponent = () => {
   return <MyParagraph $
 //                     ^|
 };
@@ -219,8 +217,13 @@ import { styled } from "@yak/react";
 const Input = styled.input``;
 const Label = styled.label``;
 const FormElement = styled.div`
-  :has(${Input}:checked) {
+  &:has(${Input}:checked) {
     color: red;
   }
 `;
 ```
+
+## Next steps
+
+- [Comparison](/docs/comparison): how yak compares with other CSS-in-JS libraries
+- [Getting started](/docs/getting-started): set up yak in your project

@@ -71,7 +71,7 @@ const libraries = {
       React: true,
       "React Server Components": true,
       Vite: true,
-      "Framework agnostic": false,
+      "Framework agnostic": true,
     },
     Tailwind: {
       "INP optimized": true,

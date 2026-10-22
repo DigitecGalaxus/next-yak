@@ -12,7 +12,6 @@ import SectionIntro, {
 import { Container, Section } from "../components/landing-page/section";
 import {
   NextIcon,
-  QwikIcon,
   ReactIcon,
   RsbuildIcon,
   SolidIcon,
@@ -39,7 +38,6 @@ import { JsonLd, softwareSourceCode } from "@/components/json-ld";
 const WORKS_WITH = [
   { name: "React", Icon: ReactIcon },
   { name: "Solid", Icon: SolidIcon },
-  { name: "Qwik", Icon: QwikIcon },
   { name: "Next.js", Icon: NextIcon },
   { name: "Vite", Icon: ViteIcon },
   { name: "Rsbuild", Icon: RsbuildIcon },
