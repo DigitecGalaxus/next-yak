@@ -65,6 +65,24 @@ export function Card({ section, title, mascot, home = false }) {
       },
       title,
     ),
+    // the home card names the product, so its tagline follows the wordmark
+    home
+      ? h(
+          "div",
+          {
+            style: {
+              marginTop: 22,
+              fontWeight: 600,
+              fontSize: 21,
+              letterSpacing: 2.5,
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              color: COLORS.red,
+            },
+          },
+          section,
+        )
+      : null,
   );
 
   return h(
@@ -99,19 +117,21 @@ export function Card({ section, title, mascot, home = false }) {
       h(
         "div",
         { style: { display: "flex", flexDirection: "column" } },
-        h(
-          "div",
-          {
-            style: {
-              fontWeight: 600,
-              fontSize: 24,
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              color: COLORS.red,
-            },
-          },
-          section,
-        ),
+        home
+          ? null
+          : h(
+              "div",
+              {
+                style: {
+                  fontWeight: 600,
+                  fontSize: 24,
+                  letterSpacing: 3,
+                  textTransform: "uppercase",
+                  color: COLORS.red,
+                },
+              },
+              section,
+            ),
         home
           ? h(
               "div",
