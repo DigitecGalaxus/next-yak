@@ -1,14 +1,18 @@
 {
   "name": "@yak/solid",
   "version": "0.4.0",
-  "description": "SolidJS runtime for yak: styled-components syntax, compiled to plain CSS at build time. Targets Solid 2.",
+  "description": "yak for Solid: zero-runtime CSS-in-JS with styled-components syntax, compiled to plain CSS at build time. Targets Solid 2.",
   "keywords": [
     "css-in-js",
     "solid",
+    "solid-start",
     "solidjs",
     "styled-components",
+    "swc",
     "typescript",
-    "vite"
+    "vite",
+    "yak",
+    "zero-runtime"
   ],
   "homepage": "https://yak.js.org/",
   "bugs": {
@@ -25,7 +29,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/galaxuslabs/yak.git"
+    "url": "git+https://github.com/galaxuslabs/yak.git",
+    "directory": "packages/yak-solid"
   },
   "files": [
     "dist",

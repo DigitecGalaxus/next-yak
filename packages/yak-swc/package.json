@@ -1,13 +1,16 @@
 {
   "name": "@yak/swc",
   "version": "10.0.0",
-  "description": "Rust based SWC plugin of @yak/react and @yak/solid to compile styled components at build time",
+  "description": "The Rust SWC plugin of yak that compiles styled components to plain CSS at build time, for @yak/react and @yak/solid.",
   "keywords": [
     "css-in-js",
-    "react",
+    "rust",
     "styled-components",
+    "swc",
     "swc-plugin",
-    "typescript"
+    "wasm",
+    "yak",
+    "zero-runtime"
   ],
   "homepage": "https://yak.js.org/",
   "bugs": {
@@ -24,7 +27,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/galaxuslabs/yak.git"
+    "url": "git+https://github.com/galaxuslabs/yak.git",
+    "directory": "packages/yak-swc"
   },
   "files": [],
   "main": "target/wasm32-wasip1/release/yak_swc.wasm",

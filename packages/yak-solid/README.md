@@ -144,4 +144,4 @@ Like `@yak/react`, the yak SWC compiler extracts your CSS at build time. At runt
 - `@solidjs/vite-plugin` >= 3.0.0-next (the Solid 2 line, npm tag `next`)
 - `@yak/swc` with yak-package auto-detection (bundled as a dependency, version released together with this package or newer)
 
-See the [`examples/vite-solid`](https://github.com/galaxuslabs/yak/tree/main/examples/vite-solid) app for a full setup.
+See the [Solid guide](https://yak.js.org/docs/solid) and the [`examples/vite-solid`](https://github.com/galaxuslabs/yak/tree/main/examples/vite-solid) app for a full setup.

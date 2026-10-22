@@ -1,7 +1,7 @@
 {
   "name": "@yak/eslint-plugin",
   "version": "2.0.0",
-  "description": "ESLint and Oxlint plugin for yak (@yak/react and @yak/solid)",
+  "description": "ESLint and Oxlint rules for yak, the zero-runtime CSS-in-JS library for React and Solid.",
   "keywords": [
     "css-in-js",
     "eslint",
@@ -10,8 +10,10 @@
     "oxlint",
     "oxlint-plugin",
     "react",
+    "solid",
     "styled-components",
-    "typescript"
+    "typescript",
+    "yak"
   ],
   "homepage": "https://yak.js.org/",
   "bugs": {
@@ -28,7 +30,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/galaxuslabs/yak"
+    "url": "git+https://github.com/galaxuslabs/yak.git",
+    "directory": "packages/yak-eslint-plugin"
   },
   "files": [
     "dist",

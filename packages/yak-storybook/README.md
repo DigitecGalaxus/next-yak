@@ -1,6 +1,6 @@
 # @yak/storybook
 
-Storybook addon for [@yak/react](https://yak.js.org/) - a CSS-in-JS library that combines styled-components syntax with build-time CSS extraction.
+Storybook addon for [yak](https://yak.js.org/), the zero-runtime CSS-in-JS library with styled-components syntax. It sets up [@yak/react](https://www.npmjs.com/package/@yak/react) in Storybook 10+.
 
 Supports both Vite and Webpack Storybook builders.
 
