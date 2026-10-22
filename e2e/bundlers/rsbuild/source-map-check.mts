@@ -4,7 +4,7 @@ import type { RsbuildPlugin, Rspack } from "@rsbuild/core";
 /**
  * Fails the build when the yak loader hands on its source map as a JSON string.
  * Loaders such as babel-loader only accept an object map.
- * See: https://github.com/DigitecGalaxus/next-yak/pull/675
+ * See: https://github.com/galaxuslabs/yak/pull/675
  */
 export function pluginSourceMapCheck(): RsbuildPlugin {
   return {

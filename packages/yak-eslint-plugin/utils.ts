@@ -8,7 +8,7 @@ export function createRule<TRule extends Rule>(name: string, rule: TRule): TRule
       ...rule.meta,
       docs: {
         ...rule.meta?.docs,
-        url: `https://github.com/DigitecGalaxus/next-yak/blob/main/packages/yak-eslint-plugin/docs/rules/${name}.md`,
+        url: `https://github.com/galaxuslabs/yak/blob/main/packages/yak-eslint-plugin/docs/rules/${name}.md`,
       },
     },
   }) as TRule;

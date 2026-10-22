@@ -41,7 +41,7 @@ Before you begin
 Clone the repository
 
 ```bash
-git clone https://github.com/DigitecGalaxus/next-yak.git
+git clone https://github.com/galaxuslabs/yak.git
 cd next-yak
 ```
 
@@ -237,4 +237,4 @@ See [`e2e/README.md`](./e2e/README.md) for the suite structure and how to run a 
 
 ---
 
-For any questions not covered here, please feel free to [open an issue](https://github.com/DigitecGalaxus/next-yak/issues/new).
+For any questions not covered here, please feel free to [open an issue](https://github.com/galaxuslabs/yak/issues/new).
