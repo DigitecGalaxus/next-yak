@@ -1,5 +1,11 @@
 # yak-swc
 
+## 10.0.0-rc.2
+
+### Patch Changes
+
+- 76b9ac8: Fix the warning `INVALID_ANNOTATION` that Rolldown reported
+
 ## 10.0.0-rc.1
 
 ### Major Changes
