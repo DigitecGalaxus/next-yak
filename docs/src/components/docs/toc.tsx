@@ -2,7 +2,7 @@
 
 import { AnchorProvider, TOCItem } from "fumadocs-core/toc";
 import type { TableOfContents, TOCItemType } from "fumadocs-core/toc";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { styled } from "@yak/react";
 import { light, dark } from "@/tokens";
 import { sectionLabel } from "@/lib/mixins";
@@ -99,11 +99,9 @@ function activeWindow(
 }
 
 export default function Toc({ toc }: { toc: TableOfContents }) {
-  const listRef = useRef<HTMLDivElement>(null);
   const [rail, setRail] = useState({ d: "", top: 0, bottom: 0 });
 
-  useEffect(() => {
-    const list = listRef.current;
+  const listRef = useCallback((list: HTMLDivElement | null) => {
     if (!list) return;
     // Only the clip window changes on scroll, so it can transition
     const redraw = () => {
@@ -112,14 +110,21 @@ export default function Toc({ toc }: { toc: TableOfContents }) {
     };
     redraw();
     const mutation = new MutationObserver(redraw);
-    mutation.observe(list, { attributes: true, attributeFilter: ["data-active"], subtree: true });
+    // the active marks move on scroll, and the entries change with the page
+    mutation.observe(list, {
+      attributes: true,
+      attributeFilter: ["data-active"],
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
     const resize = new ResizeObserver(redraw);
     resize.observe(list);
     return () => {
       mutation.disconnect();
       resize.disconnect();
     };
-  }, [toc]);
+  }, []);
 
   return (
     <AnchorProvider toc={toc}>

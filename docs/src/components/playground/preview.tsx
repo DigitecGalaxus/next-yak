@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { styled } from "@yak/react";
 import { dark } from "@/tokens";
 import { errorStyles } from "@/lib/playground/runtimes/error";
@@ -18,13 +18,13 @@ export function Preview({
   /** not `css`, that name is yak's css prop */
   sheets: string[];
 }) {
-  const hostRef = useRef<HTMLDivElement>(null);
   const stylesRef = useRef<HTMLDivElement | null>(null);
   const mountRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<{ runtime: Runtime; renderer: Renderer } | null>(null);
 
-  useEffect(() => {
-    const host = hostRef.current!;
+  // React attaches refs before it runs effects, so the effects below find both containers
+  const hostRef = useCallback((host: HTMLDivElement | null) => {
+    if (!host) return;
     const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
     const reset = document.createElement("style");
     reset.textContent = hostReset;
