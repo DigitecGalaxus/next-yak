@@ -220,6 +220,7 @@ export function RsbuildIcon({ mono: _mono, className }: FrameworkIconProps) {
       alt=""
       width={20}
       height={20}
+      loading="eager"
       className={className}
       unoptimized
     />
@@ -234,6 +235,7 @@ export function TanStackIcon({ mono: _mono, className }: FrameworkIconProps) {
       alt=""
       width={20}
       height={20}
+      loading="eager"
       className={className}
       unoptimized
     />

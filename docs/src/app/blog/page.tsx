@@ -61,7 +61,13 @@ export default async function BlogIndex() {
             <PostMeta post={featured} withTag={false} />
             <ReadMore>Read the post →</ReadMore>
           </FeaturedText>
-          <Mascot src={asset("/img/yak-jumping.png")} alt="" width="673" height="512" />
+          <Mascot
+            src={asset("/img/yak-jumping.webp")}
+            alt=""
+            width="480"
+            height="365"
+            loading="eager"
+          />
         </FeaturedCard>
       ) : null}
       {rest.length > 0 ? (
@@ -165,7 +171,8 @@ const FeaturedText = styled.div`
 `;
 
 const FeaturedTitle = styled.span`
-  font-family: ${fonts.title};
+  font-weight: ${fontWeight.black};
+  letter-spacing: -0.02em;
   font-size: clamp(26px, 4vw, 34px);
   line-height: 1.15;
 `;

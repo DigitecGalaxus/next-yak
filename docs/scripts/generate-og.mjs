@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { readFile, readdir, writeFile, mkdir, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 import { Card, SIZE } from "../src/og/card.mjs";
 
 const require = createRequire(import.meta.url);
@@ -87,7 +88,12 @@ await mkdir(OUT, { recursive: true });
 
 for (const card of cards) {
   const res = new ImageResponse(Card({ ...card, mascot }), { ...SIZE, fonts });
-  await writeFile(join(OUT, `${card.key}.png`), Buffer.from(await res.arrayBuffer()));
+  // Satori writes uncompressed 24-bit PNGs. A 256-color palette keeps them PNG, which every
+  // link preview reads, at about a quarter of the size.
+  const png = await sharp(Buffer.from(await res.arrayBuffer()))
+    .png({ palette: true, quality: 90, effort: 10, compressionLevel: 9 })
+    .toBuffer();
+  await writeFile(join(OUT, `${card.key}.png`), png);
 }
 
 console.log(`[og] ${cards.length} cards -> public/og`);

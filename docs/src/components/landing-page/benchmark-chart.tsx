@@ -92,10 +92,10 @@ export default function BenchmarkChart() {
             <YakBar>
               {/* % offsets are relative to the bar height, tuned so the yak straddles the bar's top edge */}
               <Image
-                src={asset("/yak-riding-2.png")}
+                src={asset("/yak-riding.webp")}
                 alt=""
-                width="810"
-                height="647"
+                width="270"
+                height="216"
                 css={css`
                   position: absolute;
                   right: -6px;

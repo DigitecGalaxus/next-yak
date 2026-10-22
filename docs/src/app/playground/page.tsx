@@ -29,7 +29,7 @@ export default function PlaygroundPage() {
   );
 }
 
-const Page = styled.main`
+const Page = styled.div`
   box-sizing: border-box;
   width: 100%;
   max-width: ${maxContentWidth};

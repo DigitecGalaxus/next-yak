@@ -1,7 +1,7 @@
 import { styled } from "@yak/react";
 import { light, dark } from "@/tokens";
 
-export const MessagePage = styled.main`
+export const MessagePage = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;

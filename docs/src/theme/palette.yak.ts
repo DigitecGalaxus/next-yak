@@ -14,8 +14,9 @@ export const light = {
   beige4: paper(0.915),
   beige5: paper(0.872),
   beige6: paper(0.779),
-  red: redOk(0.641, 0.212),
-  redDeep: redOk(0.58, 0.212),
+  // 0.57 keeps white text on red and red text on beige above WCAG AA (4.5:1)
+  red: redOk(0.57, 0.212),
+  redDeep: redOk(0.51, 0.212),
 };
 
 export const dark = {

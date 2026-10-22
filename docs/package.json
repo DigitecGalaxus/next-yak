@@ -42,6 +42,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
+    "sharp": "catalog:dev",
     "typescript": "catalog:dev",
     "wasm-pack": "catalog:dev"
   }

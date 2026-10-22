@@ -3,7 +3,7 @@
 import { css, keyframes } from "@yak/react";
 import Image from "next/image";
 import { useState, type CSSProperties } from "react";
-import { container, fonts, shadow, light, dark, ink } from "@/tokens";
+import { container, fonts, shadow, dark, ink } from "@/tokens";
 import { editorSurface, codeReset } from "@/lib/mixins";
 import { EditorSwitcher } from "@/components/editor-switcher";
 import { CopyButton } from "./copy-button";
@@ -54,10 +54,11 @@ export default function HeroEditorView({
       `}
     >
       <Image
-        src={asset("/yak-hero.png")}
+        src={asset("/yak-hero.webp")}
         alt="Yak hero"
-        width="1248"
-        height="832"
+        width="480"
+        height="320"
+        loading="eager"
         css={css`
           position: relative;
           z-index: 1;
@@ -205,7 +206,8 @@ function Terminal({ packageName }: { packageName?: string }) {
           </span>
           <span
             css={css`
-              color: light-dark(${light.red}, ${dark.red});
+              /* the editor is dark in both themes */
+              color: ${dark.red};
               font-weight: 700;
             `}
           >

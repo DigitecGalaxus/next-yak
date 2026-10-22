@@ -9,6 +9,9 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   output: "export",
   images: { unoptimized: true },
+  // yak writes one small CSS file per module, so a page needs about 15 render-blocking
+  // requests. Inlining them into the HTML removes that waterfall.
+  experimental: { inlineCss: true },
   ...(basePath ? { basePath } : {}),
 };
 

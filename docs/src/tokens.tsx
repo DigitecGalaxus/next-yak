@@ -1,11 +1,15 @@
 import { css } from "@yak/react";
-import { Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 
-export const bricolageSans = Bricolage_Grotesque({
+// The title font only sets the "yak" wordmark, so the file holds just the glyphs a, k and y
+// (1 kB instead of 22 kB). Other text in it falls back to the next font in the stack.
+// Made with: pyftsubset <Bricolage Grotesque 800 latin woff2> --text="yak" --layout-features='*' --flavor=woff2
+export const bricolageSans = localFont({
+  src: "./fonts/bricolage-yak.woff2",
   weight: "800",
   style: "normal",
   variable: "--font-title",
-  subsets: ["latin"],
 });
 
 export const hankenSans = Hanken_Grotesk({
@@ -13,9 +17,12 @@ export const hankenSans = Hanken_Grotesk({
   subsets: ["latin"],
 });
 
+// Not preloaded: no text above the fold depends on it for LCP, so it should not compete
+// with the body font. The size-adjusted fallback keeps the layout stable during the swap.
 export const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const fonts = {
