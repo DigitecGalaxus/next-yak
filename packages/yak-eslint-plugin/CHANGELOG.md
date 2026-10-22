@@ -1,5 +1,19 @@
 # eslint-plugin-yak
 
+## 2.0.0
+
+### Major Changes
+
+- 50ef4de: The rules no longer check files that import from `next-yak`. Import from `@yak/react` instead.
+- 3724852: `@yak/eslint-plugin` needs Node.js 22.18 or later. CommonJS configs can now load it with `require()`.
+- e030a2d: Remove the rule `css-global-deprecated`. The compiler now rejects `:global()` with a build error.
+- 50ef4de: The rule prefix is now `@yak/` in ESLint and in Oxlint.
+- 50ef4de: Rename `eslint-plugin-yak` to `@yak/eslint-plugin`.
+
+### Minor Changes
+
+- 50ef4de: Add support for `@yak/solid`.
+
 ## 2.0.0-rc.1
 
 ### Major Changes

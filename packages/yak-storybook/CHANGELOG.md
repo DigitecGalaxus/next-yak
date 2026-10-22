@@ -1,5 +1,17 @@
 # storybook-addon-yak
 
+## 10.0.0
+
+### Major Changes
+
+- 50ef4de: Rename `storybook-addon-yak` to `@yak/storybook`.
+- e030a2d: Remove the option `experiments.transpilationMode`. The addon now always writes plain CSS.
+- 3724852: `@yak/storybook` needs Node.js 22.18 or later. CommonJS code can now load it with `require()`.
+
+### Patch Changes
+
+- e9006fa: Support storybook 11
+
 ## 10.0.0-rc.2
 
 No changes in this release.

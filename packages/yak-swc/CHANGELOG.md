@@ -1,5 +1,20 @@
 # yak-swc
 
+## 10.0.0
+
+### Major Changes
+
+- 50ef4de: Rename `yak-swc` to `@yak/swc`.
+- e030a2d: Remove the CSS Modules output. The option `importMode.transpilation` and the option `suppressDeprecationWarnings` no longer exist.
+- 50ef4de: The default yak package is now `@yak/react` instead of `next-yak`.
+- 50ef4de: Imports from `next-yak` are no longer compiled. Import from `@yak/react` instead.
+- e030a2d: A `:global()` selector is now a build error.
+
+### Patch Changes
+
+- 5d9ada3: Update dependencies and add support for next.js 16.4
+- 76b9ac8: Fix the warning `INVALID_ANNOTATION` that Rolldown reported
+
 ## 10.0.0-rc.2
 
 ### Patch Changes
