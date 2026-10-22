@@ -28,17 +28,19 @@ import {
   dark,
 } from "@/tokens";
 import Link from "next/link";
+import { chromeLink } from "@/lib/mixins";
 import { externalLinkProps } from "@/lib/external-link";
 import ExternalMark from "@/components/external-mark";
 import { JsonLd, softwareSourceCode } from "@/components/json-ld";
 
 const WORKS_WITH = [
-  { name: "React", Icon: ReactIcon },
-  { name: "Solid", Icon: SolidIcon },
-  { name: "Next.js", Icon: NextIcon },
-  { name: "TanStack Start", Icon: TanStackIcon },
-  { name: "Vite", Icon: ViteIcon },
-  { name: "Rsbuild", Icon: RsbuildIcon },
+  { name: "React", Icon: ReactIcon, href: "/docs/getting-started" },
+  { name: "Solid", Icon: SolidIcon, href: "/docs/solid" },
+  { name: "Next.js", Icon: NextIcon, href: "/docs/getting-started#enable-yak" },
+  // TanStack Start runs on Vite, so the Vite guide covers it
+  { name: "TanStack Start", Icon: TanStackIcon, href: "/docs/vite" },
+  { name: "Vite", Icon: ViteIcon, href: "/docs/vite" },
+  { name: "Rsbuild", Icon: RsbuildIcon, href: "/docs/rsbuild" },
 ];
 
 export default async function Home() {
@@ -184,17 +186,20 @@ export default async function Home() {
                   align-content: flex-start;
                   gap: 12px 24px;
                   flex-wrap: wrap;
+                  list-style: none;
 
                   @container hero (min-width: ${container.hero.split}) {
                     margin-top: -8px;
                   }
                 `}
               >
-                {WORKS_WITH.map(({ name, Icon }) => (
-                  <Badge key={name}>
-                    <Icon />
-                    {name}
-                  </Badge>
+                {WORKS_WITH.map(({ name, Icon, href }) => (
+                  <li key={name}>
+                    <Badge href={href}>
+                      <Icon />
+                      {name}
+                    </Badge>
+                  </li>
                 ))}
               </ul>
               <div
@@ -347,7 +352,8 @@ async function getReleasedVersion(): Promise<string | null> {
   }
 }
 
-const Badge = styled.li`
+const Badge = styled(Link)`
+  ${chromeLink};
   display: flex;
   align-items: center;
   gap: 8px;
