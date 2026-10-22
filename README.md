@@ -1,75 +1,64 @@
-# @yak/react
+# yak
 
-[Documentation](https://yak.js.org/docs/getting-started) and [Playground](https://yak.js.org/playground), hosted at [yak.js.org](https://yak.js.org/)
+Zero-runtime CSS-in-JS for React and Solid. Write styled-components syntax, and yak compiles it to plain CSS files at build time with a Rust SWC plugin, so it works with React Server Components and ships no styling runtime to the browser.
+
+[Documentation](https://yak.js.org/docs/getting-started) · [Playground](https://yak.js.org/playground) · [Blog](https://yak.js.org/blog)
 
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
-[![npm version](https://badge.fury.io/js/@yak%2Freact.svg)](https://www.npmjs.com/package/@yak/react)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/galaxuslabs/yak/blob/main/LICENSE)
 
-**@yak/react** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
+> **Formerly next-yak.** Same library, same team. From version 10 the React package is [`@yak/react`](https://www.npmjs.com/package/@yak/react), and versions before 10 stay on npm as [`next-yak`](https://www.npmjs.com/package/next-yak). The [migration guide](https://yak.js.org/docs/migration-from-next-yak) covers the switch.
 
-Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 with OXC), **Rsbuild** (2+), and **Storybook**. Any Vite-based framework works out of the box, including react-router, TanStack Start, and more.
+yak runs in production at [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, and measurably improved its Core Web Vitals there.
 
-> **Production-proven:** @yak/react is sponsored and used in production by [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, delivering measurable improvements in Core Web Vitals.
+## Packages
+
+| Package                                                                                         | Version                                                                                                                                      | What it is                                                    |
+| :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| [`@yak/react`](https://github.com/galaxuslabs/yak/tree/main/packages/yak-react)                 | [![@yak/react version](https://npmx.dev/api/registry/badge/version/@yak/react)](https://npmx.dev/package/@yak/react)                         | yak for React, with plugins for Next.js, Vite and Rsbuild     |
+| [`@yak/solid`](https://github.com/galaxuslabs/yak/tree/main/packages/yak-solid)                 | [![@yak/solid version](https://npmx.dev/api/registry/badge/version/@yak/solid)](https://npmx.dev/package/@yak/solid)                         | yak for Solid 2, with a Vite plugin (experimental)            |
+| [`@yak/swc`](https://github.com/galaxuslabs/yak/tree/main/packages/yak-swc)                     | [![@yak/swc version](https://npmx.dev/api/registry/badge/version/@yak/swc)](https://npmx.dev/package/@yak/swc)                               | the Rust SWC plugin that both runtimes use to extract the CSS |
+| [`@yak/eslint-plugin`](https://github.com/galaxuslabs/yak/tree/main/packages/yak-eslint-plugin) | [![@yak/eslint-plugin version](https://npmx.dev/api/registry/badge/version/@yak/eslint-plugin)](https://npmx.dev/package/@yak/eslint-plugin) | ESLint and Oxlint rules for yak                               |
+| [`@yak/storybook`](https://github.com/galaxuslabs/yak/tree/main/packages/yak-storybook)         | [![@yak/storybook version](https://npmx.dev/api/registry/badge/version/@yak/storybook)](https://npmx.dev/package/@yak/storybook)             | Storybook addon for the Vite and webpack builders             |
 
 ## Features
 
-- **Multi-Framework**: First-class support for Next.js (Webpack & Turbopack), Vite 7+ (react-router, TanStack Start, ...), Rsbuild 2+, and Storybook
-- **Build-Time CSS**: Extracts CSS at compile time with zero runtime overhead
-- **React Server Components**: Works seamlessly with both Server and Client Components
-- **Cross-File Imports**: Import constants, mixins, and selectors from `.yak` files and other modules, works across all bundlers
-- **Standard CSS Syntax**: Write familiar CSS with full nesting, keyframes, and media query support
-- **Integrates with Atomic CSS**: Combines with utility-first frameworks like Tailwind CSS
-- **TypeScript First**: Fully typed props, theme context, and cross-file selectors
-- **Lightweight Runtime**: Minimal footprint, just swaps CSS class names based on props
-- **Minimal Dependencies**: Only 8 dependencies in total (including transitive ones)
+- **Build-time CSS**: styles become plain CSS files at compile time, and the bundler's own CSS pipeline handles them
+- **React Server Components**: works in Server and Client Components alike
+- **Next.js, Vite and Rsbuild**: Next.js with webpack or Turbopack, Vite 7+ (react-router, TanStack Start, ...), Rsbuild 2+ and Storybook
+- **React and Solid**: the same API for both, shaped to how each framework works
+- **Cross-file imports**: import constants, mixins and selectors from `.yak` files and other modules
+- **Standard CSS**: nesting, keyframes and media queries as you write them in a stylesheet
+- **Atomic CSS**: mixes with utility classes from Tailwind and similar frameworks
+- **TypeScript first**: typed props, theme and cross-file selectors
+- **Small runtime**: it only swaps class names and CSS variables based on props
+- **Few dependencies**: [![direct dependencies of @yak/react](https://npmx.dev/api/registry/badge/dependencies/@yak/react)](https://npmx.dev/package/@yak/react), all of them build-time tools
 
 [Preview (Video)](https://github.com/galaxuslabs/yak/assets/4113649/f5a220fc-2a0f-46be-a8e7-c855f7faa337)
-
-## Compatibility
-
-Versions before 10.x are on npm as [`next-yak`](https://www.npmjs.com/package/next-yak).
-
-| Version | Next.js   | Vite            | react       | swc_core |
-| ------- | --------- | --------------- | ----------- | -------- |
-| 10.x    | >= 16.4.0 | >= 7.0.0        | 19.x        | 79.0.0   |
-| 9.x     | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
-| 8.x     | >= 16.0.0 | -               | 19.x        | 45.0.1   |
-| 7.x     | >= 15.4.4 | -               | 19.x        | 38.0.1   |
-| 6.x     | >= 15.4.1 | -               | 19.x        | 27.0.6   |
-| 5.x     | >= 15.2.1 | -               | 19.x        | 16.0.0   |
-| 4.x     | >= 15.0.4 | -               | 19.x        | 5.0.1    |
-| 3.x     | 15.x      | -               | 18.x / 19.x | 3.0.2    |
-| 2.x     | 14.x      | -               | 18.x / 19.x | 0.279.0  |
-
-## Installation
-
-```bash
-npm install @yak/react
-```
 
 ## Getting Started
 
 ### Next.js
 
-See a live [stackblitz demo](https://stackblitz.com/edit/stackblitz-starters-dfykqy?file=app%2Fpage.tsx) or try our **[stackblitz starter kit](https://stackblitz.com/fork/next-yak-starter?file=app%2Fpage.tsx)**
+Install the package and wrap your Next.js config. It works with webpack and Turbopack, no further configuration needed.
 
-Works out of the box with both **Webpack** and **Turbopack**, no configuration changes needed.
-
-1. Add @yak/react to your `next.config.ts`:
+```bash
+npm install @yak/react
+```
 
 ```js
+// next.config.ts
 import { withYak } from "@yak/react/withYak";
 
 const nextConfig = {
-  // your next.js config
+  // your Next.js config
 };
 
 export default withYak(nextConfig);
 ```
 
-2. Start styling:
+Then start styling:
 
 ```jsx
 import { styled } from "@yak/react";
@@ -80,16 +69,16 @@ const StyledDiv = styled.div`
   background-color: #f0f0f0;
 `;
 
-function HomePage() {
-  return <StyledDiv>Hello, @yak/react!</StyledDiv>;
+export default function HomePage() {
+  return <StyledDiv>Hello, yak!</StyledDiv>;
 }
-
-export default HomePage;
 ```
+
+Try it in the [StackBlitz demo](https://stackblitz.com/edit/stackblitz-starters-dfykqy?file=app%2Fpage.tsx) or fork the [StackBlitz starter](https://stackblitz.com/fork/next-yak-starter?file=app%2Fpage.tsx).
 
 ### Vite
 
-Since `next-yak` 9.1.0, the package supports Vite 7+ (including Vite 8 with OXC/Rolldown). Any Vite-based framework works: vanilla Vite, react-router, TanStack Start, and more.
+Any Vite-based framework works with Vite 7+, including Vite 8 with Rolldown: plain Vite, react-router, TanStack Start and more. Add `viteYak()` before the React plugin.
 
 ```js
 // vite.config.ts
@@ -102,11 +91,11 @@ export default defineConfig({
 });
 ```
 
-See the full [Vite setup guide](https://yak.js.org/docs/vite).
+See the [Vite guide](https://yak.js.org/docs/vite).
 
 ### Rsbuild
 
-Since `next-yak` 9.5.0, the package supports Rsbuild 2+ via the `pluginYak` plugin. It composes with `pluginReact()` and Rsbuild's built-in SWC.
+Rsbuild 2+ works through `pluginYak`, next to `pluginReact()` and Rsbuild's built-in SWC.
 
 ```js
 // rsbuild.config.ts
@@ -119,17 +108,69 @@ export default defineConfig({
 });
 ```
 
-See the full [Rsbuild setup guide](https://yak.js.org/docs/rsbuild).
+See the [Rsbuild guide](https://yak.js.org/docs/rsbuild).
+
+### Solid
+
+`@yak/solid` brings the same API to Solid 2. It is experimental while Solid 2 is in release candidate.
+
+```bash
+npm install @yak/solid
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import solid from "@solidjs/vite-plugin";
+import { yak } from "@yak/solid/vite";
+
+export default defineConfig({
+  plugins: [yak(), solid()],
+});
+```
+
+See the [Solid guide](https://yak.js.org/docs/solid).
 
 ### Storybook
 
-The `@yak/storybook` addon enables @yak/react in Storybook 10+ with both Vite and Webpack builders.
+The `@yak/storybook` addon sets up yak in Storybook 10+ with the Vite and the webpack builder.
 
 ```bash
-npm i -D @yak/storybook
+npm install --save-dev @yak/storybook
 ```
 
-See the full [Storybook setup guide](https://yak.js.org/docs/storybook).
+See the [Storybook guide](https://yak.js.org/docs/storybook).
+
+### ESLint and Oxlint
+
+`@yak/eslint-plugin` flags CSS that yak cannot compile well and helps with a migration from styled-components.
+
+```bash
+npm install --save-dev @yak/eslint-plugin
+```
+
+See the [ESLint plugin guide](https://yak.js.org/docs/eslint-plugin).
+
+## Compatibility
+
+| @yak/react | Next.js   | Vite     | React | swc_core |
+| ---------- | --------- | -------- | ----- | -------- |
+| 10.x       | >= 16.4.0 | >= 7.0.0 | 19.x  | 79.0.0   |
+
+Versions before 10 are published as `next-yak`:
+
+| next-yak | Next.js   | Vite            | React       | swc_core |
+| -------- | --------- | --------------- | ----------- | -------- |
+| 9.x      | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
+| 8.x      | >= 16.0.0 | -               | 19.x        | 45.0.1   |
+| 7.x      | >= 15.4.4 | -               | 19.x        | 38.0.1   |
+| 6.x      | >= 15.4.1 | -               | 19.x        | 27.0.6   |
+| 5.x      | >= 15.2.1 | -               | 19.x        | 16.0.0   |
+| 4.x      | >= 15.0.4 | -               | 19.x        | 5.0.1    |
+| 3.x      | 15.x      | -               | 18.x / 19.x | 3.0.2    |
+| 2.x      | 14.x      | -               | 18.x / 19.x | 0.279.0  |
+
+`@yak/solid` needs `solid-js` and `@solidjs/web` 2.0.0-rc.15 or newer.
 
 ## More Examples
 
@@ -158,7 +199,7 @@ const ToggleButton = styled.button`
 
 ### Dynamic Properties
 
-Dynamic Properties use custom properties ([aka css variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)) under the hood to extract the CSS at built time but modify properties at runtime:
+Dynamic Properties use custom properties ([aka css variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)) under the hood to extract the CSS at build time but modify properties at runtime:
 
 ```jsx
 import { styled } from "@yak/react";
@@ -189,7 +230,7 @@ const ExampleComponent = () => {
 
 ### Targeting Components
 
-In @yak/react, you can target other components directly using CSS selectors as long as they are **in the same file**:
+In yak, you can target other components directly using CSS selectors as long as they are **in the same file**:
 
 ```jsx
 import { styled, keyframes } from "@yak/react";
@@ -221,13 +262,13 @@ const ExampleComponent = () => {
 
 ## Nesting
 
-`@yak/react` supports CSS nesting out of the box.
+yak supports CSS nesting out of the box.
 
 [Nesting Example (video)](https://github.com/galaxuslabs/yak/assets/4113649/33eeeb13-b0cf-499f-a1d3-ba6f51cf4308)
 
 ## Performance
 
-@yak/react was validated across many thousands of real-world users at [Digitec Galaxus](https://www.galaxus.ch):
+yak was validated across many thousands of real-world users at [Digitec Galaxus](https://www.galaxus.ch):
 
 - **>20%** faster navigational LCP
 - **>15%** reduced SSR latency
@@ -239,14 +280,13 @@ Read more in the [Digitec Galaxus blog post](https://www.galaxus.ch/page/next-ya
 
 ## How it works
 
-@yak/react uses a Rust-based SWC plugin to extract CSS at build time. The extracted CSS is processed through the bundler's native CSS pipeline (PostCSS for Webpack, Lightning CSS for Turbopack and Vite), ensuring consistency between your CSS files and CSS-in-JS.
+yak uses a Rust-based SWC plugin to extract CSS at build time. The extracted CSS is processed through the bundler's native CSS pipeline (PostCSS for webpack and Vite, Lightning CSS for Turbopack and Rsbuild), ensuring consistency between your CSS files and CSS-in-JS.
 
 [![Compile Flow](https://raw.githubusercontent.com/galaxuslabs/yak/main/compile-flow.webp)](https://raw.githubusercontent.com/galaxuslabs/yak/main/compile-flow.webp)
 
 ## Atomic CSS
 
-`@yak/react` ships with atomic css support
-So you can use [tailwind](https://tailwindcss.com/) out of the box without additional configuration.
+yak ships with atomic CSS support, so you can use [tailwind](https://tailwindcss.com/) out of the box without additional configuration.
 
 ```tsx
 import { styled, atoms } from "@yak/react";
@@ -275,7 +315,7 @@ const Button = styled.button`
 The downside of dynamic properties is that they require inline style attributes.
 While this is not a problem for most cases, we can't use them for media queries.
 
-`@yak/react` allows you to define build time constants which can be used in your styles:
+yak allows you to define build time constants which can be used in your styles:
 
 ```jsx
 import { styled } from "@yak/react";
@@ -300,7 +340,7 @@ const Container = styled.div`
 
 ## Yak shaving
 
-While trying to get @yak/react to work properly we stumbled across several bugs.
+While trying to get yak to work properly we stumbled across several bugs.
 Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤️
 
 <details>
@@ -334,7 +374,7 @@ Thanks for merging our PRs and fixes in Next.js, webpack, PostCSS, and more ❤�
 
 <details>
   <summary>Experiments</summary>
-  Incomplete work in progress experiments to test the features and performance of @yak/react:
+  Incomplete work in progress experiments to test the features and performance of yak:
 
 - https://next-yak-benchmark.vercel.app/
 - https://yacijs.vercel.app/
@@ -349,7 +389,7 @@ Massive kudos to:
 - @kdy1: For his support while rewriting our Babel plugin as a blazing fast SWC Rust WASM plugin
 - @samcx: For his great help to merge features into Next.js
 
-Special thanks to the contributors and the inspiring projects that influenced @yak/react:
+Special thanks to the contributors and the inspiring projects that influenced yak:
 
 - Styled-Components: For pioneering the styled syntax and redefining styling in the React ecosystem
 - Linaria: For its innovative approach to zero-runtime CSS in JS
@@ -359,7 +399,7 @@ Special thanks to the contributors and the inspiring projects that influenced @y
 
 ## License
 
-**@yak/react** is licensed under the [MIT License](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/LICENSE).
+yak is licensed under the [MIT License](https://github.com/galaxuslabs/yak/blob/main/LICENSE).
 
 ## Contributing
 

@@ -1,0 +1,90 @@
+---
+title: FAQ
+description: "Answers to common questions about yak: production use, supported frameworks and bundlers, TypeScript, other CSS-in-JS libraries and troubleshooting."
+---
+
+import { Callout } from "../../components/mdx/callout";
+
+## General questions
+
+### Is yak production ready?
+
+Yes, yak is production ready and used in production at scale.
+
+[Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform, sponsors yak and uses it in production with thousands of styled components across more than 100 engineers. They saw significant improvements in Core Web Vitals performance: over 20% faster LCP, 15% reduced SSR latency, and 10% faster INP, especially on mobile devices. You can read more about the journey in the [blog post](https://www.galaxus.ch/page/next-yak-innovation-made-in-zuerich-teil-2-37910).
+
+### What frameworks and bundlers does yak support?
+
+yak supports React and Solid, and the same SWC plugin runs in every bundler below:
+
+- **[Next.js](/docs/getting-started)** 16.4+ with both **webpack** and **Turbopack**, for the App Router and the Pages Router
+- **[Vite](/docs/vite)** 7+, including Vite 8 with OXC/Rolldown. Vite-based frameworks like React Router and TanStack Start (also with React Server Components) work too
+- **[Rsbuild](/docs/rsbuild)** 2+ through `@yak/react/rsbuild`, which also covers Rsbuild-based TanStack Start
+- **Solid** 2 with Vite through the `@yak/solid` package
+- **[Storybook](/docs/storybook)** 10+ with both the Vite and the webpack builder through the `@yak/storybook` addon
+
+The [Examples](/docs/examples) page has a runnable project for most of these setups. Planned frameworks are on the [roadmap](/docs/roadmap). If you need yak in a framework that isn't on this list, ask for it in our [GitHub issue tracker](https://github.com/galaxuslabs/yak/issues) and we'll give it a thought.
+
+### Can I mix/combine yak with other CSS-in-JS libraries?
+
+Yes, you can use yak with other CSS-in-JS libraries.
+
+You can use it with styled-components, emotion, tailwind or any other library that adds css classes to your components.
+
+```tsx title="my-component.tsx"
+import { styled, atoms } from "@yak/react";
+
+const Button = styled.button`
+  background: #bf4f74;
+  /* Target classes from other libraries */
+  & .my-class-from-another-library {
+    color: white;
+  }
+  /* use tailwind classes */
+  ${atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")}
+`;
+```
+
+<Callout type="info">
+  If you used the older `:global()` syntax, remove the wrapper and keep the selector. A `:global()`
+  selector is a build error in `@yak/react`.
+</Callout>
+
+### Can I reference a component in another component?
+
+Yes, you can reference it in the tagged template literal the same way you would with styled-components.
+
+```jsx title="my-component.tsx"
+import { styled } from "@yak/react";
+
+const Button = styled.button`
+  background: #bf4f74;
+`;
+
+const Nav = styled.nav`
+  background: #bf4f74;
+  ${Button} {
+    color: white;
+  }
+`;
+```
+
+### Does yak turn static values into CSS variables?
+
+No. Constants from the same file, imported constants and values from `.yak` files are inlined into the CSS at build
+time. Only values that are known at runtime become CSS variables, and you write them as functions, like
+`${() => getValue()}` or `${(props) => props.$size}`.
+
+### Can I use yak with TypeScript?
+
+Yes, yak is fully type safe.
+
+### Can I contribute to yak?
+
+Yes.
+
+We're happy about every contribution. Open an issue or a pull request [on GitHub](https://github.com/galaxuslabs/yak).
+
+## Troubleshooting
+
+Build errors, missing styles and other problems have their own page: see [Troubleshooting](/docs/troubleshooting).

@@ -2,26 +2,28 @@
 
 ![A yak Riding on a rusty SWC Rocket](https://github.com/user-attachments/assets/72494b1c-db1a-4ff7-bd6f-2ed3535fb126)
 
-[![npm version](https://badge.fury.io/js/@yak%2Freact.svg)](https://www.npmjs.com/package/@yak/react)
+[![@yak/react version](https://npmx.dev/api/registry/badge/version/@yak/react)](https://npmx.dev/package/@yak/react)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/galaxuslabs/yak/blob/main/LICENSE)
 
-**@yak/react** is a build-time CSS-in-JS library powered by a Rust SWC plugin. Write styled-components syntax, get zero-runtime CSS extraction and full React Server Components compatibility.
+**@yak/react** is [yak](https://yak.js.org/) for React: zero-runtime CSS-in-JS with styled-components syntax. A Rust SWC plugin compiles your styles to plain CSS files at build time, so it works with React Server Components and ships no styling runtime to the browser.
 
-Works with **Next.js** (Webpack & Turbopack), **Vite** (7+, including Vite 8 with OXC), and **Storybook**. Any Vite-based framework works out of the box, including react-router, TanStack Start, and more.
+Works with **Next.js** (webpack and Turbopack), **Vite** 7+ (including Vite 8 with Rolldown), **Rsbuild** 2+ and **Storybook**. Any Vite-based framework works too, including react-router and TanStack Start.
 
-> **Production-proven:** @yak/react is sponsored and used in production by [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components, delivering measurable improvements in Core Web Vitals.
+> **Formerly next-yak.** Versions before 10 stay on npm as [`next-yak`](https://www.npmjs.com/package/next-yak). The [migration guide](https://yak.js.org/docs/migration-from-next-yak) covers the switch.
+
+yak runs in production at [Digitec Galaxus](https://www.galaxus.ch), the largest e-commerce platform in Switzerland, across thousands of styled components.
 
 ## Features
 
-- **Multi-Framework**: First-class support for Next.js (Webpack & Turbopack), Vite 7+ (react-router, TanStack Start, ...), and Storybook
-- **Build-Time CSS**: Extracts CSS at compile time with zero runtime overhead
-- **React Server Components**: Works seamlessly with both Server and Client Components
-- **Cross-File Imports**: Import constants, mixins, and selectors from `.yak` files and other modules, works across all bundlers
-- **Standard CSS Syntax**: Write familiar CSS with full nesting, keyframes, and media query support
-- **Integrates with Atomic CSS**: Combines with utility-first frameworks like Tailwind CSS
-- **TypeScript First**: Fully typed props, theme context, and cross-file selectors
-- **Lightweight Runtime**: Minimal footprint, just swaps CSS class names based on props
-- **Minimal Dependencies**: Only 8 dependencies in total (including transitive ones)
+- **Build-time CSS**: styles become plain CSS files at compile time, and the bundler's own CSS pipeline handles them
+- **React Server Components**: works in Server and Client Components alike
+- **Next.js, Vite and Rsbuild**: Next.js with webpack or Turbopack, Vite 7+ (react-router, TanStack Start, ...), Rsbuild 2+ and Storybook
+- **Cross-file imports**: import constants, mixins and selectors from `.yak` files and other modules
+- **Standard CSS**: nesting, keyframes and media queries as you write them in a stylesheet
+- **Atomic CSS**: mixes with utility classes from Tailwind and similar frameworks
+- **TypeScript first**: typed props, theme and cross-file selectors
+- **Small runtime**: it only swaps class names and CSS variables based on props
+- **Few dependencies**: [![direct dependencies of @yak/react](https://npmx.dev/api/registry/badge/dependencies/@yak/react)](https://npmx.dev/package/@yak/react), all of them build-time tools
 
 ## Documentation
 
@@ -29,26 +31,21 @@ Full documentation, guides, and a live playground are available at **[yak.js.org
 
 - [Getting Started (Next.js)](https://yak.js.org/docs/getting-started)
 - [Vite Setup](https://yak.js.org/docs/vite)
+- [Rsbuild Setup](https://yak.js.org/docs/rsbuild)
 - [Storybook Setup](https://yak.js.org/docs/storybook)
+- [Migration from next-yak](https://yak.js.org/docs/migration-from-next-yak)
 - [Migration from styled-components](https://yak.js.org/docs/migration-from-styled-components)
+- [API reference](https://yak.js.org/docs/api)
 - [Features](https://yak.js.org/docs/features)
 - [Playground](https://yak.js.org/playground)
 
 ## Compatibility
 
-Versions before 10.x are on npm as [`next-yak`](https://www.npmjs.com/package/next-yak).
+| Version | Next.js   | Vite     | Rsbuild | React | swc_core |
+| ------- | --------- | -------- | ------- | ----- | -------- |
+| 10.x    | >= 16.4.0 | >= 7.0.0 | >= 2.0  | 19.x  | 79.0.0   |
 
-| Version | Next.js   | Vite            | react       | swc_core |
-| ------- | --------- | --------------- | ----------- | -------- |
-| 10.x    | >= 16.4.0 | >= 7.0.0        | 19.x        | 79.0.0   |
-| 9.x     | >= 16.1.0 | >= 7.0.0 (9.1+) | 19.x        | 56.0.0   |
-| 8.x     | >= 16.0.0 | -               | 19.x        | 45.0.1   |
-| 7.x     | >= 15.4.4 | -               | 19.x        | 38.0.1   |
-| 6.x     | >= 15.4.1 | -               | 19.x        | 27.0.6   |
-| 5.x     | >= 15.2.1 | -               | 19.x        | 16.0.0   |
-| 4.x     | >= 15.0.4 | -               | 19.x        | 5.0.1    |
-| 3.x     | 15.x      | -               | 18.x / 19.x | 3.0.2    |
-| 2.x     | 14.x      | -               | 18.x / 19.x | 0.279.0  |
+For older versions, see the [`next-yak` compatibility table](https://github.com/galaxuslabs/yak#compatibility).
 
 ## Installation
 
@@ -82,6 +79,19 @@ export default defineConfig({
 });
 ```
 
+### Rsbuild
+
+```js
+// rsbuild.config.ts
+import { defineConfig } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginYak } from "@yak/react/rsbuild";
+
+export default defineConfig({
+  plugins: [pluginReact(), pluginYak()],
+});
+```
+
 ### Usage
 
 ```jsx
@@ -108,7 +118,7 @@ const nextConfig = {
 
 ## License
 
-**@yak/react** is licensed under the [MIT License](https://github.com/galaxuslabs/yak/blob/main/LICENSE).
+**@yak/react** is licensed under the [MIT License](https://github.com/galaxuslabs/yak/blob/main/packages/yak-react/LICENSE).
 
 ## Contributing
 

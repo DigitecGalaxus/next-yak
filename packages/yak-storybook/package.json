@@ -1,13 +1,15 @@
 {
   "name": "@yak/storybook",
   "version": "10.0.0",
-  "description": "Storybook addon for @yak/react CSS-in-JS",
+  "description": "Storybook addon for yak, the zero-runtime CSS-in-JS library. Supports the Vite and webpack builders.",
   "keywords": [
-    "@yak/react",
     "css-in-js",
     "react",
     "storybook",
-    "storybook-addon"
+    "storybook-addon",
+    "styled-components",
+    "yak",
+    "zero-runtime"
   ],
   "homepage": "https://yak.js.org/",
   "bugs": {
@@ -24,7 +26,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/galaxuslabs/yak"
+    "url": "git+https://github.com/galaxuslabs/yak.git",
+    "directory": "packages/yak-storybook"
   },
   "files": [
     "dist",

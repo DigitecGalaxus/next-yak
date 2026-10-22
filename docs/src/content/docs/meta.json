@@ -1,0 +1,31 @@
+{
+  "title": "ui",
+  "root": true,
+  "pages": [
+    "---Get started---",
+    "getting-started",
+    "why-next-yak",
+    "examples",
+    "---Setup---",
+    "vite",
+    "rsbuild",
+    "solid",
+    "storybook",
+    "eslint-plugin",
+    "---Migrate---",
+    "migration-from-styled-components",
+    "migration-from-next-yak",
+    "---Reference---",
+    "features",
+    "api",
+    "folding",
+    "how-does-it-work",
+    "comparison",
+    "---Help---",
+    "troubleshooting",
+    "faq",
+    "roadmap",
+    "---Links---",
+    "[GitHub](https://github.com/galaxuslabs/yak)"
+  ]
+}

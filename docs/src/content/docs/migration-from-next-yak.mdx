@@ -1,0 +1,210 @@
+---
+title: Migration from next-yak
+navTitle: From next-yak
+description: How to move a project from next-yak 9 to @yak/react 10. The API stays the same, so only package names, imports and a few options change.
+---
+
+import { Callout } from "../../components/mdx/callout";
+
+With version 10, `next-yak` becomes `@yak/react`, and the other yak packages move into the `@yak` scope along with it.
+The API stays the same: `styled`, `css`, `keyframes`, `globalStyle`, `atoms` and the `css` prop behave exactly as
+before, so most projects only need new package names, updated imports and a few config changes. The
+[announcement post](/blog/renaming-next-yak-to-yak) explains why the package got a new name.
+
+If you can't migrate right away, `next-yak` 9.x keeps getting bug fixes until the end of 2026, but new features will only
+land in `@yak/react`.
+
+## Package names
+
+| next-yak 9            | yak 10               | Works with                        |
+| --------------------- | -------------------- | --------------------------------- |
+| `next-yak`            | `@yak/react`         | webpack, Turbopack, Vite, Rsbuild |
+| `eslint-plugin-yak`   | `@yak/eslint-plugin` | ESLint, Oxlint                    |
+| `storybook-addon-yak` | `@yak/storybook`     | Storybook with webpack or Vite    |
+| `yak-swc`             | `@yak/swc`           | The SWC plugin behind all of them |
+
+## Requirements
+
+`@yak/react` 10 needs:
+
+- Node.js 22.18 or later
+- Next.js 16.4 or later, Vite 7 or later, or Rsbuild 2 or later
+- React 19
+
+## 1. Replace the packages
+
+Swap the old packages for the new ones, and install only the ones you used before:
+
+```bash
+npm uninstall next-yak eslint-plugin-yak storybook-addon-yak
+npm install @yak/react
+npm install -D @yak/eslint-plugin @yak/storybook
+```
+
+If you have `yak-swc` as a direct dependency, replace it with `@yak/swc`.
+
+## 2. Update the imports
+
+Replace every `next-yak` import with `@yak/react`. The subpaths don't change, so only the package name moves:
+
+```tsx
+import { styled, css } from "next-yak"; // [!code --]
+import { styled, css } from "@yak/react"; // [!code ++]
+
+import { withYak } from "next-yak/withYak"; // [!code --]
+import { withYak } from "@yak/react/withYak"; // [!code ++]
+
+import { viteYak } from "next-yak/vite"; // [!code --]
+import { viteYak } from "@yak/react/vite"; // [!code ++]
+
+import { pluginYak } from "next-yak/rsbuild"; // [!code --]
+import { pluginYak } from "@yak/react/rsbuild"; // [!code ++]
+
+import { getYakThemeContext } from "next-yak/context/baseContext"; // [!code --]
+import { getYakThemeContext } from "@yak/react/context/baseContext"; // [!code ++]
+```
+
+Search the whole project, not only your source files, because `package.json`, TypeScript paths and the Storybook or
+Jest config often reference the package name too.
+
+<Callout type="warn">
+  `@yak/swc` only transforms imports from the new package names. A file that still imports from `next-yak` is left
+  untouched by the compiler, so its styles silently go missing.
+</Callout>
+
+## 3. Update the theme type
+
+If you add types to the theme, change the module name in the declaration:
+
+```ts title="yak.context.ts"
+declare module "next-yak" { // [!code --]
+declare module "@yak/react" { // [!code ++]
+  export interface YakTheme {
+    color: string;
+  }
+}
+```
+
+This one is easy to miss, because TypeScript won't complain about the old name. The declaration stops applying,
+which leaves the theme type empty and `theme.color` untyped.
+
+## 4. Update the JSX import source
+
+If you use the `css` prop, change the JSX import source in `tsconfig.json`:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsxImportSource": "next-yak" // [!code --]
+    "jsxImportSource": "@yak/react" // [!code ++]
+  }
+}
+```
+
+Files that set the JSX import source with a pragma need the same change:
+
+```tsx
+/** @jsxImportSource next-yak */ // [!code --]
+/** @jsxImportSource @yak/react */ // [!code ++]
+```
+
+## 5. Update the options
+
+Since `@yak/react` always writes plain CSS, the options `experiments.transpilationMode` and
+`experiments.suppressDeprecationWarnings` are gone. The `debug` option stays but moves out of `experiments` to the top
+level:
+
+```js title="next.config.mjs"
+export default withYak(
+  {
+    experiments: { // [!code --]
+      transpilationMode: "Css", // [!code --]
+      suppressDeprecationWarnings: true, // [!code --]
+      debug: true, // [!code --]
+    }, // [!code --]
+    debug: true, // [!code ++]
+  },
+  nextConfig,
+);
+```
+
+The Vite and Rsbuild plugins take the same options.
+
+## 6. Remove the :global() wrappers
+
+In next-yak 9, the Next.js webpack setup compiled to CSS Modules, which is why you needed `:global()` to escape the
+local scope. `@yak/react` always compiles to plain CSS, where every selector is already global, so a `:global()` wrapper
+now fails the build. Remove the wrapper and keep the selector inside it:
+
+```tsx
+const Wrapper = styled.div`
+  :global(.external-class) { // [!code --]
+  .external-class { // [!code ++]
+    color: red;
+  }
+`;
+```
+
+## 7. Update the lint config
+
+With `:global()` gone, the `css-global-deprecated` rule is gone as well, so remove it from your config. All other
+rules keep their names but switch their prefix from `yak/` to `@yak/`.
+
+For ESLint:
+
+```js title="eslint.config.mjs"
+import yakPlugin from "eslint-plugin-yak"; // [!code --]
+import yakPlugin from "@yak/eslint-plugin"; // [!code ++]
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([yakPlugin.configs.recommended]);
+```
+
+For Oxlint:
+
+```json title=".oxlintrc.json"
+{
+  "jsPlugins": ["eslint-plugin-yak"], // [!code --]
+  "jsPlugins": ["@yak/eslint-plugin"], // [!code ++]
+  "rules": {
+    "yak/css-nesting-operator": "error", // [!code --]
+    "yak/css-global-deprecated": "warn", // [!code --]
+    "yak/enforce-semicolon": "error", // [!code --]
+    "yak/style-conditions": "warn", // [!code --]
+    "@yak/css-nesting-operator": "error", // [!code ++]
+    "@yak/enforce-semicolon": "error", // [!code ++]
+    "@yak/style-conditions": "warn" // [!code ++]
+  }
+}
+```
+
+If you configure individual rules in ESLint, update their prefix the same way. The [ESLint plugin](/docs/eslint-plugin)
+page has the full configuration.
+
+## 8. Update Storybook
+
+```ts title=".storybook/main.ts"
+const config = {
+  addons: [
+    "storybook-addon-yak", // [!code --]
+    "@yak/storybook", // [!code ++]
+  ],
+};
+```
+
+## 9. Jest with next/jest
+
+`@yak/react` ships as ESM only. If you test with `next/jest`, add it to `transpilePackages` in your Next.js config so
+that Jest can load it:
+
+```js title="next.config.mjs"
+const nextConfig = {
+  transpilePackages: ["@yak/react"],
+};
+```
+
+## Check the result
+
+Start the dev server and check that your styles show up. A missing style usually means a file still imports from
+`next-yak`. If something else breaks, please [open an issue](https://github.com/galaxuslabs/yak/issues/new/choose)
+so we can look into it.

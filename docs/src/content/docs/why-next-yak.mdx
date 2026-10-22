@@ -1,0 +1,229 @@
+---
+title: Why yak
+description: Why yak pairs the styled-components API with build-time CSS extraction, and when it is the right CSS-in-JS choice for React Server Components and large apps.
+---
+
+import { Tab, Tabs } from "../../components/mdx/tabs";
+
+## Motivation
+
+Most existing CSS-in-JS libraries are either slow or have a complex API. yak finds a middle ground between speed and API simplicity and is battle-tested at scale by [Digitec Galaxus](https://www.galaxus.ch), Switzerland's largest e-commerce platform.
+
+The goal of yak is to be a CSS-in-JS library with the following properties:
+
+- fast
+  - no runtime
+  - can be statically extracted
+  - can be optimized by the bundler's native CSS tool
+  - no processing during hydration
+  - can make use of [103 early hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/103)
+- api
+  - ui colocation (mixing css and jsx)
+  - familiar styled.div api
+  - composable styled(Component)
+  - allows conditional styles
+  - use props in styles
+  - use context based themes in styles
+  - typescript support
+
+The bundler's native CSS tool (PostCSS for webpack and Vite, Lightning CSS for Turbopack and Rsbuild) performs the optimizations, so you get everything that tool offers.
+It also keeps optimizations consistent across CSS files and CSS-in-JS.
+
+## Our Journey
+
+Our journey with yak began at [Digitec Galaxus](https://www.galaxus.ch), in a large Next.js project with more than 150 engineers working on it daily. We extensively used styled-components for flexibility and colocation of styles and code. Despite a few performance issues during server-side rendering, this setup served us well.
+
+Then the React team introduced React Server Components (RSC), and Next.js quickly adopted them with the app router. Third-party packages had to rethink their approach to work with RSC.
+
+While runtime CSS-in-JS libraries offer great flexibility, they often struggle to work well with Server Components. Several static extraction-based CSS-in-JS libraries were developed to address this issue, but none made the transition from styled-components easy for us, since switching would have meant rewriting over 5000 styled components.
+
+We wanted a solution that would require minimal changes from developers familiar with styled-components, while offering the benefits of a static CSS-in-JS framework compatible with Next.js and Server Components. So we built yak:
+
+- **Static Analysis**: yak uses static analysis to parse and analyze your styles at build time, generating plain CSS files that the bundler processes like any other stylesheet. It also replaces the defined styles in your files with an invocation of its runtime.
+
+- **Runtime**: To retain some dynamic behavior, the runtime uses the generated class names and modifies classes based on the provided props.
+
+## When should you use yak
+
+### If you're familiar with styled-components
+
+See related documentation: [Migration from styled-components](/docs/migration-from-styled-components)
+
+If you're familiar with styled-components, yak lets you use the same syntax with streaming and Server Components.
+It's also fast and has a small footprint.
+
+<Tabs title="Familiar syntax" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+// @allowUmdGlobalAccess
+import { styled, css } from '@yak/react';
+
+const MyParagraph = styled.p<{ $primary?: boolean }>`
+  color: ${(props) => props.$primary ? "teal" : "orange"};
+${(props) => props.$primary && css`padding: 16px;`}
+background-color: #f0f0f0;
+`;
+
+export const MyComponent = () => {
+  return <MyParagraph>I work like styled-components</MyParagraph>;
+}
+```
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, css } from '@yak/react';
+
+const MyParagraph = styled.p`
+  color: ${(props) => props.$primary ? "teal" : "orange"};
+  ${(props) => props.$primary && css`padding: 16px;`}
+  background-color: #f0f0f0;
+`;
+
+export const MyComponent = () => {
+  return <MyParagraph>I work like styled-components</MyParagraph>;
+}
+```
+</Tab>
+</Tabs>
+
+If you use TypeScript, yak is fully typed:
+
+```tsx twoslash
+// @noErrors
+import { styled, css } from '@yak/react';
+
+const MyParagraph = styled.p<{ $primary: boolean; $secondary: boolean; }>`
+  ${(props => {
+    return props.$
+//                ^|
+  })}
+`;
+
+export const MyComponent = () => {
+  return <MyParagraph $
+//                     ^|
+};
+
+
+
+```
+
+### In General
+
+Consider using yak if you value:
+
+#### Colocation
+
+Having your styles and code together in one place.
+
+<Tabs title="Defining styles" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { FC, ReactNode } from 'react';
+import { styled } from '@yak/react';
+
+const MyParagraph = styled.p<{ $variant?: 'primary' | 'secondary' }>`
+  color: ${({$variant}) => $variant === 'primary' ? "red" : "blue"}
+`;
+
+const MyOtherComponent = styled.p``;
+
+export const MyComponent: FC<{ $variant?: 'primary' | 'secondary'; children: ReactNode }> = (props) => {
+  if(props.$variant) {
+    return (<MyParagraph $variant={props.$variant}>{props.children}</MyParagraph>);
+  }
+
+return (<MyOtherComponent>{props.children}</MyOtherComponent>);
+}
+
+````
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled } from '@yak/react';
+
+const MyParagraph = styled.p`
+  color: ${({$variant}) => $variant === 'primary' ? "red" : "blue"}
+`;
+
+const MyOtherComponent = styled.p``;
+
+export const MyComponent = (props) => {
+  if(props.$variant) {
+    return (<MyParagraph $variant={props.$variant}>{props.children}</MyParagraph>);
+  }
+
+  return (<MyOtherComponent>{props.children}</MyOtherComponent>);
+}
+````
+
+</Tab>
+</Tabs>
+
+#### Familiarity
+
+Writing real CSS with the latest features without a complicated setup.
+
+```jsx
+import { styled } from "@yak/react";
+
+const Header = styled.div`
+  & > *:has(:checked) {
+    background-color: lab(87.6 125 104);
+  }
+`;
+```
+
+#### Compatibility
+
+Working with utility-first CSS frameworks like Tailwind.
+
+<Tabs title="Using props" groupId="language" items={["typescript", "javascript"]}>
+<Tab value="typescript">
+```tsx twoslash
+import { styled, atoms } from '@yak/react';
+
+const Header = styled.nav<{ $variant?: 'primary' | 'secondary' }>`
+  ${({$variant}) => $variant === "primary"
+? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+: atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
+}
+`
+
+````
+</Tab>
+<Tab value="javascript">
+```jsx
+import { styled, atoms } from '@yak/react';
+
+const Header = styled.nav`
+  ${({$variant}) => $variant === "primary"
+    ? atoms("mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8")
+    : atoms("bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow")
+  }
+`
+````
+
+</Tab>
+</Tabs>
+
+#### Composability
+
+Building complex components from simpler ones.
+
+```jsx title="my-component.tsx"
+import { styled } from "@yak/react";
+
+const Input = styled.input``;
+const Label = styled.label``;
+const FormElement = styled.div`
+  &:has(${Input}:checked) {
+    color: red;
+  }
+`;
+```
+
+## Next steps
+
+- [Comparison](/docs/comparison): how yak compares with other CSS-in-JS libraries
+- [Getting started](/docs/getting-started): set up yak in your project

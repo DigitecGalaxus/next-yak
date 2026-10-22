@@ -1,0 +1,239 @@
+---
+title: API reference
+seoTitle: "@yak/react API reference"
+description: Every export of @yak/react in one place, from styled, css, keyframes and atoms to the theme context, the css prop and the options of each bundler plugin.
+---
+
+This page lists everything `@yak/react` exports. Each entry links to the [Features](/docs/features) page, which explains
+it with more examples. The [Solid](/docs/solid) package exports the same API with a few Solid-shaped differences.
+
+## Styling
+
+All of these come from the package root:
+
+```tsx
+import { styled, css, keyframes, globalStyle, atoms } from "@yak/react";
+```
+
+### styled
+
+Creates a styled component from an HTML tag, a custom element or another component. Interpolations can read props and
+the theme. See [Static CSS](/docs/features#static-css) and [Dynamic styles](/docs/features#dynamic-styles).
+
+```tsx
+const Button = styled.button<{ $primary?: boolean }>`
+  color: ${({ $primary }) => ($primary ? "white" : "black")};
+`;
+
+// wrap any component that accepts className and style
+const Fancy = styled(Link)`
+  text-decoration: none;
+`;
+
+// default props with .attrs()
+const Submit = styled.button.attrs({ type: "submit" })`
+  font-weight: bold;
+`;
+```
+
+### css
+
+Creates a reusable block of styles, a mixin. Use it inside `styled`, inside the `css` prop or in conditions. See
+[Mixins](/docs/features#mixins).
+
+```tsx
+const truncate = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+```
+
+### keyframes
+
+Creates a CSS animation and returns its name, which you use in an `animation` declaration. See
+[Animations](/docs/features#animations).
+
+```tsx
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+```
+
+### globalStyle
+
+Adds styles that don't belong to a component, like resets or `:root` variables. Call it at the top level of a module,
+because it is a statement, not a component. See [Global styles](/docs/features#globalstyle).
+
+```tsx
+globalStyle`
+  body {
+    margin: 0;
+  }
+`;
+```
+
+### atoms
+
+Adds existing utility classes, for example from Tailwind, inside `styled`, `css` or the `css` prop. Falsy values are
+skipped. See [Compatible with utility-first CSS frameworks](/docs/features#compatible-with-utility-first-css-frameworks-eg-tailwind).
+
+```tsx
+<div css={atoms("flex gap-4", props.active && "bg-blue-500")} />
+```
+
+## The css prop
+
+With `@yak/react` as the JSX import source, every HTML element accepts a `css` prop with a `css` template, an
+`atoms()` call or a falsy value. Components accept it too, as long as their props include `className` and `style`.
+See [CSS Prop](/docs/features#css-prop).
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsxImportSource": "@yak/react"
+  }
+}
+```
+
+Any other value, like an object or a string, fails the build. To leave such values to another library, set
+[`strictCssProp`](#plugin-options) to `false`.
+
+## Theming
+
+### yak.context.ts
+
+The plugins look for a `yak.context` file (`.ts`, `.tsx`, `.js` or `.jsx`) in your project root and use its
+`getYakThemeContext` export as the theme. Set [`contextPath`](#plugin-options) to use another file. The function can
+be async. See [Theming](/docs/features#theming).
+
+```ts title="yak.context.ts"
+export function getYakThemeContext() {
+  return { highContrast: false };
+}
+
+declare module "@yak/react" {
+  export interface YakTheme extends ReturnType<typeof getYakThemeContext> {}
+}
+```
+
+### useTheme
+
+Returns the current theme. In a client component it reads it from `YakThemeProvider`, and in a React Server Component
+it calls `getYakThemeContext` directly.
+
+```tsx
+import { useTheme } from "@yak/react";
+
+const theme = useTheme();
+```
+
+### YakThemeProvider
+
+Provides the theme to the components below it. In a Server Component, such as your root layout, it takes no `theme`
+prop and reads the theme from `getYakThemeContext`:
+
+```tsx title="app/layout.tsx"
+import { YakThemeProvider } from "@yak/react";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <YakThemeProvider>{children}</YakThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+In a client-only app, for example with Vite, pass the theme yourself. `@yak/react/context/baseContext` points to your
+`yak.context.ts`, because each plugin sets an alias for it:
+
+```tsx
+import { YakThemeProvider } from "@yak/react";
+import { getYakThemeContext } from "@yak/react/context/baseContext";
+
+<YakThemeProvider theme={getYakThemeContext()}>{children}</YakThemeProvider>;
+```
+
+## Types
+
+| Type                          | Use                                                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `YakTheme`                    | The theme type. Extend it with `declare module "@yak/react"`.                                                             |
+| `YakComponent<Props>`         | The type of a styled component.                                                                                           |
+| `GenericYakComponentOf<T>`    | Keeps the generic props of a wrapped component. See [Generic Yak Component](/docs/features#generic-yak-component).        |
+| `GlobalStyleInterpolation`    | A value that `globalStyle` accepts: a string, a number, a `css` block or a styled component.                              |
+
+## Bundler plugins
+
+### withYak (Next.js)
+
+Wraps your Next.js config and sets up yak for webpack and Turbopack. Pass yak options as the first argument, or only the
+Next.js config. It also accepts a config function, sync or async.
+
+```ts title="next.config.ts"
+import { withYak } from "@yak/react/withYak";
+
+export default withYak({ prefix: "app" }, nextConfig);
+// or without options:
+export default withYak(nextConfig);
+```
+
+### viteYak (Vite)
+
+Add it before the React plugin. See the [Vite guide](/docs/vite).
+
+```ts title="vite.config.ts"
+import { viteYak } from "@yak/react/vite";
+
+export default defineConfig({
+  plugins: [viteYak(), react()],
+});
+```
+
+### pluginYak (Rsbuild)
+
+See the [Rsbuild guide](/docs/rsbuild).
+
+```ts title="rsbuild.config.ts"
+import { pluginYak } from "@yak/react/rsbuild";
+
+export default defineConfig({
+  plugins: [pluginReact(), pluginYak()],
+});
+```
+
+### Plugin options
+
+`withYak`, `viteYak`, `pluginYak` and the Solid plugin take the same options. The type is `YakConfigOptions`, exported
+from `@yak/react/withYak` and `@yak/react/rsbuild`.
+
+| Option          | Type                 | Default                          | Description                                                                                                              |
+| --------------- | -------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `minify`        | `boolean`            | `true` in production             | Short class names and CSS variable names.                                                                                |
+| `prefix`        | `string`             | none                             | A prefix for the generated class names, for example to keep two apps on one page apart.                                  |
+| `contextPath`   | `string`             | `yak.context` in the project root | The path of your theme context file. The build fails if you set it and the file does not exist.                          |
+| `displayNames`  | `boolean`            | `true` when not minified         | Adds a `displayName` to each styled component for React DevTools.                                                         |
+| `foldStatic`    | `boolean`            | `true`                           | Compiles static styled components into plain elements. See [Folding](/docs/folding).                                     |
+| `strictCssProp` | `boolean`            | `true`                           | Fails the build when a `css` prop has a value yak can't compile.                                                         |
+| `debug`         | `true` or an object  | off                              | Logs the transformed code and CSS. Filter with `{ pattern: "Button", types: ["css"] }` (types: `ts`, `css`, `css-resolved`). |
+
+`viteYak` and the Solid plugin take two more options:
+
+| Option        | Type     | Default        | Description                                                                                     |
+| ------------- | -------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| `basePath`    | `string` | the Vite root  | The base for stable class names. Set it to the repository root when source files live outside the Vite root, for example in a monorepo. |
+| `swcOptions`  | object   | none           | SWC options merged over the defaults, without the options yak controls itself.                  |
+
+The [Storybook addon](/docs/storybook) supports `contextPath`, `minify`, `prefix` and `displayNames`.
+
+## Other entry points
+
+| Import                               | Use                                                                                                                                      |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `@yak/react/static`                  | `mixin.css`, a plain string template for `.yak.ts` files. It gives you stylelint and editor support for CSS that runs at build time. |
+| `@yak/react/cross-file-resolver`     | The cross-file resolver, for custom bundler integrations such as esbuild.                                                               |
+| `@yak/react/isolated-source-eval`    | `createEvaluator`, which runs `.yak.ts` files in a worker. Also meant for custom bundler integrations.                                  |
+| `@yak/react/internal`                | The runtime that the compiled code calls. Don't import it yourself.                                                                     |

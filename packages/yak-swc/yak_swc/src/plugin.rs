@@ -24,19 +24,9 @@ pub fn process_transform(program: Program, metadata: TransformPluginProgramMetad
     return program.apply(visit_mut_pass(&mut YakFileVisitor::new()));
   }
 
-  // Get a relative posix path to generate always the same hash
-  // on different machines or operating systems
-  let deterministic_path = relative_posix_path::relative_posix_path(&config.base_path, &filename);
-  program.apply(visit_mut_pass(&mut TransformVisitor::new(
+  program.apply(visit_mut_pass(&mut TransformVisitor::from_config(
     metadata.comments,
-    deterministic_path,
-    config.minify,
-    config.prefix,
-    config.display_names,
-    config.import_mode,
-    config.react_refresh_reg,
-    config.fold_static,
-    config.strict_css_prop,
-    config.emit_css_comments,
+    &filename,
+    config,
   )))
 }

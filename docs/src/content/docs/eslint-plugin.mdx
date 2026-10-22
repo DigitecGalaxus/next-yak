@@ -1,0 +1,256 @@
+---
+title: ESLint plugin
+seoTitle: ESLint and Oxlint plugin for yak
+description: Lint rules for ESLint and Oxlint that help you migrate from styled-components to yak and point you to the patterns that compile to the fastest CSS.
+---
+import { Step, Steps } from '../../components/mdx/steps';
+import { Tab, Tabs } from '../../components/mdx/tabs';
+
+## Installation
+
+Install `@yak/eslint-plugin` in your project:
+
+<Tabs title="Install @yak/eslint-plugin" items={['npm', 'pnpm', 'yarn', 'bun']}>
+<Tab value="npm">
+```bash
+npm i -D @yak/eslint-plugin
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add -D @yak/eslint-plugin
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add -D @yak/eslint-plugin
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add -D @yak/eslint-plugin
+```
+</Tab>
+</Tabs>
+
+Add it to your eslint config:
+
+```js title="eslint.config.mjs"
+import yakPlugin from "@yak/eslint-plugin";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([
+  yakPlugin.configs.recommended,
+]);
+```
+
+Now, you can run eslint to check your code.
+
+```ts
+const myDiv = styled.div`
+    > div {}
+`;
+// ^ eslint: Nesting selector missing. Did you forget the &?
+```
+
+## Oxlint
+
+`@yak/eslint-plugin` also works with Oxlint, with the same rule prefix `@yak/`. A good starting configuration:
+
+```json title=".oxlintrc.json"
+{
+  "jsPlugins": ["@yak/eslint-plugin"],
+  "rules": {
+    "@yak/css-nesting-operator": "error",
+    "@yak/enforce-semicolon": "error",
+    "@yak/style-conditions": "warn"
+  }
+}
+```
+
+## Rules
+
+### css-nesting-operator
+
+Enforces css selectors in yak to correctly use the [nesting selector (&)](https://developer.mozilla.org/en-US/docs/Web/CSS/Nesting_selector).
+
+Example:
+
+```tsx title="example.tsx"
+const myDiv = styled.div`
+ //[!code --]
+ > div {}
+ //[!code ++]
+ & > div {}
+`;
+```
+
+#### Reason why
+
+Unlike in `styled-components`, you need the nesting selector to scope styles correctly.
+
+We kept this magic out of yak because writing styles should feel as natural and as close to vanilla CSS as possible.
+
+### enforce-semicolon
+
+Enforces semicolons after a mixin, to make distinguishing between mixins and nested selectors easier.
+
+Example:
+
+```tsx title="example.tsx"
+styled.div`
+//[!code --]
+  ${skeletonStyle}
+//[!code ++]
+  ${skeletonStyle};
+`;
+```
+
+#### Reason why
+
+Unlike runtime CSS-in-JS libraries that combine strings at execution time, yak has to understand the code statically. A variable might have different meanings:
+
+- **Selectors** (like `${Button} div { color: blue }`) define styling rules for components
+- **Mixins** (like `${skeletonMixin};`) inject pre-defined CSS rules
+- **Constants** (like `margin-top: ${marginTop}`)
+- **Runtime Variables** (like `x: ${({$x}) => $x}`)
+
+Constants and runtime values are easy to detect as they are always after a colon (:).
+To tell selectors and mixins apart, however, yak needs the semicolon (;):
+
+```tsx
+// This works correctly - mixin properly terminated with semicolon
+styled.div`
+  ${skeleton};
+  div {
+    color: blue;
+  }
+`
+
+// This causes ambiguity - is it a mixin or part of the selector?
+styled.div`
+  ${skeleton}
+  div {
+    color: blue;
+  }
+`
+```
+
+### style-conditions
+
+Warns if runtime performance could be improved by using css literals.
+
+The rule checks arrow functions used as CSS declaration values, where yak creates runtime CSS variables. Arrow functions outside declarations are runtime class expressions and may return local or imported css mixins.
+
+Example:
+
+```tsx title="example.tsx"
+styled.button`
+//[!code --]
+  color: ${() => color};
+//[!code ++]
+  color: ${({$color}) => $color};
+// or if the value is defined outside the component: // [!code ++]
+//[!code ++]
+  color: ${color};
+`;
+```
+
+```tsx title="example.tsx"
+styled.button`
+  color: ${() => { // [!code --]
+  ${() => { // [!code ++]
+    if (variant === 'primary') {
+      return primary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$primary}) => $primary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${primary}; // [!code ++]
+      `; // [!code ++]
+    } else {
+      return secondary; // [!code --]
+      return css` // [!code ++]
+        color: ${({$secondary}) => $secondary}; // [!code ++]
+      `; // [!code ++]
+      // or if the value is defined outside the component: // [!code ++]
+      return css` // [!code ++]
+        color: ${secondary}; // [!code ++]
+      `; // [!code ++]
+    }
+  }};
+`;
+```
+
+Extracted css literals can also be reused as conditional classes:
+
+```tsx title="example.tsx"
+const activeStyles = css`
+  opacity: 1;
+`;
+
+styled.button`
+  ${({$active}) => $active && activeStyles}
+`;
+```
+
+#### Reason why
+
+yak offers two different approaches for implementing dynamic styles, each with its own use cases and performance characteristics.
+
+<Steps>
+<Step>
+Class-based Dynamic Styles:
+
+The first approach compiles dynamic styles into separate CSS classes that are toggled at runtime:
+
+```tsx
+styled.button<{$primary?: boolean}>`
+  color: blue;
+  ${({$primary}) => $primary && css`
+    color: red;
+  `}
+`;
+```
+
+In this example:
+- The base style color: blue is extracted into a CSS class that's always applied
+- The conditional style color: red is extracted into a separate CSS class that's only toggled based on the $primary prop
+- This approach is fast because all styles are pre-compiled and only class names are manipulated at runtime
+</Step>
+
+<Step>
+CSS Variables for Truly Dynamic Values
+
+The second approach uses CSS custom properties (variables) for values that cannot be determined at build time:
+
+```tsx
+styled.div<{$x: number}>`
+  left: ${({$x}) => `${$x}px`}
+`;
+```
+
+In this example:
+
+- The value for $x is extracted into a CSS variable (e.g., --x)
+- At runtime, this variable is set via inline styles: `<div style="--x: 43px">...</div>`
+- This allows for fully dynamic values but adds a small runtime overhead
+</Step>
+</Steps>
+
+#### Best Practices
+
+- Use the class-based approach (first example) for binary conditions and fixed value variations
+- Use CSS variables (second example) only when values are truly dynamic, such as:
+  - User inputs
+  - Calculated positions
+  - Animation states
+  - Values from external APIs
+
+The `@yak/style-conditions` rule flags unnecessary uses of CSS variables, which keeps your HTML smaller and faster.
+
+## Next steps
+
+- [Migration from styled-components](/docs/migration-from-styled-components): the plugin's main use case
+- [Features](/docs/features): the patterns the rules point you to
