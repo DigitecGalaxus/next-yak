@@ -59,6 +59,9 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     description: page.data.description,
     path: `/docs/${slug.join("/")}`,
     card: `docs-${slug.join("-")}`,
+    /** The card draws `title`, not `seoTitle`, so its alt text names what the image shows */
+    cardTitle: page.data.cardTitle ?? page.data.title,
+    cardSubtitle: page.data.cardSubtitle,
     markdownPath: getPageMarkdownUrl(page).url,
   });
 }

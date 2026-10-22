@@ -65,6 +65,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     description: post.data.description,
     path: `/blog/${slug}`,
     card: `blog-${slug}`,
+    cardSubtitle: post.data.cardSubtitle,
     publishedTime: post.data.date,
     feed: true,
   });

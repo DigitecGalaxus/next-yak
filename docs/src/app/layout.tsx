@@ -15,6 +15,9 @@ import {
   dark,
 } from "@/tokens";
 import { IS_PREVIEW_DEPLOY, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { cardImages, siteOpenGraph } from "@/lib/page-metadata";
+
+const homeCard = cardImages("home");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -27,18 +30,18 @@ export const metadata: Metadata = {
   ...(IS_PREVIEW_DEPLOY ? { robots: { index: false, follow: false } } : {}),
   alternates: { canonical: "/" },
   openGraph: {
+    ...siteOpenGraph,
     type: "website",
-    siteName: SITE_NAME,
     url: SITE_URL,
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [{ url: "/og/home.png", width: 1200, height: 630, alt: SITE_NAME }],
+    images: homeCard.openGraph,
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/og/home.png"],
+    images: homeCard.twitter,
   },
 };
 

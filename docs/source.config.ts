@@ -12,10 +12,14 @@ export const docs = defineDocs({
   dir: "src/content/docs",
   docs: {
     schema: frontmatterSchema.extend({
-      // The <title> and social cards use it instead of `title`, which stays short for the sidebar
+      /** The <title> and og:title use it instead of `title`, which stays short for the sidebar */
       seoTitle: z.string().optional(),
       // A shorter label for the sidebar, when `title` is too long for it
       navTitle: z.string().optional(),
+      /** The title on the share card, where `|` breaks the line: "Set up yak | with Vite" */
+      cardTitle: z.string().optional(),
+      /** The share card subtitle, where an empty string removes the default, see src/og/cards.ts */
+      cardSubtitle: z.string().optional(),
     }),
     postprocess: {
       // `getText("processed")` for the LLM routes. These components become placeholders, which
@@ -38,6 +42,8 @@ export const blog = defineDocs({
       type: z.enum(["announcement", "release", "deep-dive", "guide"]),
       // The blog index shows the newest featured post as the big card on top.
       featured: z.boolean().default(false),
+      /** The share card subtitle, where an empty string removes the default, see src/og/cards.ts */
+      cardSubtitle: z.string().optional(),
     }),
   },
 });
