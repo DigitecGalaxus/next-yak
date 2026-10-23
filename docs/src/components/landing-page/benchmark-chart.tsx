@@ -4,21 +4,22 @@ import { Fragment, type CSSProperties } from "react";
 import { fonts, fontSize, fontWeight, ink, light, dark } from "@/tokens";
 import { asset } from "@/lib/site";
 
-// "SSR throughput under load", whole shop page workload, styled API lane, from
-// jantimon.github.io/css-in-js-bench. `percent` is the share of yak's 205 req/s.
-const YAK_BENCH = { version: "9.10.0", value: "205" };
+// "SSR throughput under load", styled API lane, from the product-grid case at
+// jantimon.github.io/css-in-js-bench: the whole shop page with 400 product tiles in one file.
+// `percent` is the share of yak's 196 req/s.
+const YAK_BENCH = { version: "10.0.0", value: "196" };
 
 const BENCH_ROWS = [
-  { label: "StyleX", version: "0.19.0", value: "167", percent: 81.5 },
-  { label: "tailwind-merge", version: "3.7.0", value: "105", percent: 51.2 },
-  { label: "styled-components", version: "6.5.3", value: "80", percent: 39 },
-  { label: "Panda", version: "2.0.0-beta.17", value: "76", percent: 37.1 },
-  { label: "Emotion", version: "11.14.1", value: "58", percent: 28.3 },
+  { label: "StyleX", version: "0.19.0", value: "159", percent: 81.1 },
+  { label: "tailwind-merge", version: "3.7.0", value: "100", percent: 51 },
+  { label: "styled-components", version: "6.5.3", value: "75", percent: 38.3 },
+  { label: "Panda", version: "2.0.0-beta.17", value: "73", percent: 37.2 },
+  { label: "Emotion", version: "11.14.1", value: "57", percent: 29.1 },
 ];
 
-// Track width at which the shortest bar (Emotion, 28.3%) fits its 50px number. Above it
+// Track width at which the shortest bar (Emotion, 29.1%) fits its 50px number. Above it
 // all numbers move inside their bars. Recompute when the data changes.
-const TRACK_HOLDS_NUMBERS = "178px";
+const TRACK_HOLDS_NUMBERS = "174px";
 
 const VALUE_COLUMN = "34px";
 
