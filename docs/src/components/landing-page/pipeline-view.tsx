@@ -22,6 +22,10 @@ const PLUGIN_HEIGHT = "84px";
 const ROW_GAP = "20px";
 /** How far a horizontal wire reaches into the 32px column gap, stopping 6px short of the pane */
 const REACH = "26px";
+/** Length of one painted dash of a wire */
+const WIRE_DASH = "7px";
+/** One dash plus the gap after it: the wire pattern repeats every period */
+const WIRE_PERIOD = "13px";
 
 export default function PipelineView({
   hosts,
@@ -199,8 +203,6 @@ const Diagram = styled.div`
     color-mix(in oklch, ${light.violetSoft} 55%, ${light.beige2}),
     color-mix(in oklch, ${dark.fog} 55%, ${dark.navy2})
   );
-  --wire-dash: 7px;
-  --wire-period: 13px;
 
   display: grid;
   gap: ${ROW_GAP};
@@ -388,13 +390,13 @@ const Node = styled.div`
 /* one period of travel lands the dashes back on themselves, so the loop is seamless */
 const flowX = keyframes`
   to {
-    transform: translateX(var(--wire-period));
+    transform: translateX(${WIRE_PERIOD});
   }
 `;
 
 const flowY = keyframes`
   to {
-    transform: translateY(var(--wire-period));
+    transform: translateY(${WIRE_PERIOD});
   }
 `;
 
@@ -405,13 +407,13 @@ const runRight = css`
   content: "";
   position: absolute;
   /* all insets and sizes: a wide section restyles a vertical wire as a horizontal one */
-  inset: auto 0 auto calc(-1 * var(--wire-period));
+  inset: auto 0 auto calc(-1 * ${WIRE_PERIOD});
   width: auto;
   height: 2px;
   background-image: repeating-linear-gradient(
     to right,
-    var(--wire) 0 var(--wire-dash),
-    transparent var(--wire-dash) var(--wire-period)
+    var(--wire) 0 ${WIRE_DASH},
+    transparent ${WIRE_DASH} ${WIRE_PERIOD}
   );
 
   @media (prefers-reduced-motion: no-preference) {
@@ -422,13 +424,13 @@ const runRight = css`
 const runDown = css`
   content: "";
   position: absolute;
-  inset: calc(-1 * var(--wire-period)) auto 0 auto;
+  inset: calc(-1 * ${WIRE_PERIOD}) auto 0 auto;
   width: 2px;
   height: auto;
   background-image: repeating-linear-gradient(
     to bottom,
-    var(--wire) 0 var(--wire-dash),
-    transparent var(--wire-dash) var(--wire-period)
+    var(--wire) 0 ${WIRE_DASH},
+    transparent ${WIRE_DASH} ${WIRE_PERIOD}
   );
 
   @media (prefers-reduced-motion: no-preference) {
@@ -571,7 +573,7 @@ const ElbowDown = styled.div`
       ${runDown};
       left: 0;
       /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
-      background-size: 2px var(--wire-period);
+      background-size: 2px ${WIRE_PERIOD};
       background-repeat: repeat-y;
       background-position: 0 100%;
     }
