@@ -85,7 +85,8 @@ export default async function Home() {
               display: flex;
               flex-direction: column;
               gap: 20px;
-              padding: 48px 20px 64px;
+              /* the same side padding as the header, so the hero lines up with the logo */
+              padding: 48px clamp(20px, 5vw, 48px) 64px;
               max-width: ${maxContentWidth};
               margin-inline: auto;
 
@@ -94,7 +95,7 @@ export default async function Home() {
                 justify-content: space-between;
                 align-items: center;
                 gap: 24px;
-                padding: 48px 48px 96px;
+                padding-bottom: 96px;
               }
             `}
           >
@@ -127,6 +128,12 @@ export default async function Home() {
                     font-size: clamp(96px, 22cqi, 200px);
                     line-height: 0.82;
                     letter-spacing: -0.05em;
+
+                    /* beside the editor the column is narrow: 110px at an 820px hero, the
+                       full 200px from about 990px */
+                    @container hero (min-width: ${container.hero.split}) {
+                      font-size: clamp(96px, calc(52cqi - 316px), 200px);
+                    }
                   `}
                 >
                   yak

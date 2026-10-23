@@ -4,7 +4,8 @@ import { css, styled } from "@yak/react";
 import { buttonStyles } from "./button";
 import { useSearch } from "../search/search-provider";
 import { SearchIcon } from "../search/search-icon";
-import { keycapStyles } from "@/lib/mixins";
+import { keycapStyles, visuallyHidden } from "@/lib/mixins";
+import { screen } from "@/tokens";
 
 export default function Search({
   fullWidth,
@@ -33,20 +34,21 @@ export default function Search({
       >
         <SearchIcon size={16} />
 
-        <span>Search</span>
+        <Label>Search</Label>
       </div>
 
-      <kbd
-        css={css`
-          ${keycapStyles};
-          letter-spacing: 0.72px;
-        `}
-      >
-        ⌘K
-      </kbd>
+      <Keycap>⌘K</Keycap>
     </Input>
   );
 }
+
+/* stays in the accessibility tree when hidden, so the icon button keeps its name */
+const Label = styled.span``;
+
+const Keycap = styled.kbd`
+  ${keycapStyles};
+  letter-spacing: 0.72px;
+`;
 
 const Input = styled.button<{ $fullWidth?: boolean }>`
   ${buttonStyles};
@@ -59,8 +61,26 @@ const Input = styled.button<{ $fullWidth?: boolean }>`
   padding: 8px 12px;
 
   ${({ $fullWidth }) =>
-    $fullWidth &&
-    css`
-      width: 100%;
-    `}
+    $fullWidth
+      ? css`
+          width: 100%;
+        `
+      : css`
+          /* an icon button like its neighbours, so the header links keep one line */
+          @container header (max-width: ${screen.searchCompact}) {
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            max-height: none;
+            padding: 0;
+
+            ${Label} {
+              ${visuallyHidden};
+            }
+
+            ${Keycap} {
+              display: none;
+            }
+          }
+        `}
 `;

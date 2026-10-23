@@ -96,6 +96,8 @@ export const headerHeight = "72px";
 // used as an @container query by the full-bleed header, so both collapse at the same width.
 export const screen = {
   nav: "860px", // header nav → drawer; docs sidebar hides
+  /** The header search box becomes an icon button below this, so the nav links fit on one line */
+  searchCompact: "1000px",
   toc: "1100px", // docs TOC rail hides
 } as const;
 
@@ -111,7 +113,8 @@ export const container = {
     flow: "960px", // how-it-works pipeline: stacked → yours · plugin · outputs row
   },
   hero: {
-    split: "950px", // hero copy beside the editor
+    /** Hero copy beside the editor */
+    split: "820px",
   },
   card: {
     row: "600px", // feature concept card: copy stacked above code → copy beside code
