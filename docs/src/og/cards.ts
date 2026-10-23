@@ -73,6 +73,9 @@ const LOGOS: Record<string, string> = {
   Storybook: "storybook",
 };
 const TECH_SLUGS = new Set(Object.values(LOGOS));
+// Setup guides whose page has another slug, shown by their short address. app/docs/react
+// forwards `/docs/react` to the guide
+const TECH_ALIASES: Record<string, string> = { "getting-started": "react" };
 
 // Case-sensitive and whole words only, so "@yak/react" and "Reactivity" stay plain text
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -111,7 +114,7 @@ export function cardFor(key: string, page: CardPage = { title: key }) {
   const label = template === "docs" ? "Documentation" : fixed ? undefined : typeLabel(type);
 
   const [section, ...rest] = key.split("-");
-  const slug = rest.join("-");
+  const slug = TECH_ALIASES[rest.join("-")] ?? rest.join("-");
   const url =
     key === "github"
       ? "galaxuslabs/yak"

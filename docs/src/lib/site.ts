@@ -1,4 +1,11 @@
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yak.js.org";
+/**
+ * Link previews and search engines get https URLs only. The Pages settings can report an
+ * http address for a custom domain, so every host except localhost is upgraded
+ */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://yak.js.org").replace(
+  /^http:\/\/(?!(?:localhost|127\.0\.0\.1)(?:[:/]|$))/,
+  "https://",
+);
 
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
