@@ -7,9 +7,10 @@ import { useState } from "react";
 import { css, styled } from "@yak/react";
 import { screen, light, dark } from "@/tokens";
 import { iconButton } from "./button";
-import { backdropStyles } from "@/lib/mixins";
+import { backdropStyles, visuallyHidden } from "@/lib/mixins";
 import NavLink, { NavExternalLink } from "./nav-link";
 import NavTree from "../docs/nav-tree";
+import Brand from "./brand";
 
 export default function MobileMenu({ tree }: { tree: Root }) {
   const [open, setOpen] = useState(false);
@@ -34,13 +35,14 @@ export default function MobileMenu({ tree }: { tree: Root }) {
           <Drawer>
             <Dialog.Title
               css={css`
-                margin-bottom: 18px;
-                font-size: 18px;
-                color: light-dark(${light.violet}, ${dark.white});
+                ${visuallyHidden};
               `}
             >
               Menu
             </Dialog.Title>
+            <DrawerBrand>
+              <Brand onClick={close} />
+            </DrawerBrand>
 
             <PrimaryNav>
               <NavLink href="/blog" onClick={close}>
@@ -60,9 +62,6 @@ export default function MobileMenu({ tree }: { tree: Root }) {
                   <NavTree tree={tree} onNavigateAction={close} />
                 </SubNav>
               </Section>
-              <NavExternalLink href="https://github.com/galaxuslabs/yak" onClick={close}>
-                GitHub
-              </NavExternalLink>
             </PrimaryNav>
           </Drawer>
         </Dialog.Portal>
@@ -92,6 +91,11 @@ const Bar = styled.div`
     align-items: center;
     margin-left: 14px;
   }
+`;
+
+const DrawerBrand = styled.div`
+  display: flex;
+  margin-bottom: 18px;
 `;
 
 const Trigger = styled(Dialog.Trigger)`

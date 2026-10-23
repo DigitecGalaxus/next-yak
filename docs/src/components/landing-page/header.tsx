@@ -7,18 +7,9 @@ import NavLink, { NavExternalLink } from "./nav-link";
 import { EXTERNAL_LINK_HINT, externalLinkProps } from "@/lib/external-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
-import {
-  screen,
-  fonts,
-  headerHeight,
-  maxContentWidth,
-  fontSize,
-  light,
-  dark,
-  headerBg,
-} from "@/tokens";
+import { screen, headerHeight, maxContentWidth, headerBg } from "@/tokens";
 import { visuallyHidden } from "@/lib/mixins";
-import Yak from "./yak";
+import Brand from "./brand";
 
 export default function Header() {
   return (
@@ -53,13 +44,7 @@ export default function Header() {
             gap: 28px;
           `}
         >
-          <Brand href="/">
-            <Yak
-              css={css`
-                width: 32px;
-              `}
-            />
-            <BrandName>yak</BrandName>
+          <Brand>
             <RenameNote>
               yak, formerly next-yak. Same library, same team, broader home: the package is now
               @yak/react, with @yak/solid beside it.
@@ -118,28 +103,6 @@ const Actions = styled.div`
   align-items: center;
   gap: 14px;
   margin-left: auto;
-`;
-
-const Brand = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const BrandName = styled.span`
-  font-family: ${fonts.title};
-  font-size: ${fontSize.display};
-  letter-spacing: -0.44px;
-  color: light-dark(${light.violet}, ${dark.white});
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition: color 0.16s ease;
-  }
-
-  ${Brand}:hover &,
-  ${Brand}:focus-visible & {
-    color: light-dark(${light.red}, ${dark.red});
-  }
 `;
 
 const GitHubLink = styled(Link)`
