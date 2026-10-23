@@ -51,6 +51,9 @@ export function pageMetadata({
   feed?: boolean;
 }): Metadata {
   const images = cardImages(card, { title, cardTitle, cardSubtitle });
+  // WhatsApp and Teams show og:title without the site name, so "Playground" becomes
+  // "Playground | yak" like the document title. Titles that already name yak stay as they are
+  const shareTitle = /\byak\b/.test(title) ? title : `${title} | ${SITE_NAME}`;
   return {
     title,
     description,
@@ -65,11 +68,16 @@ export function pageMetadata({
       ...siteOpenGraph,
       type: publishedTime ? "article" : "website",
       url: absoluteUrl(path),
-      title,
+      title: shareTitle,
       description,
       images: images.openGraph,
       ...(publishedTime ? { publishedTime } : {}),
     },
-    twitter: { card: "summary_large_image", title, description, images: images.twitter },
+    twitter: {
+      card: "summary_large_image",
+      title: shareTitle,
+      description,
+      images: images.twitter,
+    },
   };
 }
