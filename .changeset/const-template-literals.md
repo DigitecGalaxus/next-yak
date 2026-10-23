@@ -1,5 +1,6 @@
 ---
 "@yak/react": minor
+"@yak/solid": minor
 "@yak/swc": minor
 ---
 
