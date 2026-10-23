@@ -89,6 +89,11 @@ export default function PipelineView({
           title="Compile"
           css={css`
             grid-area: s2;
+            align-self: center;
+
+            @container section (min-width: ${container.section.flow}) {
+              align-self: start;
+            }
           `}
         >
           The Rust SWC plugin runs inside your bundler, moves the static styles into a CSS file and
@@ -181,9 +186,11 @@ const Diagram = styled.div`
   --in-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--in-lines) * var(--line-h));
   --css-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--css-lines) * var(--line-h));
   --axis: calc(var(--in-offset) * var(--line-h) + var(--in-h) / 2);
-  --plugin-w: 188px;
+  /* narrow enough to sit beside the Compile step on a phone, wider in the three-column flow */
+  --plugin-w: 150px;
   --plugin-h: 84px;
   --col-gap: 32px;
+  --row-gap: 20px;
   --reach: calc(var(--col-gap) - 6px);
 
   --wire: light-dark(
@@ -194,17 +201,19 @@ const Diagram = styled.div`
   --wire-period: 13px;
 
   display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(0, 1fr);
+  gap: var(--row-gap);
+  /* the Compile step sits beside the node, so the wire runs from pane to pane */
+  grid-template-columns: var(--plugin-w) minmax(0, 1fr);
   grid-template-areas:
-    "s1"
-    "in"
-    "s2"
-    "node"
-    "out"
-    "s3";
+    "s1 s1"
+    "in in"
+    "node s2"
+    "out out"
+    "s3 s3";
+  column-gap: 20px;
 
   @container section (min-width: ${container.section.flow}) {
+    --plugin-w: 188px;
     /* column mins fit the longest config (~47 chars) and JS diff (~44) lines; the flow
        breakpoint is their sum plus the gaps */
     grid-template-columns: minmax(320px, 420px) minmax(180px, 320px) minmax(390px, 520px);
@@ -363,7 +372,12 @@ const Node = styled.div`
   align-items: center;
   gap: 6px;
 
+  /* spans the row gaps above and below, so the wires touch both panes */
+  align-self: stretch;
+  margin-block: calc(-1 * var(--row-gap));
+
   @container section (min-width: ${container.section.flow}) {
+    margin-block: 0;
     display: block;
     position: relative;
     align-self: stretch;
@@ -502,8 +516,9 @@ const PluginCaption = styled.span`
 
 const verticalWire = css`
   position: relative;
+  flex: 1;
   width: 2px;
-  height: 30px;
+  min-height: 30px;
   ${dashesDown};
 `;
 
