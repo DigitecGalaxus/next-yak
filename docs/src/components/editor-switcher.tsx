@@ -4,7 +4,7 @@ import { Select } from "@base-ui/react/select";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import { css, styled } from "@yak/react";
 import { container, fonts, radii, shadow, ink } from "@/tokens";
-import { focusRing, slidingIndicator } from "@/lib/mixins";
+import { focusRing, slidingIndicator, tabAnchor, tabAnchorScope } from "@/lib/mixins";
 import type { ReactNode } from "react";
 
 /**
@@ -30,7 +30,7 @@ export function EditorSwitcher({
     <>
       <SwitcherRoot value={value} onValueChange={handleChange} $pair={pair}>
         <SwitcherList activateOnFocus>
-          <SwitcherIndicator />
+          <SwitcherIndicator aria-hidden />
           {items.map((item) => (
             <SwitcherTab key={item.value} value={item.value} disabled={item.disabled}>
               {item.node}
@@ -106,6 +106,15 @@ const SwitcherList = styled(BaseTabs.List)`
   border-radius: ${radii.card};
   background: ${ink.switcherTrack};
   border: 1px solid ${ink.switcherBorder};
+  ${tabAnchorScope};
+`;
+
+/* an outline, not a border, so the selected tab keeps its size in the fallback */
+const pill = css`
+  background: ${ink.track};
+  outline: 1.5px solid ${ink.switcherEdge};
+  outline-offset: -1.5px;
+  box-shadow: 2px 2px 0 0 ${ink.switcherEdge};
 `;
 
 const SwitcherTab = styled(BaseTabs.Tab)`
@@ -132,7 +141,7 @@ const SwitcherTab = styled(BaseTabs.Tab)`
       background 0.16s ease;
   }
 
-  &:hover:not([data-active], [data-disabled]) {
+  &:hover:not([aria-selected="true"], [data-disabled]) {
     background: ${ink.hover};
     color: ${ink.fg};
   }
@@ -142,8 +151,16 @@ const SwitcherTab = styled(BaseTabs.Tab)`
     cursor: not-allowed;
   }
 
-  &[data-active] {
+  &[aria-selected="true"] {
     color: #fff;
+  }
+
+  ${tabAnchor};
+
+  @supports not (anchor-name: --a) {
+    &[aria-selected="true"] {
+      ${pill};
+    }
   }
 
   &:focus-visible {
@@ -153,13 +170,11 @@ const SwitcherTab = styled(BaseTabs.Tab)`
   }
 `;
 
-const SwitcherIndicator = styled(BaseTabs.Indicator)`
+const SwitcherIndicator = styled.span`
   ${slidingIndicator};
   box-sizing: border-box;
-  background: ${ink.track};
-  border: 1.5px solid ${ink.switcherEdge};
   border-radius: calc(${radii.card} - 4px);
-  box-shadow: 2px 2px 0 0 ${ink.switcherEdge};
+  ${pill};
 `;
 
 const SelectTrigger = styled(Select.Trigger)<{ $pair: boolean }>`

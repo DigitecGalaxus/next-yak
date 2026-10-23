@@ -25,19 +25,42 @@ export const subsectionHeading = css`
   color: light-dark(${light.violet}, ${dark.white});
 `;
 
+/**
+ * A pill that slides to the selected tab. CSS anchor positioning places it on the tab that has
+ * `tabAnchor`, so it sits right from the first paint, before hydration, and only a switch
+ * between tabs animates. The tab list needs `tabAnchorScope`, so two tab lists on one page keep
+ * their own pill. Browsers without anchor positioning hide the pill, so each tab list also
+ * gives its selected tab the pill's colors under `@supports not (anchor-name: --a)`.
+ */
 export const slidingIndicator = css`
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  left: 0;
-  width: var(--active-tab-width);
-  height: var(--active-tab-height);
-  transform: translate(var(--active-tab-left), var(--active-tab-top));
+  display: none;
 
-  @media (prefers-reduced-motion: no-preference) {
-    transition:
-      transform 0.26s cubic-bezier(0.34, 1.12, 0.5, 1),
-      width 0.26s cubic-bezier(0.34, 1.12, 0.5, 1);
+  @supports (anchor-name: --a) {
+    display: block;
+    position: absolute;
+    z-index: 0;
+    position-anchor: --selected-tab;
+    top: anchor(top);
+    left: anchor(left);
+    width: anchor-size(width);
+    height: anchor-size(height);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition-property: top, left, width, height;
+      transition-duration: 0.26s;
+      transition-timing-function: cubic-bezier(0.34, 1.12, 0.5, 1);
+    }
+  }
+`;
+
+export const tabAnchorScope = css`
+  anchor-scope: --selected-tab;
+`;
+
+/** `aria-selected`, not `data-active`: Base UI adds `data-active` only after hydration */
+export const tabAnchor = css`
+  &[aria-selected="true"] {
+    anchor-name: --selected-tab;
   }
 `;
 
