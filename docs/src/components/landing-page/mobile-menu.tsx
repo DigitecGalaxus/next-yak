@@ -43,25 +43,23 @@ export default function MobileMenu({ tree }: { tree: Root }) {
             </Dialog.Title>
 
             <PrimaryNav>
-              <Section>
-                <NavLink href="/docs/getting-started" onClick={close}>
-                  Documentation
-                </NavLink>
-                {pathname.startsWith("/docs") && (
-                  <SubNav>
-                    <NavTree tree={tree} onNavigateAction={close} />
-                  </SubNav>
-                )}
-              </Section>
-              <NavLink href="/playground" onClick={close}>
-                Playground
-              </NavLink>
               <NavLink href="/blog" onClick={close}>
                 Blog
               </NavLink>
               <NavExternalLink href="https://jantimon.github.io/css-in-js-bench" onClick={close}>
                 Benchmarks
               </NavExternalLink>
+              <NavLink href="/playground" onClick={close}>
+                Playground
+              </NavLink>
+              <Section>
+                <NavLink href="/docs/getting-started" onClick={close}>
+                  Documentation
+                </NavLink>
+                <SubNav>
+                  <NavTree tree={tree} onNavigateAction={close} />
+                </SubNav>
+              </Section>
               <NavExternalLink href="https://github.com/galaxuslabs/yak" onClick={close}>
                 GitHub
               </NavExternalLink>
