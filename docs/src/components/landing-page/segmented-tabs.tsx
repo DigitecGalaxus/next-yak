@@ -1,10 +1,10 @@
 "use client";
 
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import { styled } from "@yak/react";
+import { css, styled } from "@yak/react";
 import type { ReactNode } from "react";
 import { fonts, shadow, light, dark } from "@/tokens";
-import { focusRing, slidingIndicator } from "@/lib/mixins";
+import { focusRing, slidingIndicator, tabAnchor, tabAnchorScope } from "@/lib/mixins";
 
 export function SegmentedTabs({
   value,
@@ -20,7 +20,7 @@ export function SegmentedTabs({
   return (
     <BaseTabs.Root value={value} onValueChange={(next) => onValueChange(String(next))}>
       <Track activateOnFocus aria-label={ariaLabel}>
-        <Indicator />
+        <Indicator aria-hidden />
         {items.map((item) => (
           <Tab key={item.value} value={item.value}>
             {item.node}
@@ -39,13 +39,18 @@ const Track = styled(BaseTabs.List)`
   padding: 4px;
   border-radius: 10px;
   background: light-dark(${light.beige3}, ${dark.navy3});
+  ${tabAnchorScope};
 `;
 
-const Indicator = styled(BaseTabs.Indicator)`
-  ${slidingIndicator};
-  border-radius: 7px;
+const pill = css`
   background: light-dark(${light.beige1}, ${dark.navy1});
   box-shadow: ${shadow.indicator};
+`;
+
+const Indicator = styled.span`
+  ${slidingIndicator};
+  border-radius: 7px;
+  ${pill};
 `;
 
 const Tab = styled(BaseTabs.Tab)`
@@ -68,8 +73,16 @@ const Tab = styled(BaseTabs.Tab)`
     transition: background 0.16s ease;
   }
 
-  &:hover:not([data-active]) {
+  &:hover:not([aria-selected="true"]) {
     background: light-dark(${light.beige4}, ${dark.navy4});
+  }
+
+  ${tabAnchor};
+
+  @supports not (anchor-name: --a) {
+    &[aria-selected="true"] {
+      ${pill};
+    }
   }
 
   &:focus-visible {
