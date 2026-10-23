@@ -3,7 +3,7 @@
 import { css, keyframes, styled } from "@yak/react";
 import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { container, fonts, fontWeight, ink, shadow, light, dark } from "@/tokens";
-import { overlineSmall, editorSurface, codeReset, editorScrollbar } from "@/lib/mixins";
+import { overlineSmall, editorSurface, codeReset, editorScrollbar, inlineCode } from "@/lib/mixins";
 import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 import { SegmentedTabs } from "./segmented-tabs";
 import Step from "./step";
@@ -133,6 +133,10 @@ export default function PipelineView({
         >
           The browser gets a plain stylesheet and a component that carries a class name. No styling
           runtime.
+          <StepLine>
+            Your constants become plain CSS too, so the minifier folds them:{" "}
+            <StepCode>{"calc(-1 * ${gap})"}</StepCode> ships as <StepCode>-20px</StepCode>.
+          </StepLine>
         </Step>
       </Diagram>
     </div>
@@ -182,6 +186,17 @@ const Switch = styled.div`
   align-items: center;
   gap: 12px 16px;
   margin-bottom: 28px;
+`;
+
+/* a second paragraph inside the step's <p>, which cannot hold another <p> */
+const StepLine = styled.span`
+  display: block;
+  margin-top: 8px;
+`;
+
+const StepCode = styled.code`
+  ${inlineCode};
+  white-space: nowrap;
 `;
 
 const SwitchLabel = styled.span`
