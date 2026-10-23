@@ -3,7 +3,7 @@
 import { css, keyframes, styled } from "@yak/react";
 import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { container, fonts, fontWeight, ink, shadow, light, dark } from "@/tokens";
-import { overlineSmall, editorSurface, codeReset, editorScrollbar } from "@/lib/mixins";
+import { overlineSmall, editorSurface, codeReset, editorScrollbar, inlineCode } from "@/lib/mixins";
 import { tourTimeline, tourWindow, tourPointerOverride } from "@/lib/scroll-tour";
 import { SegmentedTabs } from "./segmented-tabs";
 import Step from "./step";
@@ -14,6 +14,18 @@ type Snippet = { html: string; lines: number };
 
 const CODE_FONT_SIZE = "13px";
 const CODE_LINE_HEIGHT = 1.7;
+/** Narrow enough to sit beside the Compile step on a phone */
+const PLUGIN_WIDTH = "150px";
+/** The plugin box in the three-column flow */
+const PLUGIN_WIDTH_FLOW = "188px";
+const PLUGIN_HEIGHT = "84px";
+const ROW_GAP = "20px";
+/** How far a horizontal wire reaches into the 32px column gap, stopping 6px short of the pane */
+const REACH = "26px";
+/** Length of one painted dash of a wire */
+const WIRE_DASH = "7px";
+/** One dash plus the gap after it: the wire pattern repeats every period */
+const WIRE_PERIOD = "13px";
 
 export default function PipelineView({
   hosts,
@@ -89,6 +101,11 @@ export default function PipelineView({
           title="Compile"
           css={css`
             grid-area: s2;
+            align-self: center;
+
+            @container section (min-width: ${container.section.flow}) {
+              align-self: start;
+            }
           `}
         >
           The Rust SWC plugin runs inside your bundler, moves the static styles into a CSS file and
@@ -116,6 +133,10 @@ export default function PipelineView({
         >
           The browser gets a plain stylesheet and a component that carries a class name. No styling
           runtime.
+          <StepLine>
+            Your constants become plain CSS too, so the minifier folds them:{" "}
+            <StepCode>{"calc(-1 * ${gap})"}</StepCode> ships as <StepCode>-20px</StepCode>.
+          </StepLine>
         </Step>
       </Diagram>
     </div>
@@ -167,6 +188,17 @@ const Switch = styled.div`
   margin-bottom: 28px;
 `;
 
+/* a second paragraph inside the step's <p>, which cannot hold another <p> */
+const StepLine = styled.span`
+  display: block;
+  margin-top: 8px;
+`;
+
+const StepCode = styled.code`
+  ${inlineCode};
+  white-space: nowrap;
+`;
+
 const SwitchLabel = styled.span`
   ${overlineSmall};
   color: light-dark(${light.violetSoft}, ${dark.fog});
@@ -181,28 +213,23 @@ const Diagram = styled.div`
   --in-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--in-lines) * var(--line-h));
   --css-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--css-lines) * var(--line-h));
   --axis: calc(var(--in-offset) * var(--line-h) + var(--in-h) / 2);
-  --plugin-w: 188px;
-  --plugin-h: 84px;
-  --col-gap: 32px;
-  --reach: calc(var(--col-gap) - 6px);
 
   --wire: light-dark(
     color-mix(in oklch, ${light.violetSoft} 55%, ${light.beige2}),
     color-mix(in oklch, ${dark.fog} 55%, ${dark.navy2})
   );
-  --wire-dash: 7px;
-  --wire-period: 13px;
 
   display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(0, 1fr);
+  gap: ${ROW_GAP};
+  /* the Compile step sits beside the node, so the wire runs from pane to pane */
+  grid-template-columns: ${PLUGIN_WIDTH} minmax(0, 1fr);
   grid-template-areas:
-    "s1"
-    "in"
-    "s2"
-    "node"
-    "out"
-    "s3";
+    "s1 s1"
+    "in in"
+    "node s2"
+    "out out"
+    "s3 s3";
+  column-gap: 20px;
 
   @container section (min-width: ${container.section.flow}) {
     /* column mins fit the longest config (~47 chars) and JS diff (~44) lines; the flow
@@ -211,7 +238,7 @@ const Diagram = styled.div`
     grid-template-areas:
       "in node out"
       "s1 s2 s3";
-    column-gap: var(--col-gap);
+    column-gap: 32px;
     row-gap: 32px;
     align-items: start;
   }
@@ -363,7 +390,12 @@ const Node = styled.div`
   align-items: center;
   gap: 6px;
 
+  /* spans the row gaps above and below, so the wires touch both panes */
+  align-self: stretch;
+  margin-block: calc(-1 * ${ROW_GAP});
+
   @container section (min-width: ${container.section.flow}) {
+    margin-block: 0;
     display: block;
     position: relative;
     align-self: stretch;
@@ -373,58 +405,75 @@ const Node = styled.div`
 /* one period of travel lands the dashes back on themselves, so the loop is seamless */
 const flowX = keyframes`
   to {
-    background-position-x: var(--wire-period);
+    transform: translateX(${WIRE_PERIOD});
   }
 `;
 
 const flowY = keyframes`
   to {
-    background-position-y: var(--wire-period);
+    transform: translateY(${WIRE_PERIOD});
   }
 `;
 
-const flowElbow = keyframes`
-  to {
-    background-position:
-      0 calc(100% + var(--wire-period)),
-      var(--wire-period) 100%;
-  }
-`;
-
-/* a dashed border cannot animate, so the dashes are a repeating gradient */
-const dashesRight = css`
+/* a dashed border cannot animate, so the dashes are a repeating gradient on a pseudo-element
+   that starts one period before the wire and moves with transform, which needs no repaint per
+   frame. The wire clips the extra period */
+const runRight = css`
+  content: "";
+  position: absolute;
+  /* all insets and sizes: a wide section restyles a vertical wire as a horizontal one */
+  inset: auto 0 auto calc(-1 * ${WIRE_PERIOD});
+  width: auto;
+  height: 2px;
   background-image: repeating-linear-gradient(
     to right,
-    var(--wire) 0 var(--wire-dash),
-    transparent var(--wire-dash) var(--wire-period)
+    var(--wire) 0 ${WIRE_DASH},
+    transparent ${WIRE_DASH} ${WIRE_PERIOD}
   );
-  background-size: var(--wire-period) 2px;
-  background-repeat: repeat-x;
-  background-position: 0 50%;
 
   @media (prefers-reduced-motion: no-preference) {
     animation: ${flowX} 900ms linear infinite;
   }
 `;
 
-const dashesDown = css`
+const runDown = css`
+  content: "";
+  position: absolute;
+  inset: calc(-1 * ${WIRE_PERIOD}) auto 0 auto;
+  width: 2px;
+  height: auto;
   background-image: repeating-linear-gradient(
     to bottom,
-    var(--wire) 0 var(--wire-dash),
-    transparent var(--wire-dash) var(--wire-period)
+    var(--wire) 0 ${WIRE_DASH},
+    transparent ${WIRE_DASH} ${WIRE_PERIOD}
   );
-  background-size: 2px var(--wire-period);
-  background-repeat: repeat-y;
-  background-position: 50% 0;
 
   @media (prefers-reduced-motion: no-preference) {
     animation: ${flowY} 900ms linear infinite;
   }
 `;
 
+const dashesRight = css`
+  overflow: clip;
+
+  &::before {
+    ${runRight};
+    top: 0;
+  }
+`;
+
+const dashesDown = css`
+  overflow: clip;
+
+  &::before {
+    ${runDown};
+    left: 0;
+  }
+`;
+
 const Plugin = styled.div`
   box-sizing: border-box;
-  width: var(--plugin-w);
+  width: ${PLUGIN_WIDTH};
   padding: 12px 14px;
   border: 1px solid ${ink.border};
   border-radius: 14px;
@@ -441,7 +490,8 @@ const Plugin = styled.div`
     top: var(--axis);
     left: 50%;
     transform: translate(-50%, -50%);
-    min-height: var(--plugin-h);
+    width: ${PLUGIN_WIDTH_FLOW};
+    min-height: ${PLUGIN_HEIGHT};
     justify-content: center;
 
     &::before,
@@ -485,8 +535,9 @@ const PluginCaption = styled.span`
 
 const verticalWire = css`
   position: relative;
+  flex: 1;
   width: 2px;
-  height: 30px;
+  min-height: 30px;
   ${dashesDown};
 `;
 
@@ -494,6 +545,8 @@ const horizontalWire = css`
   position: absolute;
   top: var(--axis);
   width: auto;
+  /* resets the vertical wire's min-height, which would make this box 30px tall */
+  min-height: 0;
   height: 2px;
   transform: translateY(-50%);
   ${dashesRight};
@@ -504,8 +557,8 @@ const LineIn = styled.div`
 
   @container section (min-width: ${container.section.flow}) {
     ${horizontalWire};
-    left: calc(-1 * var(--reach));
-    right: calc(50% + var(--plugin-w) / 2 + 5px);
+    left: calc(-1 * ${REACH});
+    right: calc(50% + ${PLUGIN_WIDTH_FLOW} / 2 + 5px);
   }
 `;
 
@@ -514,12 +567,13 @@ const LineOut = styled.div`
 
   @container section (min-width: ${container.section.flow}) {
     ${horizontalWire};
-    left: calc(50% + var(--plugin-w) / 2 + 5px);
-    right: calc(-1 * var(--reach));
+    left: calc(50% + ${PLUGIN_WIDTH_FLOW} / 2 + 5px);
+    right: calc(-1 * ${REACH});
   }
 `;
 
-/* one element paints both runs so the dashes travel around the corner in one animation */
+/* one element holds both runs, so they share one clip and one animation clock and the dashes
+   travel around the corner without a jump */
 const ElbowDown = styled.div`
   display: none;
 
@@ -527,32 +581,23 @@ const ElbowDown = styled.div`
     display: block;
     position: absolute;
     left: 50%;
-    right: calc(-1 * var(--reach));
-    top: calc(var(--axis) + var(--plugin-h) / 2 + 6px);
+    right: calc(-1 * ${REACH});
+    top: calc(var(--axis) + ${PLUGIN_HEIGHT} / 2 + 6px);
     bottom: calc(var(--css-h) / 2);
+    overflow: clip;
 
-    background-image:
-      repeating-linear-gradient(
-        to bottom,
-        var(--wire) 0 var(--wire-dash),
-        transparent var(--wire-dash) var(--wire-period)
-      ),
-      repeating-linear-gradient(
-        to right,
-        var(--wire) 0 var(--wire-dash),
-        transparent var(--wire-dash) var(--wire-period)
-      );
-    background-size:
-      2px var(--wire-period),
-      var(--wire-period) 2px;
-    background-repeat: repeat-y, repeat-x;
-    /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
-    background-position:
-      0 100%,
-      0 100%;
+    &::before {
+      ${runDown};
+      left: 0;
+      /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
+      background-size: 2px ${WIRE_PERIOD};
+      background-repeat: repeat-y;
+      background-position: 0 100%;
+    }
 
-    @media (prefers-reduced-motion: no-preference) {
-      animation: ${flowElbow} 900ms linear infinite;
+    &::after {
+      ${runRight};
+      bottom: 0;
     }
   }
 `;
