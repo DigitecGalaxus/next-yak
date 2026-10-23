@@ -240,17 +240,31 @@ export default async function Home() {
               css={css`
                 display: grid;
                 grid-template-columns: minmax(0, 1fr);
-                align-items: center;
+                grid-template-areas:
+                  "intro"
+                  "chart"
+                  "cta";
+                justify-items: start;
                 gap: 40px;
 
+                /* text and button share the left column, centred against the chart. The
+                   empty rows above and below take the spare height */
                 @container section (min-width: ${container.section.flow}) {
                   grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
-                  gap: clamp(40px, 6cqi, 88px);
+                  grid-template-rows: 1fr auto auto 1fr;
+                  grid-template-areas:
+                    ". chart"
+                    "intro chart"
+                    "cta chart"
+                    ". chart";
+                  column-gap: clamp(40px, 6cqi, 88px);
+                  row-gap: 34px;
                 }
               `}
             >
               <div
                 css={css`
+                  grid-area: intro;
                   display: flex;
                   flex-direction: column;
                   align-items: flex-start;
@@ -277,20 +291,28 @@ export default async function Home() {
                   <b>Yak pairs unmatched render performance with the most flexible API.</b> It is
                   always faster than runtime solutions like styled-components or emotion.
                 </SubHeading>
-                {/* The count must match the benchmark site's heading. */}
-                <CtaButton
-                  href="https://jantimon.github.io/css-in-js-bench"
-                  {...externalLinkProps}
-                  css={css`
-                    margin-top: 18px;
-                  `}
-                >
-                  See all 22 styling techniques
-                  <ExternalMark />
-                </CtaButton>
               </div>
 
-              <BenchmarkChart />
+              <div
+                css={css`
+                  grid-area: chart;
+                  justify-self: stretch;
+                `}
+              >
+                <BenchmarkChart />
+              </div>
+
+              <CtaButton
+                // the count in the label must match the benchmark site's heading
+                href="https://jantimon.github.io/css-in-js-bench"
+                {...externalLinkProps}
+                css={css`
+                  grid-area: cta;
+                `}
+              >
+                See all 22 styling techniques
+                <ExternalMark />
+              </CtaButton>
             </div>
           </Container>
         </Section>
