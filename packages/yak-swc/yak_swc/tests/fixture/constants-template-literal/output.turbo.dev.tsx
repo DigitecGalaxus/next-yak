@@ -1,6 +1,6 @@
 import { styled } from "@yak/react/internal";
 import * as __yak from "@yak/react/internal";
-import "data:text/css;base64,LmlucHV0X1B1bGxfbTd1QkJ1IHsKICBtYXJnaW4tbGVmdDogLTIwcHg7Cn0uaW5wdXRfSGFsZlB1bGxfbTd1QkJ1IHsKICBtYXJnaW4tbGVmdDogLTEwcHg7Cn0=";
+import "data:text/css;base64,LmlucHV0X1B1bGxfbTd1QkJ1IHsKICBtYXJnaW4tbGVmdDogLTIwcHg7Cn0uaW5wdXRfSGFsZlB1bGxfbTd1QkJ1IHsKICBtYXJnaW4tbGVmdDogLTEwcHg7Cn0uaW5wdXRfU3F1YXJlX203dUJCdSB7CiAgd2lkdGg6IDlweDsKfQ==";
 const GAP = "20px";
 const NEGATIVE_GAP = `-${GAP}`;
 export const Pull = /*YAK EXPORTED STYLED:Pull:input_Pull_m7uBBu*//*YAK Extracted CSS:
@@ -18,4 +18,12 @@ export const HalfPull = /*YAK EXPORTED STYLED:HalfPull:input_HalfPull_m7uBBu*//*
 }
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_HalfPull_m7uBBu"), {
     "displayName": "HalfPull"
+});
+const SQUARE_SIZE = `${(1 + 2) ** 2}px`;
+export const Square = /*YAK EXPORTED STYLED:Square:input_Square_m7uBBu*//*YAK Extracted CSS:
+.input_Square_m7uBBu {
+  width: 9px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Square_m7uBBu"), {
+    "displayName": "Square"
 });

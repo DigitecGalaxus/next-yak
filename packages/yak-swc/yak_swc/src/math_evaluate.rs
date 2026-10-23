@@ -5,6 +5,7 @@ use crate::variable_visitor::VariableVisitor;
 
 /// Try to evaluate a given expression
 /// e.g. `2 + 3 * 4` will return `14`
+/// e.g. `(1 + 2) ** 2` will return `9`
 pub fn try_evaluate(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<f64> {
   // See through TypeScript-only wrappers and parentheses so e.g.
   // `${(5 as const) * 2}` or `${someConst as number + 10}` evaluates statically.
@@ -129,6 +130,7 @@ fn apply_op(op: &BinaryOp, left: f64, right: f64) -> Option<f64> {
     BinaryOp::Sub => Some(left - right),
     BinaryOp::Mul => Some(left * right),
     BinaryOp::Div => Some(left / right),
+    BinaryOp::Exp => Some(left.powf(right)),
     _ => None,
   }
 }
@@ -410,5 +412,36 @@ mod tests {
       try_evaluate(expr, visitor.get_variable_visitor()),
       Some(84.0)
     );
+  }
+
+  fn evaluate_calc(code: &str) -> Option<f64> {
+    let mut visitor = TestVisitor::new("calc");
+    test_transform(
+      Default::default(),
+      Some(true),
+      |_| visit_mut_pass(&mut visitor),
+      code,
+      code,
+    );
+    let expr = visitor.get_variable_initializer().unwrap();
+    try_evaluate(expr, visitor.get_variable_visitor())
+  }
+
+  #[test]
+  fn test_exponent_precedence() {
+    // `**` binds tighter than `*`
+    assert_eq!(evaluate_calc("const calc = 2 ** 3 * 2;"), Some(16.0));
+    assert_eq!(evaluate_calc("const calc = 2 * 3 ** 2;"), Some(18.0));
+  }
+
+  #[test]
+  fn test_exponent_right_associative() {
+    // 2 ** (3 ** 2), not (2 ** 3) ** 2
+    assert_eq!(evaluate_calc("const calc = 2 ** 3 ** 2;"), Some(512.0));
+  }
+
+  #[test]
+  fn test_exponent_with_parentheses() {
+    assert_eq!(evaluate_calc("const calc = (1 + 2) ** 2;"), Some(9.0));
   }
 }

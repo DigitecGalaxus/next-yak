@@ -19,3 +19,11 @@ export const HalfPull = /*YAK EXPORTED STYLED:HalfPull:input_HalfPull_m7uBBu*//*
 */ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_HalfPull_m7uBBu"), {
     "displayName": "HalfPull"
 });
+const SQUARE_SIZE = `${(1 + 2) ** 2}px`;
+export const Square = /*YAK EXPORTED STYLED:Square:input_Square_m7uBBu*//*YAK Extracted CSS:
+.input_Square_m7uBBu {
+  width: 9px;
+}
+*/ /*#__PURE__*/ Object.assign(/*#__PURE__*/ __yak.__yak_div("input_Square_m7uBBu"), {
+    "displayName": "Square"
+});
