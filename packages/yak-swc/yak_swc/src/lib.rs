@@ -33,7 +33,7 @@ mod math_evaluate;
 mod plugin;
 pub mod yak_file;
 
-use math_evaluate::try_evaluate;
+use math_evaluate::{format_number, try_evaluate, try_evaluate_string};
 
 mod utils {
   pub(crate) mod add_suffix_to_expr;
@@ -428,12 +428,8 @@ where
         // e.g. styled.button`width: ${100 + 20}px;`
         if let Some(evaluated_math_calculation) = try_evaluate(expr, &self.variables) {
           // Format to 4 decimal places
-          let (new_state, new_declarations) = parse_css(
-            format!("{:.4}", evaluated_math_calculation)
-              .trim_end_matches('0')
-              .trim_end_matches('.'),
-            css_state,
-          );
+          let (new_state, new_declarations) =
+            parse_css(&format_number(evaluated_math_calculation), css_state);
           css_state = Some(new_state);
           self.current_declaration.extend(new_declarations);
         }
@@ -488,11 +484,11 @@ where
             // e.g.:
             // const primary = "red";
             // styled.button`color: ${primary};`
-            if let Some(literal_value) = match *value.clone() {
-              Expr::Lit(Lit::Str(str)) => str.value.as_str().map(|s| s.into()),
-              Expr::Lit(Lit::Num(num)) => Some(num.value.to_string()),
-              _ => None,
-            } {
+            // e.g. static template literals:
+            // const gap = "20px";
+            // const negativeGap = `-${gap}`;
+            // styled.button`margin: ${negativeGap};` -> margin: -20px
+            if let Some(literal_value) = try_evaluate_string(&value, &self.variables) {
               let (new_state, _) = parse_css(&literal_value, css_state);
               css_state = Some(new_state);
             } else if let Expr::TaggedTpl(tagged_tpl) = *value {
