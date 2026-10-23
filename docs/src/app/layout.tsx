@@ -11,6 +11,7 @@ import {
   headerHeight,
   initVars,
   jetbrainsMono,
+  jetbrainsMonoCode,
   light,
   dark,
 } from "@/tokens";
@@ -63,7 +64,7 @@ export default function RootLayout({
       lang="en"
       // a pre-paint script in <body> may set color-scheme on <html>; let React leave it be
       suppressHydrationWarning
-      className={`${hankenSans.className} ${bricolageSans.variable} ${jetbrainsMono.variable} ${hankenSans.variable}`}
+      className={`${hankenSans.className} ${bricolageSans.variable} ${jetbrainsMono.variable} ${jetbrainsMonoCode.variable} ${hankenSans.variable}`}
     >
       <NextProvider>
         <body>

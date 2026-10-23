@@ -17,18 +17,48 @@ export const hankenSans = Hanken_Grotesk({
   subsets: ["latin"],
 });
 
-// Not preloaded: no text above the fold depends on it for LCP, so it should not compete
-// with the body font. The size-adjusted fallback keeps the layout stable during the swap.
+/**
+ * Code is set in two faces of JetBrains Mono, and this is the small one: ASCII plus the few
+ * other characters the site sets in mono (the non-breaking space Monaco renders for every
+ * space, "·", typographic quotes, "…" and the arrows). It is 12 kB instead of 41 kB and
+ * preloaded, because the hero code block is the largest element above the fold and so
+ * decides LCP. Its unicode-range tells the browser what the face holds, so an "é" in a
+ * comment or in playground code takes the full face `jetbrainsMono`, which downloads only then.
+ *
+ * Made with: pyftsubset <JetBrains Mono latin woff2> --unicodes="<the unicode-range below>" --layout-features='' --flavor=woff2
+ * No layout features: the ligatures (`calt`) would make the file 30 kB
+ */
+export const jetbrainsMonoCode = localFont({
+  src: "./fonts/jetbrains-mono-code.woff2",
+  weight: "100 800",
+  style: "normal",
+  variable: "--font-mono-code",
+  declarations: [
+    {
+      prop: "unicode-range",
+      value: "U+0020-007E,U+00A0,U+00B7,U+2013-2014,U+2018-2019,U+201C-201D,U+2026,U+2190-2193",
+    },
+  ],
+  /** The fallbacks live on the full face, which comes next in `fonts.mono` */
+  adjustFontFallback: false,
+});
+
+/**
+ * The full face for characters the code face lacks. Its fallbacks are monospace fonts, not
+ * Next's default size-adjusted Arial, so code keeps its columns while a font loads
+ */
 export const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   preload: false,
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
 });
 
 export const fonts = {
   title: `var(--font-title)`,
   body: `var(--font-body)`,
-  mono: `var(--font-mono)`,
+  mono: `var(--font-mono-code), var(--font-mono)`,
 } as const;
 
 export { light, dark, ink, status, headerBg, scrim } from "./theme/palette.yak";
