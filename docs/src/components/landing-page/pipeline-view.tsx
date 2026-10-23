@@ -530,6 +530,8 @@ const horizontalWire = css`
   position: absolute;
   top: var(--axis);
   width: auto;
+  /* resets the vertical wire's min-height, which would make this box 30px tall */
+  min-height: 0;
   height: 2px;
   transform: translateY(-50%);
   ${dashesRight};
