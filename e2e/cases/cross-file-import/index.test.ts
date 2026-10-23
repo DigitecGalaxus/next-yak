@@ -14,5 +14,10 @@ test(
 
     const defaultBox = page.getByTestId("default");
     await expect(defaultBox).toHaveCSS("color", "rgb(0, 128, 128)");
+
+    // template literal constants built from other constants
+    await expect(page.getByTestId("negative-gap")).toHaveCSS("margin-left", "-20px");
+    await expect(page.getByTestId("half-negative-space")).toHaveCSS("margin-left", "-10px");
+    await expect(page.getByTestId("local-negative-gap")).toHaveCSS("margin-left", "-30px");
   }),
 );

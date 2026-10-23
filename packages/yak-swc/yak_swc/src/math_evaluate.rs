@@ -69,6 +69,52 @@ pub fn try_evaluate(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<f
   }
 }
 
+/// Format an evaluated number for css with at most 4 decimal places
+/// e.g. `10 / 3` -> "3.3333", `120.0` -> "120"
+pub fn format_number(value: f64) -> String {
+  format!("{:.4}", value)
+    .trim_end_matches('0')
+    .trim_end_matches('.')
+    .to_string()
+}
+
+/// Try to evaluate a given expression to a static string
+/// e.g. `const GAP = "20px"; const NEGATIVE_GAP = \`-${GAP}\`;` -> "-20px"
+/// e.g. `const GAP = 20; const HALF_NEGATIVE_GAP = \`-${GAP / 2}px\`;` -> "-10px"
+///
+/// Like try_evaluate it is speculative: anything that is not known at compile
+/// time returns None, and the caller decides whether that is an error.
+pub fn try_evaluate_string(expr: &Expr, variable_visitor: &VariableVisitor) -> Option<String> {
+  let expr = unwrap_type_casts(expr);
+  match expr {
+    Expr::Lit(Lit::Str(str)) => str.value.as_str().map(|s| s.to_string()),
+    Expr::Lit(Lit::Num(num)) => Some(num.value.to_string()),
+    Expr::Ident(_) | Expr::Member(_) => {
+      let scoped_variable_reference = extract_ident_and_parts(expr, false)?;
+      let value = variable_visitor.get_const_value(&scoped_variable_reference)?;
+      try_evaluate_string(&value, variable_visitor)
+    }
+    Expr::Tpl(tpl) => {
+      let mut result = String::new();
+      for (index, quasi) in tpl.quasis.iter().enumerate() {
+        match &quasi.cooked {
+          Some(cooked) => result.push_str(cooked.as_str()?),
+          None => result.push_str(&quasi.raw),
+        }
+        if let Some(inner) = tpl.exprs.get(index) {
+          // Math first: `${GAP / 2}` is a number, `${GAP}` may also be a string
+          match try_evaluate(inner, variable_visitor) {
+            Some(number) => result.push_str(&format_number(number)),
+            None => result.push_str(&try_evaluate_string(inner, variable_visitor)?),
+          }
+        }
+      }
+      Some(result)
+    }
+    _ => None,
+  }
+}
+
 fn get_precedence(op: &BinaryOp) -> u8 {
   match op {
     BinaryOp::Mul | BinaryOp::Div => 2,

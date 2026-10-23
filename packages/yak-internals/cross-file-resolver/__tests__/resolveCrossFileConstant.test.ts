@@ -236,6 +236,51 @@ test("resolve template literal constant", async () => {
   assert.strictEqual(resolved, "content: hello;");
 });
 
+test("resolve template literal constant that uses a same-file string const", async () => {
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/tokens.ts": 'const GAP = "20px";\nexport const NEGATIVE_GAP = `-${GAP}`;',
+    }),
+    "/foo/bar.ts",
+    `margin-left: --yak-css-import: url("./tokens.ts:NEGATIVE_GAP",mixin);`,
+  );
+
+  assert.strictEqual(resolved, "margin-left: -20px;");
+});
+
+test("resolve template literal constant that does math on a same-file const", async () => {
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/tokens.ts": "const GAP = 20;\nexport const HALF_NEGATIVE_GAP = `-${GAP / 2}px`;",
+    }),
+    "/foo/bar.ts",
+    `margin-left: --yak-css-import: url("./tokens.ts:HALF_NEGATIVE_GAP",mixin);`,
+  );
+
+  assert.strictEqual(resolved, "margin-left: -10px;");
+});
+
+test("resolve math constant that uses a same-file const", async () => {
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/tokens.ts": "const GAP = 10;\nexport const THIRD_GAP = GAP / 3;",
+    }),
+    "/foo/bar.ts",
+    `width: --yak-css-import: url("./tokens.ts:THIRD_GAP",mixin)px;`,
+  );
+
+  assert.strictEqual(resolved, `width: ${10 / 3}px;`);
+});
+
+test("template literal constant does not follow a same-file let", async () => {
+  const exports = await parseExports('let GAP = "20px";\nexport const NEGATIVE_GAP = `-${GAP}`;');
+
+  expect(exports.named.NEGATIVE_GAP).toMatchObject({
+    type: "unsupported",
+    hint: "TemplateLiteral",
+  });
+});
+
 test("importYak is false for non-yak files, skipping transform", async () => {
   const getTransformed = vi.fn(() => ({ code: "" }));
 
@@ -873,7 +918,7 @@ test("Error: unsupported export from a regular .ts file shows a Rust-style snipp
   await expect(() =>
     resolveCrossFileConstant(
       createParseContext({
-        "/foo/colors.ts": "const v = '--bg';\nexport const bg = `var(${v})`;",
+        "/foo/colors.ts": "import { v } from './vars.ts';\nexport const bg = `var(${v})`;",
       }),
       "/foo/bar.ts",
       `--yak-css-import: url("./colors.ts:bg",selector) {}`,
