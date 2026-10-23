@@ -14,6 +14,14 @@ type Snippet = { html: string; lines: number };
 
 const CODE_FONT_SIZE = "13px";
 const CODE_LINE_HEIGHT = 1.7;
+/** Narrow enough to sit beside the Compile step on a phone */
+const PLUGIN_WIDTH = "150px";
+/** The plugin box in the three-column flow */
+const PLUGIN_WIDTH_FLOW = "188px";
+const PLUGIN_HEIGHT = "84px";
+const ROW_GAP = "20px";
+/** How far a horizontal wire reaches into the 32px column gap, stopping 6px short of the pane */
+const REACH = "26px";
 
 export default function PipelineView({
   hosts,
@@ -186,12 +194,6 @@ const Diagram = styled.div`
   --in-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--in-lines) * var(--line-h));
   --css-h: calc(var(--pane-title) + 2 * var(--code-pad) + var(--css-lines) * var(--line-h));
   --axis: calc(var(--in-offset) * var(--line-h) + var(--in-h) / 2);
-  /* narrow enough to sit beside the Compile step on a phone, wider in the three-column flow */
-  --plugin-w: 150px;
-  --plugin-h: 84px;
-  --col-gap: 32px;
-  --row-gap: 20px;
-  --reach: calc(var(--col-gap) - 6px);
 
   --wire: light-dark(
     color-mix(in oklch, ${light.violetSoft} 55%, ${light.beige2}),
@@ -201,9 +203,9 @@ const Diagram = styled.div`
   --wire-period: 13px;
 
   display: grid;
-  gap: var(--row-gap);
+  gap: ${ROW_GAP};
   /* the Compile step sits beside the node, so the wire runs from pane to pane */
-  grid-template-columns: var(--plugin-w) minmax(0, 1fr);
+  grid-template-columns: ${PLUGIN_WIDTH} minmax(0, 1fr);
   grid-template-areas:
     "s1 s1"
     "in in"
@@ -213,14 +215,13 @@ const Diagram = styled.div`
   column-gap: 20px;
 
   @container section (min-width: ${container.section.flow}) {
-    --plugin-w: 188px;
     /* column mins fit the longest config (~47 chars) and JS diff (~44) lines; the flow
        breakpoint is their sum plus the gaps */
     grid-template-columns: minmax(320px, 420px) minmax(180px, 320px) minmax(390px, 520px);
     grid-template-areas:
       "in node out"
       "s1 s2 s3";
-    column-gap: var(--col-gap);
+    column-gap: 32px;
     row-gap: 32px;
     align-items: start;
   }
@@ -374,7 +375,7 @@ const Node = styled.div`
 
   /* spans the row gaps above and below, so the wires touch both panes */
   align-self: stretch;
-  margin-block: calc(-1 * var(--row-gap));
+  margin-block: calc(-1 * ${ROW_GAP});
 
   @container section (min-width: ${container.section.flow}) {
     margin-block: 0;
@@ -455,7 +456,7 @@ const dashesDown = css`
 
 const Plugin = styled.div`
   box-sizing: border-box;
-  width: var(--plugin-w);
+  width: ${PLUGIN_WIDTH};
   padding: 12px 14px;
   border: 1px solid ${ink.border};
   border-radius: 14px;
@@ -472,7 +473,8 @@ const Plugin = styled.div`
     top: var(--axis);
     left: 50%;
     transform: translate(-50%, -50%);
-    min-height: var(--plugin-h);
+    width: ${PLUGIN_WIDTH_FLOW};
+    min-height: ${PLUGIN_HEIGHT};
     justify-content: center;
 
     &::before,
@@ -536,8 +538,8 @@ const LineIn = styled.div`
 
   @container section (min-width: ${container.section.flow}) {
     ${horizontalWire};
-    left: calc(-1 * var(--reach));
-    right: calc(50% + var(--plugin-w) / 2 + 5px);
+    left: calc(-1 * ${REACH});
+    right: calc(50% + ${PLUGIN_WIDTH_FLOW} / 2 + 5px);
   }
 `;
 
@@ -546,8 +548,8 @@ const LineOut = styled.div`
 
   @container section (min-width: ${container.section.flow}) {
     ${horizontalWire};
-    left: calc(50% + var(--plugin-w) / 2 + 5px);
-    right: calc(-1 * var(--reach));
+    left: calc(50% + ${PLUGIN_WIDTH_FLOW} / 2 + 5px);
+    right: calc(-1 * ${REACH});
   }
 `;
 
@@ -560,8 +562,8 @@ const ElbowDown = styled.div`
     display: block;
     position: absolute;
     left: 50%;
-    right: calc(-1 * var(--reach));
-    top: calc(var(--axis) + var(--plugin-h) / 2 + 6px);
+    right: calc(-1 * ${REACH});
+    top: calc(var(--axis) + ${PLUGIN_HEIGHT} / 2 + 6px);
     bottom: calc(var(--css-h) / 2);
     overflow: clip;
 
