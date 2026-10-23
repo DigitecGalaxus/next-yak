@@ -260,6 +260,18 @@ test("resolve template literal constant that does math on a same-file const", as
   assert.strictEqual(resolved, "margin-left: -10px;");
 });
 
+test("resolve template literal constant with brackets and exponent", async () => {
+  const { resolved } = await resolveCrossFileConstant(
+    createParseContext({
+      "/foo/tokens.ts": "const BASE = 2;\nexport const SIZE = `${(BASE + 1) ** 2}px`;",
+    }),
+    "/foo/bar.ts",
+    `width: --yak-css-import: url("./tokens.ts:SIZE",mixin);`,
+  );
+
+  assert.strictEqual(resolved, "width: 9px;");
+});
+
 test("resolve math constant that uses a same-file const", async () => {
   const { resolved } = await resolveCrossFileConstant(
     createParseContext({

@@ -15,3 +15,9 @@ export const HalfPull = /*YAK EXPORTED STYLED:HalfPull:ym7uBBu1*//*YAK Extracted
   margin-left: -10px;
 }
 */ /*#__PURE__*/ __yak.__yak_div("ym7uBBu1");
+const SQUARE_SIZE = `${(1 + 2) ** 2}px`;
+export const Square = /*YAK EXPORTED STYLED:Square:ym7uBBu2*//*YAK Extracted CSS:
+.ym7uBBu2 {
+  width: 9px;
+}
+*/ /*#__PURE__*/ __yak.__yak_div("ym7uBBu2");

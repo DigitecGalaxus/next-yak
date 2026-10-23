@@ -223,7 +223,7 @@ function unpackTSAsExpression(node: TSAsExpression | Expression): Expression {
 
 /**
  * Evaluates an expression whose value is known without running the module:
- * literals, `+ - * /` on numbers, unary `-`/`+`, template literals, and
+ * literals, `+ - * / **` on numbers, unary `-`/`+`, template literals, and
  * identifiers that name a top-level const of the same file.
  * e.g. `const GAP = "20px"; export const NEGATIVE_GAP = \`-${GAP}\`;` -> "-20px"
  * e.g. `const GAP = 20; export const HALF_NEGATIVE_GAP = \`-${GAP / 2}px\`;` -> "-10px"
@@ -273,6 +273,8 @@ function evaluateStatic(
           return left * right;
         case "/":
           return left / right;
+        case "**":
+          return left ** right;
       }
       return undefined;
     }
