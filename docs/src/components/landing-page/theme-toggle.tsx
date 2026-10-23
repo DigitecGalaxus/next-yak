@@ -1,8 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { css, styled } from "@yak/react";
-import { fontWeight } from "@/tokens";
+import { styled } from "@yak/react";
 import { iconButton } from "./button";
 
 type Theme = "system" | "light" | "dark";
@@ -56,7 +55,7 @@ function readOs(): "light" | "dark" {
 
 const serverOs = (): "light" | "dark" => "light";
 
-export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
+export default function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, readTheme, serverTheme);
   const os = useSyncExternalStore(subscribeOs, readOs, serverOs);
   // From System, force the side the OS is not giving, so every click changes the page.
@@ -67,7 +66,6 @@ export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
       type="button"
       onClick={() => applyTheme(next)}
       aria-label={`Theme: ${LABELS[theme]}. Switch to ${LABELS[next]}.`}
-      $withLabel={showLabel}
     >
       <AutoFace aria-hidden>
         <AutoIcon />
@@ -78,7 +76,6 @@ export default function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
       <MoonFace aria-hidden>
         <MoonIcon />
       </MoonFace>
-      {showLabel ? <span>{LABELS[next]}</span> : null}
     </Toggle>
   );
 }
@@ -162,18 +159,6 @@ const MoonFace = styled(Face)`
   }
 `;
 
-const Toggle = styled.button<{ $withLabel?: boolean }>`
+const Toggle = styled.button`
   ${iconButton};
-
-  ${({ $withLabel }) =>
-    $withLabel &&
-    css`
-      gap: 10px;
-      width: 100%;
-      height: auto;
-      justify-content: flex-start;
-      padding: 10px 14px;
-      font-size: 15px;
-      font-weight: ${fontWeight.semibold};
-    `}
 `;

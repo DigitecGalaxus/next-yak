@@ -7,24 +7,11 @@ import { SearchIcon } from "../search/search-icon";
 import { keycapStyles, visuallyHidden } from "@/lib/mixins";
 import { screen } from "@/tokens";
 
-export default function Search({
-  fullWidth,
-  onClick,
-}: {
-  fullWidth?: boolean;
-  onClick?: () => void;
-}) {
+export default function Search() {
   const { setOpen } = useSearch();
 
   return (
-    <Input
-      type="button"
-      onClick={() => {
-        onClick?.();
-        setOpen(true);
-      }}
-      $fullWidth={fullWidth}
-    >
+    <Input type="button" onClick={() => setOpen(true)}>
       <div
         css={css`
           display: flex;
@@ -50,7 +37,7 @@ const Keycap = styled.kbd`
   letter-spacing: 0.72px;
 `;
 
-const Input = styled.button<{ $fullWidth?: boolean }>`
+const Input = styled.button`
   ${buttonStyles};
 
   display: flex;
@@ -60,27 +47,20 @@ const Input = styled.button<{ $fullWidth?: boolean }>`
   max-height: 38px;
   padding: 8px 12px;
 
-  ${({ $fullWidth }) =>
-    $fullWidth
-      ? css`
-          width: 100%;
-        `
-      : css`
-          /* an icon button like its neighbours, so the header links keep one line */
-          @container header (max-width: ${screen.searchCompact}) {
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            max-height: none;
-            padding: 0;
+  /* an icon button like its neighbours, so the header links keep one line */
+  @container header (max-width: ${screen.searchCompact}) {
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    max-height: none;
+    padding: 0;
 
-            ${Label} {
-              ${visuallyHidden};
-            }
+    ${Label} {
+      ${visuallyHidden};
+    }
 
-            ${Keycap} {
-              display: none;
-            }
-          }
-        `}
+    ${Keycap} {
+      display: none;
+    }
+  }
 `;

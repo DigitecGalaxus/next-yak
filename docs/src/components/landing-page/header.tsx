@@ -74,7 +74,7 @@ export default function Header() {
             </NavExternalLink>
           </DesktopLinks>
         </nav>
-        <DesktopActions>
+        <Actions>
           <Search />
           <ThemeToggle />
           <GitHubLink
@@ -95,7 +95,7 @@ export default function Header() {
               />
             </svg>
           </GitHubLink>
-        </DesktopActions>
+        </Actions>
         <MobileMenu tree={source.pageTree} />
       </div>
     </header>
@@ -112,14 +112,12 @@ const DesktopLinks = styled.div`
   }
 `;
 
-const DesktopActions = styled.div`
+/* search and theme stay at every width. GitHub moves into the menu drawer below the nav breakpoint */
+const Actions = styled.div`
   display: flex;
   align-items: center;
   gap: 14px;
-
-  @container header (max-width: ${screen.nav}) {
-    display: none;
-  }
+  margin-left: auto;
 `;
 
 const Brand = styled(Link)`
@@ -146,6 +144,10 @@ const BrandName = styled.span`
 
 const GitHubLink = styled(Link)`
   ${iconButton};
+
+  @container header (max-width: ${screen.nav}) {
+    display: none;
+  }
 `;
 
 /* For screen readers and crawlers, so the old name stays tied to the new one. */

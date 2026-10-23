@@ -9,8 +9,6 @@ import { screen, light, dark } from "@/tokens";
 import { iconButton } from "./button";
 import { backdropStyles } from "@/lib/mixins";
 import NavLink, { NavExternalLink } from "./nav-link";
-import Search from "./search";
-import ThemeToggle from "./theme-toggle";
 import NavTree from "../docs/nav-tree";
 
 export default function MobileMenu({ tree }: { tree: Root }) {
@@ -44,8 +42,6 @@ export default function MobileMenu({ tree }: { tree: Root }) {
               Menu
             </Dialog.Title>
 
-            <Search fullWidth onClick={close} />
-
             <PrimaryNav>
               <Section>
                 <NavLink href="/docs/getting-started" onClick={close}>
@@ -70,10 +66,6 @@ export default function MobileMenu({ tree }: { tree: Root }) {
                 GitHub
               </NavExternalLink>
             </PrimaryNav>
-
-            <ThemeFoot>
-              <ThemeToggle showLabel />
-            </ThemeFoot>
           </Drawer>
         </Dialog.Portal>
       </Dialog.Root>
@@ -100,6 +92,7 @@ const Bar = styled.div`
   @container header (max-width: ${screen.nav}) {
     display: flex;
     align-items: center;
+    margin-left: 14px;
   }
 `;
 
@@ -167,9 +160,4 @@ const SubNav = styled.div`
   margin-left: 4px;
   padding-left: 10px;
   border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
-`;
-
-const ThemeFoot = styled.div`
-  margin-top: auto;
-  padding-top: 18px;
 `;
