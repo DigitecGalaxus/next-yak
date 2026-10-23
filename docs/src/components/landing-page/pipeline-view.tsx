@@ -373,52 +373,69 @@ const Node = styled.div`
 /* one period of travel lands the dashes back on themselves, so the loop is seamless */
 const flowX = keyframes`
   to {
-    background-position-x: var(--wire-period);
+    transform: translateX(var(--wire-period));
   }
 `;
 
 const flowY = keyframes`
   to {
-    background-position-y: var(--wire-period);
+    transform: translateY(var(--wire-period));
   }
 `;
 
-const flowElbow = keyframes`
-  to {
-    background-position:
-      0 calc(100% + var(--wire-period)),
-      var(--wire-period) 100%;
-  }
-`;
-
-/* a dashed border cannot animate, so the dashes are a repeating gradient */
-const dashesRight = css`
+/* a dashed border cannot animate, so the dashes are a repeating gradient on a pseudo-element
+   that starts one period before the wire and moves with transform, which needs no repaint per
+   frame. The wire clips the extra period */
+const runRight = css`
+  content: "";
+  position: absolute;
+  /* all insets and sizes: a wide section restyles a vertical wire as a horizontal one */
+  inset: auto 0 auto calc(-1 * var(--wire-period));
+  width: auto;
+  height: 2px;
   background-image: repeating-linear-gradient(
     to right,
     var(--wire) 0 var(--wire-dash),
     transparent var(--wire-dash) var(--wire-period)
   );
-  background-size: var(--wire-period) 2px;
-  background-repeat: repeat-x;
-  background-position: 0 50%;
 
   @media (prefers-reduced-motion: no-preference) {
     animation: ${flowX} 900ms linear infinite;
   }
 `;
 
-const dashesDown = css`
+const runDown = css`
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--wire-period)) auto 0 auto;
+  width: 2px;
+  height: auto;
   background-image: repeating-linear-gradient(
     to bottom,
     var(--wire) 0 var(--wire-dash),
     transparent var(--wire-dash) var(--wire-period)
   );
-  background-size: 2px var(--wire-period);
-  background-repeat: repeat-y;
-  background-position: 50% 0;
 
   @media (prefers-reduced-motion: no-preference) {
     animation: ${flowY} 900ms linear infinite;
+  }
+`;
+
+const dashesRight = css`
+  overflow: clip;
+
+  &::before {
+    ${runRight};
+    top: 0;
+  }
+`;
+
+const dashesDown = css`
+  overflow: clip;
+
+  &::before {
+    ${runDown};
+    left: 0;
   }
 `;
 
@@ -519,7 +536,8 @@ const LineOut = styled.div`
   }
 `;
 
-/* one element paints both runs so the dashes travel around the corner in one animation */
+/* one element holds both runs, so they share one clip and one animation clock and the dashes
+   travel around the corner without a jump */
 const ElbowDown = styled.div`
   display: none;
 
@@ -530,29 +548,20 @@ const ElbowDown = styled.div`
     right: calc(-1 * var(--reach));
     top: calc(var(--axis) + var(--plugin-h) / 2 + 6px);
     bottom: calc(var(--css-h) / 2);
+    overflow: clip;
 
-    background-image:
-      repeating-linear-gradient(
-        to bottom,
-        var(--wire) 0 var(--wire-dash),
-        transparent var(--wire-dash) var(--wire-period)
-      ),
-      repeating-linear-gradient(
-        to right,
-        var(--wire) 0 var(--wire-dash),
-        transparent var(--wire-dash) var(--wire-period)
-      );
-    background-size:
-      2px var(--wire-period),
-      var(--wire-period) 2px;
-    background-repeat: repeat-y, repeat-x;
-    /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
-    background-position:
-      0 100%,
-      0 100%;
+    &::before {
+      ${runDown};
+      left: 0;
+      /* anchored to the bottom edge so a dash, not a gap, lands on the corner */
+      background-size: 2px var(--wire-period);
+      background-repeat: repeat-y;
+      background-position: 0 100%;
+    }
 
-    @media (prefers-reduced-motion: no-preference) {
-      animation: ${flowElbow} 900ms linear infinite;
+    &::after {
+      ${runRight};
+      bottom: 0;
     }
   }
 `;
