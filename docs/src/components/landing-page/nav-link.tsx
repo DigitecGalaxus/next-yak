@@ -46,6 +46,8 @@ export function NavExternalLink({
 
 const navLinkStyles = css`
   ${chromeLink};
+  /* keeps the external arrow next to its word */
+  white-space: nowrap;
   text-underline-offset: 6px;
   text-decoration-thickness: 2px;
 `;

@@ -7,11 +7,10 @@ import { useState } from "react";
 import { css, styled } from "@yak/react";
 import { screen, light, dark } from "@/tokens";
 import { iconButton } from "./button";
-import { backdropStyles } from "@/lib/mixins";
+import { backdropStyles, visuallyHidden } from "@/lib/mixins";
 import NavLink, { NavExternalLink } from "./nav-link";
-import Search from "./search";
-import ThemeToggle from "./theme-toggle";
 import NavTree from "../docs/nav-tree";
+import Brand from "./brand";
 
 export default function MobileMenu({ tree }: { tree: Root }) {
   const [open, setOpen] = useState(false);
@@ -36,44 +35,34 @@ export default function MobileMenu({ tree }: { tree: Root }) {
           <Drawer>
             <Dialog.Title
               css={css`
-                margin-bottom: 18px;
-                font-size: 18px;
-                color: light-dark(${light.violet}, ${dark.white});
+                ${visuallyHidden};
               `}
             >
               Menu
             </Dialog.Title>
-
-            <Search fullWidth onClick={close} />
+            <DrawerBrand>
+              <Brand onClick={close} />
+            </DrawerBrand>
 
             <PrimaryNav>
-              <Section>
-                <NavLink href="/docs/getting-started" onClick={close}>
-                  Documentation
-                </NavLink>
-                {pathname.startsWith("/docs") && (
-                  <SubNav>
-                    <NavTree tree={tree} onNavigateAction={close} />
-                  </SubNav>
-                )}
-              </Section>
-              <NavLink href="/playground" onClick={close}>
-                Playground
-              </NavLink>
               <NavLink href="/blog" onClick={close}>
                 Blog
               </NavLink>
               <NavExternalLink href="https://jantimon.github.io/css-in-js-bench" onClick={close}>
                 Benchmarks
               </NavExternalLink>
-              <NavExternalLink href="https://github.com/galaxuslabs/yak" onClick={close}>
-                GitHub
-              </NavExternalLink>
+              <NavLink href="/playground" onClick={close}>
+                Playground
+              </NavLink>
+              <Section>
+                <NavLink href="/docs/getting-started" onClick={close}>
+                  Documentation
+                </NavLink>
+                <SubNav>
+                  <NavTree tree={tree} onNavigateAction={close} />
+                </SubNav>
+              </Section>
             </PrimaryNav>
-
-            <ThemeFoot>
-              <ThemeToggle showLabel />
-            </ThemeFoot>
           </Drawer>
         </Dialog.Portal>
       </Dialog.Root>
@@ -100,7 +89,13 @@ const Bar = styled.div`
   @container header (max-width: ${screen.nav}) {
     display: flex;
     align-items: center;
+    margin-left: 14px;
   }
+`;
+
+const DrawerBrand = styled.div`
+  display: flex;
+  margin-bottom: 18px;
 `;
 
 const Trigger = styled(Dialog.Trigger)`
@@ -167,9 +162,4 @@ const SubNav = styled.div`
   margin-left: 4px;
   padding-left: 10px;
   border-left: 2px solid light-dark(${light.beige3}, ${dark.navy3});
-`;
-
-const ThemeFoot = styled.div`
-  margin-top: auto;
-  padding-top: 18px;
 `;

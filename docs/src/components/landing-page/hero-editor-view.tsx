@@ -44,12 +44,13 @@ export default function HeroEditorView({
         display: flex;
         flex-direction: column;
         align-items: stretch;
+        /* stacked under the copy it spans the full width, so both sides keep the same gap */
         width: 100%;
-        max-width: 620px;
 
         @container hero (min-width: ${container.hero.split}) {
           flex: 0 1 620px;
           min-width: 400px;
+          max-width: 620px;
         }
       `}
     >

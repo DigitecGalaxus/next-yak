@@ -7,18 +7,9 @@ import NavLink, { NavExternalLink } from "./nav-link";
 import { EXTERNAL_LINK_HINT, externalLinkProps } from "@/lib/external-link";
 import MobileMenu from "./mobile-menu";
 import { source } from "@/lib/source";
-import {
-  screen,
-  fonts,
-  headerHeight,
-  maxContentWidth,
-  fontSize,
-  light,
-  dark,
-  headerBg,
-} from "@/tokens";
+import { screen, headerHeight, maxContentWidth, headerBg } from "@/tokens";
 import { visuallyHidden } from "@/lib/mixins";
-import Yak from "./yak";
+import Brand from "./brand";
 
 export default function Header() {
   return (
@@ -53,13 +44,7 @@ export default function Header() {
             gap: 28px;
           `}
         >
-          <Brand href="/">
-            <Yak
-              css={css`
-                width: 32px;
-              `}
-            />
-            <BrandName>yak</BrandName>
+          <Brand>
             <RenameNote>
               yak, formerly next-yak. Same library, same team, broader home: the package is now
               @yak/react, with @yak/solid beside it.
@@ -74,7 +59,7 @@ export default function Header() {
             </NavExternalLink>
           </DesktopLinks>
         </nav>
-        <DesktopActions>
+        <Actions>
           <Search />
           <ThemeToggle />
           <GitHubLink
@@ -95,7 +80,7 @@ export default function Header() {
               />
             </svg>
           </GitHubLink>
-        </DesktopActions>
+        </Actions>
         <MobileMenu tree={source.pageTree} />
       </div>
     </header>
@@ -112,40 +97,20 @@ const DesktopLinks = styled.div`
   }
 `;
 
-const DesktopActions = styled.div`
+/* search and theme stay at every width. GitHub moves into the menu drawer below the nav breakpoint */
+const Actions = styled.div`
   display: flex;
   align-items: center;
   gap: 14px;
-
-  @container header (max-width: ${screen.nav}) {
-    display: none;
-  }
-`;
-
-const Brand = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const BrandName = styled.span`
-  font-family: ${fonts.title};
-  font-size: ${fontSize.display};
-  letter-spacing: -0.44px;
-  color: light-dark(${light.violet}, ${dark.white});
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition: color 0.16s ease;
-  }
-
-  ${Brand}:hover &,
-  ${Brand}:focus-visible & {
-    color: light-dark(${light.red}, ${dark.red});
-  }
+  margin-left: auto;
 `;
 
 const GitHubLink = styled(Link)`
   ${iconButton};
+
+  @container header (max-width: ${screen.nav}) {
+    display: none;
+  }
 `;
 
 /* For screen readers and crawlers, so the old name stays tied to the new one. */
