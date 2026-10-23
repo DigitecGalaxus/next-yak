@@ -12,6 +12,7 @@ import { yakPackageNames } from "../../packageNames.js";
  *
  * Handles `export const`, export lists (`export { x }`), re-exports with a `from`,
  * `export *`, and `export default`.
+ * An exported value built from same-file consts is evaluated, see evaluateStatic.
  * Anything else becomes an `unsupported` entry with its source location, or is skipped.
  *
  * Throws if the source doesn't parse.
@@ -38,6 +39,9 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
 
     // Track variable declarations for default export lookup
     const variableDeclarations: Record<string, Expression> = {};
+    // The `const` subset of variableDeclarations, which evaluateStatic may follow:
+    // a `let` or `var` can change before the export is read
+    const constDeclarations: Record<string, Expression> = {};
     // Track top-level import bindings so exported imports become re-exports
     const importBindings: Record<string, ModuleExport> = {};
     // Local export lists (`export { x }`), resolved after the loop
@@ -77,6 +81,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
         for (const decl of node.declarations) {
           if (decl.id.type === "Identifier" && decl.init) {
             variableDeclarations[decl.id.name] = decl.init;
+            if (node.kind === "const") constDeclarations[decl.id.name] = decl.init;
           }
         }
       }
@@ -126,7 +131,14 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
           for (const declaration of node.declaration.declarations) {
             if (declaration.id.type === "Identifier" && declaration.init) {
               variableDeclarations[declaration.id.name] = declaration.init;
-              const parsed = parseExportValueExpression(declaration.init, sourceContents);
+              if (node.declaration.kind === "const") {
+                constDeclarations[declaration.id.name] = declaration.init;
+              }
+              const parsed = parseExportValueExpression(
+                declaration.init,
+                sourceContents,
+                constDeclarations,
+              );
               if (parsed) {
                 moduleExports.named[declaration.id.name] = parsed;
               }
@@ -155,6 +167,7 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
           moduleExports.named["default"] = parseExportValueExpression(
             node.declaration as Expression,
             sourceContents,
+            constDeclarations,
           );
         }
       }
@@ -168,7 +181,11 @@ export async function parseExports(sourceContents: string): Promise<ModuleExport
     // Look up the value of an exported identifier from local declarations or imports
     const resolveIdentifier = (name: string): ModuleExport | undefined => {
       if (variableDeclarations[name]) {
-        return parseExportValueExpression(variableDeclarations[name], sourceContents);
+        return parseExportValueExpression(
+          variableDeclarations[name],
+          sourceContents,
+          constDeclarations,
+        );
       }
       return importBindings[name];
     };
@@ -204,7 +221,91 @@ function unpackTSAsExpression(node: TSAsExpression | Expression): Expression {
   return node;
 }
 
-function parseExportValueExpression(node: Expression, code?: string): ModuleExport {
+/**
+ * Evaluates an expression whose value is known without running the module:
+ * literals, `+ - * /` on numbers, unary `-`/`+`, template literals, and
+ * identifiers that name a top-level const of the same file.
+ * e.g. `const GAP = "20px"; export const NEGATIVE_GAP = \`-${GAP}\`;` -> "-20px"
+ * e.g. `const GAP = 20; export const HALF_NEGATIVE_GAP = \`-${GAP / 2}px\`;` -> "-10px"
+ *
+ * Returns undefined for anything else, e.g. an imported identifier or a call,
+ * so the caller reports the export as unsupported.
+ * `visited` holds the identifiers being evaluated, so a cycle returns undefined.
+ */
+function evaluateStatic(
+  node: Expression,
+  declarations: Record<string, Expression>,
+  visited: Set<string> = new Set(),
+): string | number | undefined {
+  const expression = unpackTSAsExpression(node);
+  switch (expression.type) {
+    case "StringLiteral":
+    case "NumericLiteral":
+      return expression.value;
+    case "ParenthesizedExpression":
+      return evaluateStatic(expression.expression, declarations, visited);
+    case "Identifier": {
+      const declaration = declarations[expression.name];
+      if (!declaration || visited.has(expression.name)) return undefined;
+      visited.add(expression.name);
+      const value = evaluateStatic(declaration, declarations, visited);
+      visited.delete(expression.name);
+      return value;
+    }
+    case "UnaryExpression": {
+      const argument = evaluateStatic(expression.argument, declarations, visited);
+      if (typeof argument !== "number") return undefined;
+      if (expression.operator === "-") return -argument;
+      if (expression.operator === "+") return argument;
+      return undefined;
+    }
+    case "BinaryExpression": {
+      if (expression.left.type === "PrivateName") return undefined;
+      const left = evaluateStatic(expression.left, declarations, visited);
+      const right = evaluateStatic(expression.right, declarations, visited);
+      if (typeof left !== "number" || typeof right !== "number") return undefined;
+      switch (expression.operator) {
+        case "+":
+          return left + right;
+        case "-":
+          return left - right;
+        case "*":
+          return left * right;
+        case "/":
+          return left / right;
+      }
+      return undefined;
+    }
+    case "TemplateLiteral": {
+      let result = "";
+      for (let i = 0; i < expression.quasis.length; i++) {
+        const quasi = expression.quasis[i];
+        result += quasi.value.cooked ?? quasi.value.raw;
+        const inner = expression.expressions[i];
+        if (!inner) continue;
+        const value = evaluateStatic(inner as Expression, declarations, visited);
+        if (value === undefined) return undefined;
+        result += typeof value === "number" ? formatNumber(value) : value;
+      }
+      return result;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Formats a number inside a template with at most 4 decimal places, the same
+ * way yak-swc formats math in a styled template: `${10 / 3}` -> "3.3333"
+ */
+function formatNumber(value: number): string {
+  return String(Number(value.toFixed(4)));
+}
+
+function parseExportValueExpression(
+  node: Expression,
+  code?: string,
+  declarations: Record<string, Expression> = {},
+): ModuleExport {
   // ignores `as` casts so it doesn't interfere with the ast node type detection
   const expression = unpackTSAsExpression(node);
   if (expression.type === "CallExpression" || expression.type === "TaggedTemplateExpression") {
@@ -222,8 +323,12 @@ function parseExportValueExpression(node: Expression, code?: string): ModuleExpo
   } else if (expression.type === "ObjectExpression") {
     return {
       type: "record",
-      value: parseObjectExpression(expression, code),
+      value: parseObjectExpression(expression, code, declarations),
     };
+  }
+  const value = evaluateStatic(expression, declarations);
+  if (value !== undefined) {
+    return { type: "constant", value };
   }
   return {
     type: "unsupported",
@@ -235,12 +340,13 @@ function parseExportValueExpression(node: Expression, code?: string): ModuleExpo
 function parseObjectExpression(
   node: ObjectExpression,
   code?: string,
+  declarations: Record<string, Expression> = {},
 ): Record<string, ModuleExport> {
   let result: Record<string, ModuleExport> = {};
   for (const property of node.properties) {
     if (property.type === "ObjectProperty" && property.key.type === "Identifier") {
       const key = property.key.name;
-      const parsed = parseExportValueExpression(property.value as Expression, code);
+      const parsed = parseExportValueExpression(property.value as Expression, code, declarations);
       if (parsed) {
         result[key] = parsed;
       }
